@@ -7,7 +7,6 @@ from sympy import SeqAdd
 from sklearn.preprocessing import PowerTransformer, QuantileTransformer
 
 from ._encoding import DataEncoding
-# Make changes
 
 class NoScaling() :
 
