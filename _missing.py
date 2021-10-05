@@ -5,10 +5,10 @@ from numpy.lib.function_base import bartlett
 import pandas as pd
 import warnings
 import sklearn
-import sklearn.utils
 import tensorflow as tf
 
 from ._base import random_list
+from ._scaling import MinMaxScale
 
 class  SimpleImputer() :
 
@@ -299,3 +299,19 @@ class GAIN() :
         mask matrix, m_{ij} = 1 where x_{ij} exists; m_{ij} = 0 otherwise
         '''
         return X.isnull().astype(int)
+
+    def fill(self, X) :
+
+        _X = X.copy(deep = True)
+        n, p = _X.shape
+
+        h_dim = int(p) # Hidden state dimensions
+
+        # scaling data to [0, 1]
+        scaler = MinMaxScale()
+        scaler.fit(_X)
+        _X_scaled = scaler.transform(_X)
+        _scal_para = {
+            'min_val' : scaler._min,
+            'max_val' : scaler._max
+        }
