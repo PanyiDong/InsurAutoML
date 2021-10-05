@@ -1,0 +1,226 @@
+[
+    {
+    "filename" : "eudirectlapse",
+    "data name" : "European lapse dataset from the direct channel",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "lapse"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "None"
+        }
+    ]
+    },
+
+    {
+    "filename" : "credit",
+    "data name" : "German Credit dataset",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "class"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "None"
+        }
+    ]
+    },
+
+    {
+    "filename" : "norauto",
+    "data name" : "Norwegian fire insurance dataset",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "NbClaim"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "ClaimAmount"
+        }
+    ]
+    },
+
+    {
+    "filename" : "asiacomrisk",
+    "data name" : "Large commercial risks in Asia-Pacific",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "DR"
+        }
+    ]
+    },
+
+    {
+    "filename" : "ausprivautolong",
+    "data name" : "Automobile claim datasets in Australia",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "Claim"
+        }
+    ]
+    },
+
+    {
+    "filename" : "freclaimset2motor",
+    "data name" : "French individual claim settlements",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : ["ExpectCharge", "ExpectRecourse"]
+        }
+    ]
+    },
+
+    {
+    "filename" : "lossalae",
+    "data name" : "General Liability Claims",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "None"
+        }
+    ]
+    },
+    
+    {
+    "filename" : "fremotor1freq0304a",
+    "data name" : "French claims for private motor",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "PremTot"
+        }
+    ]
+    },
+
+    {
+    "filename" : "fremotor2freq9907b",
+    "data name" : "French claims for private motor",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "PremTot"
+        }
+    ]
+    },
+    
+    {
+    "filename" : "SOAGMI",
+    "data name" : "SOA Group Medical Insurance claim dataset",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "Loss"
+        }
+    ]
+    },
+
+    {
+    "filename" : "uslapseagent",
+    "data name" : "United States lapse dataset from tied-agent channel",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "annual.premium"
+        }
+    ]
+    },    
+  
+    {
+    "filename" : "usautoBI",
+    "data name" : "Automobile bodily injury claim dataset",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "LOSS"
+        }
+    ]
+    }, 
+  
+    {
+    "filename" : "freMPL1",
+    "data name" : "French Motor Personal Line datasets",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "ClaimInd"
+        },
+        {
+            "task_type" : "regression",
+            "response" : "None"
+        }
+    ]
+    },
+
+    {
+    "filename" : "auscathist",
+    "data name" : "Australian catastrophe historic",
+    "data source" : "CASdatasets",
+    "property" : [
+        {
+            "task_type" : "classification",
+            "response" : "None"
+        },
+        {
+            "task_type" : "regression",
+            "response" : ["OriginalCost", "NormCost2011", "NormCost2014"]
+        }
+    ]
+    }
+
+]
