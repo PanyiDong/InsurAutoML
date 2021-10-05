@@ -1,10 +1,12 @@
 from cmath import nan
 import random
 import numpy as np
+from numpy.lib.function_base import bartlett
 import pandas as pd
 import warnings
 import sklearn
 import sklearn.utils
+import tensorflow as tf
 
 from ._base import random_list
 
@@ -261,3 +263,39 @@ class MICE() :
             X.loc[X[_column].isnull(), _column] = fit_model.predict(X.loc[X[_column].isnull(), _subfeature])
 
         return X
+
+class GAIN() :
+
+    '''
+    Generative Adversarial Imputation Nets (GAIN)
+    train Generator (G) and Discriminator (D) to impute missing values
+
+    Parameters
+    ----------
+    batch_size: sampling size from data
+
+    hint_rate: hint rate
+
+    alpha: penalty in optimizing Generator
+
+    iterations: number of iterations
+    '''
+
+    def __init__(
+        self,
+        batch_size = None,
+        hint_rate = None,
+        alpha = None,
+        iterations = None
+    ) :
+        self.batch_size = batch_size
+        self.hint_rate = hint_rate
+        self.alpha = alpha
+        self.iterations = iterations
+    
+    def mask_matrix(self, X) :
+
+        '''
+        mask matrix, m_{ij} = 1 where x_{ij} exists; m_{ij} = 0 otherwise
+        '''
+        return X.isnull().astype(int)
