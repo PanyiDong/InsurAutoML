@@ -1,13 +1,15 @@
 from cmath import nan
 import random
+from tqdm import tqdm
 import numpy as np
 from numpy.lib.function_base import bartlett
 import pandas as pd
 import warnings
 import sklearn
 import tensorflow as tf
+tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
-from ._base import random_list
+from ._base import random_index, random_list, feature_rounding
 from ._scaling import MinMaxScale
 
 class  SimpleImputer() :
@@ -279,6 +281,11 @@ class GAIN() :
     alpha: penalty in optimizing Generator
 
     iterations: number of iterations
+
+    uni_class: unique classes in a column which will be considered as categorical class, default = 31
+    round numerical to categorical in case after the imputation, the data type changes
+
+    seed: random seed
     '''
 
     def __init__(
@@ -286,12 +293,16 @@ class GAIN() :
         batch_size = None,
         hint_rate = None,
         alpha = None,
-        iterations = None
+        iterations = None,
+        uni_class = 31,
+        seed = 1
     ) :
         self.batch_size = batch_size
         self.hint_rate = hint_rate
         self.alpha = alpha
         self.iterations = iterations
+        self.uni_class = uni_class
+        self.seed = seed
     
     def mask_matrix(self, X) :
 
@@ -299,19 +310,153 @@ class GAIN() :
         mask matrix, m_{ij} = 1 where x_{ij} exists; m_{ij} = 0 otherwise
         '''
         return X.isnull().astype(int)
+    
+    # initialize normal tensor by size
+    def normal_initial(self, size) :
 
-    def fill(self, X) :
+        _dim = size[0]
+        return tf.random.normal(shape = size, stddev = 1 / tf.sqrt(_dim / 2))\
+    
+    # return random binary array by size
+    def binary_sampler(self, p = 0.5, size = (1, 1)) :
 
-        _X = X.copy(deep = True)
-        n, p = _X.shape
+        # allows only change row size with (n, )
+        # cannot handle (, n)
+        try :
+            if size[0] == None :
+                size[0] == 1
+            elif size[1] == None :
+                size[1] == 1
+        except IndexError :
+            size = (size[0], 1)
 
-        h_dim = int(p) # Hidden state dimensions
+        _random_unit = np.random.uniform(low = 0, high = 1, size = size)
+        return 1 * (_random_unit < p)
+        
+    # return random uniform array by size
+    def uniform_sampler(self, low = 0, high = 1, size = (1, 1)) :
+        
+        # allows only change row size with (n, )
+        # cannot handle (, n)
+        try :
+            if size[0] == None :
+                size[0] == 1
+            elif size[1] == None :
+                size[1] == 1
+        except IndexError :
+            size = (size[0], 1)
+        
+        return np.random.uniform(low = low, high = high, size = size)
 
+    # Generator
+    def Generator(self, data, mask) :
+        
+        G_W1, G_W2, G_W3, G_b1, G_b2, G_b3 = self.theta_G
+        _input = tf.concat(values = [data, mask], axis = 1) # concate data with mask
+        G_h1 = tf.nn.relu(tf.matmul(_input, G_W1) + G_b1)
+        G_h2 = tf.nn.relu(tf.matmul(G_h1, G_W2) + G_b2)
+        G_pro = tf.nn.sigmoid(tf.matmul(G_h2, G_W3) + G_b3) # MinMax normalization
+
+        return G_pro
+
+    # Discriminator
+    def Discriminator(self, data, mask) :
+        
+        D_W1, D_W2, D_W3, D_b1, D_b2, D_b3 = self.theta_D
+        _input = tf.concat(values = [data, mask], axis = 1) # concate data with mask
+        D_h1 = tf.nn.relu(tf.matmul(_input, D_W1) + D_b1)
+        D_h2 = tf.nn.relu(tf.matmul(D_h1, D_W2) + D_b2)
+        D_pro = tf.nn.sigmoid(tf.matmul(D_h2, D_W3) + D_b3) # MinMax normalization
+
+        return D_pro
+
+    def fill(self, data) :
+
+        _data = data.copy(deep = True)
+        n, p = _data.shape
+
+        _h_dim = int(p) # Hidden state dimensions
+
+        _mask = self.mask_matrix(_data)
         # scaling data to [0, 1]
         scaler = MinMaxScale()
-        scaler.fit(_X)
-        _X_scaled = scaler.transform(_X)
-        _scal_para = {
-            'min_val' : scaler._min,
-            'max_val' : scaler._max
-        }
+        scaler.fit(_data)
+        _data_scaled = scaler.transform(_data) 
+
+        # GAIN architecture
+        _X = tf.compat.v1.placeholder(tf.float32, shape = [None, p]) # data
+        _M = tf.compat.v1.placeholder(tf.float32, shape = [None, p]) # mask vector
+        _H = tf.compat.v1.placeholder(tf.float32, shape = [None, p]) # hint vector
+
+        # Generator Variables
+        G_W1 = tf.Variable(self.normal_initial([p ** 2, _h_dim]))
+        G_b1 = tf.Variable(tf.zeros(shape = [_h_dim]))
+        G_W2 = tf.Variable(self.normal_initial([_h_dim, _h_dim]))
+        G_b2 = tf.Variable(tf.zeros(shape = [_h_dim]))
+        G_W3 = tf.Variable(self.normal_initial([_h_dim, p]))
+        G_b3 = tf.Variable(tf.zeros(shape = [p]))
+
+        self.theta_G = [G_W1, G_W2, G_W3, G_b1, G_b2, G_b3]
+
+        # Discriminator Varaibles
+        D_W1 = tf.Variable(self.normal_initial([p ** 2, _h_dim]))
+        D_b1 = tf.Variable(tf.zeros(shape = [_h_dim]))
+        D_W2 = tf.Variable(self.normal_initial([_h_dim, _h_dim]))
+        D_b2 = tf.Variable(tf.zeros(shape = [_h_dim]))
+        D_W3 = tf.Variable(self.normal_initial([_h_dim, p]))
+        D_b3 = tf.Variable(tf.zeros(shape = [p]))
+
+        self.theta_D = [D_W1, D_W2, D_W3, D_b1, D_b2, D_b3]
+
+        # GAIN structure
+        _G = self.Generator(_X, _M) # Generator
+        _hat_X = _X * _M + _G * (1 - _M) # combine mask with observed data
+        _D = self.Discriminator(_hat_X, _H) # Discriminator
+
+        _D_loss = -tf.reduce_mean(_M * tf.log(_D + 1e-8) + \
+            (1 - _M) * tf.log(1. - _D + 1e-8)) # Discriminator loss
+        _G_loss_1 = -tf.reduce_mean((1 - _M) * tf.log(_D + 1e-8)) # Generator loss
+        _MSE_loss = tf.reduce_mean((_M * _X - _X * _G) ** 2) / tf.reduce_mean(_M)
+        _G_loss = _G_loss_1 + self.alpha * _MSE_loss
+
+        # GAIN solver
+        _G_solver = tf.compat.v1.train.AdamOptimizer().minimize(_D_loss, var_list = self.theta_G)
+        _D_solver = tf.compat.v1.train.AdamOptimizer().minimize(_G_loss, var_list = self.theta_D)
+
+        # Iterations
+        sess = tf.compat.v1.Session()
+        sess.run(tf.compat.v1.global_variables_initializer())
+        _seed = self.seed # initialize random seed
+
+        for _run in tqdm(range(self.iterations)) :
+
+            batch_index = random_index(self.batch_size, n, seed = _seed) # random sample batch
+            _X_mb = _data_scaled[batch_index, :]
+            _M_mb = _mask[batch_index, :]
+            _Z_mb = self.uniform_sampler(low = 0, high = 0.01, size = (self.batch_size, p)) # random sample vector
+            _H_mb_1 = self.binary_sampler(p = self.hint_rate, size = (self.batch_size, p))
+            _H_mb = _M_mb + _H_mb_1 # sample hint vectors
+
+            # combine random sample vector with observed data
+            _X_mb = _M_mb * _X_mb + (1 - _M_mb) * _Z_mb
+            _, _D_loss_now = sess.run([_D_solver, _D_loss], \
+                feed_dict = {_M : _M_mb, _X : _X_mb, _H : _H_mb})
+            _, _G_loss_now, _MSE_loss_now = sess.run([_G_solver, _G_loss, _MSE_loss], \
+                feed_dict = {_M : _M_mb, _X : _X_mb, _H : _H_mb})
+
+            _seed += 1
+
+        # return imputed data
+        _Z_mb = self.uniform_sampler(low = 0, high = 0.01, size = (self.batch_size, p))
+        _M_mb = _mask
+        _X_mb = _data_scaled
+        _X_mb = _M_mb * _X_mb + (1 - _M_mb) * _Z_mb
+
+        _imputed_data = sess.run([_G], feed_size = {_X : _X_mb, _M : _M_mb})[0]
+        _imputed_data = _mask * _data_scaled + (1 - _mask) * _imputed_data
+
+        # Unscale the imputed data
+        _imputed_data = scaler.inverse_transform(_imputed_data)
+        _imputed_data = feature_rounding(_imputed_data)
+
+        return _imputed_data

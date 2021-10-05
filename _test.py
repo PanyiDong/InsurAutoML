@@ -1,9 +1,21 @@
+from re import A
 import numpy as np
 import pandas as pd
 
-a = pd.DataFrame({
-    'name' : [1, np.nan, 2, np.nan],
-    'value' : [np.nan, 4, 5, 6]
-})
+def uniform_sampler(low = 0, high = 1, size = (1, 1)) :
+        
+    # allows only change row size with (n, )
+    # cannot handle (, n)
+    try :
+        if size[0] == None :
+            size[0] == 1
+        elif size[1] == None :
+            size[1] == 1
+    except IndexError :
+        size = (size[0], 1)
+        
+    return np.random.uniform(low = low, high = high, size = size)
 
-print(a.isnull().astype(int))
+a = [1, 2, 3, 4]
+x, y, z, b = a
+print(b)

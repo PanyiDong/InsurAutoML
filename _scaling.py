@@ -236,6 +236,18 @@ class MinMaxScale() :
 
         return _X
 
+    def inverse_transform(self, X) :
+
+        f_min, f_max = self.feature_range
+        if not f_min < f_max :
+            raise ValueError('Minimum of feature range must be smaller than maximum!')
+
+        _X = X.copy(deep = True)
+        _X = (_X - f_min) / (f_max - f_min)
+        _X = _X * (np.array(self._max) - np.array(self._min)) + self._min
+
+        return _X
+
 class Winsorization() :
 
     '''

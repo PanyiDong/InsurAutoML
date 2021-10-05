@@ -33,11 +33,14 @@ def random_guess(number, seed = None) :
         return np.random.randint(0, 2)
 
 # Return random index of a list (unique values only)
-def random_index(n, seed = 1) :
+# from total draw n, default total = n
+def random_index(n, total = None, seed = 1) :
     np.random.seed(seed)
+    if total == None :
+        total == n
     output = []
-    vlist = [i for i in range(n)]
-    for _ in range(len(vlist)) :
+    vlist = [i for i in range(total)]
+    for _ in range(n) :
         #np.random.seed(int(datetime.now().strftime("%H%M%S")))
         index = np.random.randint(0, high = len(vlist), size = 1)[0]
         output.append(vlist[index])
@@ -77,6 +80,19 @@ def is_date(df, rule = 'any') :
         return any(_check)
     elif rule == 'all' :
         return all(_check)
+
+# Round data for categorical features (in case after preprocessing/modification, the data changed)
+def feature_rounding(X, uni_class = 20) :
+
+    features = list(X.columns)
+    _X = X.copy(deep = True)
+
+    for _column in features :
+        _unique = np.sort(_X[_column].dropna().unique())
+        if len(_unique) <= uni_class :
+            _X[_column] = np.round(_X[_column])
+
+    return _X
 
 # Train test split using test set percentage
 def train_test_split(X, y, test_perc = 0.15, seed = 1) :
