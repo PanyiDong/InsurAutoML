@@ -12,6 +12,7 @@ from ._RBFSampler import RBFSampler
 
 __all__ = [
     'load_data', # _base
+    'no_processing',
     'SimpleImputer', # _missing
     'DummyImputer',
     'DataEncoding', # _encoding
