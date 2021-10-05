@@ -360,10 +360,10 @@ class GAIN() :
         return G_pro
 
     # Discriminator
-    def Discriminator(self, data, mask) :
+    def Discriminator(self, data, hint) :
         
         D_W1, D_W2, D_W3, D_b1, D_b2, D_b3 = self.theta_D
-        _input = tf.concat(values = [data, mask], axis = 1) # concate data with mask
+        _input = tf.concat(values = [data, hint], axis = 1) # concate data with mask
         D_h1 = tf.nn.relu(tf.matmul(_input, D_W1) + D_b1)
         D_h2 = tf.nn.relu(tf.matmul(D_h1, D_W2) + D_b2)
         D_pro = tf.nn.sigmoid(tf.matmul(D_h2, D_W3) + D_b3) # MinMax normalization
