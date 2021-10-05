@@ -7,7 +7,7 @@ import pandas as pd
 import warnings
 import sklearn
 import tensorflow as tf
-tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
+#tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
 from ._base import random_index, random_list, feature_rounding
 from ._scaling import MinMaxScale
