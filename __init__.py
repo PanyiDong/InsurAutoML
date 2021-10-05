@@ -1,6 +1,6 @@
 from ._base import random_guess, random_index, random_list, train_test_split, minloc, \
     is_date, no_processing, load_data
-from ._missing import SimpleImputer, DummyImputer, MICE
+from ._missing import SimpleImputer, DummyImputer, JointImputer, MICE
 from ._encoding import DataEncoding
 from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTransformer, \
     QuantileTransformer, Winsorization
@@ -8,7 +8,6 @@ from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, Tom
     EditedNearestNeighbor, CondensedNearestNeighbor, OneSidedSelection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
 from ._RBFSampler import RBFSampler
-
 
 __all__ = [
     'load_data', # _base
@@ -38,7 +37,8 @@ __all__ = [
 base = {'load_data' : load_data}
 
 missing = {'SimpleImputer' : SimpleImputer,
-    'DummyImputer' : DummyImputer}
+    'DummyImputer' : DummyImputer,
+    'MICE' : MICE}
 
 enoding = {'DataEncoding' : DataEncoding}
 
