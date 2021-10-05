@@ -381,7 +381,11 @@ class GAIN() :
         # scaling data to [0, 1]
         scaler = MinMaxScale()
         scaler.fit(_data)
-        _data_scaled = scaler.transform(_data) 
+        _data_scaled = scaler.transform(_data)
+        
+        # divide dataframe to np array for values and features names list
+        _features = list(_data_scaled.columns)
+        _data_scaled = _data_scaled.values
 
         # GAIN architecture
         _X = tf.compat.v1.placeholder(tf.float32, shape = [None, p]) # data
@@ -454,6 +458,9 @@ class GAIN() :
 
         _imputed_data = sess.run([_G], feed_size = {_X : _X_mb, _M : _M_mb})[0]
         _imputed_data = _mask * _data_scaled + (1 - _mask) * _imputed_data
+        
+        # combine data with column names to dataframe
+        _imputed_data = pd.DataFrame(_imputed_data, columns = _features)
 
         # Unscale the imputed data
         _imputed_data = scaler.inverse_transform(_imputed_data)
