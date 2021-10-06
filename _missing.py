@@ -1,5 +1,6 @@
 from cmath import nan
 import random
+from tensorflow.python.types.core import Value
 from tqdm import tqdm
 import numpy as np
 from numpy.lib.function_base import bartlett
@@ -166,6 +167,129 @@ class JointImputer() :
         ###########################################################################################          
 
         return df
+
+class MissForestImputer() :
+
+    '''
+    Run Random Forest to impute the missing values
+
+    Parameters
+    ----------
+    threshold: threshold to terminate iterations, default = 0
+    At default, if difference between iterations increases, the iteration stops
+
+    method: initial imputation method for missing values, default = 'mean'
+
+    uni_class: column with unique classes less than uni_class will be considered as categorical, default = 31
+    '''
+
+    def __init__(
+        self,
+        threshold = 0,
+        method = 'mean',
+        uni_class = 31
+    ) :
+        self.threshold = threshold
+        self.method = method
+        self.uni_class = uni_class
+
+    def _RFImputer(self, X) :
+
+        from sklearn.ensemble import RandomForestRegressor
+        
+        _delta = [] # criteria of termination
+        features = list(X.columns)
+
+        while True :
+            for _column in list(self._missing_table.columns) :
+                X_old = X.copy(deep = True)
+                _subfeature = features
+                _subfeature.remove(_column)
+                RegModel = RandomForestRegressor()
+                RegModel.fit(X.loc[~X[_column].isnull(), _subfeature], X.loc[X[_column].isnull(), _column])
+                X.loc[X[_column].isnull(), _column] = RegModel.predict(X.loc[X[_column].isnull(), _subfeature])
+                _delta.append(self._delta_cal(X, X_old))
+                if len(_delta) >= 2 and _delta[-1] > _delta[-2] :
+                    break
+            if len(_delta) >= 2 and _delta[-1] > _delta[-2] :
+                break
+
+        return X
+    
+    # calcualte the difference between data newly imputed and before imputation
+    def _delta_cal(self, X_new, X_old) :
+
+        if (X_new.shape[0] != X_old.shape[0]) or (X_new.shape[1] != X_old.shape[1]) :
+            raise ValueError('New and old data must have same size, get different!')
+
+        features = list(X_old.columns)
+        _numerical_features = []
+        _categorical_features = []
+        for _column in features :
+            if len(X_old[_column].unique()) <= self.uni_class :
+                _categorical_features.append(_column)
+            else :
+                _numerical_features.append(_column)
+        
+        _N_nume = 0
+        _N_deno = 0
+        _F_nume = 0
+        _F_deno = 0
+
+        for _column in _numerical_features :
+            _N_nume += ((X_new[_column] - X_old[_column]) ** 2).sum()
+            _N_deno += (X_new[_column] ** 2).sum()
+        
+        for _column in _categorical_features :
+            _F_nume += (X_new[_column] != X_old[_column]).astype(int).sum()
+            _F_deno += X_new[_column].isnull().astype(int).sum()
+
+        return _N_nume / _N_deno + _F_nume / _F_deno
+
+    def fill(self, X) :
+
+        _X = X.copy(deep = True)
+        if _X.isnull().values.any() :
+            _X = self._fill(_X)
+        else :
+            warnings.warn('No nan values found, no change.')
+
+        return _X
+
+    def _fill(self, X) :
+
+        features = list(X.columns)
+
+        for _column in features :
+            if (X[_column].dtype == np.object) or (str(X[_column].dtype) == 'category') :
+                raise ValueError('MICE can only handle numerical filling, run encoding first!')
+
+        _missing_feature = [] # features contains missing values
+        _missing_vector = [] # vector with missing values, to mark the missing index
+                             # create _missing_table with _missing_feature
+                             # missing index will be 1, existed index will be 0
+        _missing_count = [] # counts for missing values
+
+        for _column in features :
+            if X[_column].isnull().values.any() :
+                _missing_feature.append(_column)
+                _missing_vector.append(X[_column].isnull().astype(int))
+                _missing_count.append(X[_column].isnull().astype(int).sum())
+
+        _missing_vector = np.array(_missing_vector).T
+
+        # reorder the missing features by missing counts increasing
+        _order = np.array(_missing_count).argsort().tolist()
+        _missing_count = np.array(_missing_count)[_order].tolist()
+        _missing_feature = np.array(_missing_feature)[_order].tolist()
+        _missing_vector = np.array(_missing_vector)[_order].tolist()
+
+        self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
+
+        X = SimpleImputer(method = self.method).fill(X) # initial filling for missing values
+        X = self._RFImputer(X)
+
+        return X
 
 class MICE() :
     
@@ -370,7 +494,18 @@ class GAIN() :
 
         return D_pro
 
-    def fill(self, data) :
+    def fill(self, X) :
+
+        _X = X.copy(deep = True)
+        
+        if _X .isnull().values.any() :
+            _X = self._fill(_X)
+        else :
+            warnings.warn('No nan values found, no change.')
+
+        return _X
+
+    def _fill(self, data) :
 
         _data = data.copy(deep = True)
         n, p = _data.shape

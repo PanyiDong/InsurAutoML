@@ -16,6 +16,8 @@ def uniform_sampler(low = 0, high = 1, size = (1, 1)) :
         
     return np.random.uniform(low = low, high = high, size = size)
 
-a = [1, 2, 3, 4]
-x, y, z, b = a
-print(b)
+a = pd.DataFrame({
+    '1' : [1, 2, 3, 4],
+    '2' : [4, 5, 6, 7]
+})
+print((a['1'] != a['2']).astype(int).sum())
