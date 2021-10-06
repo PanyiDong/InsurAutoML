@@ -8,7 +8,7 @@ from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTra
 from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, TomekLink, \
     EditedNearestNeighbor, CondensedNearestNeighbor, OneSidedSelection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
-from ._RBFSampler import RBFSampler
+from ._feature_selection import PCA_FeatureSelection, RBFSampler
 
 __all__ = [
     'load_data', # _base
@@ -37,7 +37,8 @@ __all__ = [
     'Smote', 
     'Smote_TomekLink', 
     'Smote_ENN',
-    'RBFSampler' # _RBFSampler
+    'PCA_FeatureSelection', # _feature_selection
+    'RBFSampler' 
 ]
 
 base = {'load_data' : load_data}
@@ -72,3 +73,8 @@ imbalance = {'no_processing' : no_processing,
     'Smote' : Smote, 
     'Smote_TomekLink' : Smote_TomekLink, 
     'Smote_ENN' : Smote_ENN}
+
+feature_selection = {
+    'PCA_FeatureSelection' : PCA_FeatureSelection,
+    'RBFSampler' : RBFSampler
+}
