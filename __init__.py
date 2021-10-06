@@ -1,19 +1,25 @@
 from ._base import random_guess, random_index, random_list, train_test_split, minloc, \
     is_date, no_processing, load_data
-from ._missing import SimpleImputer, DummyImputer, JointImputer, MICE
+from ._missing import SimpleImputer, DummyImputer, JointImputer, KNNImputer, MissForestImputer, \
+    MICE, GAIN
 from ._encoding import DataEncoding
 from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTransformer, \
     QuantileTransformer, Winsorization
 from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, TomekLink, \
     EditedNearestNeighbor, CondensedNearestNeighbor, OneSidedSelection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
-from ._RBFSampler import RBFSampler
+from ._feature_selection import PCA_FeatureSelection, RBFSampler
 
 __all__ = [
     'load_data', # _base
     'no_processing',
     'SimpleImputer', # _missing
     'DummyImputer',
+    'JointImputer',
+    'KNNImputer',
+    'MissForestImputer',
+    'MICE',
+    'GAIN',
     'DataEncoding', # _encoding
     'MinMaxScale', # _scaling
     'Standardize',
@@ -31,27 +37,37 @@ __all__ = [
     'Smote', 
     'Smote_TomekLink', 
     'Smote_ENN',
-    'RBFSampler' # _RBFSampler
+    'PCA_FeatureSelection', # _feature_selection
+    'RBFSampler' 
 ]
 
 base = {'load_data' : load_data}
 
-missing = {'SimpleImputer' : SimpleImputer,
+missing = {
+    'SimpleImputer' : SimpleImputer,
     'DummyImputer' : DummyImputer,
-    'MICE' : MICE}
+    'JointImputer' : JointImputer,
+    'KNNImputer' : KNNImputer,
+    'MissForestImputer' : MissForestImputer,
+    'MICE' : MICE,
+    'GAIN' : GAIN
+}
 
 enoding = {'DataEncoding' : DataEncoding}
 
-scaling = {'no_processing' : no_processing,
+scaling = {
+    'no_processing' : no_processing,
     'MinMaxScale' : MinMaxScale,
     'Standardize' : Standardize,
     'Normalize' : Normalize,
     'RobustScale' : RobustScale,
     'PowerTransformer' : PowerTransformer,
     'QuantileTransformer' : QuantileTransformer,
-    'Winsorization' : Winsorization}
+    'Winsorization' : Winsorization
+}
     
-imbalance = {'no_processing' : no_processing,
+imbalance = {
+    'no_processing' : no_processing,
     'SimpleRandomOverSampling' : SimpleRandomOverSampling,
     'SimpleRandomUnderSampling' : SimpleRandomUnderSampling, 
     'TomekLink' : TomekLink,
@@ -61,4 +77,11 @@ imbalance = {'no_processing' : no_processing,
     'CNN_TomekLink' : CNN_TomekLink, 
     'Smote' : Smote, 
     'Smote_TomekLink' : Smote_TomekLink, 
-    'Smote_ENN' : Smote_ENN}
+    'Smote_ENN' : Smote_ENN
+}
+
+feature_selection = {
+    'no_processing' : no_processing,
+    'PCA_FeatureSelection' : PCA_FeatureSelection,
+    'RBFSampler' : RBFSampler
+}

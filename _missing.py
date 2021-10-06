@@ -1,5 +1,6 @@
 from cmath import nan
 import random
+from tensorflow.python.types.core import Value
 from tqdm import tqdm
 import numpy as np
 from numpy.lib.function_base import bartlett
@@ -166,6 +167,237 @@ class JointImputer() :
         ###########################################################################################          
 
         return df
+
+class KNNImputer() :
+
+    '''
+    Use KNN to impute the missing values, further update: use cross validation to select best k
+    '''
+
+    def __init__(
+        self,
+        n_neighbors = None,
+        fold = 10,
+        uni_class = 31
+    ) :
+        self.n_neighbors = n_neighbors
+        self.fold = fold
+        self.uni_class = uni_class
+
+    def fill(self, X) :
+
+        features = list(X.columns)
+        for _column in features :
+            if len(X[_column].unique()) <= min(0.1 * len(X), self.uni_class) :
+                raise ValueError('KNN Imputation not supported for categorical data!')
+
+        _X = X.copy(deep = True)
+        if _X.isnull().values.any() :
+            _X = self._fill(_X)
+        else :
+            warnings.warn('No nan values found, no change.')
+
+        return _X
+
+    def _fill(self, X) :
+
+        features = list(X.columns)
+
+        self._missing_feature = [] # features contains missing values
+        self._missing_vector = [] # vector with missing values, to mark the missing index
+                                  # create _missing_table with _missing_feature
+                                  # missing index will be 1, existed index will be 0
+
+        for _column in features :
+            if X[_column].isnull().values.any() :
+                self._missing_feature.append(_column)
+                self._missing_vector.append(X[_column].isnull().astype(int))
+
+        self._missing_vector = np.array(self._missing_vector).T
+        self._missing_table = pd.DataFrame(self._missing_vector, columns = self._missing_feature)
+
+        X = SimpleImputer(method = self.method).fill(X) # initial filling for missing values
+        
+        random_feautres = random_list(self._missing_feature, self.seed) # the order to regress on missing features
+        _index = random_index(len(X.index)) # random index for cross validation
+        _err = []
+
+        for i in range(self.fold) :
+            _test = X.iloc[i * int(len(X.index) / self.fold):int(len(X.index) / self.fold), :]
+            _train = X
+            _train.drop(labels = _test.index, axis = 0, inplace = True)
+            _err.append(self._cross_validation_knn(_train, _test, random_feautres))
+
+        _err = np.mean(np.array(_err), axis = 0) # mean of cross validation error
+        self.optimial_k = np.array(_err).argmin()[0] + 1 # optimal k
+
+        X = self._knn_impute(X, random_feautres, self.optimial_k)
+
+        return X
+    
+    def _cross_validation_knn(self, _train, _test, random_feautres) : # cross validation to return error
+
+        from sklearn.neighbors import KNeighborsRegressor
+        if self.n_neighbors == None :
+            n_neighbors = [i + 1 for i in range(10)]
+        else :
+            n_neighbors = self.n_neighbors
+            
+        _test_mark = _test.copy(deep = True)
+        _err = []
+
+        for _k in n_neighbors :
+            _test = _test_mark.copy(deep = True)
+            for _feature in random_feautres :
+                _subfeatures = list(_train.columns)
+                _subfeatures.drop(_feature, inplace = True)
+
+                fit_model = KNeighborsRegressor(n_neighbors = _k)
+                fit_model.fit(_train.loc[:, _subfeatures], _train.loc[:, _feature])
+                _test.loc[:, _feature] = fit_model.predict(_test.loc[:, _subfeatures])
+            _err.append(((_test - _test_mark) ** 2).sum())
+
+        return _err
+
+
+    def _knn_impute(self, X, random_feautres, k) :
+
+        from sklearn.neighbors import KNeighborsRegressor
+
+        features = list(X.columns)
+        for _column in random_feautres :
+            _subfeature = features
+            _subfeature.remove(_column)
+            X.loc[self._missing_table[_column] == 1, _column] = nan
+            fit_model = KNeighborsRegressor(n_neighbors = k)
+            fit_model.fit(X.loc[~X[_column].isnull(), _subfeature], X.loc[~X[_column].isnull(), _column])
+            X.loc[X[_column].isnull(), _column] = fit_model.predict(X.loc[X[_column].isnull(), _subfeature])
+
+        return X
+
+
+class MissForestImputer() :
+
+    '''
+    Run Random Forest to impute the missing values
+
+    Parameters
+    ----------
+    threshold: threshold to terminate iterations, default = 0
+    At default, if difference between iterations increases, the iteration stops
+
+    method: initial imputation method for missing values, default = 'mean'
+
+    uni_class: column with unique classes less than uni_class will be considered as categorical, default = 31
+    '''
+
+    def __init__(
+        self,
+        threshold = 0,
+        method = 'mean',
+        uni_class = 31
+    ) :
+        self.threshold = threshold
+        self.method = method
+        self.uni_class = uni_class
+
+    def _RFImputer(self, X) :
+
+        from sklearn.ensemble import RandomForestRegressor
+        
+        _delta = [] # criteria of termination
+        features = list(X.columns)
+
+        while True :
+            for _column in list(self._missing_table.columns) :
+                X_old = X.copy(deep = True)
+                _subfeature = features
+                _subfeature.remove(_column)
+                RegModel = RandomForestRegressor()
+                RegModel.fit(X.loc[~X[_column].isnull(), _subfeature], X.loc[X[_column].isnull(), _column])
+                X.loc[X[_column].isnull(), _column] = RegModel.predict(X.loc[X[_column].isnull(), _subfeature])
+                _delta.append(self._delta_cal(X, X_old))
+                if len(_delta) >= 2 and _delta[-1] > _delta[-2] :
+                    break
+            if len(_delta) >= 2 and _delta[-1] > _delta[-2] :
+                break
+
+        return X
+    
+    # calcualte the difference between data newly imputed and before imputation
+    def _delta_cal(self, X_new, X_old) :
+
+        if (X_new.shape[0] != X_old.shape[0]) or (X_new.shape[1] != X_old.shape[1]) :
+            raise ValueError('New and old data must have same size, get different!')
+
+        features = list(X_old.columns)
+        _numerical_features = []
+        _categorical_features = []
+        for _column in features :
+            if len(X_old[_column].unique()) <= self.uni_class :
+                _categorical_features.append(_column)
+            else :
+                _numerical_features.append(_column)
+        
+        _N_nume = 0
+        _N_deno = 0
+        _F_nume = 0
+        _F_deno = 0
+
+        for _column in _numerical_features :
+            _N_nume += ((X_new[_column] - X_old[_column]) ** 2).sum()
+            _N_deno += (X_new[_column] ** 2).sum()
+        
+        for _column in _categorical_features :
+            _F_nume += (X_new[_column] != X_old[_column]).astype(int).sum()
+            _F_deno += X_new[_column].isnull().astype(int).sum()
+
+        return _N_nume / _N_deno + _F_nume / _F_deno
+
+    def fill(self, X) :
+
+        _X = X.copy(deep = True)
+        if _X.isnull().values.any() :
+            _X = self._fill(_X)
+        else :
+            warnings.warn('No nan values found, no change.')
+
+        return _X
+
+    def _fill(self, X) :
+
+        features = list(X.columns)
+
+        for _column in features :
+            if (X[_column].dtype == np.object) or (str(X[_column].dtype) == 'category') :
+                raise ValueError('MICE can only handle numerical filling, run encoding first!')
+
+        _missing_feature = [] # features contains missing values
+        _missing_vector = [] # vector with missing values, to mark the missing index
+                             # create _missing_table with _missing_feature
+                             # missing index will be 1, existed index will be 0
+        _missing_count = [] # counts for missing values
+
+        for _column in features :
+            if X[_column].isnull().values.any() :
+                _missing_feature.append(_column)
+                _missing_vector.append(X[_column].isnull().astype(int))
+                _missing_count.append(X[_column].isnull().astype(int).sum())
+
+        _missing_vector = np.array(_missing_vector).T
+
+        # reorder the missing features by missing counts increasing
+        _order = np.array(_missing_count).argsort().tolist()
+        _missing_count = np.array(_missing_count)[_order].tolist()
+        _missing_feature = np.array(_missing_feature)[_order].tolist()
+        _missing_vector = np.array(_missing_vector)[_order].tolist()
+
+        self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
+
+        X = SimpleImputer(method = self.method).fill(X) # initial filling for missing values
+        X = self._RFImputer(X)
+
+        return X
 
 class MICE() :
     
@@ -360,17 +592,28 @@ class GAIN() :
         return G_pro
 
     # Discriminator
-    def Discriminator(self, data, mask) :
+    def Discriminator(self, data, hint) :
         
         D_W1, D_W2, D_W3, D_b1, D_b2, D_b3 = self.theta_D
-        _input = tf.concat(values = [data, mask], axis = 1) # concate data with mask
+        _input = tf.concat(values = [data, hint], axis = 1) # concate data with mask
         D_h1 = tf.nn.relu(tf.matmul(_input, D_W1) + D_b1)
         D_h2 = tf.nn.relu(tf.matmul(D_h1, D_W2) + D_b2)
         D_pro = tf.nn.sigmoid(tf.matmul(D_h2, D_W3) + D_b3) # MinMax normalization
 
         return D_pro
 
-    def fill(self, data) :
+    def fill(self, X) :
+
+        _X = X.copy(deep = True)
+        
+        if _X .isnull().values.any() :
+            _X = self._fill(_X)
+        else :
+            warnings.warn('No nan values found, no change.')
+
+        return _X
+
+    def _fill(self, data) :
 
         _data = data.copy(deep = True)
         n, p = _data.shape
