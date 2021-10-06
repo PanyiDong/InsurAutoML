@@ -171,15 +171,17 @@ class JointImputer() :
 class KNNImputer() :
 
     '''
-    Use KNN to impute the missing values, use cross validation to select best k
+    Use KNN to impute the missing values, further update: use cross validation to select best k
     '''
 
     def __init__(
         self,
-        n_neighbors = 3,
+        n_neighbors = None,
+        fold = 10,
         uni_class = 31
     ) :
         self.n_neighbors = n_neighbors
+        self.fold = fold
         self.uni_class = uni_class
 
     def fill(self, X) :
@@ -217,9 +219,59 @@ class KNNImputer() :
         X = SimpleImputer(method = self.method).fill(X) # initial filling for missing values
         
         random_feautres = random_list(self._missing_feature, self.seed) # the order to regress on missing features
+        _index = random_index(len(X.index)) # random index for cross validation
+        _err = []
 
-        for _ in range(self.cycle) :
-            X = self._cross_validation_knn_impute(X, random_feautres)
+        for i in range(self.fold) :
+            _test = X.iloc[i * int(len(X.index) / self.fold):int(len(X.index) / self.fold), :]
+            _train = X
+            _train.drop(labels = _test.index, axis = 0, inplace = True)
+            _err.append(self._cross_validation_knn(_train, _test, random_feautres))
+
+        _err = np.mean(np.array(_err), axis = 0) # mean of cross validation error
+        self.optimial_k = np.array(_err).argmin()[0] + 1 # optimal k
+
+        X = self._knn_impute(X, random_feautres, self.optimial_k)
+
+        return X
+    
+    def _cross_validation_knn(self, _train, _test, random_feautres) : # cross validation to return error
+
+        from sklearn.neighbors import KNeighborsRegressor
+        if self.n_neighbors == None :
+            n_neighbors = [i + 1 for i in range(10)]
+        else :
+            n_neighbors = self.n_neighbors
+            
+        _test_mark = _test.copy(deep = True)
+        _err = []
+
+        for _k in n_neighbors :
+            _test = _test_mark.copy(deep = True)
+            for _feature in random_feautres :
+                _subfeatures = list(_train.columns)
+                _subfeatures.drop(_feature, inplace = True)
+
+                fit_model = KNeighborsRegressor(n_neighbors = _k)
+                fit_model.fit(_train.loc[:, _subfeatures], _train.loc[:, _feature])
+                _test.loc[:, _feature] = fit_model.predict(_test.loc[:, _subfeatures])
+            _err.append(((_test - _test_mark) ** 2).sum())
+
+        return _err
+
+
+    def _knn_impute(self, X, random_feautres, k) :
+
+        from sklearn.neighbors import KNeighborsRegressor
+
+        features = list(X.columns)
+        for _column in random_feautres :
+            _subfeature = features
+            _subfeature.remove(_column)
+            X.loc[self._missing_table[_column] == 1, _column] = nan
+            fit_model = KNeighborsRegressor(n_neighbors = k)
+            fit_model.fit(X.loc[~X[_column].isnull(), _subfeature], X.loc[~X[_column].isnull(), _column])
+            X.loc[X[_column].isnull(), _column] = fit_model.predict(X.loc[X[_column].isnull(), _subfeature])
 
         return X
 
