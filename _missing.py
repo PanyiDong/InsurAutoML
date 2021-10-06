@@ -168,6 +168,62 @@ class JointImputer() :
 
         return df
 
+class KNNImputer() :
+
+    '''
+    Use KNN to impute the missing values, use cross validation to select best k
+    '''
+
+    def __init__(
+        self,
+        n_neighbors = 3,
+        uni_class = 31
+    ) :
+        self.n_neighbors = n_neighbors
+        self.uni_class = uni_class
+
+    def fill(self, X) :
+
+        features = list(X.columns)
+        for _column in features :
+            if len(X[_column].unique()) <= min(0.1 * len(X), self.uni_class) :
+                raise ValueError('KNN Imputation not supported for categorical data!')
+
+        _X = X.copy(deep = True)
+        if _X.isnull().values.any() :
+            _X = self._fill(_X)
+        else :
+            warnings.warn('No nan values found, no change.')
+
+        return _X
+
+    def _fill(self, X) :
+
+        features = list(X.columns)
+
+        self._missing_feature = [] # features contains missing values
+        self._missing_vector = [] # vector with missing values, to mark the missing index
+                                  # create _missing_table with _missing_feature
+                                  # missing index will be 1, existed index will be 0
+
+        for _column in features :
+            if X[_column].isnull().values.any() :
+                self._missing_feature.append(_column)
+                self._missing_vector.append(X[_column].isnull().astype(int))
+
+        self._missing_vector = np.array(self._missing_vector).T
+        self._missing_table = pd.DataFrame(self._missing_vector, columns = self._missing_feature)
+
+        X = SimpleImputer(method = self.method).fill(X) # initial filling for missing values
+        
+        random_feautres = random_list(self._missing_feature, self.seed) # the order to regress on missing features
+
+        for _ in range(self.cycle) :
+            X = self._cross_validation_knn_impute(X, random_feautres)
+
+        return X
+
+
 class MissForestImputer() :
 
     '''
