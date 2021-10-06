@@ -1,6 +1,7 @@
 from ._base import random_guess, random_index, random_list, train_test_split, minloc, \
     is_date, no_processing, load_data
-from ._missing import SimpleImputer, DummyImputer, JointImputer, MICE
+from ._missing import SimpleImputer, DummyImputer, JointImputer, KNNImputer, MissForestImputer, \
+    MICE, GAIN
 from ._encoding import DataEncoding
 from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTransformer, \
     QuantileTransformer, Winsorization
@@ -14,6 +15,11 @@ __all__ = [
     'no_processing',
     'SimpleImputer', # _missing
     'DummyImputer',
+    'JointImputer',
+    'KNNImputer',
+    'MissForestImputer',
+    'MICE',
+    'GAIN',
     'DataEncoding', # _encoding
     'MinMaxScale', # _scaling
     'Standardize',
@@ -38,7 +44,11 @@ base = {'load_data' : load_data}
 
 missing = {'SimpleImputer' : SimpleImputer,
     'DummyImputer' : DummyImputer,
-    'MICE' : MICE}
+    'JointImputer' : JointImputer,
+    'KNNImputer' : KNNImputer,
+    'MissForestImputer' : MissForestImputer,
+    'MICE' : MICE,
+    'GAIN' : GAIN}
 
 enoding = {'DataEncoding' : DataEncoding}
 
