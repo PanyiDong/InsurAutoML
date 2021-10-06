@@ -43,7 +43,8 @@ __all__ = [
 
 base = {'load_data' : load_data}
 
-missing = {'SimpleImputer' : SimpleImputer,
+missing = {
+    'SimpleImputer' : SimpleImputer,
     'DummyImputer' : DummyImputer,
     'JointImputer' : JointImputer,
     'KNNImputer' : KNNImputer,
@@ -53,7 +54,8 @@ missing = {'SimpleImputer' : SimpleImputer,
 
 enoding = {'DataEncoding' : DataEncoding}
 
-scaling = {'no_processing' : no_processing,
+scaling = {
+    'no_processing' : no_processing,
     'MinMaxScale' : MinMaxScale,
     'Standardize' : Standardize,
     'Normalize' : Normalize,
@@ -62,7 +64,8 @@ scaling = {'no_processing' : no_processing,
     'QuantileTransformer' : QuantileTransformer,
     'Winsorization' : Winsorization}
     
-imbalance = {'no_processing' : no_processing,
+imbalance = {
+    'no_processing' : no_processing,
     'SimpleRandomOverSampling' : SimpleRandomOverSampling,
     'SimpleRandomUnderSampling' : SimpleRandomUnderSampling, 
     'TomekLink' : TomekLink,
@@ -75,6 +78,7 @@ imbalance = {'no_processing' : no_processing,
     'Smote_ENN' : Smote_ENN}
 
 feature_selection = {
+    'no_processing' : no_processing,
     'PCA_FeatureSelection' : PCA_FeatureSelection,
     'RBFSampler' : RBFSampler
 }
