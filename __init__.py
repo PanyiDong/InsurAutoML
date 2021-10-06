@@ -50,7 +50,8 @@ missing = {
     'KNNImputer' : KNNImputer,
     'MissForestImputer' : MissForestImputer,
     'MICE' : MICE,
-    'GAIN' : GAIN}
+    'GAIN' : GAIN
+}
 
 enoding = {'DataEncoding' : DataEncoding}
 
@@ -62,7 +63,8 @@ scaling = {
     'RobustScale' : RobustScale,
     'PowerTransformer' : PowerTransformer,
     'QuantileTransformer' : QuantileTransformer,
-    'Winsorization' : Winsorization}
+    'Winsorization' : Winsorization
+}
     
 imbalance = {
     'no_processing' : no_processing,
@@ -75,7 +77,8 @@ imbalance = {
     'CNN_TomekLink' : CNN_TomekLink, 
     'Smote' : Smote, 
     'Smote_TomekLink' : Smote_TomekLink, 
-    'Smote_ENN' : Smote_ENN}
+    'Smote_ENN' : Smote_ENN
+}
 
 feature_selection = {
     'no_processing' : no_processing,
