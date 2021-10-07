@@ -171,7 +171,9 @@ class JointImputer() :
 class ExpectationMaximization() :
     
     '''
-    Use Expectation Maximization (EM) to impute missing data
+    Use Expectation Maximization (EM) to impute missing data[1]
+
+    [1] Impyute.imputation.cs.em
 
     Parameters
     ----------
@@ -243,7 +245,19 @@ class ExpectationMaximization() :
 class KNNImputer() :
 
     '''
-    Use KNN to impute the missing values, further update: use cross validation to select best k
+    Use KNN to impute the missing values, further update: use cross validation to select best k [1]
+
+    [1] Stekhoven, D.J. and Bühlmann, P., 2012. MissForest—non-parametric missing value imputation 
+    for mixed-type data. Bioinformatics, 28(1), pp.112-118.
+
+    Parameters
+    ----------
+    n_neighbors: list of k, default = None
+    default will set to 1:10
+
+    fold: cross validation numer of folds, default = 10
+
+    uni_class: unique class to be considered as categorical columns, default = 31
     '''
 
     def __init__(
@@ -351,7 +365,10 @@ class KNNImputer() :
 class MissForestImputer() :
 
     '''
-    Run Random Forest to impute the missing values
+    Run Random Forest to impute the missing values [1]
+
+    [1] Stekhoven, D.J. and Bühlmann, P., 2012. MissForest—non-parametric missing 
+    value imputation for mixed-type data. Bioinformatics, 28(1), pp.112-118.
 
     Parameters
     ----------
@@ -574,7 +591,10 @@ class GAIN() :
 
     '''
     Generative Adversarial Imputation Nets (GAIN)
-    train Generator (G) and Discriminator (D) to impute missing values
+    train Generator (G) and Discriminator (D) to impute missing values [1]
+
+    [1] Yoon, J., Jordon, J. and Schaar, M., 2018, July. Gain: Missing data imputation using 
+    generative adversarial nets. In International Conference on Machine Learning (pp. 5689-5698). PMLR.
 
     Parameters
     ----------

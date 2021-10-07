@@ -43,6 +43,15 @@ def LinkTable(sample, table, norm = 'l2') :
 
     return _table.sum(axis = 1).values.tolist()
 
+'''
+Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
+    Edited Nearest Neighbor,  Condensed Nearest Neighbor, One Sided Selection, CNN_TomekLink, \
+    Smote, Smote_TomekLink, Smote_ENN
+    
+Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for 
+balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(1), pp.20-29.
+'''
+
 class ExtremeClass() :
 
     '''
