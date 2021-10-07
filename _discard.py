@@ -40,6 +40,28 @@ from sklearn.tree import ExtraTreeClassifier
 from ._constant import _feature_mol
 from ._encoding import DataEncoding
 
+_feature_mol : dict = {
+    'no_preprocessing' : NoPreprocessing,
+    'densifier' : Densifier, 
+    'extra_trees_preproc_for_classification' : ExtraTreesPreprocessorClassification, 
+    'extra_trees_preproc_for_regression' : ExtraTreesPreprocessorRegression, 
+    'fast_ica' : FastICA, 
+    'feature_agglomeration' : FeatureAgglomeration,
+    'kernel_pca' : KernelPCA, 
+    'kitchen_sinks' : RandomKitchenSinks, 
+    'liblinear_svc_preprocessor' : LibLinear_Preprocessor, 
+    'nystroem_sampler' : Nystroem, 
+    'pca' : PCA, 
+    'polynomial' : PolynomialFeatures, 
+    'random_trees_embedding' : RandomTreesEmbedding,
+    'select_percentile' : SelectPercentileBase, 
+    'select_percentile_classification' : SelectPercentileClassification, 
+    'select_percentile_regression' : SelectPercentileRegression, 
+    'select_rates_classification' : SelectClassificationRates,
+    'select_rates_regression' : SelectRegressionRates, 
+    'truncatedSVD' : TruncatedSVD
+}
+
 class feature_selection() :
     
     '''
