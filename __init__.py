@@ -54,6 +54,7 @@ missing = {
     'MICE' : MICE,
     'GAIN' : GAIN
 }
+# Markov Chain Monte Carlo (MCMC)
 
 enoding = {'DataEncoding' : DataEncoding}
 
