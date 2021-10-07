@@ -20,4 +20,4 @@ a = pd.DataFrame({
     '1' : [1, 2, 3, 4],
     '2' : [4, 5, 6, 7]
 })
-print((a['1'] != a['2']).astype(int).sum())
+print(np.nanmean(a.loc[:, '1']))

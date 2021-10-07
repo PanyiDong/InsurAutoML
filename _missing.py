@@ -168,6 +168,78 @@ class JointImputer() :
 
         return df
 
+class ExpectationMaximization() :
+
+    '''
+    Use Expectation Maximization (EM) to impute missing data
+
+    Parameters
+    ----------
+    iterations: maximum number of iterations for single imputation, default = 50
+
+    threshold: threshold to early stop iterations, default = 0.01
+    only early stop when iterations < self.iterations and change in the imputation < self.threshold
+
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        iterations = 50,
+        threshold = 0.01,
+        seed = 1
+    ) :
+        self.iterations = iterations
+        self.threshold = threshold
+        self.seed = seed
+
+    def fill(self, X) :
+
+        _X = X.copy(deep = True)
+
+        if _X .isnull().values.any() :
+            _X = self._fill(_X)
+            
+        return _X
+
+    def _fill(self, X) :
+
+        features = list(X.columns)
+        np.random.seed(self.seed)
+
+        _missing_feature = [] # features contains missing values
+        _missing_vector = [] # vector with missing values, to mark the missing index
+                             # create _missing_table with _missing_feature
+                             # missing index will be 1, existed index will be 0
+
+        for _column in features :
+            if X[_column].isnull().values.any() :
+                _missing_feature.append(_column)
+                _missing_vector.append(X[_column].isnull().astype(int))
+
+        _missing_vector = np.array(_missing_vector).T
+        self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
+
+        for _column in list(self._missing_table.columns) :
+            for _index in self._missing_table[_column] :
+                X.loc[_index, _column] = self._EM_iter(X, _index, _column)
+
+        return X
+    
+    def _EM_iter(self, X, index, column) :
+
+        _mark = 1
+        for _ in range(self.iterations) :
+            _mu = np.nanmean(X.loc[:, column])
+            _std = np.nanstd(X.loc[:, column])
+            _tmp = np.random.normal(loc = _mu, scale = _std)
+            _delta = np.abs(_tmp - _mark) / _mark
+            if _delta < self.threshold and self.iterations > 10 :
+                return _tmp
+            X.loc[index, column] = _tmp
+            _mark = _tmp
+        return _tmp
+
 class KNNImputer() :
 
     '''
