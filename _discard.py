@@ -37,7 +37,6 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import importr
 from sklearn.tree import ExtraTreeClassifier
 
-from ._constant import _feature_mol
 from ._encoding import DataEncoding
 
 _feature_mol : dict = {
