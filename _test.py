@@ -17,7 +17,14 @@ def uniform_sampler(low = 0, high = 1, size = (1, 1)) :
     return np.random.uniform(low = low, high = high, size = size)
 
 a = pd.DataFrame({
-    '1' : [1, 2, 3, 4],
-    '2' : [4, 5, 6, 7]
+    '1' : [1, 2, 3, np.nan],
+    '2' : [4, 5, np.nan, 7],
+    '3' : [7, 8, np.nan, 19]
 })
-print(np.nanmean(a.loc[:, '1']))
+
+maskedarr1 = np.ma.array(a.loc[:, ['2', '3']], mask=np.isnan(a.loc[:, ['2', '3']]))
+maskedarr2 = np.ma.array(a.loc[:, ['1']], mask=np.isnan(a.loc[:, ['1']]))
+print(np.ma.cov(maskedarr1.T, y = maskedarr2.T))
+
+a.loc[2, a.loc[2, :].isnull()] = [3, 4]
+print(a)

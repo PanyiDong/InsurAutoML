@@ -154,19 +154,46 @@ class JointImputer() :
     
     def _fill(self, X) :
 
-        self._mean = X.mean(axis = 1, skipna = True)
-        self._covaraince = X.cov()
+        rows = list(X.index)
+        for _row in rows :
+            if X.loc[_row, :].isnull().values.any() :
+                X.loc[_row, :] = self._fill_row(_row, X)
 
-        features = list(X.columns)
-        for _column in features :
-            if X[_column].isnull().values.any() :
-                X[_column] = self._fill_column(X[_column])
+    def _fill_column(self, row_index, X) :
 
-    def _fill_column(self, df) :
+        '''
+        for x = (x_{mis}, x_{obs})^{T} with \mu = (\mu_{mis}, \mu_{obs}).T and \Sigma = ((Sigma_{mis, mis}, 
+        Sigma_{mis, obs}), (Sigma_{obs, Sigma}, Sigma_{obs, obs})),
+        Conditional distribution x_{mis}|x_{obs} = a is N(\bar(\mu), \bar(\Sigma))
+        where \bar(\mu) = \mu_{mis} + \Sigma_{mis, obs}\Sigma_{obs, obs}^{-1}(a - \mu_{obs})
+        and \bar(\Sigma) = \Sigma_{mis, mis} - \Sigma_{mis, obs}\Sigma_{obs, obs}^{-1}\Sigma_{obs, mis}
 
-        ###########################################################################################          
+        in coding, 1 = mis, 2 = obs for simpilicity
+        '''
 
-        return df
+        _mis_column = np.argwhere(X.loc[row_index, :].isnull().values).T[0]
+        _obs_column = list(X.columns)
+        for item in _mis_column :
+            _obs_column.remvoe(item)
+        _mu_1 = np.nanmean(X.iloc[:, _mis_column], axis = 0).T
+        _mu_2 = np.nanmean(X.iloc[:, _obs_column], axis = 1).T
+
+        _maskedarr_1 = np.ma.array(X.iloc[:, _mis_column], mask=np.isnan(X.iloc[:, _mis_column]))
+        _maskedarr_2 = np.ma.array(X.iloc[:, _obs_column], mask=np.isnan(X.iloc[:, _obs_column]))
+        _sigma_11 = np.ma.cov(_maskedarr_1)
+        _sigma_22 = np.ma.cov(_maskedarr_2)
+
+        #_sigma_12
+        #_sigma_22
+         
+        _a = X.loc[row_index, ~X.loc[row_index, :].isnull()].values.T
+        _mu = _mu_1 + _sigma_12 @ np.linalg.inv(_sigma_22) @ (a - _mu_2)
+        _sigma = _sigma_11 - _simga_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
+
+        X.loc[row_index, X.loc[row_index, :].isnull()] = np.random.multivariate_normal(mean = _mu, \
+            cov = _sigma, size = (X.loc[row_index, :].isnull().values.sum(), 1))
+
+        return X.loc[row_index, :]
 
 class ExpectationMaximization() :
     
