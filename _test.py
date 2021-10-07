@@ -16,15 +16,22 @@ def uniform_sampler(low = 0, high = 1, size = (1, 1)) :
         
     return np.random.uniform(low = low, high = high, size = size)
 
-a = pd.DataFrame({
-    '1' : [1, 2, 3, np.nan],
-    '2' : [4, 5, np.nan, 7],
-    '3' : [7, 8, np.nan, 19]
-})
+a = [[1, 2, 3, np.nan], [np.nan, 5, np.nan, 9]]
+a = np.array(a).T
+print(np.nansum((a[:, 0] - np.nanmean(a[:, 0])) * (a[:, 1] - np.nanmean(a[:, 1]))))
+print(np.nanmean(np.array(a).T, axis = 0))
 
-maskedarr1 = np.ma.array(a.loc[:, ['2', '3']], mask=np.isnan(a.loc[:, ['2', '3']]))
-maskedarr2 = np.ma.array(a.loc[:, ['1']], mask=np.isnan(a.loc[:, ['1']]))
-print(np.ma.cov(maskedarr1.T, y = maskedarr2.T))
+# a = pd.DataFrame({
+#     '1' : [1, 2, 3, np.nan],
+#     '2' : [4, 5, np.nan, 7],
+#     '3' : [7, 8, np.nan, 19]
+# })
 
-a.loc[2, a.loc[2, :].isnull()] = [3, 4]
-print(a)
+# maskedarr1 = np.ma.array(a.loc[:, ['2', '3']], mask=np.isnan(a.loc[:, ['2', '3']])).T
+# print(maskedarr1)
+# maskedarr2 = np.ma.array(a.loc[:, ['1']], mask=np.isnan(a.loc[:, ['1']])).T
+# print(maskedarr2)
+# print(np.ma.cov(maskedarr1, y = maskedarr2))
+
+# a.loc[2, a.loc[2, :].isnull()] = [3, 4]
+# print(a)

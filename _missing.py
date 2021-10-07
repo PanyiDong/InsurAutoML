@@ -10,7 +10,7 @@ import sklearn
 import tensorflow as tf
 #tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
-from ._base import random_index, random_list, feature_rounding
+from ._utils import random_index, random_list, feature_rounding, nan_cov
 from ._scaling import MinMaxScale
 
 class  SimpleImputer() :
@@ -159,7 +159,7 @@ class JointImputer() :
             if X.loc[_row, :].isnull().values.any() :
                 X.loc[_row, :] = self._fill_row(_row, X)
 
-    def _fill_column(self, row_index, X) :
+    def _fill_row(self, row_index, X) :
 
         '''
         for x = (x_{mis}, x_{obs})^{T} with \mu = (\mu_{mis}, \mu_{obs}).T and \Sigma = ((Sigma_{mis, mis}, 
@@ -178,17 +178,14 @@ class JointImputer() :
         _mu_1 = np.nanmean(X.iloc[:, _mis_column], axis = 0).T
         _mu_2 = np.nanmean(X.iloc[:, _obs_column], axis = 1).T
 
-        _maskedarr_1 = np.ma.array(X.iloc[:, _mis_column], mask=np.isnan(X.iloc[:, _mis_column]))
-        _maskedarr_2 = np.ma.array(X.iloc[:, _obs_column], mask=np.isnan(X.iloc[:, _obs_column]))
-        _sigma_11 = np.ma.cov(_maskedarr_1)
-        _sigma_22 = np.ma.cov(_maskedarr_2)
-
-        #_sigma_12
-        #_sigma_22
+        _sigma_11 = nan_cov(X.iloc[:, _mis_column].values)
+        _sigma_22 = nan_cov(X.iloc[:, _obs_column].values)
+        _sigma_12 = nan_cov(X.iloc[:, _mis_column].values, y = X.iloc[:, _obs_column].values)
+        _sigma_21 = nan_cov(X.iloc[:, _obs_column].values, y = X.iloc[:, _mis_column].values)
          
         _a = X.loc[row_index, ~X.loc[row_index, :].isnull()].values.T
-        _mu = _mu_1 + _sigma_12 @ np.linalg.inv(_sigma_22) @ (a - _mu_2)
-        _sigma = _sigma_11 - _simga_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
+        _mu = _mu_1 + _sigma_12 @ np.linalg.inv(_sigma_22) @ (_a - _mu_2)
+        _sigma = _sigma_11 - _sigma_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
 
         X.loc[row_index, X.loc[row_index, :].isnull()] = np.random.multivariate_normal(mean = _mu, \
             cov = _sigma, size = (X.loc[row_index, :].isnull().values.sum(), 1))
