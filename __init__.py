@@ -1,7 +1,7 @@
 from ._base import random_guess, random_index, random_list, train_test_split, minloc, \
     is_date, no_processing, load_data
-from ._missing import SimpleImputer, DummyImputer, JointImputer, KNNImputer, MissForestImputer, \
-    MICE, GAIN
+from ._missing import SimpleImputer, DummyImputer, JointImputer, ExpectationMaximization, \
+    KNNImputer, MissForestImputer, MICE, GAIN
 from ._encoding import DataEncoding
 from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTransformer, \
     QuantileTransformer, Winsorization
@@ -16,6 +16,7 @@ __all__ = [
     'SimpleImputer', # _missing
     'DummyImputer',
     'JointImputer',
+    'ExpectationMaximization',
     'KNNImputer',
     'MissForestImputer',
     'MICE',
@@ -47,6 +48,7 @@ missing = {
     'SimpleImputer' : SimpleImputer,
     'DummyImputer' : DummyImputer,
     'JointImputer' : JointImputer,
+    'ExpectationMaximization' : ExpectationMaximization,
     'KNNImputer' : KNNImputer,
     'MissForestImputer' : MissForestImputer,
     'MICE' : MICE,

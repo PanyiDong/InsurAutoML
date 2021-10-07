@@ -169,7 +169,7 @@ class JointImputer() :
         return df
 
 class ExpectationMaximization() :
-
+    
     '''
     Use Expectation Maximization (EM) to impute missing data
 
