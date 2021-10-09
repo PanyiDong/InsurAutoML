@@ -1,5 +1,6 @@
-from ._base import random_guess, random_index, random_list, train_test_split, minloc, \
-    is_date, no_processing, load_data
+from ._base import no_processing, load_data
+from ._utils import random_guess, random_index, random_list, train_test_split, minloc, \
+    is_date
 from ._missing import SimpleImputer, DummyImputer, JointImputer, ExpectationMaximization, \
     KNNImputer, MissForestImputer, MICE, GAIN
 from ._encoding import DataEncoding
