@@ -1,6 +1,5 @@
 from cmath import nan
 import random
-from tensorflow.python.types.core import Value
 from tqdm import tqdm
 import numpy as np
 from numpy.lib.function_base import bartlett
@@ -8,6 +7,7 @@ import pandas as pd
 import warnings
 import sklearn
 import tensorflow as tf
+from tensorflow.python.types.core import Value
 #tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
 from ._utils import random_index, random_list, feature_rounding, nan_cov
