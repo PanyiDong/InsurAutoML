@@ -2,7 +2,7 @@ from calendar import c
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
-from ._base import is_date
+from ._utils import is_date
 
 class DataEncoding():
 
