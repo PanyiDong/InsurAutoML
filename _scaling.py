@@ -80,6 +80,14 @@ class Standardize() :
 
         return _X
 
+    def inverse_transform(self, X) :
+
+        if self.with_mean :
+            X += self._mean
+        if self.with_std :
+            X *= self._std
+        return X
+
 class Normalize() :
 
     '''
@@ -123,6 +131,11 @@ class Normalize() :
         _X /= self._scale
 
         return _X
+
+    def inverse_transform(self, X) :
+
+        X *= self._scale
+        return X
 
 class RobustScale() :
 
@@ -193,6 +206,15 @@ class RobustScale() :
 
         return _X
 
+    def inverse_transform(self, X) :
+
+        if self.with_centering :
+            X += self._median
+        if self.with_scale :
+            X *= self._scale
+        
+        return X
+
 class MinMaxScale() :
 
     '''
@@ -254,6 +276,8 @@ class Winsorization() :
     Limit feature to certain quantile (remove the effect of extreme values)
     if the response of extreme values are different than non extreme values above threshold, the feature will
     be capped
+
+    No inverse transform available for Winsorization
 
     Parameters
     ----------
