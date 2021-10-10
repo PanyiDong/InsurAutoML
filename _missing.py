@@ -172,19 +172,21 @@ class JointImputer() :
         '''
 
         _mis_column = np.argwhere(X.loc[row_index, :].isnull().values).T[0]
-        _obs_column = list(X.columns)
+        _obs_column = [i for i in range(len(list(X.columns)))]
         for item in _mis_column :
-            _obs_column.remvoe(item)
-        _mu_1 = np.nanmean(X.iloc[:, _mis_column], axis = 0).T
-        _mu_2 = np.nanmean(X.iloc[:, _obs_column], axis = 1).T
+            _obs_column.remove(item)
+
+        _mu_1 = np.nanmean(X.iloc[:, _mis_column], axis = 0).T.reshape(len(_mis_column), 1)
+        _mu_2 = np.nanmean(X.iloc[:, _obs_column], axis = 0).T.reshape(len(_obs_column), 1)
 
         _sigma_11 = nan_cov(X.iloc[:, _mis_column].values)
         _sigma_22 = nan_cov(X.iloc[:, _obs_column].values)
         _sigma_12 = nan_cov(X.iloc[:, _mis_column].values, y = X.iloc[:, _obs_column].values)
         _sigma_21 = nan_cov(X.iloc[:, _obs_column].values, y = X.iloc[:, _mis_column].values)
          
-        _a = X.loc[row_index, ~X.loc[row_index, :].isnull()].values.T
+        _a = X.loc[row_index, ~X.loc[row_index, :].isnull()].values.T.reshape(len(_obs_column), 1)
         _mu = _mu_1 + _sigma_12 @ np.linalg.inv(_sigma_22) @ (_a - _mu_2)
+        _mu = _mu[0] # multivariate_normal only accept 1 dimension mean
         _sigma = _sigma_11 - _sigma_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
 
         X.loc[row_index, X.loc[row_index, :].isnull()] = np.random.multivariate_normal(mean = _mu, \

@@ -109,7 +109,12 @@ def minloc(vlist) :
 # default calculate at columns (axis = 0), axis = 1 at rows
 def nan_cov(X, y = None, axis = 0) :
 
-    if y == None  :
+    try :
+        _empty = (y == None).all()
+    except AttributeError :
+        _empty = (y == None)
+
+    if _empty :
         y = copy.deepcopy(X)
     else :
         y = y
