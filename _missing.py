@@ -8,6 +8,7 @@ import warnings
 import sklearn
 import tensorflow as tf
 from tensorflow.python.types.core import Value
+tf.compat.v1.disable_eager_execution()
 #tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
 from ._utils import random_index, random_list, feature_rounding, nan_cov
@@ -246,7 +247,7 @@ class ExpectationMaximization() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 _missing_feature.append(_column)
-                _missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int) - 1)
+                _missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int))
 
         _missing_vector = np.array(_missing_vector).T
         self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
@@ -326,7 +327,7 @@ class KNNImputer() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 self._missing_feature.append(_column)
-                self._missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int) - 1)
+                self._missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int))
 
         self._missing_vector = np.array(self._missing_vector).T
         self._missing_table = pd.DataFrame(self._missing_vector, columns = self._missing_feature)
@@ -587,7 +588,7 @@ class MICE() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 self._missing_feature.append(_column)
-                self._missing_vector.append(X[_column].isnull().astype(int))
+                self._missing_vector.append(X.loc[X[_column].isnull()].index.astype(int))
 
         self._missing_vector = np.array(self._missing_vector).T
         self._missing_table = pd.DataFrame(self._missing_vector, columns = self._missing_feature)
@@ -610,7 +611,8 @@ class MICE() :
         for _column in random_feautres :
             _subfeature = features
             _subfeature.remove(_column)
-            X.loc[self._missing_table[_column] == 1, _column] = nan
+            _missing_index = self._missing_table[_column].tolist()
+            X.loc[X.index.astype(int).isin(_missing_index), _column] = np.nan
             if len(X[_column].unique()) == 2 :
                 fit_model = LogisticRegression()
             elif len(features) <= 15 :
@@ -630,6 +632,7 @@ class GAIN() :
 
     [1] Yoon, J., Jordon, J. and Schaar, M., 2018, July. Gain: Missing data imputation using 
     generative adversarial nets. In International Conference on Machine Learning (pp. 5689-5698). PMLR.
+    github.com/jsyooon0823/GAIN
 
     Parameters
     ----------
@@ -649,10 +652,10 @@ class GAIN() :
 
     def __init__(
         self,
-        batch_size = None,
-        hint_rate = None,
-        alpha = None,
-        iterations = None,
+        batch_size = 128,
+        hint_rate = 0.9,
+        alpha = 100,
+        iterations = 10000,
         uni_class = 31,
         seed = 1
     ) :
@@ -668,7 +671,7 @@ class GAIN() :
         '''
         mask matrix, m_{ij} = 1 where x_{ij} exists; m_{ij} = 0 otherwise
         '''
-        return X.isnull().astype(int)
+        return 1 - X.isnull().astype(int)
     
     # initialize normal tensor by size
     def normal_initial(self, size) :
@@ -747,11 +750,12 @@ class GAIN() :
 
         _h_dim = int(p) # Hidden state dimensions
 
-        _mask = self.mask_matrix(_data)
+        _mask = self.mask_matrix(_data).values
         # scaling data to [0, 1]
         scaler = MinMaxScale()
         scaler.fit(_data)
         _data_scaled = scaler.transform(_data)
+        _data_scaled = _data_scaled.fillna(0)
         
         # divide dataframe to np array for values and features names list
         _features = list(_data_scaled.columns)
@@ -763,7 +767,7 @@ class GAIN() :
         _H = tf.compat.v1.placeholder(tf.float32, shape = [None, p]) # hint vector
 
         # Generator Variables
-        G_W1 = tf.Variable(self.normal_initial([p ** 2, _h_dim]))
+        G_W1 = tf.Variable(self.normal_initial([p * 2, _h_dim]))
         G_b1 = tf.Variable(tf.zeros(shape = [_h_dim]))
         G_W2 = tf.Variable(self.normal_initial([_h_dim, _h_dim]))
         G_b2 = tf.Variable(tf.zeros(shape = [_h_dim]))
@@ -773,7 +777,7 @@ class GAIN() :
         self.theta_G = [G_W1, G_W2, G_W3, G_b1, G_b2, G_b3]
 
         # Discriminator Varaibles
-        D_W1 = tf.Variable(self.normal_initial([p ** 2, _h_dim]))
+        D_W1 = tf.Variable(self.normal_initial([p * 2, _h_dim]))
         D_b1 = tf.Variable(tf.zeros(shape = [_h_dim]))
         D_W2 = tf.Variable(self.normal_initial([_h_dim, _h_dim]))
         D_b2 = tf.Variable(tf.zeros(shape = [_h_dim]))
@@ -787,11 +791,12 @@ class GAIN() :
         _hat_X = _X * _M + _G * (1 - _M) # combine mask with observed data
         _D = self.Discriminator(_hat_X, _H) # Discriminator
 
-        _D_loss = -tf.reduce_mean(_M * tf.log(_D + 1e-8) + \
-            (1 - _M) * tf.log(1. - _D + 1e-8)) # Discriminator loss
-        _G_loss_1 = -tf.reduce_mean((1 - _M) * tf.log(_D + 1e-8)) # Generator loss
-        _MSE_loss = tf.reduce_mean((_M * _X - _X * _G) ** 2) / tf.reduce_mean(_M)
-        _G_loss = _G_loss_1 + self.alpha * _MSE_loss
+        _D_loss_tmp = -tf.reduce_mean(_M * tf.compat.v1.log(_D + 1e-8) + \
+            (1 - _M) * tf.compat.v1.log(1. - _D + 1e-8)) # Discriminator loss
+        _G_loss_tmp = -tf.reduce_mean((1 - _M) * tf.compat.v1.log(_D + 1e-8)) # Generator loss
+        _MSE_loss = tf.reduce_mean((_M * _X - _M * _G) ** 2) / tf.reduce_mean(_M)
+        _D_loss = _D_loss_tmp
+        _G_loss = _G_loss_tmp + self.alpha * _MSE_loss
 
         # GAIN solver
         _G_solver = tf.compat.v1.train.AdamOptimizer().minimize(_D_loss, var_list = self.theta_G)
@@ -809,24 +814,24 @@ class GAIN() :
             _M_mb = _mask[batch_index, :]
             _Z_mb = self.uniform_sampler(low = 0, high = 0.01, size = (self.batch_size, p)) # random sample vector
             _H_mb_1 = self.binary_sampler(p = self.hint_rate, size = (self.batch_size, p))
-            _H_mb = _M_mb + _H_mb_1 # sample hint vectors
+            _H_mb = _M_mb * _H_mb_1 # sample hint vectors
 
             # combine random sample vector with observed data
             _X_mb = _M_mb * _X_mb + (1 - _M_mb) * _Z_mb
-            _, _D_loss_now = sess.run([_D_solver, _D_loss], \
+            _, _D_loss_now = sess.run([_D_solver, _D_loss_tmp], \
                 feed_dict = {_M : _M_mb, _X : _X_mb, _H : _H_mb})
-            _, _G_loss_now, _MSE_loss_now = sess.run([_G_solver, _G_loss, _MSE_loss], \
+            _, _G_loss_now, _MSE_loss_now = sess.run([_G_solver, _G_loss_tmp, _MSE_loss], \
                 feed_dict = {_M : _M_mb, _X : _X_mb, _H : _H_mb})
 
             _seed += 1
 
         # return imputed data
-        _Z_mb = self.uniform_sampler(low = 0, high = 0.01, size = (self.batch_size, p))
+        _Z_mb = self.uniform_sampler(low = 0, high = 0.01, size = (n, p))
         _M_mb = _mask
         _X_mb = _data_scaled
         _X_mb = _M_mb * _X_mb + (1 - _M_mb) * _Z_mb
 
-        _imputed_data = sess.run([_G], feed_size = {_X : _X_mb, _M : _M_mb})[0]
+        _imputed_data = sess.run([_G], feed_dict = {_X : _X_mb, _M : _M_mb})[0]
         _imputed_data = _mask * _data_scaled + (1 - _mask) * _imputed_data
         
         # combine data with column names to dataframe
