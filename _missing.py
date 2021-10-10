@@ -159,6 +159,8 @@ class JointImputer() :
             if X.loc[_row, :].isnull().values.any() :
                 X.loc[_row, :] = self._fill_row(_row, X)
 
+        return X
+
     def _fill_row(self, row_index, X) :
 
         '''
@@ -224,6 +226,7 @@ class ExpectationMaximization() :
     def fill(self, X) :
 
         _X = X.copy(deep = True)
+        n = _X.shape[0]
 
         if _X .isnull().values.any() :
             _X = self._fill(_X)
@@ -231,7 +234,8 @@ class ExpectationMaximization() :
         return _X
 
     def _fill(self, X) :
-
+        
+        X.index = X.index.astype(int)
         features = list(X.columns)
         np.random.seed(self.seed)
 
@@ -243,7 +247,7 @@ class ExpectationMaximization() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 _missing_feature.append(_column)
-                _missing_vector.append(X[_column].isnull().astype(int))
+                _missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int))
 
         _missing_vector = np.array(_missing_vector).T
         self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
