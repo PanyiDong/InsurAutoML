@@ -10,6 +10,29 @@ import sklearn
 from sklearn.utils.extmath import stable_cumsum
 from sympy import solve
 
+# feature selection from autosklearn
+from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
+from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
+from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
+from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
+from autosklearn.pipeline.components.feature_preprocessing.fast_ica import FastICA
+from autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration import FeatureAgglomeration
+from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import KernelPCA
+from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import RandomKitchenSinks
+from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
+from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
+from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
+from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
+from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
+from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
+from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import SelectPercentileClassification
+from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
+from autosklearn.pipeline.components.feature_preprocessing.select_rates_classification import SelectClassificationRates
+from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
+from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
+
+from ._utils import nan_cov
+
 class PCA_FeatureSelection() :
 
     '''
@@ -178,23 +201,76 @@ class RBFSampler() :
 
         return projection
 
-# feature selection from autosklearn
-from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
-from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
-from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
-from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
-from autosklearn.pipeline.components.feature_preprocessing.fast_ica import FastICA
-from autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration import FeatureAgglomeration
-from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import KernelPCA
-from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import RandomKitchenSinks
-from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
-from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
-from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
-from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
-from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import SelectPercentileClassification
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
-from autosklearn.pipeline.components.feature_preprocessing.select_rates_classification import SelectClassificationRates
-from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
-from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
+class FeatureFilter() :
+
+    '''
+    Use certain criteria to score each feature and select most relevent ones
+
+    Parameters
+    ----------
+    criteria: use what criteria to score features, default = 'Pearson'
+    supported {'Pearson', 'MI'}
+    'Pearson': Pearson Correlation Coefficient
+    'MI': 'Mutual Information'
+
+    threshold: threshold to retain features, default = 0.1
+    '''
+
+    def __init__(
+        self,
+        criteria = 'Pearson',
+        threshold = 0.1
+    ) :
+        self.criteria = criteria
+        self.threshold = threshold
+
+    def fit(self, X, y = None) :
+
+        try :
+            _empty = (y == None).all()
+        except AttributeError :
+            _empty = (y == None)
+        if _empty :
+            raise ValueError('Must have response!')
+        
+        if self.criteria == 'Pearson' :          
+            self._score = self._Pearson_Corr(X, y)
+        elif self.criteria == 'MI' :
+            self._score = self._MI(X)
+
+    def _Pearson_Corr(X, y) :
+
+        features = list(X.columns)
+        result = []
+        for _column in features :
+            result.append(nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))
+        
+        return result
+
+    def _MI(X, y) :
+        
+        if len(X) != len(y) :
+            raise ValueError('X and y not same size!')
+ 
+        features = list(X.columns)
+        _y_column = list(y.columns)
+        result = []
+
+        _y_pro = y.groupby(_y_column[0]).size().div(len(X)).values
+        _H_y = - sum(item * np.log(item) for item in _y_pro)
+
+        for _column in features :
+
+            _X_y = pd.concat([X[_column], y], axis = 1)
+            _pro = _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
+            _X_pro = X[_column].groupby(_column).size().div(len(X))
+            _H_y_X = - sum(_pro[i] * np.log(_pro[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]]) \
+                for i in range(len(X)))
+            result.append(_H_y - _H_y_X)
+
+        return result
+    
+    def transform(self, X) :
+
+        return X.loc[:, self._score > self.criteria]
+
