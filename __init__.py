@@ -67,10 +67,10 @@ base = {'load_data' : load_data}
 
 missing = {
     'SimpleImputer' : SimpleImputer,
-#    'DummyImputer' : DummyImputer,
+    'DummyImputer' : DummyImputer,
     'JointImputer' : JointImputer,
     'ExpectationMaximization' : ExpectationMaximization,
-#    'KNNImputer' : KNNImputer,
+    'KNNImputer' : KNNImputer,
     'MissForestImputer' : MissForestImputer,
     'MICE' : MICE,
     'GAIN' : GAIN

@@ -235,7 +235,6 @@ class ExpectationMaximization() :
 
     def _fill(self, X) :
         
-        X.index = X.index.astype(int)
         features = list(X.columns)
         np.random.seed(self.seed)
 
@@ -247,7 +246,7 @@ class ExpectationMaximization() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 _missing_feature.append(_column)
-                _missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int))
+                _missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int) - 1)
 
         _missing_vector = np.array(_missing_vector).T
         self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
@@ -316,7 +315,7 @@ class KNNImputer() :
         return _X
 
     def _fill(self, X) :
-
+        
         features = list(X.columns)
 
         self._missing_feature = [] # features contains missing values
@@ -327,7 +326,7 @@ class KNNImputer() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 self._missing_feature.append(_column)
-                self._missing_vector.append(X[_column].isnull().astype(int))
+                self._missing_vector.append(X[_column].loc[X[_column].isnull()].index.astype(int) - 1)
 
         self._missing_vector = np.array(self._missing_vector).T
         self._missing_table = pd.DataFrame(self._missing_vector, columns = self._missing_feature)
@@ -425,16 +424,18 @@ class MissForestImputer() :
         from sklearn.ensemble import RandomForestRegressor
         
         _delta = [] # criteria of termination
-        features = list(X.columns)
 
         while True :
             for _column in list(self._missing_table.columns) :
                 X_old = X.copy(deep = True)
-                _subfeature = features
-                _subfeature.remove(_column)
+                _subfeature = list(X_old.columns)
+                _subfeature.remove(str(_column))
+                _missing_index = self._missing_table[_column].tolist()
                 RegModel = RandomForestRegressor()
-                RegModel.fit(X.loc[~X[_column].isnull(), _subfeature], X.loc[X[_column].isnull(), _column])
-                X.loc[X[_column].isnull(), _column] = RegModel.predict(X.loc[X[_column].isnull(), _subfeature])
+                RegModel.fit(X.loc[~X.index.astype(int).isin(_missing_index), _subfeature], \
+                    X.loc[~X.index.astype(int).isin(_missing_index), _column])
+                _tmp_column = RegModel.predict(X.loc[X.index.astype(int).isin(_missing_index), _subfeature])
+                X.loc[X.index.astype(int).isin(_missing_index), _column] = _tmp_column
                 _delta.append(self._delta_cal(X, X_old))
                 if len(_delta) >= 2 and _delta[-1] > _delta[-2] :
                     break
@@ -449,10 +450,9 @@ class MissForestImputer() :
         if (X_new.shape[0] != X_old.shape[0]) or (X_new.shape[1] != X_old.shape[1]) :
             raise ValueError('New and old data must have same size, get different!')
 
-        features = list(X_old.columns)
         _numerical_features = []
         _categorical_features = []
-        for _column in features :
+        for _column in list(self._missing_table.columns) :
             if len(X_old[_column].unique()) <= self.uni_class :
                 _categorical_features.append(_column)
             else :
@@ -462,16 +462,23 @@ class MissForestImputer() :
         _N_deno = 0
         _F_nume = 0
         _F_deno = 0
-
-        for _column in _numerical_features :
-            _N_nume += ((X_new[_column] - X_old[_column]) ** 2).sum()
-            _N_deno += (X_new[_column] ** 2).sum()
         
-        for _column in _categorical_features :
-            _F_nume += (X_new[_column] != X_old[_column]).astype(int).sum()
-            _F_deno += X_new[_column].isnull().astype(int).sum()
-
-        return _N_nume / _N_deno + _F_nume / _F_deno
+        if len(_numerical_features) > 0 :
+            for _column in _numerical_features :
+                _N_nume += ((X_new[_column] - X_old[_column]) ** 2).sum()
+                _N_deno += (X_new[_column] ** 2).sum()
+        
+        if len(_categorical_features) > 0 :
+            for _column in _categorical_features :
+                _F_nume += (X_new[_column] != X_old[_column]).astype(int).sum()
+                _F_deno += len(self._missing_table[_column])
+        
+        if len(_numerical_features) > 0 and len(_categorical_features) > 0 :
+            return _N_nume / _N_deno + _F_nume / _F_deno
+        elif len(_numerical_features) > 0 : 
+            return _N_nume / _N_deno
+        elif len(_categorical_features) > 0 :
+            return _F_nume / _F_deno
 
     def fill(self, X) :
 
@@ -484,7 +491,7 @@ class MissForestImputer() :
         return _X
 
     def _fill(self, X) :
-
+        
         features = list(X.columns)
 
         for _column in features :
@@ -500,16 +507,14 @@ class MissForestImputer() :
         for _column in features :
             if X[_column].isnull().values.any() :
                 _missing_feature.append(_column)
-                _missing_vector.append(X[_column].isnull().astype(int))
+                _missing_vector.append(X.loc[X[_column].isnull()].index.astype(int))
                 _missing_count.append(X[_column].isnull().astype(int).sum())
-
-        _missing_vector = np.array(_missing_vector).T
 
         # reorder the missing features by missing counts increasing
         _order = np.array(_missing_count).argsort().tolist()
         _missing_count = np.array(_missing_count)[_order].tolist()
         _missing_feature = np.array(_missing_feature)[_order].tolist()
-        _missing_vector = np.array(_missing_vector)[_order].tolist()
+        _missing_vector = np.array(_missing_vector)[_order].T.tolist()
 
         self._missing_table = pd.DataFrame(_missing_vector, columns = _missing_feature)
 
