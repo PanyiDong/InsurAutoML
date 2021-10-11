@@ -287,24 +287,48 @@ class ASFFS() :
 
     '''
     Adapative Sequential Forward Floating Selection (ASFFS)
+    Mostly, ASFFS performs the same as Sequential Floating Forward Selection (SFFS),
+    where only one feature is considered as a time. But, when the selected features are coming
+    close to the predefined maximum, a adapative generalization limit will be activated, and 
+    more than one features can be considered at one time. The idea is to consider the correlation
+    between features. [1]
+
+    [1] Somol, P., Pudil, P., Novovičová, J. and Paclık, P., 1999. Adaptive floating search 
+    methods in feature selection. Pattern recognition letters, 20(11-13), pp.1157-1163.
 
     Parameters
     ----------
+    d: maximum features retained, default = None
+    will be calculated as max(max(20, n), 0.5 * n)
+    
+    Delta: dynamic of maximum number of features, default = 0
+    d + Delta features will be retained
+
+    b: range for adaptive generalization limit to activate, default = None
+    will be calculated as max(5, 0.05 * n)
+
+    r_max: maximum of generalization limit, default = 5
+    maximum features to be considered as one step
+
+    model: the model used to evaluate the objective function, default = 'linear'
+
+    objective: the objective function of significance of the features, default = 'MSE'
+    supported {'MSE', 'MAE'}
     '''
 
     def __init__(
         self,
         d = None,
+        Delta = 0,
         b = None,
         r_max = 5,
-        Delta = 0,
         model = 'Linear',
         objective = 'MSE'
     ) :
         self.d = d
+        self.Delta = Delta
         self.b = b
         self.r_max = r_max
-        self.Delta = Delta
         self.model = model
         self.objective = objective
 
