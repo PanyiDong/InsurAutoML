@@ -274,3 +274,14 @@ class FeatureFilter() :
 
         return X.loc[:, self._score > self.criteria]
 
+# FeatureWrapper
+
+# Exhaustive search for optimal feature combination
+
+# Sequential Feature Selection (SFS)
+# Sequential Backward Selection (SBS)
+# Sequential Floating Forward Selection (SFFS)
+# Adapative Sequential Forward Floating Selection (ASFFS)
+
+# Genetic Algorithm (GA)
+# CHCGA
