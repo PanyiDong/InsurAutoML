@@ -105,6 +105,21 @@ def minloc(vlist) :
                 continue
         return result
 
+# Return location of maximum values
+def maxloc(vlist) :
+    if len(vlist) == 0 :
+        raise ValueError('Invalid List!')
+    elif len(vlist) == 1 :
+        return 0
+    else :
+        result = 0
+        for i in range(len(vlist) - 1) :
+            if vlist[i + 1] > vlist[result] :
+                result = i + 1
+            else :
+                continue
+        return result
+
 # return non-nan covariance matrix between X and y, (return covariance of X if y = None)
 # default calculate at columns (axis = 0), axis = 1 at rows
 def nan_cov(X, y = None, axis = 0) :

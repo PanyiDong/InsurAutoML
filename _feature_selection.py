@@ -9,6 +9,7 @@ import scipy.linalg
 import sklearn
 from sklearn.utils.extmath import stable_cumsum
 from sympy import solve
+import itertools
 
 # feature selection from autosklearn
 from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
@@ -31,7 +32,7 @@ from autosklearn.pipeline.components.feature_preprocessing.select_rates_classifi
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
 from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
 
-from ._utils import nan_cov
+from ._utils import nan_cov, maxloc
 
 class PCA_FeatureSelection() :
 
@@ -282,6 +283,132 @@ class FeatureFilter() :
 # Sequential Backward Selection (SBS)
 # Sequential Floating Forward Selection (SFFS)
 # Adapative Sequential Forward Floating Selection (ASFFS)
+class ASFFS() :
+
+    '''
+    Adapative Sequential Forward Floating Selection (ASFFS)
+
+    Parameters
+    ----------
+    '''
+
+    def __init__(
+        self,
+        d = None,
+        b = None,
+        r_max = 5,
+        Delta = 0,
+        model = 'Linear',
+        objective = 'MSE'
+    ) :
+        self.d = d
+        self.b = b
+        self.r_max = r_max
+        self.Delta = Delta
+        self.model = model
+        self.objective = objective
+
+    def generalization_limit(self, k, d, b) :
+
+        if np.abs(k - d) < b :
+            r = self.r_max
+        elif np.abs(k - d) < self.r_max + b :
+            r = self.r_max + b - np.abs(k - d)
+        else :
+            r = 1
+        
+        return r
+
+    def _Forward_Objective(self, selected, unselected, o, X, y) :
+
+        _subset = list(itertools.combinations(unselected, o))
+        _comb_subset = [selected + list(item) for item in _subset] # concat selected features with new features
+        
+        _objective_list = []
+        if self.model == 'Linear' :
+            from sklearn.linear_model import LinearRegression
+            _model = LinearRegression()
+        else :
+            raise ValueError('Not recognizing model!')
+
+        if self.objective == 'MSE' :
+            from sklearn.metrics import mean_squared_error
+            _obj = mean_squared_error
+        elif self.objective == 'MAE' :
+            from sklearn.metrics import mean_absolute_error
+            _obj = mean_absolute_error
+
+        for _set in _comb_subset :
+            _model.fit(X[_set], y)
+            _predict = _model.predict(X[_set])
+            _objective_list.append(1 / _obj(y, _predict)) # the goal is to maximize the obejctive function
+
+        return _subset[maxloc(_objective_list)], _objective_list[maxloc(_objective_list)]
+
+
+    def fit(self, X, y) :
+        
+        n, p = X.shape
+        features = list(X.columns)
+
+        if self.d == None :
+            _d = max(max(20, n), int(0.5 * n))
+        if self.b == None :
+            _b = max(5, int(0.05 * n))
+
+        _k = 0
+        self.J_max = [0 for _ in range(p)] # mark the most significant objective function value
+        self._subset_max = [[] for _ in range(p)] # mark the best performing subset features
+        _unselected = features
+        _selected = [] # selected  feature stored here, not selected will be stored in features       
+
+        while True :
+            
+            # Forward Phase
+            _r = self.generalization_limit(_k, _d, _b)
+            _o = 1
+            
+            while _o <= _r :
+            
+                _new_feature, _max_obj = self._Forward_Objective(_selected, _unselected, _o, X, y)
+
+                if _max_obj > self.J_max[_k + _o] :
+                    self.J_max[_k + _o] = _max_obj
+                    _k += _o
+                    for _f in _new_feature : # add new features and remove these features from the pool
+                        _selected.append(_f)
+                    _unselected.remove(_new_feature)
+                    self._subset_max[_k + _o] = _selected
+                else :
+                    if _o < _r :
+                        _o += 1
+                    else :
+                        _k += 1 # the marked in J_max and _subset_max are considered as best for _k features
+
+            # Termination Condition
+            if _k >= _d + self.Delta :
+                break
+            
+            # Backward Phase
+            _r = self.generalization_limit(_k, _d, _b)
+            _o = 1
+
+            while _o <= _r :
+                _new_feature, _max_obj = self._Backward_Objective(_selected, _unselected, _o, X, y)
+
+                if _max_obj > self.J_max[_k - _o] :
+                    self.J_max[_k - _o] = _max_obj
+                    _k -= _o
+                    for _f in _new_feature : # add new features and remove these features from the pool
+                        _unselected.append(_f)
+                    _selected.remove(_new_feature)
+                    self._subset_max[_k - _o] = _selected
+                else :
+                    if _o < _r :
+                        _o += 1
+                    else :
+                        _k += 1 # the marked in J_max and _subset_max are considered as best for _k features
+
 
 # Genetic Algorithm (GA)
 # CHCGA
