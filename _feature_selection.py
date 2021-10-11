@@ -8,7 +8,7 @@ import scipy
 import scipy.linalg
 import sklearn
 from sklearn.feature_selection._univariate_selection import f_classif
-from sklearn.utils.extmath import stable_cumsum
+from sklearn.utils.extmath import stable_cumsum, svd_flip
 from sympy import solve
 import itertools
 
@@ -34,6 +34,9 @@ from autosklearn.pipeline.components.feature_preprocessing.select_rates_regressi
 from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
 
 from ._utils import nan_cov, maxloc
+
+# Truncated SVD and PCA, both uses SVD to decompose the metrics, however, PCA focus on centered data,
+# while Truncated SVD is beneficial on large sparse dataset. (two are the same if data already centered)
 
 # class TruncatedSVD() :
 
@@ -81,8 +84,8 @@ class PCA_FeatureSelection() :
     space, and thus achieve feature selection.
 
     Methods used:
-    Full SVD:
-    Trucated SVD:
+    Full SVD: LAPACK, scipy.linalg.svd  
+    Trucated SVD: ARPACK, scipy.sparse.linalg.svds
     Randomized truncated SVD:
 
     Parameters
@@ -92,6 +95,8 @@ class PCA_FeatureSelection() :
     solver: the method to perform SVD, default = 'auto'
     all choices ('auto', 'full', 'truncated', 'randomized')
 
+    tol: Tolerance for singular values computed for truncated SVD
+
     seed: random seed, default = 1
     '''
 
@@ -99,10 +104,12 @@ class PCA_FeatureSelection() :
         self, 
         n_components = None, 
         solver = 'auto', 
+        tol = 0.,
         seed = 1
     ):
         self.n_components = n_components
         self.solver = solver
+        self.tol = tol
         self.seed = seed
 
     def fit(self, X) :
@@ -133,14 +140,12 @@ class PCA_FeatureSelection() :
         else :
             self.fit_solver = self.solver
 
-        if self.solver == 'full' :
+        if self.fit_solver == 'full' :
             return self._fit_full(X, n_components)
-        elif self.solver == 'truncated' :
-            return self._fit_truncated(X, n_components)
-        elif self.solver == 'randomized' :
-            return self._fit_randomized(X, n_components)
+        elif self.fit_solver in ['truncated', 'randomized'] :
+            return self._fit_truncated(X, n_components, self.fit_solver)
         else :
-            raise ValueError('No solver selected!')
+            raise ValueError('Not recognizing solver = {}!'.format(self.fit_solver))
 
     def _fit_full(self, X, n_components) :
 
@@ -157,7 +162,8 @@ class PCA_FeatureSelection() :
         X -= self._x_mean
 
         # solve for svd
-        U, S, V = scipy.linalg.svd(X, full_matrices = False)
+        from scipy.linalg import svd
+        U, S, V = svd(X, full_matrices = False)
 
         # make sure the max column values of U are positive, if not flip the column
         # and flip corresponding V rows
@@ -191,6 +197,52 @@ class PCA_FeatureSelection() :
         self._var = _var[:n_components]
         self._var_ratio = _var_ratio[:n_components]
         self.singular_values = S[:n_components]
+
+        return U, S, V
+
+    def _fit_truncated(self, X, n_components, solver) :
+
+        n, p = X.shape
+        
+        self._x_mean = np.mean(X, axis = 0)
+        X -= self._x_mean
+
+        if solver == 'truncated' :
+
+            from scipy.sparse.linalg import svds
+
+            np.random.seed(self.seed)
+            v0 = np.random.uniform(-1, 1)
+            U, S, V = svds(X, k = n_components, tol = self.tol, v0 = v0)
+            S = S[::-1]
+            U, V = svd_flip(U[:, ::-1], V[::-1])
+        elif solver == 'randomized' :
+
+            from sklearn.utils.extmath import randomized_svd
+
+            U, S, V = randomized_svd(
+                X,
+                n_components = n_components,
+                n_iter = self.n_iter,
+                flip_sign = True,
+                random_state = self.seed
+            )
+        
+        self.n_samples, self.n_features = n, p
+        self.components_ = V
+        self.n_components = n_components
+
+        # Get variance explained by singular values
+        self._var = (S ** 2) / (n - 1)
+        total_var = np.var(X, ddof=1, axis=0)
+        self._var_ratio = self._var / total_var.sum()
+        self.singular_values = S.copy()  # Store the singular values.
+
+        if self.n_components < min(n, p):
+            self._noise_variance_ = total_var.sum() - self._var.sum()
+            self._noise_variance_ /= min(n, p) - n_components
+        else:
+            self._noise_variance_ = 0.0
 
         return U, S, V
         

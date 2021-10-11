@@ -2,6 +2,9 @@ import numpy as np
 import pandas as pd
 import itertools
 
+import scipy.linalg
+from scipy.linalg import svd
+
 a = ['column1', 'column2']
 b = ['column1', 'column2', 'column3', 'column4', 'column5']
 print([item for item in b if item not in a])
