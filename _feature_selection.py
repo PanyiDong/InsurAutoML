@@ -7,6 +7,7 @@ import pandas as pd
 import scipy
 import scipy.linalg
 import sklearn
+from sklearn.feature_selection._univariate_selection import f_classif
 from sklearn.utils.extmath import stable_cumsum
 from sympy import solve
 import itertools
@@ -34,43 +35,42 @@ from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import T
 
 from ._utils import nan_cov, maxloc
 
+# class TruncatedSVD() :
 
-class TruncatedSVD() :
+#     def __init__(
+#         self,
+#         n_components = 2,
+#         *,
+#         algorithm="randomized",
+#         n_iter=5,
+#         random_state=None,
+#         tol=0.0
+#     ) :
+#         self.n_compoents = n_components
+#         self.algorithm = algorithm
+#         self.n_iter = 5
+#         self.random_state = random_state
+#         self.tol = tol
+#         from sklearn.decomposition import TruncatedSVD
+#         self.model = TruncatedSVD(
+#             n_components = self.n_compoents,
+#             algorithm = self.algorithm,
+#             n_iter = self.n_iter,
+#             random_state = self.random_state,
+#             tol = self.tol
+#         )
 
-    def __init__(
-        self,
-        n_components = 2,
-        *,
-        algorithm="randomized",
-        n_iter=5,
-        random_state=None,
-        tol=0.0
-    ) :
-        self.n_compoents = n_components
-        self.algorithm = algorithm
-        self.n_iter = 5
-        self.random_state = random_state
-        self.tol = tol
-        from sklearn.decomposition import TruncatedSVD
-        self.model = TruncatedSVD(
-            n_components = self.n_compoents,
-            algorithm = self.algorithm,
-            n_iter = self.n_iter,
-            random_state = self.random_state,
-            tol = self.tol
-        )
-
-    def fit(self, X, y = None) :
-        self.model.fit(X, y = None)
+#     def fit(self, X, y = None) :
+#         self.model.fit(X, y = None)
     
-    def transform(self, X) :
-        return self.model.transform(X)
+#     def transform(self, X) :
+#         return self.model.transform(X)
 
-    def fit_transform(self, X, y = None) :
-        return self.model.fit_transform(X, y)
+#     def fit_transform(self, X, y = None) :
+#         return self.model.fit_transform(X, y)
 
-    def inverse_transform(self, X) :
-        return self.model.inverse_transform(X)   
+#     def inverse_transform(self, X) :
+#         return self.model.inverse_transform(X)   
 
 class PCA_FeatureSelection() :
 
