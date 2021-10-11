@@ -345,6 +345,31 @@ class ASFFS() :
 
         return _subset[maxloc(_objective_list)], _objective_list[maxloc(_objective_list)]
 
+    def _Backward_Objective(self, selected, o, X, y) :
+
+        _subset = list(itertools.combinations(selected, o))
+        _comb_subset = [[_full for _full in selected if _full not in item] for item in _subset] # remove new features from selected features 
+        
+        _objective_list = []
+        if self.model == 'Linear' :
+            from sklearn.linear_model import LinearRegression
+            _model = LinearRegression()
+        else :
+            raise ValueError('Not recognizing model!')
+
+        if self.objective == 'MSE' :
+            from sklearn.metrics import mean_squared_error
+            _obj = mean_squared_error
+        elif self.objective == 'MAE' :
+            from sklearn.metrics import mean_absolute_error
+            _obj = mean_absolute_error
+
+        for _set in _comb_subset :
+            _model.fit(X[_set], y)
+            _predict = _model.predict(X[_set])
+            _objective_list.append(1 / _obj(y, _predict)) # the goal is to maximize the obejctive function
+
+        return _subset[maxloc(_objective_list)], _objective_list[maxloc(_objective_list)]
 
     def fit(self, X, y) :
         
@@ -394,7 +419,7 @@ class ASFFS() :
             _o = 1
 
             while _o <= _r :
-                _new_feature, _max_obj = self._Backward_Objective(_selected, _unselected, _o, X, y)
+                _new_feature, _max_obj = self._Backward_Objective(_selected, _o, X, y)
 
                 if _max_obj > self.J_max[_k - _o] :
                     self.J_max[_k - _o] = _max_obj
