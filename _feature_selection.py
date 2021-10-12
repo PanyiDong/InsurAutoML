@@ -34,7 +34,7 @@ from autosklearn.pipeline.components.feature_preprocessing.select_rates_classifi
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
 from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
 
-from ._utils import nan_cov, maxloc
+from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 # Truncated SVD and PCA, both uses SVD to decompose the metrics, however, PCA focus on centered data,
 # while Truncated SVD is beneficial on large sparse dataset. (two are the same if data already centered)
@@ -251,41 +251,42 @@ class LDASelection() :
 
     def __init__(
         self,
-        shrinkage = None,
         priors = None,
         n_components = None,
-        covariance_estimator = None,
     ) :
-        self.shrinkage = shrinkage
         self.priors = priors
         self.n_components = n_components
-        self.covariance_estimator = covariance_estimator
 
-        from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
-        self.model = LinearDiscriminantAnalysis(
-            solver = 'eigen',
-            shrinkage = self.shrinkage,
-            priors = self.priors,
-            n_components = self.n_components,
-            store_covariance = None,
-            tol = None,
-            covariance_estimator = self.covariance_estimator,
-        )
+    def _eigen(self, X, y) : 
+
+        self.means_ = _class_means(X, y)
+        self.covariance_ = _class_cov(X, y, self.priors_)
+
+        Sw = self.covariance_  # within scatter
+        St = empirical_covariance(X)  # total scatter
+        Sb = St - Sw  # between scatter
+
+        evals, evecs = scipy.linalg.eigh(Sb, Sw)
+        self.explained_variance_ratio_ = np.sort(evals / np.sum(evals))[::-1][:self._max_components]
+        evecs = evecs[:, np.argsort(evals)[::-1]]  # sort eigenvectors
+
+        self.scalings_ = evecs
+        self.coef_ = np.dot(self.means_, evecs).dot(evecs.T)
+        self.intercept_ = -0.5 * np.diag(np.dot(self.means_, self.coef_.T)) + np.log(self.priors_)
 
     def fit(self, X, y) :
-        self.model.fit(X, y)
 
-    def _fit(self, X, y) :
-
-        self.classes_ = list(X.unique())
+        self.classes_ = np.unique(y)
         n, p = X.shape
 
         if len(self.classes_) == n :
             raise ValueError('Classes must be smaller than number of samples!')
 
         if self.priors is None:  # estimate priors from sample
-            _, y_t = np.unique(y, return_inverse=True)  # non-negative ints
-            self.priors_ = np.bincount(y_t) / float(len(y))
+            _y_uni = np.unique(y)  # non-negative ints
+            self.priors_ = []
+            for _value in _y_uni :
+                self.priors_.append(y.loc[y.values == _value].count()[0] / len(y))
         else:
             self.priors_ = np.asarray(self.priors)
 
@@ -305,12 +306,7 @@ class LDASelection() :
                 )
             self._max_components = self.n_components
 
-        ######################################################
-
     def transform(self, X) :
-        return self.model.transform(X)
-
-    def _transform(self, X) :
 
         X_new = np.dot(X, self.scalings_)
 
