@@ -245,6 +245,43 @@ class PCA_FeatureSelection() :
             self._noise_variance_ = 0.0
 
         return U, S, V
+
+class LDASelection() :
+
+    def __init__(
+        self,
+        solver = "svd",
+        shrinkage = None,
+        priors = None,
+        n_components = None,
+        store_covariance = False,
+        tol = 1e-4,
+        covariance_estimator = None,
+    ) :
+        self.solver = solver
+        self.shrinkage = shrinkage
+        self.priors = priors
+        self.n_components = n_components
+        self.store_covariance = store_covariance  # used only in svd solver
+        self.tol = tol  # used only in svd solver
+        self.covariance_estimator = covariance_estimator
+
+        from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+        self.model = LinearDiscriminantAnalysis(
+            solver = self.solver,
+            shrinkage = self.shrinkage,
+            priors = self.priors,
+            n_components = self.n_components,
+            store_covariance = self.store_covariance,
+            tol = self.tol,
+            covariance_estimator = self.covariance_estimator,
+        )
+
+    def fit(self, X, y) :
+        self.model.fit(X, y)
+
+    def transform(self, X) :
+        return self.model.transform(X)
         
 class RBFSampler() :
 
