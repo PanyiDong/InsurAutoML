@@ -1,6 +1,7 @@
 from multiprocessing.sharedctypes import Value
 import time
 import numbers
+import warnings
 import numpy as np
 from numpy.lib.arraysetops import isin
 import pandas as pd
@@ -250,38 +251,70 @@ class LDASelection() :
 
     def __init__(
         self,
-        solver = "svd",
         shrinkage = None,
         priors = None,
         n_components = None,
-        store_covariance = False,
-        tol = 1e-4,
         covariance_estimator = None,
     ) :
-        self.solver = solver
         self.shrinkage = shrinkage
         self.priors = priors
         self.n_components = n_components
-        self.store_covariance = store_covariance  # used only in svd solver
-        self.tol = tol  # used only in svd solver
         self.covariance_estimator = covariance_estimator
 
         from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
         self.model = LinearDiscriminantAnalysis(
-            solver = self.solver,
+            solver = 'eigen',
             shrinkage = self.shrinkage,
             priors = self.priors,
             n_components = self.n_components,
-            store_covariance = self.store_covariance,
-            tol = self.tol,
+            store_covariance = None,
+            tol = None,
             covariance_estimator = self.covariance_estimator,
         )
 
     def fit(self, X, y) :
         self.model.fit(X, y)
 
+    def _fit(self, X, y) :
+
+        self.classes_ = list(X.unique())
+        n, p = X.shape
+
+        if len(self.classes_) == n :
+            raise ValueError('Classes must be smaller than number of samples!')
+
+        if self.priors is None:  # estimate priors from sample
+            _, y_t = np.unique(y, return_inverse=True)  # non-negative ints
+            self.priors_ = np.bincount(y_t) / float(len(y))
+        else:
+            self.priors_ = np.asarray(self.priors)
+
+        if (self.priors_ < 0).any():
+            raise ValueError("priors must be non-negative")
+        if not np.isclose(self.priors_.sum(), 1.0):
+            warnings.warn("The priors do not sum to 1. Renormalizing", UserWarning)
+            self.priors_ = self.priors_ / self.priors_.sum()
+
+        max_components = min(len(self.classes_) - 1, X.shape[1]) # maximum number of components
+        if self.n_components is None:
+            self._max_components = max_components
+        else:
+            if self.n_components > max_components:
+                raise ValueError(
+                    "n_components cannot be larger than min(n_features, n_classes - 1)."
+                )
+            self._max_components = self.n_components
+
+        ######################################################
+
     def transform(self, X) :
         return self.model.transform(X)
+
+    def _transform(self, X) :
+
+        X_new = np.dot(X, self.scalings_)
+
+        return X_new[:, :self._max_components]
         
 class RBFSampler() :
 
