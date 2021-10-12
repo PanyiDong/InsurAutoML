@@ -5,10 +5,5 @@ import itertools
 import scipy.sparse.linalg
 from scipy.sparse.linalg import svds
 
-a = ['column1', 'column2']
-b = ['column1', 'column2', 'column3', 'column4', 'column5']
-print([item for item in b if item not in a])
-
-c = list(itertools.combinations(b, 1))
-d = [a + list(item) for item in c]
-print(d)
+a = [[1, 2, 3, 4], [5, 6, 7, 8]]
+print((np.array(a) - np.mean(a, axis = 0)) ** 2)
