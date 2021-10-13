@@ -32,12 +32,73 @@ from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
 from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
 from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 ######################################################################################################################
 # Modified from autosklearn
+
+class SelectPercentileRegression() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
+    using sklearn.feature_selection.SelectPercentile
+
+    Parameters
+    ----------
+    percentile: 
+
+    score_func: default = 'f_regression'
+    supported mode ('f_regression', 'mutual_info_regression')
+
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        percentile,
+        score_func = 'f_regression',
+        seed = 1
+    ) :
+        self.percentile = int(float(percentile))
+        self.seed = seed
+        import sklearn.feature_selection
+
+        if score_func == 'f_regression' :
+            self.score_func = sklearn.feature_selection.f_regression
+        elif score_func == 'mutual_info_regression' :
+            self.score_func = partial(sklearn.feature_selection.mutual_info_regression, \
+                random_state = self.seed)
+            self.mode = 'percentile'
+        else :
+            raise ValueError('Not recognizing score_func, only support ("f_regression", "mutual_info_regression"), \
+                get {}'.format(score_func))
+        
+        self.preprocessor = None
+
+    def fit(self, X, y) :
+
+        import sklearn.feature_selection
+
+        self.preprocessor = sklearn.feature_selection.SelectPercentile(score_func = self.score_func, \
+            percentile = self.percentile)
+        self.preprocessor.fit(X, y)
+
+        return self
+
+    def transform(self, X) :
+
+        import sklearn.feature_selection
+
+        if self.preprocessor is None :
+            raise NotImplementedError()
+
+        _X = self.preprocessor.transform(X)
+
+        if _X.shape[1] == 0 :
+            warnings.warn('All features removed.')
+        
+        return _X
 
 class SelectPercentileClassification() :
 
@@ -47,6 +108,8 @@ class SelectPercentileClassification() :
 
     Parameters
     ----------
+    percentile:
+
     score_func: default = 'chi2'
     supported mode ('chi2', 'f_classif', 'mutual_info_classif')
 
@@ -73,6 +136,8 @@ class SelectPercentileClassification() :
         else :
             raise ValueError('Not recognizing score_func, supported ("chi2", "f_classif", "mutual_info_classif", \
                 get {})'.format(score_func))
+
+        self.preprocessor = None
 
     def fit(self, X, y) :
 
@@ -103,7 +168,6 @@ class SelectPercentileClassification() :
             raise ValueError('All features removed.')
 
         return _X
-
 
 class SelectClassificationRates() :
 
@@ -147,6 +211,8 @@ class SelectClassificationRates() :
         else :
             raise ValueError('Not recognizing score_func, supported ("chi2", "f_classif", "mutual_info_classif", \
                 get {})'.format(score_func))
+        
+        self.preprocessor = None
 
     def fit(self, X, y) :
         import sklearn.feature_selection
