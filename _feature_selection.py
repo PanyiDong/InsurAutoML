@@ -32,13 +32,78 @@ from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
 from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
 from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import SelectPercentileClassification
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 ######################################################################################################################
 # Modified from autosklearn
+
+class SelectPercentileClassification() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import SelectPercentileClassification
+    using sklearn.feature_selection.SelectPercentile
+
+    Parameters
+    ----------
+    score_func: default = 'chi2'
+    supported mode ('chi2', 'f_classif', 'mutual_info_classif')
+
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        percentile,
+        score_func = 'chi2',
+        seed = 1
+    ) :
+        self.percentile = int(float(percentile))
+        self.seed = seed
+        import sklearn.feature_selection
+
+        if score_func == 'chi2' :
+            self.score_func = sklearn.feature_selection.chi2
+        elif score_func == 'f_classif' :
+            self.score_func = sklearn.feature_selection.f_classif
+        elif score_func == 'mutual_info_classif' :
+            self.score_func = partial(sklearn.feature_selection.mutual_info_classif, \
+                random_state = self.seed)
+        else :
+            raise ValueError('Not recognizing score_func, supported ("chi2", "f_classif", "mutual_info_classif", \
+                get {})'.format(score_func))
+
+    def fit(self, X, y) :
+
+        import sklearn.feature_selection
+
+        if self.score_func == sklearn.feature_selection.chi2 :
+            X[X < 0] = 0
+
+        self.preprocessor = sklearn.feature_selection.SelectPercentile(score_func = self.score_func, \
+            percentile = self.percentile)
+        self.preprocessor.fit(X, y)
+
+        return self
+
+    def transform(self, X) :
+
+        import sklearn.feature_selection
+
+        if self.preprocessor is None :
+            raise NotImplementedError()
+
+        if self.score_func == sklearn.feature_selection.chi2 :
+            X[X < 0] = 0
+
+        _X = self.preprocessor.transform(X)
+
+        if _X.shape[1] == 0 :
+            raise ValueError('All features removed.')
+
+        return _X
+
 
 class SelectClassificationRates() :
 
