@@ -12,7 +12,6 @@ from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, Tom
 from ._feature_selection import PCA_FeatureSelection, RBFSampler, FeatureFilter, \
     ASFFS
 
-from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
 from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
