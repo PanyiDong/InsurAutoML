@@ -143,6 +143,17 @@ def nan_cov(X, y = None, axis = 0) :
 
     X = np.array(X)
     y = np.array(y)
+    
+    # reshape the X/y
+    try :
+        X.shape[1]
+    except IndexError :
+        X = X.reshape(len(X), 1)
+    
+    try :
+        y.shape[1]
+    except IndexError :
+        y = y.reshape(len(y), 1)
 
     _x_mean = np.nanmean(X, axis = axis)
     _y_mean = np.nanmean(y, axis = axis)

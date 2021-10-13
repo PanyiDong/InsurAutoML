@@ -9,7 +9,8 @@ from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTra
 from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, TomekLink, \
     EditedNearestNeighbor, CondensedNearestNeighbor, OneSidedSelection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
-from ._feature_selection import PCA_FeatureSelection, RBFSampler
+from ._feature_selection import PCA_FeatureSelection, RBFSampler, FeatureFilter, \
+    ASFFS
 
 from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
 from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
@@ -108,7 +109,9 @@ feature_selection = {
     'no_processing' : no_processing,
     'PCA_FeatureSelection' : PCA_FeatureSelection,
     'RBFSampler' : RBFSampler,
-    'densifier' : Densifier, 
+    'FeatureFilter' : FeatureFilter,
+    'ASFFS' : ASFFS,
+    'densifier' : Densifier,  # from autosklearn
     'extra_trees_preproc_for_classification' : ExtraTreesPreprocessorClassification, 
     'extra_trees_preproc_for_regression' : ExtraTreesPreprocessorRegression, 
     'fast_ica' : FastICA, 

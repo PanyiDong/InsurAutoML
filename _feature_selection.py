@@ -1,4 +1,5 @@
 from multiprocessing.sharedctypes import Value
+import warnings
 import time
 import numbers
 import numpy as np
@@ -97,6 +98,8 @@ class PCA_FeatureSelection() :
 
     tol: Tolerance for singular values computed for truncated SVD
 
+    n_iter: Number of iterations for randomized solver, default = 'auto'
+
     seed: random seed, default = 1
     '''
 
@@ -105,11 +108,13 @@ class PCA_FeatureSelection() :
         n_components = None, 
         solver = 'auto', 
         tol = 0.,
+        n_iter = 'auto',
         seed = 1
     ):
         self.n_components = n_components
         self.solver = solver
         self.tol = tol
+        self.n_iter = n_iter
         self.seed = seed
 
     def fit(self, X) :
@@ -141,11 +146,26 @@ class PCA_FeatureSelection() :
             self.fit_solver = self.solver
 
         if self.fit_solver == 'full' :
-            return self._fit_full(X, n_components)
+            self.U_, self.S_, self.V_ = self._fit_full(X, n_components)
         elif self.fit_solver in ['truncated', 'randomized'] :
-            return self._fit_truncated(X, n_components, self.fit_solver)
+            self.U_, self.S_, self.V_ = self._fit_truncated(X, n_components, self.fit_solver)
         else :
             raise ValueError('Not recognizing solver = {}!'.format(self.fit_solver))
+
+        return self
+
+    def transform(self, X) :
+
+        _features = list(X.columns)
+
+        U = self.U_[:, : self.n_components]
+
+        # X_new = X * V = U * S * Vt * V = U * S
+        X_new = U * self.S_[:self.n_components]
+        # return dataframe format
+        #X_new = pd.DataFrame(U, columns = _features[:self.n_components])
+
+        return X_new
 
     def _fit_full(self, X, n_components) :
 
@@ -221,7 +241,7 @@ class PCA_FeatureSelection() :
             from sklearn.utils.extmath import randomized_svd
 
             U, S, V = randomized_svd(
-                X,
+                np.array(X),
                 n_components = n_components,
                 n_iter = self.n_iter,
                 flip_sign = True,
@@ -261,7 +281,12 @@ class RBFSampler() :
     seed: random generation seed, default = None
     '''
 
-    def __init__(self, gamma = 1., n_components = 100, seed = None):
+    def __init__(
+        self, 
+        gamma = 1., 
+        n_components = 100, 
+        seed = 1
+    ):
         self.gamma = gamma
         self.n_components = n_components
         self.seed = seed
@@ -272,6 +297,14 @@ class RBFSampler() :
             n_features = len(X[0])
         else :
             n_features = X.shape[1]
+
+        if self.n_components > n_features :
+            warnings.warn('N_components {} is larger than n_features {}, will set to n_features.'.format(
+                self.n_components, n_features
+            ))
+            self.n_components = n_features
+        else :
+            self.n_components = self.n_components
 
         if not self.seed :
             self.seed = np.random.seed(int(time.time()))
@@ -290,6 +323,9 @@ class RBFSampler() :
         np.cos(projection, projection)
         projection *= np.sqrt(2.0 / self.n_components)
 
+        # return dataframe
+        #projection = pd.DataFrame(projection, columns = list(X.columns)[:self.n_components])
+
         return projection
 
 class FeatureFilter() :
@@ -304,16 +340,17 @@ class FeatureFilter() :
     'Pearson': Pearson Correlation Coefficient
     'MI': 'Mutual Information'
 
-    threshold: threshold to retain features, default = 0.1
+    n_components: threshold to retain features, default = None
+    will be set to n_features
     '''
 
     def __init__(
         self,
         criteria = 'Pearson',
-        threshold = 0.1
+        n_components = None
     ) :
         self.criteria = criteria
-        self.threshold = threshold
+        self.n_components = n_components
 
     def fit(self, X, y = None) :
 
@@ -329,16 +366,16 @@ class FeatureFilter() :
         elif self.criteria == 'MI' :
             self._score = self._MI(X)
 
-    def _Pearson_Corr(X, y) :
+    def _Pearson_Corr(self, X, y) :
 
         features = list(X.columns)
         result = []
         for _column in features :
-            result.append(nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))
+            result.append((nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0])
         
         return result
 
-    def _MI(X, y) :
+    def _MI(self, X, y) :
         
         if len(X) != len(y) :
             raise ValueError('X and y not same size!')
@@ -363,7 +400,14 @@ class FeatureFilter() :
     
     def transform(self, X) :
 
-        return X.loc[:, self._score > self.criteria]
+        if self.n_components == None :
+            n_components = X.shape[1]
+        else :
+            n_components = self.n_components
+
+        _columns = np.argsort(self._score)[:n_components]
+
+        return X.iloc[:, _columns]
 
 # FeatureWrapper
 
@@ -408,14 +452,14 @@ class ASFFS() :
 
     def __init__(
         self,
-        d = None,
+        n_components = None,
         Delta = 0,
         b = None,
         r_max = 5,
         model = 'Linear',
         objective = 'MSE'
     ) :
-        self.d = d
+        self.n_components = n_components
         self.Delta = Delta
         self.b = b
         self.r_max = r_max
@@ -463,7 +507,7 @@ class ASFFS() :
 
         _subset = list(itertools.combinations(selected, o))
         _comb_subset = [[_full for _full in selected if _full not in item] for item in _subset] # remove new features from selected features 
-        
+
         _objective_list = []
         if self.model == 'Linear' :
             from sklearn.linear_model import LinearRegression
@@ -490,64 +534,88 @@ class ASFFS() :
         n, p = X.shape
         features = list(X.columns)
 
-        if self.d == None :
-            _d = max(max(20, n), int(0.5 * n))
+        if self.n_components == None :
+            _n_components = max(max(20, p), int(0.5 * p))
+        else :
+            _n_components = self.n_components
         if self.b == None :
-            _b = max(5, int(0.05 * n))
+            _b = max(5, int(0.05 * p))
 
         _k = 0
-        self.J_max = [0 for _ in range(p)] # mark the most significant objective function value
-        self._subset_max = [[] for _ in range(p)] # mark the best performing subset features
-        _unselected = features
+        self.J_max = [0 for _ in range(p + 1)] # mark the most significant objective function value
+        self._subset_max = [[] for _ in range(p + 1)] # mark the best performing subset features
+        _unselected = features.copy()
         _selected = [] # selected  feature stored here, not selected will be stored in features       
 
         while True :
             
             # Forward Phase
-            _r = self.generalization_limit(_k, _d, _b)
+            _r = self.generalization_limit(_k, _n_components, _b)
             _o = 1
-            
-            while _o <= _r :
-            
+
+            while _o <= _r and len(_unselected) >= 1 : # not reasonable to add feature when all selected
+             
                 _new_feature, _max_obj = self._Forward_Objective(_selected, _unselected, _o, X, y)
 
                 if _max_obj > self.J_max[_k + _o] :
-                    self.J_max[_k + _o] = _max_obj
+                    self.J_max[_k + _o] = _max_obj.copy()
                     _k += _o
                     for _f in _new_feature : # add new features and remove these features from the pool
                         _selected.append(_f)
-                    _unselected.remove(_new_feature)
-                    self._subset_max[_k + _o] = _selected
+                    for _f in _new_feature :
+                        _unselected.remove(_f)
+                    self._subset_max[_k] = _selected.copy()
+                    break
                 else :
                     if _o < _r :
                         _o += 1
                     else :
                         _k += 1 # the marked in J_max and _subset_max are considered as best for _k features
+                        _selected = self._subset_max[_k].copy() # read stored best subset
+                        _unselected = features.copy()
+                        for _f in _selected :
+                            _unselected.remove(_f)
+                        break
 
             # Termination Condition
-            if _k >= _d + self.Delta :
+            if _k >= _n_components + self.Delta :
                 break
-            
+
             # Backward Phase
-            _r = self.generalization_limit(_k, _d, _b)
+            _r = self.generalization_limit(_k, _n_components, _b)
             _o = 1
 
-            while _o <= _r :
+            while _o <= _r and _o < _k : # not reasonable to remove when only _o feature selected
+                
                 _new_feature, _max_obj = self._Backward_Objective(_selected, _o, X, y)
 
                 if _max_obj > self.J_max[_k - _o] :
-                    self.J_max[_k - _o] = _max_obj
+                    self.J_max[_k - _o] = _max_obj.copy()
                     _k -= _o
                     for _f in _new_feature : # add new features and remove these features from the pool
                         _unselected.append(_f)
-                    _selected.remove(_new_feature)
-                    self._subset_max[_k - _o] = _selected
+                    for _f in _new_feature :
+                        _selected.remove(_f)
+                    self._subset_max[_k] = _selected.copy()
+                    break
                 else :
                     if _o < _r :
                         _o += 1
                     else :
-                        _k += 1 # the marked in J_max and _subset_max are considered as best for _k features
+                        _k -= 1 # the marked in J_max and _subset_max are considered as best for _k features
+                        _selected = self._subset_max[_k].copy() # read stored best subset
+                        _unselected = features.copy()
+                        for _f in _selected :
+                            _unselected.remove(_f)
+                        break
+        
+        self.selected_ = _selected
+        return self
 
+    def transform(self, X) :
+
+        return X.loc[:, self.selected_]
+            
 
 # Genetic Algorithm (GA)
 # CHCGA
