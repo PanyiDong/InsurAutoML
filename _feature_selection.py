@@ -30,13 +30,106 @@ from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preproc
 from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
 from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
 from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
-from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 ######################################################################################################################
 # Modified from autosklearn
+
+class RandomTreesEmbedding() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
+    using sklearn.ensemble.RandomTreesEmbedding
+
+    Parameters
+    ----------
+    n_estimators: Number of trees in the forest to train, deafult = 100
+    
+    max_depth: Maximum depth of the tree, default = 5
+        
+    min_samples_split: Minimum number of samples required to split a node, default = 2
+    
+    min_samples_leaf: Minimum number of samples required to be at a leaf node, default = 1
+    
+    min_weight_fraction_leaf: Minimum weighted fraction of the sum total of weights, default = 0.
+    
+    max_leaf_nodes: Maximum number of leaf nodes, deafult = None
+    
+    bootstrap: Mark if bootstrap, default = False 
+    
+    sparse_output: If output as sparse format (with False), default = False
+    True for dense output
+
+    n_jobs: Number of jobs run in parallel, default = 1
+        
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self, 
+        n_estimators = 100, 
+        max_depth = 5, 
+        min_samples_split = 2,
+        min_samples_leaf = 1, 
+        min_weight_fraction_leaf = 0., 
+        max_leaf_nodes = None,
+        bootstrap = False, 
+        sparse_output = False, 
+        n_jobs = 1, 
+        seed = 1
+    ):
+        self.n_estimators = n_estimators
+        self.max_depth = max_depth
+        self.min_samples_split = min_samples_split
+        self.min_samples_leaf = min_samples_leaf
+        self.max_leaf_nodes = max_leaf_nodes
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.bootstrap = bootstrap
+        self.sparse_output = sparse_output
+        self.n_jobs = n_jobs
+        self.seed = seed
+        self.preprocessor = None
+
+    def fit(self, X, y = None) :
+
+        import sklearn.ensemble
+
+        self.n_estimators = int(self.n_estimators)
+        self.max_depth = int(self.max_depth)
+        self.min_samples_split = int(self.min_samples_split)
+        self.min_samples_leaf = int(self.min_samples_leaf)
+        self.max_leaf_nodes = int(self.max_leaf_nodes)
+        self.min_weight_fraction_leaf = float(self.min_weight_fraction_leaf)
+        self.bootstrap = (True if self.bootstrap is None else False)
+
+        self.preprocessor = sklearn.ensemble.RandomTreesEmbedding(
+            n_estimators = self.n_estimators,
+            max_depth = self.max_depth,
+            min_samples_split = self.min_samples_split,
+            min_samples_leaf = self.min_samples_leaf,
+            max_leaf_nodes = self.max_leaf_nodes,
+            sparse_output = self.sparse_output,
+            n_jobs = self.n_jobs,
+            random_state=self.seed
+        )
+
+        self.preprocessor.fit(X)
+
+        return self
+
+    def transform(self, X) :
+
+        if self.preprocessor == None :
+            raise NotImplementedError()
+
+        return self.preprocessor.transform(X)
+
+
+'''
+from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
+using sklearn.feature_selection.SelectPercentile
+'''
 
 class SelectPercentileClassification() :
 
