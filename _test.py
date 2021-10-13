@@ -5,10 +5,18 @@ import itertools
 import scipy.sparse.linalg
 from scipy.sparse.linalg import svds
 
-a = ['column1', 'column2']
-b = ['column1', 'column2', 'column3', 'column4', 'column5']
-print([item for item in b if item not in a])
+X = pd.DataFrame({
+    'name' : [1, 2, 3, 4, 5],
+    'type' : [5, 3, 5, 8, 9]
+})
+y = pd.DataFrame({
+    'value' : [4, 4, 8, 9, 0]
+})
 
-c = list(itertools.combinations(b, 1))
-d = [a + list(item) for item in c]
-print(d)
+_y_uni = np.unique(y)  # non-negative ints
+print(_y_uni)
+priors_ = []
+for _value in _y_uni :
+    priors_.append(y.loc[y.values == _value].count()[0] / len(y))
+
+print(priors_)

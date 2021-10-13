@@ -2,6 +2,7 @@ from multiprocessing.sharedctypes import Value
 import warnings
 import time
 import numbers
+import warnings
 import numpy as np
 from numpy.lib.arraysetops import isin
 import pandas as pd
@@ -34,7 +35,7 @@ from autosklearn.pipeline.components.feature_preprocessing.select_rates_classifi
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
 from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
 
-from ._utils import nan_cov, maxloc
+from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 # Truncated SVD and PCA, both uses SVD to decompose the metrics, however, PCA focus on centered data,
 # while Truncated SVD is beneficial on large sparse dataset. (two are the same if data already centered)
@@ -265,6 +266,71 @@ class PCA_FeatureSelection() :
             self._noise_variance_ = 0.0
 
         return U, S, V
+
+class LDASelection() :
+
+    def __init__(
+        self,
+        priors = None,
+        n_components = None,
+    ) :
+        self.priors = priors
+        self.n_components = n_components
+
+    def _eigen(self, X, y) : 
+
+        self.means_ = _class_means(X, y)
+        self.covariance_ = _class_cov(X, y, self.priors_)
+
+        Sw = self.covariance_  # within scatter
+        St = empirical_covariance(X)  # total scatter
+        Sb = St - Sw  # between scatter
+
+        evals, evecs = scipy.linalg.eigh(Sb, Sw)
+        self.explained_variance_ratio_ = np.sort(evals / np.sum(evals))[::-1][:self._max_components]
+        evecs = evecs[:, np.argsort(evals)[::-1]]  # sort eigenvectors
+
+        self.scalings_ = evecs
+        self.coef_ = np.dot(self.means_, evecs).dot(evecs.T)
+        self.intercept_ = -0.5 * np.diag(np.dot(self.means_, self.coef_.T)) + np.log(self.priors_)
+
+    def fit(self, X, y) :
+
+        self.classes_ = np.unique(y)
+        n, p = X.shape
+
+        if len(self.classes_) == n :
+            raise ValueError('Classes must be smaller than number of samples!')
+
+        if self.priors is None:  # estimate priors from sample
+            _y_uni = np.unique(y)  # non-negative ints
+            self.priors_ = []
+            for _value in _y_uni :
+                self.priors_.append(y.loc[y.values == _value].count()[0] / len(y))
+        else:
+            self.priors_ = np.asarray(self.priors)
+
+        if (self.priors_ < 0).any():
+            raise ValueError("priors must be non-negative")
+        if not np.isclose(self.priors_.sum(), 1.0):
+            warnings.warn("The priors do not sum to 1. Renormalizing", UserWarning)
+            self.priors_ = self.priors_ / self.priors_.sum()
+
+        max_components = min(len(self.classes_) - 1, X.shape[1]) # maximum number of components
+        if self.n_components is None:
+            self._max_components = max_components
+        else:
+            if self.n_components > max_components:
+                raise ValueError(
+                    "n_components cannot be larger than min(n_features, n_classes - 1)."
+                )
+            self._max_components = self.n_components
+
+    def transform(self, X) :
+
+        X_new = np.dot(X, self.scalings_)
+
+        return X_new[:, :self._max_components]
         
 class RBFSampler() :
 

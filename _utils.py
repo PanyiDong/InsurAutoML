@@ -1,3 +1,5 @@
+from re import L
+import warnings
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
@@ -168,3 +170,45 @@ def nan_cov(X, y = None, axis = 0) :
                 _cov[i, j] = np.nansum((X[i, :] - _x_mean[i]) * (y[j, :] - _y_mean[j])) / (len(X[0]) - 1)
 
     return _cov
+
+# return class (unique in y) mean of X
+def _class_means(X, y) :
+
+    _class = np.unique(y)
+    result = []
+
+    for _cl in _class :
+        data = X.loc[y.values == _cl]
+        result.append(np.mean(data, axis = 0).values)
+
+    return result
+
+# return maximum likelihood estimate for covaraiance
+def empirical_covariance(X, *, assume_centered=False):
+
+    X = np.asarray(X)
+
+    if X.ndim == 1:
+        X = np.reshape(X, (1, -1))
+    
+    if X.shape[0] == 1:
+        warnings.warn('Only one data sample available!')
+    
+    if assume_centered:
+        covariance = np.dot(X.T, X) / X.shape[0]
+    else:
+        covariance = np.cov(X.T, bias=1)
+
+    if covariance.ndim == 0:
+        covariance = np.array([[covariance]])
+    return covariance
+
+# return weighted within-class covariance matrix
+def _class_cov(X, y, priors) :
+
+    _class = np.unique(y)
+    cov = np.zeros(shape=(X.shape[1], X.shape[1]))
+    for idx, _cl in enumerate(_class):
+        _data = X.loc[y.values == _cl, :]
+        cov += priors[idx] * empirical_covariance(_data)
+    return cov
