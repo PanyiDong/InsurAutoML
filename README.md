@@ -2,7 +2,7 @@
 
 IRisk Lab Project, UIUC, Fall 2021
 
-The project aims to create a AutoML package especially focusing on insurance data (with some inbalance in nature).
+The project aims to create a AutoML package with special focus on insurance data (with some inbalance in nature).
 
 
 Current Progress:
