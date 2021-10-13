@@ -14,6 +14,7 @@ from sklearn.feature_selection._univariate_selection import f_classif
 from sklearn.utils.extmath import stable_cumsum, svd_flip
 from sympy import solve
 import itertools
+from functools import partial
 
 # feature selection from autosklearn
 from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
@@ -33,9 +34,78 @@ from autosklearn.pipeline.components.feature_preprocessing.select_percentile imp
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import SelectPercentileClassification
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_classification import SelectClassificationRates
-from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
+
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
+
+######################################################################################################################
+# Modified from autosklearn
+
+class SelectRegressionRates() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
+    using sklearn.feature_selection.GenericUnivariateSelect
+
+    Parameters
+    ----------
+    alpha: parameter of corresponding mode, default = 1e-5
+
+    mode: Feature selection mode, default = 'percentile'
+    supported mode ('percentile', 'k_best', 'fpr', 'fdr', 'fwe') 
+
+    score_func: default = 'f_regression'
+    supported mode ('f_regression', 'mutual_info_regression')
+
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        alpha = 1e-5,
+        mode = 'percentile',
+        score_func = 'f_regression',
+        seed = 1
+    ) :
+        self.alpha = alpha
+        self.mode = mode
+        self.seed = seed
+        import sklearn.feature_selection
+
+        if score_func == 'f_regression' :
+            self.score_func = sklearn.feature_selection.f_regression
+        elif score_func == 'mutual_info_regression' :
+            self.score_func = partial(sklearn.feature_selection.mutual_info_regression, \
+                random_state = self.seed)
+            self.mode = 'percentile'
+        else :
+            raise ValueError('Not recognizing score_func, only support ("f_regression", "mutual_info_regression"), \
+                get {}'.format(score_func))
+        
+        self.preprocessor = None
+
+    def fit(self, X, y) :
+
+        import sklearn.feature_selection
+        alpha = float(self.alpha)
+        self.preprocessor = sklearn.feature_selection.GenericUnivariateSelect(score_func = self.score_func, \
+            param = alpha, mode = self.mode)
+        
+        self.preprocessor.fit(X, y)
+        
+        return self
+
+    def transform(self, X) :
+
+        if self.preprocessor is None :
+            raise NotImplementedError()
+        
+        _X = self.preprocessor.transform(X)
+
+        if _X.shape[1] == 0 :
+            warnings.warn('All features removed.')
+        
+        return _X
 
 class TruncatedSVD() :
     
@@ -82,6 +152,8 @@ class TruncatedSVD() :
             raise NotImplementedError()
         
         return self.preprocessor.transform(X)
+
+######################################################################################################################
 
 class PCA_FeatureSelection() :
 
