@@ -4,6 +4,7 @@ IRisk Lab Project, UIUC, Fall 2021
 
 The project aims to create a AutoML package especially focusing on insurance data (with some inbalance in nature).
 
+
 Current Progress:
 1. base: load data with some common file format (.csv, .data, .rda, etc.) given path into a database dict
 2. encoding: encoding for categorical/string type to numerical, and can perform dummy coding; category shift
