@@ -643,7 +643,7 @@ class ASFFS() :
         for _set in _comb_subset :
             _model.fit(X[_set], y)
             _predict = _model.predict(X[_set])
-            _objective_list.append(1 / _obj(y, _predict)) # the goal is to maximize the obejctive function
+            _objective_list.append(- _obj(y, _predict)) # the goal is to maximize the obejctive function
 
         return _subset[maxloc(_objective_list)], _objective_list[maxloc(_objective_list)]
 
