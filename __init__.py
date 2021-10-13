@@ -123,7 +123,7 @@ feature_selection = {
     'pca' : PCA, 
     'polynomial' : PolynomialFeatures, 
     'random_trees_embedding' : RandomTreesEmbedding,
-    'select_percentile' : SelectPercentileBase, 
+#    'select_percentile' : SelectPercentileBase, 
     'select_percentile_classification' : SelectPercentileClassification, 
     'select_percentile_regression' : SelectPercentileRegression, 
     'select_rates_classification' : SelectClassificationRates,
