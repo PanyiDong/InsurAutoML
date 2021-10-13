@@ -437,24 +437,24 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
         if not is_imbalance(_X, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
-            TL = TomekLink(
-                imbalance_threshold = self.imbalance_threshold,
+            super().__init__(
+                imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 norm = self.norm,
                 all = self.all,
                 seed = self.seed
             )
-            _X = TL.fit_transform(_X)
+            _X = super().fit_transform(_X)
 
-            CNN = CondensedNearestNeighbor(
+            super(TomekLink, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 all = self.all,
                 seed = self.seed
             )
-            _X = CNN.fit_transform(_X)
+            _X = super(TomekLink, self).fit_transform(_X)
 
         return _X
 
-class CNN_TomekLink() :
+class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
 
     '''
     CNN_Tomek Link
@@ -492,20 +492,20 @@ class CNN_TomekLink() :
         if not is_imbalance(_X, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
-            CNN = CondensedNearestNeighbor(
-                imbalance_threshold = self.imbalance_threshold,
+            super().__init__(
+                imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 all = self.all,
                 seed = self.seed
             )
-            _X = CNN.fit_transform(_X)
+            _X = super().fit_transform(_X)
 
-            TL = TomekLink(
+            super(CondensedNearestNeighbor, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 norm = self.norm,
                 all = self.all,
                 seed = self.seed
             )
-            _X = TL.fit_transform(_X)
+            _X = super(CondensedNearestNeighbor, self).fit_transform(_X)
 
         return _X
 
@@ -586,7 +586,7 @@ class Smote() :
 
         return X
 
-class Smote_TomekLink() :
+class Smote_TomekLink(Smote, TomekLink) :
 
     '''
     Run Smote then run Tomek Link to balance dataset
@@ -624,7 +624,7 @@ class Smote_TomekLink() :
     def _fit_transform(self, X) :
         
         _X = X.copy(deep = True)
-        _Smote = Smote(
+        super().__init__(
             imbalance_threshold = self.imbalance_threshold,
             norm = self.norm,
             all = self.all,
@@ -632,18 +632,19 @@ class Smote_TomekLink() :
             k = self.k,
             generation = self.generation
         )
-        _X = _Smote.fit_transform(_X)
-        _TomekLink = TomekLink(
+        _X = super().fit_transform(_X)
+
+        super(Smote, self).__init__(
             imbalance_threshold = self.imbalance_threshold,
             norm = self.norm,
             all = self.all,
             seed = self.seed
         )
-        _X = _TomekLink.fit_transform(_X)
+        _X = super(Smote, self).fit_transform(_X)
 
         return _X
 
-class Smote_ENN() :
+class Smote_ENN(Smote, EditedNearestNeighbor) :
 
     '''
     Run Smote then run ENN to balance dataset
@@ -672,7 +673,7 @@ class Smote_ENN() :
         if not is_imbalance(_X, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
-            _Smote = Smote(
+            super().__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 norm = self.norm,
                 all = self.all,
@@ -680,13 +681,14 @@ class Smote_ENN() :
                 k = self.k,
                 generation = self.generation
             )
-            _X = _Smote.fit_transform(_X)
-            ENN = EditedNearestNeighbor(
+            _X = super().fit_transform(_X)
+
+            super(Smote, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 all = self.all,
                 seed = self.seed,
                 k = self.k
             )
-            _X = ENN.fit_transform(_X)
+            _X = super(Smote, self).fit_transform(_X)
 
         return _X
