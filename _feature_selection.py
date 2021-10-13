@@ -1,4 +1,5 @@
 from multiprocessing.sharedctypes import Value
+import random
 import warnings
 import time
 import numbers
@@ -33,49 +34,54 @@ from autosklearn.pipeline.components.feature_preprocessing.select_percentile_cla
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_classification import SelectClassificationRates
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
-from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
-# Truncated SVD and PCA, both uses SVD to decompose the metrics, however, PCA focus on centered data,
-# while Truncated SVD is beneficial on large sparse dataset. (two are the same if data already centered)
-
-# class TruncatedSVD() :
-
-#     def __init__(
-#         self,
-#         n_components = 2,
-#         *,
-#         algorithm="randomized",
-#         n_iter=5,
-#         random_state=None,
-#         tol=0.0
-#     ) :
-#         self.n_compoents = n_components
-#         self.algorithm = algorithm
-#         self.n_iter = 5
-#         self.random_state = random_state
-#         self.tol = tol
-#         from sklearn.decomposition import TruncatedSVD
-#         self.model = TruncatedSVD(
-#             n_components = self.n_compoents,
-#             algorithm = self.algorithm,
-#             n_iter = self.n_iter,
-#             random_state = self.random_state,
-#             tol = self.tol
-#         )
-
-#     def fit(self, X, y = None) :
-#         self.model.fit(X, y = None)
+class TruncatedSVD() :
     
-#     def transform(self, X) :
-#         return self.model.transform(X)
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
+    Truncated SVD using sklearn.decomposition.TruncatedSVD
 
-#     def fit_transform(self, X, y = None) :
-#         return self.model.fit_transform(X, y)
+    Parameters
+    ----------
+    n_components: Number of features to retain, default = None
+    will be set to p - 1, and capped at p -1 for any input
 
-#     def inverse_transform(self, X) :
-#         return self.model.inverse_transform(X)   
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        n_components = None,
+        seed = 1
+    ) :
+        self.n_components = n_components
+        self.seed = seed
+        self.preprocessor = None
+
+    def fit(self, X, y) :
+
+        if self.n_components == None :
+            self.n_components = X.shape[1] - 1
+        else :
+            self.n_components = int(self.n_components)
+        n_components = min(self.n_components, X.shape[1] - 1) # cap n_components
+
+        from sklearn.decomposition import TruncatedSVD
+        self.preprocessor = TruncatedSVD(
+            n_components, algorithm = 'randomized', random_state = self.seed
+        )
+        self.preprocessor.fit(X, y)
+
+        return self
+    
+    def transform(self, X) :
+
+        if self.preprocessor is None :
+            raise NotImplementedError()
+        
+        return self.preprocessor.transform(X)
 
 class PCA_FeatureSelection() :
 

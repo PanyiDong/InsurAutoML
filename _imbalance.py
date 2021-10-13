@@ -221,7 +221,7 @@ class TomekLink() :
         self.seed = seed
 
     def fit_transform(self, X) :
-
+        print("TL worked!")
         _X = X.copy(deep = True)
         if not is_imbalance(_X, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
@@ -365,7 +365,7 @@ class CondensedNearestNeighbor() :
         self.seed = seed
 
     def fit_transform(self, X) :
-
+        print('CNN workd!')
         _X = X.copy(deep = True)
         if not is_imbalance(_X, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
@@ -399,7 +399,7 @@ class CondensedNearestNeighbor() :
 
         return X
 
-class OneSidedSelection() :
+class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
 
     '''
     One Sided Selection (OSS)

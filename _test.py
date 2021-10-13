@@ -5,18 +5,22 @@ import itertools
 import scipy.sparse.linalg
 from scipy.sparse.linalg import svds
 
-X = pd.DataFrame({
-    'name' : [1, 2, 3, 4, 5],
-    'type' : [5, 3, 5, 8, 9]
-})
-y = pd.DataFrame({
-    'value' : [4, 4, 8, 9, 0]
-})
+class Dog() :
+    
+    def sound(self) :
+        print('Wo!')
 
-_y_uni = np.unique(y)  # non-negative ints
-print(_y_uni)
-priors_ = []
-for _value in _y_uni :
-    priors_.append(y.loc[y.values == _value].count()[0] / len(y))
+class Cat() :
+    
+    def sound(self) :
+        print('Meow!')
 
-print(priors_)
+class Pets(Dog, Cat) :
+
+    def call(self) :
+        print(type(super(Dog, self)).__mro__)
+        super().sound()
+        super(Dog, self).sound()
+
+mod = Pets()
+mod.call()
