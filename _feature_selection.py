@@ -18,6 +18,8 @@ from sympy import solve
 import itertools
 from functools import partial
 
+from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
+
 # feature selection from autosklearn
 from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
@@ -27,12 +29,80 @@ from autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration
 from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import KernelPCA
 from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import RandomKitchenSinks
 from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
-from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
-
-from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 ######################################################################################################################
-# Modified from autosklearn
+# Modified Feature Selection from autosklearn
+
+class Nystroem() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
+    using sklearn.kernel_approximation.Nystroem
+
+    Parameters
+    ----------
+    kernel: Kernel map to be approximated, default = 'rbf'
+    supported: ('additive_chi2', 'chi2', 'linear', 'poly', 'polynomial', 'rbf', 'laplacian', 
+    'sigmoid', 'cosine' )
+
+    n_components: Number of features to retain, default = 100
+
+    gamma: Gamma parameter, default = 1.0
+
+    degree: Degree of the polynomial kernel, default = 3
+
+    coef0: Zero coefficient for polynomial and sigmoid kernels, default = 1
+    
+    seed: random seed, default = 1
+    '''
+    
+    def __init__(
+        self,
+        kernel = 'rbf', 
+        n_components = 100, 
+        gamma = 1.0, 
+        degree = 3,
+        coef0 = 1, 
+        seed = 1
+    ) :
+        self.kernel = kernel
+        self.n_components = n_components, 
+        self.gamma = gamma, 
+        self.degree = degree,
+        self.coef0 = coef0, 
+        self.seed = seed
+
+        self.preprocessor = None
+
+    def fit(self, X, y = None) :
+
+        import sklearn.kernel_approximation
+
+        self.n_components = int(self.n_components)
+        self.gamma = float(self.gamma)
+        self.degree = int(self.degree)
+        self.coef0 = float(self.coef0)
+
+        if self.kernel == 'chi2' :
+            X[X < 0] = 0.
+
+        self.preprocessor = sklearn.kernel_approximation.Nystroem(
+            kernel = self.kernel, n_components = self.n_components, gamma = self.gamma, degree = self.degree, \
+            coef0 = self.coef0, random_state = self.seed
+        )
+        self.preprocessor.fit(X)
+
+        return self
+
+    def transform(self, X) :
+
+        if self.preprocessor is None :
+            raise NotImplementedError()
+
+        if self.kernel == 'chi2' :
+            X[X < 0] = 0.
+
+        return self.preprocessor.transform(X)
 
 class PCA() :
 
