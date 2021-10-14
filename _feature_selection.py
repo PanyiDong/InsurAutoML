@@ -22,11 +22,133 @@ from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_
 
 # feature selection from autosklearn
 from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
-from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
-from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
+
 
 ######################################################################################################################
 # Modified Feature Selection from autosklearn
+
+class ExtraTreesPreprocessorClassification() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
+    '''
+    
+    
+
+
+class ExtraTreesPreprocessorRegression() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
+    using sklearn.ensemble.ExtraTreesRegressor
+
+    Parameters
+    ----------
+    n_estimators: Number of trees in forest, default = 100
+        
+    criterion: Function to measure the quality of a split, default = 'squared_error'
+    supported ("squared_error", "mse", "absolute_error", "mae")
+        
+    min_samples_leaf: Minimum number of samples required to be at a leaf node, default = 1
+        
+    min_samples_split: Minimum number of samples required to split a node, default = 2
+        
+    max_features: Number of features to consider, default = 'auto'
+    supported ("auto", "sqrt", "log2")
+        
+    bootstrap: Whether bootstrap samples, default = False
+        
+    max_leaf_nodes: Maximum number of leaf nodes accepted, default = None
+    
+    max_depth: Maximum depth of the tree, default = None
+       
+    min_weight_fraction_leaf: Minimum weighted fraction of the sum total of weights, default = 0.0
+        
+    oob_score: Whether to use out-of-bag samples, default = False
+    
+    n_jobs: Parallel jobs to run, default = 1
+    
+    verbose: Controls the verbosity, default = 0
+    
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self, 
+        n_estimators = 100, 
+        criterion = 'squared_error', 
+        min_samples_leaf = 1,
+        min_samples_split = 2, 
+        max_features = 'auto',
+        bootstrap = False, 
+        max_leaf_nodes = None, 
+        max_depth = None,
+        min_weight_fraction_leaf = 0.0,
+        oob_score = False, 
+        n_jobs = 1, 
+        verbose = 0, 
+        seed = 1
+    ):
+
+        self.n_estimators = n_estimators
+        self.estimator_increment = 10
+        if criterion not in ("mse", "friedman_mse", "mae"):
+            raise ValueError("'criterion' is not in ('mse', 'friedman_mse', "
+                             "'mae'): %s" % criterion)
+        self.criterion = criterion
+        self.min_samples_leaf = min_samples_leaf
+        self.min_samples_split = min_samples_split
+        self.max_features = max_features
+        self.bootstrap = bootstrap
+        self.max_leaf_nodes = max_leaf_nodes
+        self.max_depth = max_depth
+        self.min_weight_fraction_leaf = min_weight_fraction_leaf
+        self.oob_score = oob_score
+        self.n_jobs = n_jobs
+        self.verbose = verbose
+        self.seed = seed
+
+        self.preprocessor = None
+
+    def fit(self, X, y) :
+
+        import sklearn.ensemble
+        import sklearn.feature_selection
+
+        self.n_estimators = int(self.n_estimators)
+        self.min_samples_leaf = int(self.min_samples_leaf)
+        self.min_samples_split = int(self.min_samples_split)
+        self.max_features = float(self.max_features)
+        self.bootstrap = True if self.bootstrap is None else False
+        self.n_jobs = int(self.n_jobs)
+        self.verbose = int(self.verbose)
+
+        self.max_leaf_nodes = None if self.max_leaf_nodes is None else int(self.max_leaf_nodes)
+        self.max_depth = None if self.max_depth is None else int(self.max_leaf_nodes)
+        self.min_weight_fraction_leaf = float(self.min_weight_fraction_leaf)
+
+        num_features = X.shape[1]
+        max_features = int(float(self.max_features) * (np.log(num_features) + 1))
+
+        # Use at most half of the features
+        max_features = max(1, min(int(X.shape[1] / 2), max_features))
+        estimator = sklearn.ensemble.ExtraTreesRegressor(
+            n_estimators = self.n_estimators, criterion = self.criterion, max_depth = self.max_depth, \
+            min_samples_split = self.min_samples_split, min_samples_leaf = self.min_samples_leaf, bootstrap = self.bootstrap, \
+            max_features = max_features, max_leaf_nodes = self.max_leaf_nodes, oob_score = self.oob_score, n_jobs = self.n_jobs, \
+            verbose=self.verbose, min_weight_fraction_leaf = self.min_weight_fraction_leaf, random_state = self.seed
+        )
+
+        estimator.fit(X, y)
+        self.preprocessor = sklearn.feature_selection.SelectFromModel(estimator = estimator, threshold = 'mean', prefit = True)
+
+        return self
+    
+    def transform(self, X):
+        if self.preprocessor is None:
+            raise NotImplementedError
+
+        return self.preprocessor.transform(X)
 
 class FastICA() :
 
@@ -69,7 +191,7 @@ class FastICA() :
 
         import sklearn.decomposition
 
-        self.n_components = int(self.n_components)
+        self.n_components = None if self.n_components is None else int(self.n_components)
 
         self.preprocessor = sklearn.decomposition.FastICA(
             n_components = self.n_components, algorithm = self.algorithm, fun = self.fun, \
@@ -203,7 +325,7 @@ class KernelPCA() :
 
         import sklearn.decomposition
 
-        self.n_components = int(self.n_components)
+        self.n_components = None if self.n_components is None else int(self.n_components)
         self.degree = int(self.degree)
         self.gamma = float(self.gamma)
         self.coef0 = float(self.coef0)
@@ -472,6 +594,8 @@ class PCA() :
 
         import sklearn.decomposition
 
+        self.n_components = None if self.n_components is None else int(self.n_components)
+
         self.preprocessor = sklearn.decomposition.PCA(
             n_components = self.n_components, whiten = self.whiten, copy = True
         )
@@ -494,7 +618,13 @@ class PolynomialFeatures() :
 
     Parameters
     ----------
+    degree: degree of polynomial features, default = 2
 
+    interaction_only: if to only to conclude interaction terms, default = False
+
+    include_bias: if to conclude bias term, default = True
+
+    seed: random seed, default = 1
     '''
 
     def __init__(
@@ -502,7 +632,7 @@ class PolynomialFeatures() :
         degree = 2,
         interaction_only = False, 
         include_bias = True, 
-        seed = None
+        seed = 1
     ) :
         self.degree = degree
         self.interaction_only = interaction_only
@@ -632,7 +762,7 @@ class SelectPercentileClassification() :
 
     Parameters
     ----------
-    percentile:
+    percentile: Percent of features to keep, default = 10
 
     score_func: default = 'chi2'
     supported mode ('chi2', 'f_classif', 'mutual_info_classif')
@@ -642,7 +772,7 @@ class SelectPercentileClassification() :
 
     def __init__(
         self,
-        percentile,
+        percentile = 10,
         score_func = 'chi2',
         seed = 1
     ) :
@@ -701,7 +831,7 @@ class SelectPercentileRegression() :
 
     Parameters
     ----------
-    percentile: 
+    percentile: Percent of features to keep, default = 10
 
     score_func: default = 'f_regression'
     supported mode ('f_regression', 'mutual_info_regression')
@@ -711,7 +841,7 @@ class SelectPercentileRegression() :
 
     def __init__(
         self,
-        percentile,
+        percentile = 10,
         score_func = 'f_regression',
         seed = 1
     ) :
