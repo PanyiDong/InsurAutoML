@@ -29,12 +29,53 @@ from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import 
 from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
 from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
 from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
-from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 ######################################################################################################################
 # Modified from autosklearn
+
+class PolynomialFeatures() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
+    using sklearn.preprocessing.PolynomialFeatures
+
+    Parameters
+    ----------
+
+    '''
+
+    def __init__(
+        self,
+        degree = 2,
+        interaction_only = False, 
+        include_bias = True, 
+        seed = None
+    ) :
+        self.degree = degree
+        self.interaction_only = interaction_only
+        self.include_bias = include_bias
+        self.seed = seed
+        
+        self.preprocessor = None
+    
+    def fit(self, X, y) :
+
+        import sklearn.preprocessing
+
+        self.degree = int(self.degree)
+
+        self.preprocessor = sklearn.preprocessing.PolynomialFeatures(degree = self.degree, \
+            interaction_only = self.interaction_only, include_bias = self.include_bias)
+        self.preprocessor.fit(X, y)
+
+    def transform(self, X) :
+
+        if self.preprocessor == None :
+            raise NotImplementedError()
+        
+        return self.preprocessor.transform(X)
 
 class RandomTreesEmbedding() :
 
