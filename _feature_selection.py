@@ -1,3 +1,4 @@
+from _typeshed import Self
 from distutils.log import warn
 from multiprocessing.sharedctypes import Value
 import random
@@ -18,7 +19,6 @@ import itertools
 from functools import partial
 
 # feature selection from autosklearn
-from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import NoPreprocessing
 from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
@@ -28,12 +28,58 @@ from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import Ker
 from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import RandomKitchenSinks
 from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
 from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
-from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
 
 ######################################################################################################################
 # Modified from autosklearn
+
+class PCA() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
+    using sklearn.decomposition.PCA
+
+    Parameters
+    ----------
+    n_components: numer of features to retain, default = None
+    all features will be retained
+
+    whiten: default = False
+    if True, the `components_` vectors will be modified to ensure uncorrelated outputs
+
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        n_components = None,
+        whiten = False,
+        seed = 1
+    ) :
+        self.n_components = n_components
+        self.whiten = whiten
+        self.seed = seed
+
+        self.preprocessor = None
+
+    def fit(self, X, y = None) :
+
+        import sklearn.decomposition
+
+        self.preprocessor = sklearn.decomposition.PCA(
+            n_components = self.n_components, whiten = self.whiten, copy = True
+        )
+        self.preprocessor.fit(X)
+
+        return self
+
+    def transform(self, X) :
+
+        if self.preprocessor is None :
+            raise NotImplementedError()
+
+        return self.preprocessor.transform(X)
 
 class PolynomialFeatures() :
 
@@ -72,7 +118,7 @@ class PolynomialFeatures() :
 
     def transform(self, X) :
 
-        if self.preprocessor == None :
+        if self.preprocessor is None :
             raise NotImplementedError()
         
         return self.preprocessor.transform(X)
@@ -130,6 +176,7 @@ class RandomTreesEmbedding() :
         self.sparse_output = sparse_output
         self.n_jobs = n_jobs
         self.seed = seed
+
         self.preprocessor = None
 
     def fit(self, X, y = None) :
