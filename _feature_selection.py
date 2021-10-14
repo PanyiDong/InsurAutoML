@@ -28,10 +28,94 @@ from autosklearn.pipeline.components.feature_preprocessing.fast_ica import FastI
 from autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration import FeatureAgglomeration
 from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import KernelPCA
 from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import RandomKitchenSinks
-from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
 
 ######################################################################################################################
 # Modified Feature Selection from autosklearn
+
+class LibLinear_Preprocessor() :
+
+    '''
+    from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
+    using import sklearn.svm, from sklearn.feature_selection import SelectFromModel
+
+    Parameters
+    ----------
+    penalty: Norm used in the penalization, default = 'l2'
+    supported ('l1', 'l2')
+
+    loss: Loss function, default = 'squared_hinge'
+    supported ('hinge', 'squared_hinge')
+
+    dual: Whether to solve the dual or primal, default = True
+
+    tol: Stopping criteria, default = 1e-4
+
+    C: Regularization parameter, default = 1.0
+
+    multi_class: Multi-class strategy, default = 'ovr'
+    supported ('ovr', 'crammer_singer')
+
+    fit_intercept: Whether to calculate the intercept, default = True
+
+    intercept_scaling: Intercept scaling rate, default = 1
+
+    class_weight: Class weight, default = None
+    supported dict or 'balanced'
+ 
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self, 
+        penalty = 'l2', 
+        loss = 'squared_hinge', 
+        dual = True, 
+        tol = 1e-4, 
+        C = 1.0, 
+        multi_class = 'ovr',
+        fit_intercept = True, 
+        intercept_scaling = 1, 
+        class_weight = None,
+        seed = 1
+    ):
+        self.penalty = penalty
+        self.loss = loss
+        self.dual = dual
+        self.tol = tol
+        self.C = C
+        self.multi_class = multi_class
+        self.fit_intercept = fit_intercept
+        self.intercept_scaling = intercept_scaling
+        self.class_weight = class_weight
+        self.seed = seed
+
+        self.preprocessor = None
+
+    def fit(self, X, y, sample_weight = None) :
+
+        import sklearn.svm
+        from sklearn.feature_selection import SelectFromModel
+
+        self.C = float(self.C)
+        self.tol = float(self.tol)
+        self.intercept_scaling = float(self.intercept_scaling)
+
+        estimator = sklearn.svm.LinearSVC(
+            penalty = self.penalty, loss = self.loss, dual = self.dual, tol=self.tol, C = self.C, \
+            class_weight = self.class_weight, fit_intercept = self.fit_intercept, \
+            intercept_scaling = self.intercept_scaling, multi_class = self.multi_class, random_state=self.seed)
+        estimator.fit(X, y)
+
+        self.preprocessor = SelectFromModel(estimator = estimator, threshold = 'mean', prefit = True)
+
+        return self
+    
+    def transform(self, X) :
+
+        if self.preprocessor is None:
+            raise NotImplementedError()
+        
+        return self.preprocessor.transform(X)
 
 class Nystroem() :
 
