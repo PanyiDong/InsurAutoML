@@ -454,6 +454,7 @@ class ASFFS() :
     maximum features to be considered as one step
 
     model: the model used to evaluate the objective function, default = 'linear'
+    supproted ('linear', 'lasso', 'ridge')
 
     objective: the objective function of significance of the features, default = 'MSE'
     supported {'MSE', 'MAE'}
@@ -495,6 +496,12 @@ class ASFFS() :
         if self.model == 'Linear' :
             from sklearn.linear_model import LinearRegression
             _model = LinearRegression()
+        elif self.model == 'lasso' :
+            from sklearn.linear_model import Lasso
+            _model = Lasso()
+        elif self.model == 'ridge' :
+            from sklearn.linear_model import Ridge
+            _model = Ridge()
         else :
             raise ValueError('Not recognizing model!')
 
@@ -521,6 +528,12 @@ class ASFFS() :
         if self.model == 'Linear' :
             from sklearn.linear_model import LinearRegression
             _model = LinearRegression()
+        elif self.model == 'lasso' :
+            from sklearn.linear_model import Lasso
+            _model = Lasso()
+        elif self.model == 'ridge' :
+            from sklearn.linear_model import Ridge
+            _model = Ridge()
         else :
             raise ValueError('Not recognizing model!')
 
