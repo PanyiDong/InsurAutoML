@@ -11,25 +11,10 @@ from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, Tom
     Smote, Smote_TomekLink, Smote_ENN
 from ._feature_selection import PCA_FeatureSelection, LDASelection, FeatureFilter, \
     RBFSampler, ASFFS
-
-from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
-from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import ExtraTreesPreprocessorClassification
-from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import ExtraTreesPreprocessorRegression
-from autosklearn.pipeline.components.feature_preprocessing.fast_ica import FastICA
-from autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration import FeatureAgglomeration
-from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import KernelPCA
-from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import RandomKitchenSinks
-from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import LibLinear_Preprocessor
-from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import Nystroem
-from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
-from autosklearn.pipeline.components.feature_preprocessing.polynomial import PolynomialFeatures
-from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import RandomTreesEmbedding
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile import SelectPercentileBase
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import SelectPercentileClassification
-from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import SelectPercentileRegression
-from autosklearn.pipeline.components.feature_preprocessing.select_rates_classification import SelectClassificationRates
-from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
-from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
+from ._feature_selection import Densifier, ExtraTreesPreprocessorClassification, ExtraTreesPreprocessorRegression, \
+    FastICA, FeatureAgglomeration, KernelPCA, RandomKitchenSinks, LibLinear_Preprocessor, Nystroem, PCA, \
+    PolynomialFeatures, RandomTreesEmbedding, SelectPercentileClassification, SelectPercentileRegression, \
+    SelectClassificationRates, SelectRegressionRates, TruncatedSVD
 
 __all__ = [
     'load_data', # _base
@@ -49,6 +34,7 @@ __all__ = [
     'RobustScale',
     'PowerTransformer',
     'QuantileTransformer',
+    'Winsorization',
     'SimpleRandomOverSampling', # _imbalance
     'SimpleRandomUnderSampling', 
     'TomekLink',
@@ -59,8 +45,29 @@ __all__ = [
     'Smote', 
     'Smote_TomekLink', 
     'Smote_ENN',
-    'PCA_FeatureSelection', # _feature_selection
-    'RBFSampler' 
+    'LDASelection', # _feature_selection
+    'PCA_FeatureSelection',
+    'RBFSampler',
+    'FeatureFilter',
+    'ASFFS',
+    'densifier',  # from autosklearn
+    'extra_trees_preproc_for_classification', 
+    'extra_trees_preproc_for_regression', 
+    'fast_ica', 
+    'feature_agglomeration',
+    'kernel_pca', 
+    'kitchen_sinks', 
+    'liblinear_svc_preprocessor', 
+    'nystroem_sampler', 
+    'pca', 
+    'polynomial', 
+    'random_trees_embedding',
+#    'select_percentile', 
+    'select_percentile_classification', 
+    'select_percentile_regression', 
+    'select_rates_classification',
+    'select_rates_regression', 
+    'truncatedSVD'
 ]
 
 base = {'load_data' : load_data}
