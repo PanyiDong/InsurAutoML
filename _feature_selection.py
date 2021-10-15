@@ -587,7 +587,7 @@ class ASFFS() :
                     for _f in _new_feature :
                         _unselected.remove(_f)
                     self._subset_max[_k] = _selected.copy()
-                    break
+                    break 
                 else :
                     if _o < _r :
                         _o += 1
