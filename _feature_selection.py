@@ -587,7 +587,7 @@ class ASFFS() :
                     for _f in _new_feature :
                         _unselected.remove(_f)
                     self._subset_max[_k] = _selected.copy()
-                    break 
+                    break
                 else :
                     if _o < _r :
                         _o += 1
@@ -639,6 +639,71 @@ class ASFFS() :
         return X.loc[:, self.selected_]
             
 # Genetic Algorithm (GA)
+class GeneticAlgorithm() :
+
+    '''
+    Use Genetic Algorithm (GA) to select best subset features [1]
+
+    Procedure: (1) Train a feature pool where every individual is trained on predefined methods,
+    result is pool of binary lists where 1 for feature selected, 0 for not selected
+
+    (2) Use Genetic Algorithm to generate a new selection binary list
+        (a) Selection: Roulette wheel selection, use fitness function to randomly select one individual
+        (b) Crossover: Single-point Crossover operator, create child selection list from parents list
+        (c) Mutation: Mutate the selection of n bits by certain percentage
+
+    (3) Induction algorithm: use certain algorithm to evolve
+
+    [1] Tan, F., Fu, X., Zhang, Y. and Bourgeois, A.G., 2008. A genetic algorithm-based method for 
+    feature subset selection. Soft Computing, 12(2), pp.111-120.
+
+    Parameters
+    ----------
+    n_components: Number of features to retain, default = 20
+
+    n_generations: Number of looping generation for GA, default = 10
+
+    p_crossover: Probability to perform crossover, default = 1
+
+    p_mutation: Probability to perform mutation (flip bit in selection list), default = 0.001
+
+    seed: random seed, default = 1
+    '''
+
+    def __init__(
+        self,
+        n_components = 20,
+        n_generations = 10,
+        p_crossover = 1,
+        p_mutation = 0.001,
+        seed = 1
+    ) :
+        self.n_components = n_components
+        self.n_generations = n_generations
+        self.p_crossover = p_crossover
+        self.p_mutation = p_mutation
+        self.seed = seed
+
+    def fit(self, X, y) :
+        
+        n, p = X.shape
+        self.n_components = int(self.n_components)
+        self.n_components = min(self.n_components, p)
+        if self.n_components == p :
+            warnings.warn('All features selected, no selection performed!')
+            self.selection_ = [1 for _ in range(self.n_components)]
+            return self
+
+        self.n_generations = int(self.n_generations)
+
+        self.p_crossover = float(self.p_crossover)
+        if self.p_crossover > 1 :
+            raise ValueError('Probability of crossover must in [0, 1], get {}.'.format(self.p_crossover))
+
+        self.p_mutation = float(self.p_mutation)
+        if self.p_mutation > 1 :
+            raise ValueError('Probability of mutation must in [0, 1], get {}.'.format(self.p_mutation))
+
 # CHCGA
 
 ######################################################################################################################
