@@ -122,6 +122,17 @@ def maxloc(vlist) :
                 continue
         return result
 
+# return the index of Boolean list or {0, 1} list
+# default 1 consider as True
+def _True_index(X, _true = [True, 1]) :
+    
+    result = []
+    for i in range(X) :
+        if X[i] in _true :
+            result.append(i)
+    
+    return result
+
 # return non-nan covariance matrix between X and y, (return covariance of X if y = None)
 # default calculate at columns (axis = 0), axis = 1 at rows
 def nan_cov(X, y = None, axis = 0) :

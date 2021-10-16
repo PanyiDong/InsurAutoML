@@ -18,7 +18,8 @@ from sympy import solve
 import itertools
 from functools import partial
 
-from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov
+from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov, \
+    _True_index
 
 class PCA_FeatureSelection() :
 
@@ -667,6 +668,9 @@ class GeneticAlgorithm() :
 
     p_mutation: Probability to perform mutation (flip bit in selection list), default = 0.001
 
+    feature_selection: feature selection methods to generate a pool of selections, default = 'auto'
+    support ('auto', 'Entropy', 't_statistics', 'SVM_RFE') 
+
     seed: random seed, default = 1
     '''
 
@@ -676,26 +680,35 @@ class GeneticAlgorithm() :
         n_generations = 10,
         p_crossover = 1,
         p_mutation = 0.001,
+        feature_selection = 'auto',
         seed = 1
     ) :
         self.n_components = n_components
         self.n_generations = n_generations
         self.p_crossover = p_crossover
         self.p_mutation = p_mutation
+        self.feature_selection = feature_selection
         self.seed = seed
+
+        self._auto_sel = {
+                'Entropy' : self._entropy,
+                't_statistics' : self._t_statistics,
+                'SVM_RFE' : self._SVM_RFE
+            }
 
     def fit(self, X, y) :
         
         n, p = X.shape
         self.n_components = int(self.n_components)
-        self.n_components = min(self.n_components, p)
+        self.n_components = min(self.n_components, p) # prevent selected number of features larger than dataset
         if self.n_components == p :
             warnings.warn('All features selected, no selection performed!')
             self.selection_ = [1 for _ in range(self.n_components)]
             return self
 
         self.n_generations = int(self.n_generations)
-
+        
+        # both probability of crossover and mutation must within range [0, 1]
         self.p_crossover = float(self.p_crossover)
         if self.p_crossover > 1 :
             raise ValueError('Probability of crossover must in [0, 1], get {}.'.format(self.p_crossover))
@@ -703,6 +716,58 @@ class GeneticAlgorithm() :
         self.p_mutation = float(self.p_mutation)
         if self.p_mutation > 1 :
             raise ValueError('Probability of mutation must in [0, 1], get {}.'.format(self.p_mutation))
+        
+        # select feature selection methods
+        # if auto, all default methods will be used; if not, use predefined one
+        if self.feature_selection == 'auto' :
+            self._feature_sel_methods = self._auto_sel
+        else :
+            self._feature_sel_methods = self.feature_selection
+
+            # check if all methods are available
+            for _method in self._feature_sel_methods :
+                if _method not in [*self._auto_sel] :
+                    raise ValueError(
+                        'Not recognizing feature selection methods, only support {}, get {}.' \
+                            .format([*self._auto_sel], _method)
+                    )
+        
+        self._fit(X, y)
+
+        return self
+    
+    def _fit(self, X, y) :
+        
+        # generate the feature selection pool using 
+        _sel_methods = [*self._feature_sel_methods]
+        _sel_pool = []
+
+        for _method in _sel_methods :
+            _sel_pool.append(self._feature_sel_methods[_method](X))
+
+        # loop through generations to run Genetic algorithm and Induction algorithm
+        for _gen in self.n_generations :
+
+            _sel_pool = self._GeneticAlgorithm(X, _sel_pool)
+
+            _sel_pool = self._InductionAlgorithm(X, _sel_pool)
+
+        self.selection_ = _sel_pool # selected features, boolean list
+
+        return self
+
+    def transform(self, X) :
+        
+        # check for all/no feature removed cases
+        if self.selection_.count(self.selection_[0]) == len(self.selection_) :
+            if self.selection_[0] == 0 :
+                warnings.warn('All features removed.')
+            elif self.selection_[1] == 1 :
+                warnings.warn('No feature removed.')
+            else :
+                raise ValueError('Not recognizing the selection list!')
+
+        return X.iloc[:, _True_index(self.selection_)]
 
 # CHCGA
 
