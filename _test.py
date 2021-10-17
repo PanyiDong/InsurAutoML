@@ -6,20 +6,11 @@ import scipy.sparse.linalg
 from scipy.sparse.linalg import svds
 
 from sklearn.metrics import mean_squared_error
+print(np.random.rand())
 
-a = [0, 0, 0, 0, 0]
-print(a.count(a[0]) == len(a))
+a = [0.1, 0.4, 0.3, 0.2]
+b = [0.05, 0.35, 0.5, 0.1]
 
-_sel = [1, 0, 1]
-X = pd.DataFrame({
-    '1' : [1, 2, 3],
-    '2' : [4, 5, 6],
-    '3' : [7, 8, 9]
-})
-
-columns = []
-for i in range(len(_sel)) :
-    if _sel[i] == 1:
-        columns.append(i)
-
-print(X.iloc[:, columns])
+c = a[:2] + b[2:]
+d = b[:2] + a[2:]
+print(c, d)

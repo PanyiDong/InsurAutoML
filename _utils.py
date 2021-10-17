@@ -2,12 +2,14 @@ from re import L
 import warnings
 import numpy as np
 import pandas as pd
+import scipy.stats
 from dateutil.parser import parse
 import copy
 
 # set response to [0, 1] class, random guess at 0.5
-def random_guess(number, seed = None) :
-    np.random.seed(seed)
+def random_guess(number, seed = 1) :
+    if seed != None :
+        np.random.seed(seed)
     if number > 0.5 :
         return 1
     elif number < 0.5 :
@@ -18,7 +20,8 @@ def random_guess(number, seed = None) :
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
 def random_index(n, total = None, seed = 1) :
-    np.random.seed(seed)
+    if seed != None :
+        np.random.seed(seed)
     if total == None :
         total == n
     output = []
@@ -33,7 +36,8 @@ def random_index(n, total = None, seed = 1) :
 
 # Return randomly shuffle of a list (unique values only)
 def random_list(vlist, seed = 1) :
-    np.random.seed(seed)
+    if seed != None :
+        np.random.seed(seed)
     output = []
     for _ in range(len(vlist)) :
         #np.random.seed(int(datetime.now().strftime("%H%M%S")))
@@ -223,3 +227,98 @@ def _class_cov(X, y, priors) :
         _data = X.loc[y.values == _cl, :]
         cov += priors[idx] * empirical_covariance(_data)
     return cov
+
+# return Pearson Correlation Coefficients
+def _Pearson_Corr(X, y) :
+
+    features = list(X.columns)
+    result = []
+    for _column in features :
+        result.append((nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0])
+        
+    return result
+
+# return Mutual Information
+def _MI(X, y) :
+        
+    if len(X) != len(y) :
+        raise ValueError('X and y not same size!')
+ 
+    features = list(X.columns)
+    _y_column = list(y.columns)
+    result = []
+
+    _y_pro = y.groupby(_y_column[0]).size().div(len(X)).values
+    _H_y = - sum(item * np.log(item) for item in _y_pro)
+
+    for _column in features :
+
+        _X_y = pd.concat([X[_column], y], axis = 1)
+        _pro = _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
+        _X_pro = X[_column].groupby(_column).size().div(len(X))
+        _H_y_X = - sum(_pro[i] * np.log(_pro[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]]) \
+            for i in range(len(X)))
+        result.append(_H_y - _H_y_X)
+
+    return result
+
+# return t-statistics of dataset, only two groups dataset are suitable
+def _t_score(X, y, fvalue = True, pvalue = False) :
+
+    if len(X) != len(y) :
+        raise ValueError('X and y not same size!')
+ 
+    features = list(X.columns)
+    _y_column = list(y.columns)
+
+    _group = y[_y_column[0]].unique()
+    if len(_group) != 2 :
+        raise ValueError('Only 2 group datasets are acceptable, get {}.'.format(len(_group)))
+
+    _f = []
+    _p = []
+
+    for _col in features :
+        t_test = scipy.stats.ttest_ind(X.loc[y[_y_column] == _group[0], _col], X.loc[y[_y_column] == _group[1], _col])
+        if fvalue :
+            _f.append(t_test[0])
+        if pvalue :
+            _p.append(t_test[1])
+
+    if fvalue and pvalue :
+        return _f, _p
+    elif fvalue :
+        return _f
+    elif pvalue :
+        return _p
+
+# return ANOVA of dataset, more than two groups dataset are suitable
+def _ANOVA(X, y, fvalue = True, pvalue = False) :
+
+    if len(X) != len(y) :
+        raise ValueError('X and y not same size!')
+ 
+    features = list(X.columns)
+    _y_column = list(y.columns)
+
+    _group = y[_y_column[0]].unique()
+
+    _f = []
+    _p = []
+
+    for _col in features :
+        _group_value = []
+        for _g in _group :
+            _group_value.append(X.loc[y[_y_column] == _g, _col].flatten())
+        _test = scipy.stats.f_oneway(*_group_value)
+        if fvalue :
+            _f.append(_test[0])
+        if pvalue :
+            _p.append(_test[1])
+
+    if fvalue and pvalue :
+        return _f, _p
+    elif fvalue :
+        return _f
+    elif pvalue :
+        return _p

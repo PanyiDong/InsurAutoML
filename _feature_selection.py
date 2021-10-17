@@ -19,7 +19,7 @@ import itertools
 from functools import partial
 
 from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov, \
-    _True_index
+    _True_index, _Pearson_Corr, _MI, _t_score, _ANOVA, random_index
 
 class PCA_FeatureSelection() :
 
@@ -372,42 +372,10 @@ class FeatureFilter() :
             raise ValueError('Must have response!')
         
         if self.criteria == 'Pearson' :          
-            self._score = self._Pearson_Corr(X, y)
+            self._score = _Pearson_Corr(X, y)
         elif self.criteria == 'MI' :
-            self._score = self._MI(X)
+            self._score = _MI(X, y)
 
-    def _Pearson_Corr(self, X, y) :
-
-        features = list(X.columns)
-        result = []
-        for _column in features :
-            result.append((nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0])
-        
-        return result
-
-    def _MI(self, X, y) :
-        
-        if len(X) != len(y) :
-            raise ValueError('X and y not same size!')
- 
-        features = list(X.columns)
-        _y_column = list(y.columns)
-        result = []
-
-        _y_pro = y.groupby(_y_column[0]).size().div(len(X)).values
-        _H_y = - sum(item * np.log(item) for item in _y_pro)
-
-        for _column in features :
-
-            _X_y = pd.concat([X[_column], y], axis = 1)
-            _pro = _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
-            _X_pro = X[_column].groupby(_column).size().div(len(X))
-            _H_y_X = - sum(_pro[i] * np.log(_pro[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]]) \
-                for i in range(len(X)))
-            result.append(_H_y - _H_y_X)
-
-        return result
-    
     def transform(self, X) :
 
         if self.n_components == None :
@@ -653,8 +621,6 @@ class GeneticAlgorithm() :
         (b) Crossover: Single-point Crossover operator, create child selection list from parents list
         (c) Mutation: Mutate the selection of n bits by certain percentage
 
-    (3) Induction algorithm: use certain algorithm to evolve
-
     [1] Tan, F., Fu, X., Zhang, Y. and Bourgeois, A.G., 2008. A genetic algorithm-based method for 
     feature subset selection. Soft Computing, 12(2), pp.111-120.
 
@@ -664,30 +630,68 @@ class GeneticAlgorithm() :
 
     n_generations: Number of looping generation for GA, default = 10
 
+    feature_selection: feature selection methods to generate a pool of selections, default = 'auto'
+    support ('auto', 'Entropy', 't_statistics', 'SVM_RFE')
+
+    fitness_func: Fitness function, default None
+    deafult will set as w * Accuracy + (1 - w) / regularization, all functions must be maximization optimization
+
+    fitness_fit: Model to fit seleciton and calculate accuracy for fitness, default = 'SVM'
+    support ('Linear', 'Logistic', 'Random Forest', 'SVM')
+
+    fitness_weight: Default fitness function weight for accuracy, default = 0.9
+
+    n_pair: Number of pairs of new selection rules to generate, default = 5
+
+    ga_selection: How to perform selection in GA, default = 'Roulette Wheel'
+    support ('Roulette Wheel', 'Rank', 'Steady State', 'Tournament', 'Elitism', 'Boltzmann')
+
     p_crossover: Probability to perform crossover, default = 1
+
+    ga_crossover: How to perform crossover in GA, default = 'Single-point'
+    support ('Single-point', 'Two-point', 'Uniform')
+
+    crossover_n: Place of crossover points to perform, default = None
+    deafult will set to p / 4 for single-point crossover
 
     p_mutation: Probability to perform mutation (flip bit in selection list), default = 0.001
 
-    feature_selection: feature selection methods to generate a pool of selections, default = 'auto'
-    support ('auto', 'Entropy', 't_statistics', 'SVM_RFE') 
+    mutation_n: Number of mutation points to perform, default = None 
+    default will set to p / 10
 
-    seed: random seed, default = 1
+    seed = 1
     '''
 
     def __init__(
         self,
         n_components = 20,
         n_generations = 10,
-        p_crossover = 1,
-        p_mutation = 0.001,
         feature_selection = 'auto',
+        fitness_func = None,
+        fitness_fit = 'SVM',
+        fitness_weight = 0.9,
+        n_pair = 5,
+        ga_selection = 'Roulette Wheel',
+        p_crossover = 1,
+        ga_crossover  = 'Single-point',
+        crossover_n = None,
+        p_mutation = 0.001,
+        mutation_n = None,
         seed = 1
     ) :
         self.n_components = n_components
         self.n_generations = n_generations
-        self.p_crossover = p_crossover
-        self.p_mutation = p_mutation
         self.feature_selection = feature_selection
+        self.fitness_func = fitness_func
+        self.fitness_fit = fitness_fit
+        self.fitness_weight = fitness_weight
+        self.n_pair = n_pair
+        self.ga_selection = ga_selection
+        self.p_crossover = p_crossover
+        self.ga_crossover = ga_crossover
+        self.crossover_n = crossover_n
+        self.p_mutation = p_mutation
+        self.mutation_n = mutation_n
         self.seed = seed
 
         self._auto_sel = {
@@ -696,7 +700,151 @@ class GeneticAlgorithm() :
                 'SVM_RFE' : self._SVM_RFE
             }
 
+    def _entropy(self, X, y, n) :
+        
+        # call Mutual Information from FeatureFilter
+        _score = _MI(X, y)
+
+        # select highest scored features
+        _score_sort = np.argsort(_score).reverse()
+        
+        _selected = [1 for _ in range(len(_score_sort))] # default all as 0
+        for i in range(n) : # select n_components as selected
+            _selected[_score_sort[i]] = 1
+
+        return _selected
+
+    def _t_statistics(self, X, y, n) :
+        
+        # for 2 group dataset, use t-statistics; otherwise, use ANOVA
+        if len(y[list(y.columns)[0]].unique()) == 2 :
+            _score = _t_score(X, y)
+        elif len(y[list(y.columns)[0]].unique()) > 2 :
+            _score = _ANOVA(X, y)
+        else :
+            raise ValueError('Only support for more than 2 groups, get only 1 group!')
+
+        # select lowest scored features
+        _score_sort = np.argsort(_score)
+        
+        _selected = [1 for _ in range(len(_score_sort))] # default all as 0
+        for i in range(n) : # select n_components as selected
+            _selected[_score_sort[i]] = 1
+
+        return _selected
+
+    def _SVM_RFE(self, X, y, n) :
+
+        from sklearn.feature_selection import RFE
+        from sklearn.svm import SVR
+        
+        # using sklearn RFE to recursively remove one feature using SVR, until n_components left
+        _estimator = SVR(kernel="linear")
+        _selector = RFE(_estimator, n_features_to_select = n, step = 1)
+        _selector = _selector.fit(X, y)
+
+        _selected = _selector.support_.tolist() # retunr the mask list of feature selection
+        _selected = [int(item) for item in _selected]
+
+        return _selected
+
+    def _cal_fitness(self, X, y, selection) :
+
+        from sklearn.metrics import accuracy_score
+
+        if not self.fitness_func : # fit selected features and calcualte accuracy score
+            if self.fitness_fit == 'Linear' :
+                from sklearn.linear_model import LinearRegression
+                model = LinearRegression()
+            elif self.fitness_fit == 'Logistic' :
+                from sklearn.linear_model import LogisticRegression
+                model = LogisticRegression()
+            elif self.fitness_fit == 'Random Forest' :
+                from sklearn.ensemble import RandomForestRegressor
+                model = RandomForestRegressor()
+            elif self.fitness_fit == 'SVM' :
+                from sklearn.svm import SVR
+                model = SVR()
+            model.fit(X.iloc[:, _True_index(selection)], y)
+            y_pred = model.predict(X.iloc[:, _True_index(selection)])
+            _accuracy_score = accuracy_score(y, y_pred)
+
+            return self.fitness_weight * _accuracy_score + (1 - self.fitness_weight) / sum(selection)
+        else :
+            return self.fitness_func(X, y, selection)
+
+    def _GeneticAlgorithm(self, X, y, selection_pool) :
+
+        n, p = X.shape
+        
+        # calculate the fitness of all feature selection in the pool
+        if not self._fitness : # first round of calculating fitness for all feature selections
+            self._fitness = []
+            for _seletion in selection_pool :
+                self._fitness.append(self._cal_fitness(X, y, _seletion))
+            self._fitness = np.array(self._fitness)
+            self._sum_fitness = sum(self._fitness)
+            self._fitness = [item / self._sum_fitness for item in self._fitness] # normalize the fitness
+        else :
+            self._fitness = self._sum_fitness * self._fitness
+            for i in range(2 * self.n_pair) :
+                self._fitness = np.append(self._fitness, self._cal_fitness(X, y, selection_pool[-(i + 1)])) # only need to calculate the newly added ones
+                self._sum_fitness += self._fitness[-1]
+            self._fitness = [item / self._sum_fitness for item in self._fitness] # normalize the fitness
+
+        # Selection
+        if self.ga_selection == 'Roulette Wheel' :
+            # select two individuals from selection pool based on probability (self._fitness)
+            # insert into selection_pool (last two), will be the placeholder for offsprings
+            for _ in range(2 * self.n_pair) :
+                selection_pool.append(selection_pool[np.random.choice(len(self._fitness), p = self._fitness)])
+
+        # Crossover, generate offsprings
+        if np.random.rand() < self.p_crossover : # only certain probability of executing crossover
+            if self.ga_crossover == 'single-point' :
+                if not self.crossover_n :
+                    self.crossover_n = int(p / 4) # default crossover point is first quarter point
+                else :
+                    if self.crossover_n > p :
+                        raise ValueError('Place of cross points must be smaller than p = {}, get {}.'.format(p, self.crossover_n))
+                    self.crossover_n == int(self.crossover_n)
+                
+                for i in range(self.n_pair) :
+                    _tmp1 = selection_pool[- (2 * i + 2)]
+                    _tmp2 = selection_pool[- (2 * i + 1)]
+                    selection_pool[- (2 * i + 2)] = _tmp2[:self.crossover_n] + _tmp1[self.crossover_n:] # exchange first crossover_n bits from parents
+                    selection_pool[- (2 * i + 1)] = _tmp1[:self.crossover_n] + _tmp2[self.crossover_n:]
+
+        # Mutation
+        for i in range(2 * self.n_pair) : # for two offsprings
+            if np.random.rand() < self.p_mutation : # only certain probability of executing mutation
+                if not self.mutation_n :
+                    self.mutation_n = int(p / 10) # default number of mutation point is first quarter point
+                else :
+                    if self.mutation_n > p :
+                        raise ValueError('Number of mutation points must be smaller than p = {}, get {}.'.format(p, self.mutation_n))
+                    self.mutation_n == int(self.mutation_n)
+
+                _mutation_index = random_index(self.mutation_n, p, seed = None) # randomly select mutation points
+                selection_pool[-(i + 1)] = [selection_pool[-(i + 1)][j] if j not in _mutation_index else \
+                    1 - selection_pool[-(i + 1)][j] for j in range(p)] # flip mutation points (0 to 1, 1 to 0)
+
+        return selection_pool
+
+    def _early_stopping(self) : # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
+
+        if len(self._fitness) < 10 :
+            return False
+        else :
+            _performance_order = np.argsort(self._fitness).reverse()
+            if self._fitness[_performance_order[0]] - self._fitness[_performance_order[9]] < 0.001 :
+                return True
+            else :
+                return False
+
     def fit(self, X, y) :
+
+        np.random.seed(self.seed) # set random seed
         
         n, p = X.shape
         self.n_components = int(self.n_components)
@@ -741,18 +889,24 @@ class GeneticAlgorithm() :
         # generate the feature selection pool using 
         _sel_methods = [*self._feature_sel_methods]
         _sel_pool = []
-
-        for _method in _sel_methods :
-            _sel_pool.append(self._feature_sel_methods[_method](X))
+        self._fitness = None # store the fitness of every individual
+        
+        # keep diversity for the pool, selection rule can have different number of features retained
+        _iter = int(np.log2(self.n_components))
+        for i in range(_iter) :
+            n = 2 ** (i + 1)
+            for _method in _sel_methods :
+                _sel_pool.append(self._feature_sel_methods[_method](X, y, n))
 
         # loop through generations to run Genetic algorithm and Induction algorithm
         for _gen in self.n_generations :
 
-            _sel_pool = self._GeneticAlgorithm(X, _sel_pool)
+            _sel_pool = self._GeneticAlgorithm(X, y, _sel_pool)
 
-            _sel_pool = self._InductionAlgorithm(X, _sel_pool)
+            if self._early_stopping() :
+                break
 
-        self.selection_ = _sel_pool # selected features, boolean list
+        self.selection_ = _sel_pool[(np.argsort(self._fitness).reverse())[0]] # selected features, {1, 0} list
 
         return self
 
