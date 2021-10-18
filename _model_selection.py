@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
+import scipy
+import scipy.stats
 import sklearn
-
 
 '''
 Classifiers/Hyperparameters from sklearn:
@@ -58,3 +59,73 @@ Regressors/Hyperparameters from sklearn:
             activation, alpha, learning_rate_init, early_stopping, solver, 
             batch_size, n_iter_no_change, tol, shuffle, beta_1, beta_2, epsilon
 '''
+
+class AutoClassifier() :
+
+    '''
+    Perform model selection and hyperparameter optimization for classification tasks
+    using sklearn models, predefine hyperparameters
+    '''
+
+    def __init__(
+        self,
+        models = 'auto',
+        test_size = 0.15,
+        seed = 1
+    ) :
+        self.test_size = test_size
+        self.seed = seed
+        self.models = models
+
+        from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier, \
+            RandomForestClassifier
+        from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
+        from sklearn.tree import DecisionTreeClassifier
+        from sklearn.neighbors import KNeighborsClassifier
+        from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+        from sklearn.svm import LinearSVC, SVC
+        from sklearn.linear_model import PassiveAggressiveClassifier, SGDClassifier
+        from sklearn.neural_network import MLPClassifier
+
+        self._all_models = {
+            'AdaBoostClassifier' : AdaBoostClassifier,
+            'BernoulliNB' : BernoulliNB,
+            'DecisionTreeClassifier' : DecisionTreeClassifier,
+            'ExtraTreesClassifier' : ExtraTreesClassifier,
+            'GaussianNB' : GaussianNB,
+            'GradientBoostingClassifier' : GradientBoostingClassifier,
+            'KNeighborsClassifier' : KNeighborsClassifier,
+            'LinearDiscriminantAnalysis' : LinearDiscriminantAnalysis,
+            'LinearSVC' : LinearSVC,
+            'SVC' : SVC,
+            'MultinomialNB' : MultinomialNB,
+            'PassiveAggressiveClassifier' : PassiveAggressiveClassifier,
+            'QuadraticDiscriminantAnalysis' : QuadraticDiscriminantAnalysis,
+            'RandomForestClassifier' : RandomForestClassifier,
+            'SGDClassifier' : SGDClassifier,
+            'MLPClassifier' : MLPClassifier
+        }
+
+        self.hyperparameter_space = None
+
+    def fit(self, X, y) :
+        
+        # train test split so the performance of model selection and 
+        # hyperparameter optimization can be evaluated
+        from sklearn.model_selection import train_test_split
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            X, y, test_size = self.test_size, random_state = self.seed
+        )
+
+        if self.models == 'auto' : # if auto, model pool will be all default models
+            self.models = self._all_models.copy()
+        else :
+            self.models = self.models # if specified, check if models in default models
+            for _model in self.models :
+                if _model not in [*self._all_models] :
+                    raise ValueError(
+                        'Only supported models are {}, get {}.'.format([*self._all_models], _model)
+                    )
+
+        

@@ -6,7 +6,9 @@ import scipy.sparse.linalg
 from scipy.sparse.linalg import svds
 
 from sklearn.metrics import mean_squared_error
-print(np.random.rand())
+
+a = {'name' : [1, 2, 3, 4]}
+print([*a])
 
 a = [0.1, 0.4, 0.3, 0.2]
 b = [0.05, 0.35, 0.5, 0.1]
