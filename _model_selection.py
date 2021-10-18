@@ -3,6 +3,8 @@ import pandas as pd
 import scipy
 import scipy.stats
 import sklearn
+import hyperopt
+from hyperopt import fmin, tpe, hp, SparkTrials, STATUS_OK, Trials
 
 '''
 Classifiers/Hyperparameters from sklearn:
@@ -107,6 +109,38 @@ class AutoClassifier() :
         }
 
         self.hyperparameter_space = None
+    
+    # the objective function of Bayesian Optimization tries to minimize
+    # use accuracy score
+    def _objective(self, X_train, y_train, X_test, y_test, params) :
+
+        _model = params['model']
+        del params['model']
+        clf = self.models[_model](params)
+        
+        from sklearn.metrics import accuracy_score
+
+        clf.fit(X_train, y_train)
+        y_pred = clf.predict(X_test)
+
+        # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
+        return {'loss' : - accuracy_score(y_pred, y_test), 'status' : STATUS_OK}
+
+    # create hyperparameter space using Hyperopt.hp.choice
+    def get_hyperparameter_space(self) :
+
+        return hp.choice('models', [
+            {
+                'model' : 'AdaBoostClassifier',
+                'n_estimators' : hp.quniform('n_estimators', 10, 100, 1), 
+                'learning_rate' : hp.loguniform('learning_rate', 0.001, 10), 
+                'algorithm' : hp.choice('algorithm', ['SAMME', 'SAMME.R']), 
+                'max_depth' : hp.quniform('n_estimators', 2, 10, 1) # for base_estimator of Decision Tree
+            },
+            {
+
+            }
+        ])
 
     def fit(self, X, y) :
         
@@ -127,5 +161,8 @@ class AutoClassifier() :
                     raise ValueError(
                         'Only supported models are {}, get {}.'.format([*self._all_models], _model)
                     )
+
+        if self.hyperparameter_space is None :
+            self.hyperparameter_space = self.get_hyperparameter_space()
 
         
