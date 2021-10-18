@@ -10,7 +10,7 @@ from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, Tom
     EditedNearestNeighbor, CondensedNearestNeighbor, OneSidedSelection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
 from ._feature_selection import PCA_FeatureSelection, LDASelection, FeatureFilter, \
-    RBFSampler, ASFFS
+    RBFSampler, ASFFS, GeneticAlgorithm
 from ._feature_selection import Densifier, ExtraTreesPreprocessorClassification, ExtraTreesPreprocessorRegression, \
     FastICA, FeatureAgglomeration, KernelPCA, RandomKitchenSinks, LibLinear_Preprocessor, Nystroem, PCA, \
     PolynomialFeatures, RandomTreesEmbedding, SelectPercentileClassification, SelectPercentileRegression, \
@@ -50,6 +50,7 @@ __all__ = [
     'RBFSampler',
     'FeatureFilter',
     'ASFFS',
+    'GeneticAlgorithm',
     'densifier',  # from autosklearn
     'extra_trees_preproc_for_classification', 
     'extra_trees_preproc_for_regression', 
@@ -118,6 +119,7 @@ feature_selection = {
     'RBFSampler' : RBFSampler,
     'FeatureFilter' : FeatureFilter,
     'ASFFS' : ASFFS,
+    'GeneticAlgorithm' : GeneticAlgorithm,
     'densifier' : Densifier,  # from autosklearn
     'extra_trees_preproc_for_classification' : ExtraTreesPreprocessorClassification, 
     'extra_trees_preproc_for_regression' : ExtraTreesPreprocessorRegression, 

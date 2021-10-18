@@ -128,7 +128,7 @@ def maxloc(vlist) :
 
 # return the index of Boolean list or {0, 1} list
 # default 1 consider as True
-def _True_index(X, _true = [True, 1]) :
+def True_index(X, _true = [True, 1]) :
     
     result = []
     for i in range(X) :
@@ -187,7 +187,7 @@ def nan_cov(X, y = None, axis = 0) :
     return _cov
 
 # return class (unique in y) mean of X
-def _class_means(X, y) :
+def class_means(X, y) :
 
     _class = np.unique(y)
     result = []
@@ -219,7 +219,7 @@ def empirical_covariance(X, *, assume_centered=False):
     return covariance
 
 # return weighted within-class covariance matrix
-def _class_cov(X, y, priors) :
+def class_cov(X, y, priors) :
 
     _class = np.unique(y)
     cov = np.zeros(shape=(X.shape[1], X.shape[1]))
@@ -229,7 +229,7 @@ def _class_cov(X, y, priors) :
     return cov
 
 # return Pearson Correlation Coefficients
-def _Pearson_Corr(X, y) :
+def Pearson_Corr(X, y) :
 
     features = list(X.columns)
     result = []
@@ -239,7 +239,7 @@ def _Pearson_Corr(X, y) :
     return result
 
 # return Mutual Information
-def _MI(X, y) :
+def MI(X, y) :
         
     if len(X) != len(y) :
         raise ValueError('X and y not same size!')
@@ -254,24 +254,25 @@ def _MI(X, y) :
     for _column in features :
 
         _X_y = pd.concat([X[_column], y], axis = 1)
-        _pro = _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
-        _X_pro = X[_column].groupby(_column).size().div(len(X))
-        _H_y_X = - sum(_pro[i] * np.log(_pro[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]]) \
-            for i in range(len(X)))
+        _pro = _X_y.groupby([_column, _y_column[0]]).size().div(len(X)) # combine probability (x, y)
+        _pro_val = _pro.values # take only values
+        _X_pro = X[[_column]].groupby(_column).size().div(len(X)) # probability (x)
+        _H_y_X = - sum(_pro_val[i] * np.log(_pro_val[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]].values[0]) \
+            for i in range(len(_pro)))
         result.append(_H_y - _H_y_X)
 
     return result
 
 # return t-statistics of dataset, only two groups dataset are suitable
-def _t_score(X, y, fvalue = True, pvalue = False) :
+def t_score(X, y, fvalue = True, pvalue = False) :
 
     if len(X) != len(y) :
         raise ValueError('X and y not same size!')
  
     features = list(X.columns)
-    _y_column = list(y.columns)
+    _y_column = list(y.columns)[0] # only accept one column of response
 
-    _group = y[_y_column[0]].unique()
+    _group = y[_y_column].unique()
     if len(_group) != 2 :
         raise ValueError('Only 2 group datasets are acceptable, get {}.'.format(len(_group)))
 
@@ -293,15 +294,15 @@ def _t_score(X, y, fvalue = True, pvalue = False) :
         return _p
 
 # return ANOVA of dataset, more than two groups dataset are suitable
-def _ANOVA(X, y, fvalue = True, pvalue = False) :
+def ANOVA(X, y, fvalue = True, pvalue = False) :
 
     if len(X) != len(y) :
         raise ValueError('X and y not same size!')
  
     features = list(X.columns)
-    _y_column = list(y.columns)
+    _y_column = list(y.columns)[0] # only accept one column of response
 
-    _group = y[_y_column[0]].unique()
+    _group = y[_y_column].unique()
 
     _f = []
     _p = []

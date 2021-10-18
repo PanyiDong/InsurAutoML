@@ -1,13 +1,9 @@
-from _typeshed import Self
-from distutils.log import warn
-from multiprocessing.sharedctypes import Value
 import random
 import warnings
 import time
 import numbers
 import warnings
 import numpy as np
-from numpy.lib.arraysetops import isin
 import pandas as pd
 import scipy
 import scipy.linalg
@@ -18,8 +14,8 @@ from sympy import solve
 import itertools
 from functools import partial
 
-from ._utils import nan_cov, maxloc, empirical_covariance, _class_means, _class_cov, \
-    _True_index, _Pearson_Corr, _MI, _t_score, _ANOVA, random_index
+from ._utils import nan_cov, maxloc, empirical_covariance, class_means, class_cov, \
+    True_index, Pearson_Corr, MI, t_score, ANOVA, random_index
 
 class PCA_FeatureSelection() :
 
@@ -223,8 +219,8 @@ class LDASelection() :
 
     def _eigen(self, X, y) : 
 
-        self.means_ = _class_means(X, y)
-        self.covariance_ = _class_cov(X, y, self.priors_)
+        self.means_ = class_means(X, y)
+        self.covariance_ = class_cov(X, y, self.priors_)
 
         Sw = self.covariance_  # within scatter
         St = empirical_covariance(X)  # total scatter
@@ -372,9 +368,9 @@ class FeatureFilter() :
             raise ValueError('Must have response!')
         
         if self.criteria == 'Pearson' :          
-            self._score = _Pearson_Corr(X, y)
+            self._score = Pearson_Corr(X, y)
         elif self.criteria == 'MI' :
-            self._score = _MI(X, y)
+            self._score = MI(X, y)
 
     def transform(self, X) :
 
@@ -630,8 +626,10 @@ class GeneticAlgorithm() :
 
     n_generations: Number of looping generation for GA, default = 10
 
-    feature_selection: feature selection methods to generate a pool of selections, default = 'auto'
-    support ('auto', 'Entropy', 't_statistics', 'SVM_RFE')
+    feature_selection: Feature selection methods to generate a pool of selections, default = 'auto'
+    support ('auto', 'random', 'Entropy', 't_statistics', 'SVM_RFE')
+
+    n_initial: Number of random feature selection rules to initialize, default = 10
 
     fitness_func: Fitness function, default None
     deafult will set as w * Accuracy + (1 - w) / regularization, all functions must be maximization optimization
@@ -667,6 +665,7 @@ class GeneticAlgorithm() :
         n_components = 20,
         n_generations = 10,
         feature_selection = 'auto',
+        n_initial = 10,
         fitness_func = None,
         fitness_fit = 'SVM',
         fitness_weight = 0.9,
@@ -682,6 +681,7 @@ class GeneticAlgorithm() :
         self.n_components = n_components
         self.n_generations = n_generations
         self.feature_selection = feature_selection
+        self.n_initial = n_initial
         self.fitness_func = fitness_func
         self.fitness_fit = fitness_fit
         self.fitness_weight = fitness_weight
@@ -700,15 +700,31 @@ class GeneticAlgorithm() :
                 'SVM_RFE' : self._SVM_RFE
             }
 
+    def _random(self, X, y, n) :
+
+        # randomly select n features from X
+        n, p = X.shape
+
+        if n > p :
+            raise ValueError('Selected features can not be larger than dataset limit {}, get {}.'.format(p, n))
+        
+        _index = random_index(n, p)
+
+        _selected = [0 for _ in range(p)] # default all as 0
+        for i in range(n) : # select n_components as selected
+            _selected[_index[i]] = 1
+
+        return _selected
+
     def _entropy(self, X, y, n) :
         
         # call Mutual Information from FeatureFilter
-        _score = _MI(X, y)
+        _score = MI(X, y)
 
         # select highest scored features
-        _score_sort = np.argsort(_score).reverse()
+        _score_sort = np.flip(np.argsort(_score))
         
-        _selected = [1 for _ in range(len(_score_sort))] # default all as 0
+        _selected = [0 for _ in range(len(_score_sort))] # default all as 0
         for i in range(n) : # select n_components as selected
             _selected[_score_sort[i]] = 1
 
@@ -718,16 +734,16 @@ class GeneticAlgorithm() :
         
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
         if len(y[list(y.columns)[0]].unique()) == 2 :
-            _score = _t_score(X, y)
+            _score = t_score(X, y)
         elif len(y[list(y.columns)[0]].unique()) > 2 :
-            _score = _ANOVA(X, y)
+            _score = ANOVA(X, y)
         else :
             raise ValueError('Only support for more than 2 groups, get only 1 group!')
 
         # select lowest scored features
         _score_sort = np.argsort(_score)
         
-        _selected = [1 for _ in range(len(_score_sort))] # default all as 0
+        _selected = [0 for _ in range(len(_score_sort))] # default all as 0
         for i in range(n) : # select n_components as selected
             _selected[_score_sort[i]] = 1
 
@@ -765,8 +781,8 @@ class GeneticAlgorithm() :
             elif self.fitness_fit == 'SVM' :
                 from sklearn.svm import SVR
                 model = SVR()
-            model.fit(X.iloc[:, _True_index(selection)], y)
-            y_pred = model.predict(X.iloc[:, _True_index(selection)])
+            model.fit(X.iloc[:, True_index(selection)], y)
+            y_pred = model.predict(X.iloc[:, True_index(selection)])
             _accuracy_score = accuracy_score(y, y_pred)
 
             return self.fitness_weight * _accuracy_score + (1 - self.fitness_weight) / sum(selection)
@@ -836,7 +852,7 @@ class GeneticAlgorithm() :
         if len(self._fitness) < 10 :
             return False
         else :
-            _performance_order = np.argsort(self._fitness).reverse()
+            _performance_order = np.flip(np.argsort(self._fitness)) # select performance from highest to lowest
             if self._fitness[_performance_order[0]] - self._fitness[_performance_order[9]] < 0.001 :
                 return True
             else :
@@ -869,6 +885,11 @@ class GeneticAlgorithm() :
         # if auto, all default methods will be used; if not, use predefined one
         if self.feature_selection == 'auto' :
             self._feature_sel_methods = self._auto_sel
+        elif self.feature_selection == 'random' :
+            self.n_initial = int(self.n_initial)
+            self._feature_sel_methods = {}
+            for i in range(self.n_initial) : # get n_initial random feature selection rule
+                self._feature_sel_methods['random_' + str(i + 1)] = self._random
         else :
             self._feature_sel_methods = self.feature_selection
 
@@ -888,7 +909,7 @@ class GeneticAlgorithm() :
         
         # generate the feature selection pool using 
         _sel_methods = [*self._feature_sel_methods]
-        _sel_pool = []
+        _sel_pool = [] # store all selection rules
         self._fitness = None # store the fitness of every individual
         
         # keep diversity for the pool, selection rule can have different number of features retained
@@ -900,13 +921,12 @@ class GeneticAlgorithm() :
 
         # loop through generations to run Genetic algorithm and Induction algorithm
         for _gen in self.n_generations :
-
             _sel_pool = self._GeneticAlgorithm(X, y, _sel_pool)
 
             if self._early_stopping() :
                 break
 
-        self.selection_ = _sel_pool[(np.argsort(self._fitness).reverse())[0]] # selected features, {1, 0} list
+        self.selection_ = _sel_pool[np.flip(np.argsort(self._fitness))[0]] # selected features, {1, 0} list
 
         return self
 
@@ -921,7 +941,7 @@ class GeneticAlgorithm() :
             else :
                 raise ValueError('Not recognizing the selection list!')
 
-        return X.iloc[:, _True_index(self.selection_)]
+        return X.iloc[:, True_index(self.selection_)]
 
 # CHCGA
 
