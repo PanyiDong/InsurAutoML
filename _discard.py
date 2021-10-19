@@ -28,6 +28,15 @@ from autosklearn.pipeline.components.feature_preprocessing.select_rates_classifi
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import SelectRegressionRates
 from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import TruncatedSVD
 
+from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier, \
+    RandomForestClassifier
+from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.svm import LinearSVC, SVC
+from sklearn.linear_model import PassiveAggressiveClassifier, SGDClassifier
+from sklearn.neural_network import MLPClassifier
 
 # R environment
 import rpy2

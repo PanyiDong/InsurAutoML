@@ -22,16 +22,16 @@ Classifiers/Hyperparameters from sklearn:
 9. Linear SVC (LibLinear): penalty, loss, dual, tol, C, multi_class, 
             fit_intercept, intercept_scaling
 10. kernel SVC (LibSVM): C, kernel, gamma, shrinking, tol, max_iter
-11. Multinomial naive Bayes: alpha, fit_prior
-12. Passive aggressive: C, fit_intercept, tol, loss, average
-13. QDA: reg_param
-14. Random forest: criterion, max_features, max_depth, min_samples_split, 
-            min_samples_leaf, min_weight_fraction_leaf, bootstrap, max_leaf_nodes
-15. SGD (Stochastic Gradient Descent): loss, penalty, alpha, fit_intercept, tol,
-            learning_rate
-16. MLP (Multilayer Perceptron): hidden_layer_depth, num_nodes_per_layer, activation, alpha,
+11. MLP (Multilayer Perceptron): hidden_layer_depth, num_nodes_per_layer, activation, alpha,
             learning_rate_init, early_stopping, solver, batch_size, n_iter_no_change, tol,
             shuffle, beta_1, beta_2, epsilon
+12. Multinomial naive Bayes: alpha, fit_prior
+13. Passive aggressive: C, fit_intercept, tol, loss, average
+14. QDA: reg_param
+15. Random forest: criterion, max_features, max_depth, min_samples_split, 
+            min_samples_leaf, min_weight_fraction_leaf, bootstrap, max_leaf_nodes
+16. SGD (Stochastic Gradient Descent): loss, penalty, alpha, fit_intercept, tol,
+            learning_rate
 '''
 
 '''
@@ -79,33 +79,40 @@ class AutoClassifier() :
         self.seed = seed
         self.models = models
 
-        from sklearn.ensemble import AdaBoostClassifier, ExtraTreesClassifier, GradientBoostingClassifier, \
-            RandomForestClassifier
-        from sklearn.naive_bayes import BernoulliNB, GaussianNB, MultinomialNB
-        from sklearn.tree import DecisionTreeClassifier
-        from sklearn.neighbors import KNeighborsClassifier
-        from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-        from sklearn.svm import LinearSVC, SVC
-        from sklearn.linear_model import PassiveAggressiveClassifier, SGDClassifier
-        from sklearn.neural_network import MLPClassifier
+        from autosklearn.pipeline.components.classification.adaboost import AdaboostClassifier
+        from autosklearn.pipeline.components.classification.bernoulli_nb import BernoulliNB
+        from autosklearn.pipeline.components.classification.decision_tree import DecisionTree
+        from autosklearn.pipeline.components.classification.extra_trees import ExtraTreesClassifier
+        from autosklearn.pipeline.components.classification.gaussian_nb import GaussianNB
+        from autosklearn.pipeline.components.classification.gradient_boosting import GradientBoostingClassifier
+        from autosklearn.pipeline.components.classification.k_nearest_neighbors import KNearestNeighborsClassifier
+        from autosklearn.pipeline.components.classification.lda import LDA
+        from autosklearn.pipeline.components.classification.liblinear_svc import LibLinear_SVC
+        from autosklearn.pipeline.components.classification.libsvm_svc import LibSVM_SVC
+        from autosklearn.pipeline.components.classification.mlp import MLPClassifier
+        from autosklearn.pipeline.components.classification.multinomial_nb import MultinomialNB
+        from autosklearn.pipeline.components.classification.passive_aggressive import PassiveAggressive
+        from autosklearn.pipeline.components.classification.qda import QDA
+        from autosklearn.pipeline.components.classification.random_forest import RandomForest
+        from autosklearn.pipeline.components.classification.sgd import SGD
 
         self._all_models = {
-            'AdaBoostClassifier' : AdaBoostClassifier,
+            'AdaboostClassifier' : AdaboostClassifier,
             'BernoulliNB' : BernoulliNB,
-            'DecisionTreeClassifier' : DecisionTreeClassifier,
+            'DecisionTree' : DecisionTree,
             'ExtraTreesClassifier' : ExtraTreesClassifier,
             'GaussianNB' : GaussianNB,
             'GradientBoostingClassifier' : GradientBoostingClassifier,
-            'KNeighborsClassifier' : KNeighborsClassifier,
-            'LinearDiscriminantAnalysis' : LinearDiscriminantAnalysis,
-            'LinearSVC' : LinearSVC,
-            'SVC' : SVC,
+            'KNearestNeighborsClassifier' : KNearestNeighborsClassifier,
+            'LDA' : LDA,
+            'LibLinear_SVC' : LibLinear_SVC,
+            'LibSVM_SVC' : LibSVM_SVC,
+            'MLPClassifier' : MLPClassifier,
             'MultinomialNB' : MultinomialNB,
-            'PassiveAggressiveClassifier' : PassiveAggressiveClassifier,
-            'QuadraticDiscriminantAnalysis' : QuadraticDiscriminantAnalysis,
-            'RandomForestClassifier' : RandomForestClassifier,
-            'SGDClassifier' : SGDClassifier,
-            'MLPClassifier' : MLPClassifier
+            'PassiveAggressive' : PassiveAggressive,
+            'QDA' : QDA,
+            'RandomForest' : RandomForest,
+            'SGD' : SGD
         }
 
         self.hyperparameter_space = None
@@ -138,7 +145,51 @@ class AutoClassifier() :
                 'max_depth' : hp.quniform('n_estimators', 2, 10, 1) # for base_estimator of Decision Tree
             },
             {
-
+                'model' : 'BernoulliNB',
+                'alpha' : hp.loguniform('alpha', 0.001, 10),
+                'fit_prior' : hp.choice('fit_prior', [True, False])
+            },
+            {
+                'model' : 'DecisionTree',
+            },
+            {
+                'model' : 'ExtraTreesClassifier',
+            },
+            {
+                'model' : 'GaussianNB',
+            },
+            {
+                'model' : 'GradientBoostingClassifier',
+            },
+            {
+                'model' : 'KNearestNeighborsClassifier',
+            },
+            {
+                'model' : 'LDA',
+            },
+            {
+                'model' : 'LibLinear_SVC',
+            },
+            {
+                'model' : 'LibSVM_SVC',
+            },
+            {
+                'model' : 'MLPClassifier',
+            },
+            {
+                'model' : 'MultinomialNB',
+            },
+            {
+                'model' : 'PassiveAggressive',
+            },
+            {
+                'model' : 'QDA',
+            },
+            {
+                'model' : 'RandomForest',
+            },
+            {
+                'model' : 'SGD',
             }
         ])
 
