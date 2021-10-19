@@ -73,11 +73,13 @@ class AutoClassifier() :
         self,
         models = 'auto',
         test_size = 0.15,
+        method = 'Bayeisan',
         seed = 1
-    ) :
-        self.test_size = test_size
-        self.seed = seed
+    ) : 
         self.models = models
+        self.test_size = test_size
+        self.method = method
+        self.seed = seed
 
         from autosklearn.pipeline.components.classification.adaboost import AdaboostClassifier
         from autosklearn.pipeline.components.classification.bernoulli_nb import BernoulliNB
@@ -142,7 +144,7 @@ class AutoClassifier() :
                 'n_estimators' : hp.quniform('n_estimators', 10, 100, 1), 
                 'learning_rate' : hp.loguniform('learning_rate', 0.001, 10), 
                 'algorithm' : hp.choice('algorithm', ['SAMME', 'SAMME.R']), 
-                'max_depth' : hp.quniform('n_estimators', 2, 10, 1) # for base_estimator of Decision Tree
+                'max_depth' : hp.quniform('max_depth', 2, 10, 1) # for base_estimator of Decision Tree
             },
             {
                 'model' : 'BernoulliNB',
@@ -151,21 +153,53 @@ class AutoClassifier() :
             },
             {
                 'model' : 'DecisionTree',
+                'criterion' : hp.choice('criterion', ['gini', 'entropy']), 
+                'max_features' : hp.choice('max_features', [None, 'auto', 'sqrt', 'log2']), 
+                'max_depth_factor' : hp.uniform('max_depth_factor', 0, 1),
+                'min_samples_split' : hp.quniform('min_samples_split', 2, 10, 1), 
+                'min_samples_leaf' : hp.quniform('min_samples_leaf', 1, 10, 1), 
+                'min_weight_fraction_leaf' : hp.uniform('min_weight_fraction_leaf', 0, 1),
+                'max_leaf_nodes' : hp.quniform('max_leaf_nodes', 1, 100000, 1), 
+                'min_impurity_decrease' : hp.uniform('min_impurity_decrease', 0, 1)
             },
             {
                 'model' : 'ExtraTreesClassifier',
+                'criterion' : hp.choice('criterion', ['gini', 'entropy']), 
+                'min_samples_leaf' : hp.quniform('min_samples_leaf', 1, 10, 1),
+                'min_samples_split' : hp.quniform('min_samples_split', 2, 10, 1),  
+                'max_features' : hp.choice('max_features', [None, 'auto', 'sqrt', 'log2']), 
+                'bootstrap' : hp.choice('bootstrap', [True, False]), 
+                'max_leaf_nodes' : hp.quniform('max_leaf_nodes', 1, 100000, 1),
+                'max_depth' : hp.quniform('max_depth', 2, 10, 1), 
+                'min_weight_fraction_leaf' : hp.uniform('min_weight_fraction_leaf', 0, 1), 
+                'min_impurity_decrease' : hp.uniform('min_impurity_decrease', 0, 1)
             },
             {
-                'model' : 'GaussianNB',
+                'model' : 'GaussianNB'
             },
             {
                 'model' : 'GradientBoostingClassifier',
+                'loss' : hp.choice('loss', ['auto', 'binary_crossentropy', 'categorical_crossentropy']), 
+                'learning_rate' : hp.loguniform('learning_rate', 0.001, 10), 
+                'min_samples_leaf' : hp.quniform('min_samples_leaf', 1, 30, 1), 
+                'max_depth' : hp.quniform('max_depth', 2, 50, 1),
+                'max_leaf_nodes' : hp.quniform('max_leaf_nodes', 1, 100000, 1), 
+                'max_bins' : hp.quniform('max_bins', 1, 255, 1), 
+                'l2_regularization' : hp.uniform('l2_regularization', 0, 10), 
+                'early_stop' : hp.choice('early_stp', ['auto', True, False]), 
+                'tol' : hp.loguniform('tol', 1e-10, 1), 
+                'scoring' : hp.choice('scoring', ['loss', 'accuracy', 'roc_auc'])
             },
             {
                 'model' : 'KNearestNeighborsClassifier',
+                'n_neighbors' : hp.quniform('n_neighbors', 1, 20, 1), 
+                'weights' : hp.choice('weights', ['uniform', 'distance']), 
+                'p' : hp.quniform('p', 1, 5, 1)
             },
             {
                 'model' : 'LDA',
+                'shrinkage' : hp.choice('shrinkage', ['svd', 'lsqr', 'eigen']), 
+                'tol' : hp.loguniform('tol', 1e-10, 1)
             },
             {
                 'model' : 'LibLinear_SVC',
