@@ -41,6 +41,30 @@ class AutoClassifier() :
     '''
     Perform model selection and hyperparameter optimization for classification tasks
     using sklearn models, predefine hyperparameters
+
+    Parameters
+    ----------
+    timeout: total time limit for the job in seconds, default = 360
+    
+    max_evals: Maximum number of function evaluations allowd, default = 32
+    
+    models: Models selected for the job, default = 'auto'
+    support ('AdaboostClassifier', 'BernoulliNB', 'DecisionTree', 'ExtraTreesClassifier',
+            'GaussianNB', 'GradientBoostingClassifier', 'KNearestNeighborsClassifier',
+            'LDA', 'LibLinear_SVC', 'LibSVM_SVC', 'MLPClassifier', 'MultinomialNB',
+            'PassiveAggressive', 'QDA', 'RandomForest',  'SGD')
+    'auto' will select all default models, or a list of models used
+    
+    test_size: Test percentage used to evaluate the perforamance, default = 0.15
+    
+    method: model selection/hyperparameter optimization methods, default = 'Bayeisan'
+    
+    algo: Search algorithm, default = 'tpe'
+    support (rand, tpe, atpe)
+    
+    spark_trials: Whether to use SparkTrials, default = True
+    
+    seed: random seed, default = 1
     '''
 
     def __init__(
