@@ -6,7 +6,7 @@ import scipy.stats
 import sklearn
 import mlflow
 import hyperopt
-from hyperopt import fmin, tpe, hp, SparkTrials, STATUS_OK, Trials
+from hyperopt import fmin, hp, rand, tpe, atpe, Trials, SparkTrials, STATUS_OK
 
 '''
 Classifiers/Hyperparameters from sklearn:
@@ -78,6 +78,8 @@ class AutoClassifier() :
         models = 'auto',
         test_size = 0.15,
         method = 'Bayeisan',
+        algo = 'tpe',
+        spark_trials = True,
         seed = 1
     ) : 
         self.timeout = timeout
@@ -85,6 +87,8 @@ class AutoClassifier() :
         self.models = models
         self.test_size = test_size
         self.method = method
+        self.algo = algo
+        self.spark_trials = spark_trials
         self.seed = seed
 
         from autosklearn.pipeline.components.classification.adaboost import AdaboostClassifier
@@ -127,11 +131,12 @@ class AutoClassifier() :
         # all hyperparameters for the classification models
         self._all_hyperparameters = [
             {
-                'model' : 'AdaBoostClassifier',
-                'n_estimators' : hp.quniform('n_estimators', 10, 100, 1), 
-                'learning_rate' : hp.loguniform('learning_rate', 0.001, 10), 
-                'algorithm' : hp.choice('algorithm', ['SAMME', 'SAMME.R']), 
-                'max_depth' : hp.quniform('max_depth', 2, 10, 1) # for base_estimator of Decision Tree
+                'model' : 'AdaboostClassifier',
+                'n_estimators' : hp.quniform('AdaboostClassifier_n_estimators', 10, 100, 1), 
+                'learning_rate' : hp.uniform('AdaboostClassifier_learning_rate', 0.00001, 1), 
+                'algorithm' : hp.choice('AdaboostClassifier_algorithm', ['SAMME', 'SAMME.R']), 
+                # for base_estimator of Decision Tree
+                'max_depth' : hp.quniform('AdaboostClassifier_max_depth', 2, 10, 1)
             },
             {
                 'model' : 'BernoulliNB',
@@ -273,7 +278,8 @@ class AutoClassifier() :
 
         _hyperparameter = []
         for _model in [*models] :
-            for item in self.hyperparameter_space : # search the models' hyperparameters
+            # checked before at models that all models are in default space
+            for item in self._all_hyperparameters : # search the models' hyperparameters
                 if item['model'] == _model :
                     _hyperparameter.append(item)
 
@@ -331,23 +337,35 @@ class AutoClassifier() :
 
             _model = params['model']
             del params['model']
-            clf = self.models[_model](params)
+            clf = models[_model](**params) # call the model using passed parameters
         
             from sklearn.metrics import accuracy_score
 
-            clf.fit(X_train, y_train)
-            y_pred = clf.predict(X_test)
+            clf.fit(X_train.values, y_train.values.ravel())
+            y_pred = clf.predict(X_test.values)
 
             # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-            return {'loss' : - accuracy_score(y_pred, y_test), 'status' : STATUS_OK}
+            return {'loss' : - accuracy_score(y_pred, y_test.values), 'status' : STATUS_OK}
         
         # initialize the hyperparameter space
         if self.hyperparameter_space is None :
             self.hyperparameter_space = self.get_hyperparameter_space(models)
         
         # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
-        algo = tpe.suggest
-        spark_trials = SparkTrials
+
+        # search algorithm
+        if self.algo == 'rand' :
+            algo = rand.suggest
+        elif self.algo == 'tpe' :
+            algo = tpe.suggest
+        elif self.algo == 'atpe' :
+            algo = atpe.suggest
+        
+        # Storage for evaluation points
+        if self.spark_trials :
+            trials = SparkTrials
+        else :
+            trials = Trials()
 
         with mlflow.start_run() :
             best_results = fmin(
@@ -356,7 +374,8 @@ class AutoClassifier() :
                 algo = algo,
                 max_evals = self.max_evals,
                 timeout = self.timeout,
-                trials = spark_trials
+                trials = trials,
+                show_progressbar = False
             )
 
         print(best_results)
