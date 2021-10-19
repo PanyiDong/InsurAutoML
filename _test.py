@@ -7,6 +7,9 @@ from scipy.sparse.linalg import svds
 
 from sklearn.metrics import mean_squared_error
 
+a = (100, )
+print(a)
+
 a = {'name' : [1, 2, 3, 4]}
 print([*a])
 

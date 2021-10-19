@@ -15,6 +15,7 @@ from ._feature_selection import Densifier, ExtraTreesPreprocessorClassification,
     FastICA, FeatureAgglomeration, KernelPCA, RandomKitchenSinks, LibLinear_Preprocessor, Nystroem, PCA, \
     PolynomialFeatures, RandomTreesEmbedding, SelectPercentileClassification, SelectPercentileRegression, \
     SelectClassificationRates, SelectRegressionRates, TruncatedSVD
+from ._model_selection import AutoClassifier
 
 __all__ = [
     'load_data', # _base
@@ -68,7 +69,8 @@ __all__ = [
     'select_percentile_regression', 
     'select_rates_classification',
     'select_rates_regression', 
-    'truncatedSVD'
+    'truncatedSVD',
+    'AutoClassifier'
 ]
 
 base = {'load_data' : load_data}
@@ -138,4 +140,8 @@ feature_selection = {
     'select_rates_classification' : SelectClassificationRates,
     'select_rates_regression' : SelectRegressionRates, 
     'truncatedSVD' : TruncatedSVD
+}
+
+model_selection = {
+    'AutoClassifier' : AutoClassifier
 }

@@ -1,8 +1,10 @@
+import imp
 import numpy as np
 import pandas as pd
 import scipy
 import scipy.stats
 import sklearn
+import mlflow
 import hyperopt
 from hyperopt import fmin, tpe, hp, SparkTrials, STATUS_OK, Trials
 
@@ -71,11 +73,15 @@ class AutoClassifier() :
 
     def __init__(
         self,
+        timeout = 360,
+        max_evals = 32,
         models = 'auto',
         test_size = 0.15,
         method = 'Bayeisan',
         seed = 1
     ) : 
+        self.timeout = timeout
+        self.max_evals = max_evals
         self.models = models
         self.test_size = test_size
         self.method = method
@@ -97,7 +103,8 @@ class AutoClassifier() :
         from autosklearn.pipeline.components.classification.qda import QDA
         from autosklearn.pipeline.components.classification.random_forest import RandomForest
         from autosklearn.pipeline.components.classification.sgd import SGD
-
+        
+        # all classfication models available
         self._all_models = {
             'AdaboostClassifier' : AdaboostClassifier,
             'BernoulliNB' : BernoulliNB,
@@ -116,29 +123,9 @@ class AutoClassifier() :
             'RandomForest' : RandomForest,
             'SGD' : SGD
         }
-
-        self.hyperparameter_space = None
-    
-    # the objective function of Bayesian Optimization tries to minimize
-    # use accuracy score
-    def _objective(self, X_train, y_train, X_test, y_test, params) :
-
-        _model = params['model']
-        del params['model']
-        clf = self.models[_model](params)
         
-        from sklearn.metrics import accuracy_score
-
-        clf.fit(X_train, y_train)
-        y_pred = clf.predict(X_test)
-
-        # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-        return {'loss' : - accuracy_score(y_pred, y_test), 'status' : STATUS_OK}
-
-    # create hyperparameter space using Hyperopt.hp.choice
-    def get_hyperparameter_space(self) :
-
-        return hp.choice('models', [
+        # all hyperparameters for the classification models
+        self._all_hyperparameters = [
             {
                 'model' : 'AdaBoostClassifier',
                 'n_estimators' : hp.quniform('n_estimators', 10, 100, 1), 
@@ -203,51 +190,177 @@ class AutoClassifier() :
             },
             {
                 'model' : 'LibLinear_SVC',
+                'penalty' : hp.choice('penalty', ['l1', 'l2']), 
+                'loss' : hp.choice('loss', ['hinge', 'squared_hinge']), 
+                'dual' : hp.choice('dual', [True, False]), 
+                'tol' : hp.loguniform('tol', 1e-10, 1), 
+                'C' : hp.loguniform('C', 1e-5, 10), 
+                'multi_class' : hp.choice('multi_class', ['ovr', 'crammer_singer']),
+                'fit_intercept' : hp.choice('fit_intercept', [True, False]), 
+                'intercept_scaling' : hp.loguniform('intercept_scaling', 1e-5, 10)
             },
             {
                 'model' : 'LibSVM_SVC',
+                'C' : hp.loguniform('C', 1e-5, 10), 
+                'kernel' : hp.choice('kernel', ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed']), 
+                'gamma' : hp.choice('gamma', ['auto', 'scale']), 
+                'shrinking' : hp.choice('shrinking', [True, False]), 
+                'tol' : hp.loguniform('tol', 1e-10, 1), 
+                'max_iter' : hp.quniform('max_iter', -1, 50, 1)
             },
             {
                 'model' : 'MLPClassifier',
+                'hidden_layer_depth' : hp.quniform('hidden_layer_depth', 1, 10, 1), 
+                'num_nodes_per_layer' : hp.quniform('num_nodes_per_layer', 1, 20, 1), 
+                'activation' : hp.choice('activation', ['identity', 'logistic', 'tanh', 'relu']), 
+                'alpha' : hp.loguniform('alpha', 1e-6, 10),
+                'learning_rate_init' : hp.loguniform('learning_rate_init', 1e-6, 10), 
+                'early_stopping' : hp.choice('early_stopping', [True, False]), 
+                'solver' : hp.choice('solver', ['lbfgs', 'sgd', 'adam']), 
+                'batch_size' : hp.quniform('batch_size', 2, 200, 1),
+                'n_iter_no_change' : hp.quniform('batch_size', 1, 20, 1), 
+                'tol' : hp.loguniform('tol', 1e-10, 1),
+                'shuffle' : hp.choice('shuffle', [True, False]), 
+                'beta_1' : hp.uniform('beta_1', 0, 0.999), 
+                'beta_2' : hp.uniform('beta_2', 0, 0.999), 
+                'epsilon' : hp.loguniform('epsilon', 1e-10, 10)
             },
             {
                 'model' : 'MultinomialNB',
+                'alpha' : hp.loguniform('alpha', 0.001, 10),
+                'fit_prior' : hp.choice('fit_prior', [True, False])
             },
             {
                 'model' : 'PassiveAggressive',
+                'C' : hp.loguniform('C', 1e-3, 100), 
+                'fit_intercept' : hp.choice('fit_intercept', [True, False]), 
+                'tol' : hp.loguniform('tol', 1e-10, 1), 
+                'loss' : hp.choice('loss', ['hinge', 'squared_hinge']), 
+                'average' : hp.choice('average', [True, False])
             },
             {
                 'model' : 'QDA',
+                'reg_param' : hp.uniform('reg_param', 0, 1)
             },
             {
                 'model' : 'RandomForest',
+                'criterion' : hp.choice('criterion', ['gini', 'entropy']), 
+                'max_features' : hp.choice('max_features', [None, 'auto', 'sqrt', 'log2']),
+                'max_depth' : hp.quniform('max_depth', 2, 10, 1), 
+                'min_samples_split' : hp.quniform('min_samples_split', 2, 10, 1), 
+                'min_samples_leaf' : hp.quniform('min_samples_leaf', 1, 30, 1),
+                'min_weight_fraction_leaf' : hp.uniform('min_weight_fraction_leaf', 0, 1), 
+                'bootstrap' : hp.choice('bootstrap', [True, False]), 
+                'max_leaf_nodes' : hp.quniform('max_leaf_nodes', 1, 100000, 1),
+                'min_impurity_decrease' : hp.uniform('min_impurity_decrease', 0, 1)
             },
             {
                 'model' : 'SGD',
+                'loss' : hp.choice('loss', ['hinge', 'log', 'modified_huber', 'squared_hinge', 'perceptron']), 
+                'penalty' : hp.choice('penalty', ['l1', 'l2']), 
+                'alpha' : hp.loguniform('alpha', 1e-6, 10), 
+                'fit_intercept' : hp.choice('fit_intercept', [True, False]), 
+                'tol' : hp.loguniform('tol', 1e-10, 1),
+                'learning_rate' : hp.choice('learning_rate', ['constant', 'optimal', 'invscaling', 'adaptive'])
             }
-        ])
+        ]
+
+        self.hyperparameter_space = None
+
+    # create hyperparameter space using Hyperopt.hp.choice
+    # only models in models will be added to hyperparameter space
+    def get_hyperparameter_space(self, models) :
+
+        _hyperparameter = []
+        for _model in [*models] :
+            for item in self.hyperparameter_space : # search the models' hyperparameters
+                if item['model'] == _model :
+                    _hyperparameter.append(item)
+
+        return hp.choice('classification_models', _hyperparameter)
 
     def fit(self, X, y) :
+
+        # Encoding
+        # convert string types to numerical type
+        from My_AutoML import DataEncoding
+
+        x_encoder = DataEncoding()
+        _X = x_encoder.fit(X)
+
+        y_encoder = DataEncoding()
+        _y = y_encoder.fit(y)
+
+        # Imputer
+        # fill missing values
+        from My_AutoML import SimpleImputer
+        
+        imputer = SimpleImputer(method = 'mean')
+        _X = imputer.fill(_X)
+
+        # Scaling
+
+        # Balancing
+        # deal with imbalanced dataset, using over-/under-sampling methods
+
+        # Feature selection
+        # Remove redundant features, reduce dimensionality
         
         # train test split so the performance of model selection and 
         # hyperparameter optimization can be evaluated
         from sklearn.model_selection import train_test_split
 
         X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size = self.test_size, random_state = self.seed
+            _X, _y, test_size = self.test_size, random_state = self.seed
         )
 
         if self.models == 'auto' : # if auto, model pool will be all default models
-            self.models = self._all_models.copy()
+            models = self._all_models.copy()
         else :
-            self.models = self.models # if specified, check if models in default models
+            models = {} # if specified, check if models in default models
             for _model in self.models :
                 if _model not in [*self._all_models] :
                     raise ValueError(
                         'Only supported models are {}, get {}.'.format([*self._all_models], _model)
                     )
+                models[_model] = self._all_models[_model]
+        
+        # the objective function of Bayesian Optimization tries to minimize
+        # use accuracy score
+        def _objective(params) :
 
+            _model = params['model']
+            del params['model']
+            clf = self.models[_model](params)
+        
+            from sklearn.metrics import accuracy_score
+
+            clf.fit(X_train, y_train)
+            y_pred = clf.predict(X_test)
+
+            # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
+            return {'loss' : - accuracy_score(y_pred, y_test), 'status' : STATUS_OK}
+        
+        # initialize the hyperparameter space
         if self.hyperparameter_space is None :
-            self.hyperparameter_space = self.get_hyperparameter_space()
+            self.hyperparameter_space = self.get_hyperparameter_space(models)
+        
+        # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
+        algo = tpe.suggest
+        spark_trials = SparkTrials
+
+        with mlflow.start_run() :
+            best_results = fmin(
+                fn = _objective,
+                space = self.hyperparameter_space,
+                algo = algo,
+                max_evals = self.max_evals,
+                timeout = self.timeout,
+                trials = spark_trials
+            )
+
+        print(best_results)
+
+
 
         
