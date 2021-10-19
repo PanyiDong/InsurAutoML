@@ -380,6 +380,39 @@ class AutoClassifier() :
 
         print(best_results)
 
+class AutoRegressor() :
 
+    def __init__(
+        self,
+        timeout = 360,
+        max_evals = 32,
+        models = 'auto',
+        test_size = 0.15,
+        method = 'Bayeisan',
+        algo = 'tpe',
+        spark_trials = True,
+        seed = 1
+    ) : 
+        self.timeout = timeout
+        self.max_evals = max_evals
+        self.models = models
+        self.test_size = test_size
+        self.method = method
+        self.algo = algo
+        self.spark_trials = spark_trials
+        self.seed = seed
+
+        from autosklearn.pipeline.components.regression.adaboost import AdaboostRegressor
+        from autosklearn.pipeline.components.regression.ard_regression import ARDRegression
+        from autosklearn.pipeline.components.regression.decision_tree import DecisionTree
+        from autosklearn.pipeline.components.regression.extra_trees import ExtraTreesRegressor
+        from autosklearn.pipeline.components.regression.gaussian_process import GaussianProcess
+        from autosklearn.pipeline.components.regression.gradient_boosting import GradientBoosting
+        from autosklearn.pipeline.components.regression.k_nearest_neighbors import KNearestNeighborsRegressor
+        from autosklearn.pipeline.components.regression.liblinear_svr import LibLinear_SVR
+        from autosklearn.pipeline.components.regression.libsvm_svr import LibSVM_SVR
+        from autosklearn.pipeline.components.regression.mlp import MLPRegressor
+        from autosklearn.pipeline.components.regression.random_forest import RandomForest
+        from autosklearn.pipeline.components.regression.sgd import SGD
 
         
