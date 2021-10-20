@@ -195,7 +195,32 @@ class AutoClassifier() :
         self._all_imputers = My_AutoML.imputers
 
         # all hyperparemeters for imputers
-        self._all_imputers_hyperparameters = []
+        self._all_imputers_hyperparameters = [
+            {
+                'imputer' : 'SimpleImputer'
+            },
+            {
+                'imputer' : 'DummyImputer'
+            },
+            {
+                'imputer' : 'JointImputer'
+            },
+            {
+                'imputer' : 'ExpectationMaximization'
+            },
+            {
+                'imputer' : 'KNNImputer'
+            },
+            {
+                'imputer' : 'MissForestImputer'
+            },
+            {
+                'imputer' : 'MICE'
+            },
+            {
+                'imputer' : 'GAIN'
+            }
+        ]
 
         # all scalings avaiable
         self._all_scalings = My_AutoML.scalings
@@ -226,7 +251,41 @@ class AutoClassifier() :
         self._all_balancings = My_AutoML.imbalance
 
         # all hyperparameters for balancing methods
-        self._all_balancings_hyperparameters = []
+        self._all_balancings_hyperparameters = [
+            {
+                'balancing' : 'no_processing'
+            },
+            {
+                'balancing' : 'SimpleRandomOverSampling'
+            },
+            {
+                'balancing' : 'SimpleRandomUnderSampling'
+            },
+            {
+                'balancing' : 'TomekLink'
+            },
+            {
+                'balancing' : 'EditedNearestNeighbor'
+            },
+            {
+                'balancing' : 'CondensedNearestNeighbor'
+            },
+            {
+                'balancing' : 'OneSidedSelection'
+            },
+            {
+                'balancing' : 'CNN_TomekLink'
+            },
+            {
+                'balancing' : 'Smote'
+            },
+            {
+                'balancing' : 'Smote_TomekLink'
+            },
+            {
+                'balancing' : 'Smote_ENN'
+            }
+        ]
 
         # all feature selections available
         self._all_feature_selection = My_AutoML.feature_selection
@@ -271,6 +330,27 @@ class AutoClassifier() :
             },
             {
                 'feature_selection' : 'liblinear_svc_preprocessor'
+            },
+            {
+                'feature_selection' : 'nystroem_sampler'
+            },
+            {
+                'feature_selection' : 'pca'
+            },
+            {
+                'feature_selection' : 'polynomial'
+            },
+            {
+                'feature_selection' : 'random_trees_embedding'
+            },
+            {
+                'feature_selection' : 'select_percentile_classification'
+            },
+            {
+                'feature_selection' : 'select_rates_classification'
+            },
+            {
+                'feature_selection' : 'truncatedSVD'
             }
         ]
         
