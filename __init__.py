@@ -75,7 +75,7 @@ __all__ = [
 
 base = {'load_data' : load_data}
 
-missing = {
+imputers = {
     'SimpleImputer' : SimpleImputer,
     'DummyImputer' : DummyImputer,
     'JointImputer' : JointImputer,
@@ -87,9 +87,9 @@ missing = {
 }
 # Markov Chain Monte Carlo (MCMC)
 
-enoding = {'DataEncoding' : DataEncoding}
+encoders = {'DataEncoding' : DataEncoding}
 
-scaling = {
+scalings = {
     'no_processing' : no_processing,
     'MinMaxScale' : MinMaxScale,
     'Standardize' : Standardize,

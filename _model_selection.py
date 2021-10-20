@@ -7,6 +7,8 @@ import mlflow
 import hyperopt
 from hyperopt import fmin, hp, rand, tpe, atpe, Trials, SparkTrials, STATUS_OK
 
+import My_AutoML
+
 '''
 Classifiers/Hyperparameters from sklearn:
 1. AdaBoost: n_estimators, learning_rate, algorithm, max_depth
@@ -169,6 +171,21 @@ class AutoClassifier() :
             def predict_proba(self, X) :
 
                 return self.clf.predict_proba(X)
+
+        # all encoders avaiable
+        self._all_encoders = My_AutoML.encoders
+        
+        # all imputers available
+        self._all_imputers = My_AutoML.imputers
+
+        # all scalings avaiable
+        self._all_scalings = My_AutoML.scalings
+
+        # all imbalance available
+        self._all_imbalance = My_AutoML.imbalance
+
+        # all feature selections available
+        self._all_feature_selection = My_AutoML.feature_selection
         
         # all classfication models available
         self._all_models = {
