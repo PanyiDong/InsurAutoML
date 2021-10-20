@@ -7,7 +7,8 @@ import scipy.stats
 import sklearn
 import mlflow
 import hyperopt
-from hyperopt import fmin, hp, rand, tpe, atpe, Trials, SparkTrials, STATUS_OK
+from hyperopt import fmin, hp, rand, tpe, atpe, Trials, SparkTrials, \
+    space_eval, STATUS_OK
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
@@ -69,6 +70,8 @@ class AutoClassifier() :
     support (rand, tpe, atpe)
     
     spark_trials: Whether to use SparkTrials, default = True
+
+    progressbar: Whether to show progress bar, default = False
     
     seed: random seed, default = 1
     '''
@@ -82,6 +85,7 @@ class AutoClassifier() :
         method = 'Bayeisan',
         algo = 'tpe',
         spark_trials = True,
+        progressbar = False,
         seed = 1
     ) : 
         self.timeout = timeout
@@ -91,6 +95,7 @@ class AutoClassifier() :
         self.method = method
         self.algo = algo
         self.spark_trials = spark_trials
+        self.progressbar = progressbar
         self.seed = seed
 
         # autosklearn classifiers
@@ -212,7 +217,7 @@ class AutoClassifier() :
         }
         
         # all hyperparameters for the classification models
-        self._all_hyperparameters = [
+        self._all_model_hyperparameters = [
             {
                 'model' : 'AdaboostClassifier',
                 'n_estimators' : hp.quniform('AdaboostClassifier_n_estimators', 10, 100, 1), 
@@ -280,7 +285,7 @@ class AutoClassifier() :
             ###################################################################
             {
                 'model' : 'LibLinear_SVC',
-                'penalty' : hp.choice('LibLinear_SVC_penalty', ['l1', 'l2']), 
+                'penalty' : hp.choice('LibLinear_SVC_penalty', ['l1', 'l2']), # conditional 'l1' and 'hinge' not supported
                 'loss' : hp.choice('LibLinear_SVC_loss', ['hinge', 'squared_hinge']), 
                 'dual' : hp.choice('LibLinear_SVC_dual', [True, False]), 
                 'tol' : hp.loguniform('LibLinear_SVC_tol', -10, 1), 
@@ -292,7 +297,7 @@ class AutoClassifier() :
             {
                 'model' : 'LibSVM_SVC',
                 'C' : hp.loguniform('LibSVM_SVC_C', -5, 1), 
-                'kernel' : hp.choice('LibSVM_SVC_kernel', ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed']), 
+                'kernel' : hp.choice('LibSVM_SVC_kernel', ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed']), # conditional, precomputed can only be used for n * n kernel matrix
                 'gamma' : hp.uniform('LibSVM_SVC_gamma', 0, 1), 
                 'shrinking' : hp.choice('LibSVM_SVC_shrinking', [True, False]), 
                 'tol' : hp.loguniform('LibSVM_SVC_tol', -10, 1), 
@@ -361,12 +366,12 @@ class AutoClassifier() :
 
     # create hyperparameter space using Hyperopt.hp.choice
     # only models in models will be added to hyperparameter space
-    def get_hyperparameter_space(self, models) :
+    def get_hyperparameter_space(self, model_hyperparameters, models) :
 
         _hyperparameter = []
         for _model in [*models] :
             # checked before at models that all models are in default space
-            for item in self._all_hyperparameters : # search the models' hyperparameters
+            for item in model_hyperparameters : # search the models' hyperparameters
                 if item['model'] == _model :
                     _hyperparameter.append(item)
 
@@ -441,8 +446,19 @@ class AutoClassifier() :
             return {'loss' : - accuracy_score(y_pred, y_test.values), 'status' : STATUS_OK}
         
         # initialize the hyperparameter space
+        _all_model_hyperparameters = self._all_model_hyperparameters.copy()
+
+        # special treatment for LibSVM_SVC kernel
+        # if dataset not in shape of n * n, precomputed should be disabled
+        n, p = X_test.shape
+        if n != p :
+            for item in _all_model_hyperparameters :
+                if item['model'] == 'LibSVM_SVC' :
+                    item['kernel'] = hp.choice('LibSVM_SVC_kernel', ['linear', 'poly', 'rbf', 'sigmoid'])
+        
+        # generate the hyperparameter space
         if self.hyperparameter_space is None :
-            self.hyperparameter_space = self.get_hyperparameter_space(models)
+            self.hyperparameter_space = self.get_hyperparameter_space(_all_model_hyperparameters, models)
         
         # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
 
@@ -456,7 +472,7 @@ class AutoClassifier() :
         
         # Storage for evaluation points
         if self.spark_trials :
-            trials = SparkTrials
+            trials = SparkTrials()
         else :
             trials = Trials()
 
@@ -468,10 +484,42 @@ class AutoClassifier() :
                 max_evals = self.max_evals,
                 timeout = self.timeout,
                 trials = trials,
-                show_progressbar = False
+                show_progressbar = self.progressbar,
+                rstate = np.random.RandomState(seed = self.seed)
             )
+        
+        # mapping the optimal model and hyperparameters selected
+        # fit the optimal setting
+        optimal_point = space_eval(self.hyperparameter_space, best_results)
+        self.optimal_model = optimal_point['model'] # optimal model selected
+        self.optimal_hyperparameters = optimal_point # optimal hyperparameter settings selected
+        del self.optimal_hyperparameters['model']
 
-        print(best_results)
+        self._fit_model = self._all_models[self.optimal_model](**self.optimal_hyperparameters)
+        self._fit_model.fit(_X.values, _y.values.ravel())
+
+        return self
+
+    def predict(self, X) :
+
+        _X = X.copy()
+        
+        # may need preprocessing for test data, the preprocessing shoul be the same as in fit part
+        # Encoding
+        # convert string types to numerical type
+
+        # Imputer
+        # fill missing values
+
+        # Scaling
+
+        # Balancing
+        # deal with imbalanced dataset, using over-/under-sampling methods
+
+        # Feature selection
+        # Remove redundant features, reduce dimensionality
+
+        return self._fit_model.predict(_X)
 
 '''
 Regressors/Hyperparameters from sklearn:
@@ -554,7 +602,7 @@ class AutoRegressor() :
         }
 
         # all hyperparameters for the regression models
-        self._all_hyperparameters = [
+        self._all_model_hyperparameters = [
             {
                 'model' : 'AdaboostRegressor',
                 'n_estimators' : hp.quniform('AdaboostRegressor_n_estimators', 10, 100, 1), 
@@ -689,7 +737,7 @@ class AutoRegressor() :
         _hyperparameter = []
         for _model in [*models] :
             # checked before at models that all models are in default space
-            for item in self._all_hyperparameters : # search the models' hyperparameters
+            for item in self._all_model_hyperparameters : # search the models' hyperparameters
                 if item['model'] == _model :
                     _hyperparameter.append(item)
 
