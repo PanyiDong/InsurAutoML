@@ -1,3 +1,5 @@
+from unicodedata import category
+import warnings
 import numpy as np
 import pandas as pd
 import scipy
@@ -6,6 +8,8 @@ import sklearn
 import mlflow
 import hyperopt
 from hyperopt import fmin, hp, rand, tpe, atpe, Trials, SparkTrials, STATUS_OK
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
 
@@ -342,7 +346,6 @@ class AutoClassifier() :
                 'max_leaf_nodes' : hp.quniform('RandomForest_max_leaf_nodes', 1, 100000, 1),
                 'min_impurity_decrease' : hp.uniform('RandomForest_min_impurity_decrease', 0, 1)
             },
-            #########################################################################
             {
                 'model' : 'SGD',
                 'loss' : hp.choice('SGD_loss', ['hinge', 'log', 'modified_huber', 'squared_hinge', 'perceptron']), 
@@ -352,7 +355,6 @@ class AutoClassifier() :
                 'tol' : hp.loguniform('SGD_tol', -10, 1),
                 'learning_rate' : hp.choice('SGD_learning_rate', ['constant', 'optimal', 'invscaling', 'adaptive'])
             }
-            #########################################################################
         ]
 
         self.hyperparameter_space = None
@@ -390,6 +392,11 @@ class AutoClassifier() :
         _X = imputer.fill(_X)
 
         # Scaling
+        from My_AutoML import Standardize
+
+        scaling = Standardize()
+        scaling.fit(_X)
+        _X = scaling.transform(_X)
 
         # Balancing
         # deal with imbalanced dataset, using over-/under-sampling methods
@@ -418,16 +425,16 @@ class AutoClassifier() :
         
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
+        @ignore_warnings(category = ConvergenceWarning)
         def _objective(params) :
+
+            from sklearn.metrics import accuracy_score
 
             _model = params['model']
             del params['model']
             clf = models[_model](**params) # call the model using passed parameters
                                            # params must be ordered and for positional arguments
-        
-            from sklearn.metrics import accuracy_score
-
-            clf.fit(X_train.values, y_train.values.ravel())
+            clf.fit(X_train.values, y_train.values.ravel())        
             y_pred = clf.predict(X_test.values)
 
             # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here

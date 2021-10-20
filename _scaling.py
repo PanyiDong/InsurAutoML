@@ -16,6 +16,9 @@ class NoScaling() :
     def transform(self, X) :
         return X
 
+    def inverse_transform(self, X) :
+        return X
+
 class Standardize() :
 
     '''
@@ -39,14 +42,6 @@ class Standardize() :
     def fit(self, X) :
         
         _X = X.copy(deep = True)
-        # check for categorical type
-        for _column in list(X.columns) :
-            # if encounter string/category type, transform the data
-            if X[_column].dtype == np.object or str(X[_column].dtype) == 'category' :
-                preprocessor = DataEncoding(transform = False)
-                preprocessor.fit(_X)
-                _X = preprocessor.transform(_X)
-                break
 
         n, p = _X.shape
         if self.with_mean == True :
@@ -59,9 +54,8 @@ class Standardize() :
             n_notnan = n - np.isnan(_data).sum()
             _x_sum = 0
             _x_2_sum = 0
-            for j in range(n) :
-                _x_sum += (_data[j] if np.isnan(_data[j]) else 0)
-                _x_2_sum += (_data[j] ** 2 if np.isnan(_data[j]) else 0)
+            _x_sum += np.nansum(_data)
+            _x_2_sum += np.nansum(_data ** 2)
             if self.with_mean == True :
                 self._mean[i] = _x_sum / n_notnan
             if self.with_std == True :
