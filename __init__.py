@@ -75,6 +75,8 @@ __all__ = [
 
 base = {'load_data' : load_data}
 
+encoders = {'DataEncoding' : DataEncoding}
+
 imputers = {
     'SimpleImputer' : SimpleImputer,
     'DummyImputer' : DummyImputer,
@@ -86,8 +88,6 @@ imputers = {
     'GAIN' : GAIN
 }
 # Markov Chain Monte Carlo (MCMC)
-
-encoders = {'DataEncoding' : DataEncoding}
 
 scalings = {
     'no_processing' : no_processing,
@@ -122,7 +122,7 @@ feature_selection = {
     'FeatureFilter' : FeatureFilter,
     'ASFFS' : ASFFS,
     'GeneticAlgorithm' : GeneticAlgorithm,
-    'densifier' : Densifier,  # from autosklearn
+#    'densifier' : Densifier,  # from autosklearn
     'extra_trees_preproc_for_classification' : ExtraTreesPreprocessorClassification, 
     'extra_trees_preproc_for_regression' : ExtraTreesPreprocessorRegression, 
     'fast_ica' : FastICA, 
