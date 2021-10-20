@@ -7,6 +7,9 @@ from scipy.sparse.linalg import svds
 
 from sklearn.metrics import mean_squared_error
 
+a = 'test'
+print(a == np.object)
+
 a = (100, )
 print(a)
 

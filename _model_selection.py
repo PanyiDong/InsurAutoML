@@ -1,4 +1,3 @@
-import imp
 import numpy as np
 import pandas as pd
 import scipy
@@ -36,6 +35,7 @@ Classifiers/Hyperparameters from sklearn:
             learning_rate
 '''
 
+# Auto binary classifier
 class AutoClassifier() :
 
     '''
@@ -87,12 +87,12 @@ class AutoClassifier() :
         self.spark_trials = spark_trials
         self.seed = seed
 
+        # autosklearn classifiers
         from autosklearn.pipeline.components.classification.adaboost import AdaboostClassifier
         from autosklearn.pipeline.components.classification.bernoulli_nb import BernoulliNB
         from autosklearn.pipeline.components.classification.decision_tree import DecisionTree
         from autosklearn.pipeline.components.classification.extra_trees import ExtraTreesClassifier
         from autosklearn.pipeline.components.classification.gaussian_nb import GaussianNB
-        from autosklearn.pipeline.components.classification.gradient_boosting import GradientBoostingClassifier
         from autosklearn.pipeline.components.classification.k_nearest_neighbors import KNearestNeighborsClassifier
         from autosklearn.pipeline.components.classification.lda import LDA
         from autosklearn.pipeline.components.classification.liblinear_svc import LibLinear_SVC
@@ -103,6 +103,72 @@ class AutoClassifier() :
         from autosklearn.pipeline.components.classification.qda import QDA
         from autosklearn.pipeline.components.classification.random_forest import RandomForest
         from autosklearn.pipeline.components.classification.sgd import SGD
+
+        # modifications required
+        # autosklearn.GradientBoostingClassifier set validation_fraction = None, 
+        # which result in early_stop = 'valid' errors
+        # autosklearn.MLPRegressor set validation_fraction = None, 
+        # which result in early_stopping = 'valid' errors
+        class GradientBoostingClassifier() :
+
+            def __init__(
+                self,
+                loss, 
+                learning_rate, 
+                min_samples_leaf, 
+                max_depth,
+                max_leaf_nodes, 
+                max_bins, 
+                l2_regularization, 
+                early_stop, 
+                tol, 
+                scoring,
+                max_iter = 512,
+                n_iter_no_change = 0, 
+                validation_fraction = 0.1
+            ) :
+                self.loss = loss
+                self.learning_rate = learning_rate
+                self.min_samples_leaf = min_samples_leaf
+                self.max_depth = max_depth
+                self.max_leaf_nodes = max_leaf_nodes
+                self.max_bins = max_bins
+                self.l2_regularization = l2_regularization
+                self.early_stop = early_stop
+                self.tol = tol
+                self.scoring = scoring
+                self.max_iter = max_iter
+                self.n_iter_no_change = n_iter_no_change
+                self.validation_fraction = validation_fraction
+
+                from autosklearn.pipeline.components.classification.gradient_boosting \
+                    import GradientBoostingClassifier
+                self.clf = GradientBoostingClassifier(
+                    self.loss,
+                    self.learning_rate,
+                    self.min_samples_leaf,
+                    self.max_depth,
+                    self.max_leaf_nodes,
+                    self.max_bins,
+                    self.l2_regularization,
+                    self.early_stop,
+                    self.tol,
+                    self.scoring,
+                    self.n_iter_no_change,
+                    validation_fraction = self.validation_fraction
+                )
+    
+            def fit(self, X, y) :
+
+                return self.clf.fit(X, y)
+    
+            def predict(self, X) :
+
+                return self.clf.predict(X)
+
+            def predict_proba(self, X) :
+
+                return self.clf.predict_proba(X)
         
         # all classfication models available
         self._all_models = {
@@ -142,11 +208,11 @@ class AutoClassifier() :
             {
                 'model' : 'DecisionTree',
                 'criterion' : hp.choice('DecisionTree_criterion', ['gini', 'entropy']), 
-                'max_features' : hp.choice('DecisionTree_max_features', [None, 'auto', 'sqrt', 'log2']), 
+                'max_features' : hp.uniform('DecisionTree_max_features', 0, 1), 
                 'max_depth_factor' : hp.uniform('DecisionTree_max_depth_factor', 0, 1),
                 'min_samples_split' : hp.quniform('DecisionTree_min_samples_split', 2, 10, 1), 
                 'min_samples_leaf' : hp.quniform('DecisionTree_min_samples_leaf', 1, 10, 1), 
-                'min_weight_fraction_leaf' : hp.uniform('DecisionTree_min_weight_fraction_leaf', 0, 1),
+                'min_weight_fraction_leaf' : hp.uniform('DecisionTree_min_weight_fraction_leaf', 0, 0.5),
                 'max_leaf_nodes' : hp.quniform('DecisionTree_max_leaf_nodes', 1, 100000, 1), 
                 'min_impurity_decrease' : hp.uniform('DecisionTree_min_impurity_decrease', 0, 1)
             },
@@ -167,28 +233,30 @@ class AutoClassifier() :
             },
             {
                 'model' : 'GradientBoostingClassifier',
-                'loss' : hp.choice('GradientBoostingClassifier_loss', ['auto', 'binary_crossentropy', 'categorical_crossentropy']), 
+                'loss' : hp.choice('GradientBoostingClassifier_loss', ['auto', 'binary_crossentropy']), 
+                # 'categorical_crossentropy' only for multi-class classification
                 'learning_rate' : hp.loguniform('GradientBoostingClassifier_learning_rate', -3, 1), 
                 'min_samples_leaf' : hp.quniform('GradientBoostingClassifier_min_samples_leaf', 1, 30, 1), 
                 'max_depth' : hp.quniform('GradientBoostingClassifier_max_depth', 2, 50, 1),
                 'max_leaf_nodes' : hp.quniform('GradientBoostingClassifier_max_leaf_nodes', 1, 100000, 1), 
                 'max_bins' : hp.quniform('GradientBoostingClassifier_max_bins', 1, 255, 1), 
                 'l2_regularization' : hp.uniform('GradientBoostingClassifier_l2_regularization', 0, 10), 
-                'early_stop' : hp.choice('GradientBoostingClassifier_early_stop', ['auto', True, False]), 
+                'early_stop' : hp.choice('GradientBoostingClassifier_early_stop', ['off', 'train', 'valid']), 
                 'tol' : hp.loguniform('GradientBoostingClassifier_tol', -10, 1), 
                 'scoring' : hp.choice('GradientBoostingClassifier_scoring', ['loss', 'accuracy', 'roc_auc'])
             },
             {
                 'model' : 'KNearestNeighborsClassifier',
-                'n_neighbors' : hp.quniform('KNearestNeighborsClassifier_n_neighbors', 1, 20, 1), 
+                'n_neighbors' : hp.choice('KNearestNeighborsClassifier_n_neighbors', np.arange(1, 21, dtype = int)), 
                 'weights' : hp.choice('KNearestNeighborsClassifier_weights', ['uniform', 'distance']), 
                 'p' : hp.quniform('KNearestNeighborsClassifier_p', 1, 5, 1)
             },
             {
                 'model' : 'LDA',
-                'shrinkage' : hp.choice('LDA_shrinkage', ['svd', 'lsqr', 'eigen']), 
-                'tol' : hp.loguniform('LDA_tol', -10, 1)
+                'shrinkage' : hp.choice('LDA_shrinkage', [None, 'auto', 'manual']), 
+                'tol' : hp.uniform('LDA_tol', 1e-10, 1)
             },
+            ###################################################################
             {
                 'model' : 'LibLinear_SVC',
                 'penalty' : hp.choice('LibLinear_SVC_penalty', ['l1', 'l2']), 
@@ -204,10 +272,10 @@ class AutoClassifier() :
                 'model' : 'LibSVM_SVC',
                 'C' : hp.loguniform('LibSVM_SVC_C', -5, 1), 
                 'kernel' : hp.choice('LibSVM_SVC_kernel', ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed']), 
-                'gamma' : hp.choice('LibSVM_SVC_gamma', ['auto', 'scale']), 
+                'gamma' : hp.uniform('LibSVM_SVC_gamma', 0, 1), 
                 'shrinking' : hp.choice('LibSVM_SVC_shrinking', [True, False]), 
                 'tol' : hp.loguniform('LibSVM_SVC_tol', -10, 1), 
-                'max_iter' : hp.quniform('LibSVM_SVC_max_iter', -1, 50, 1)
+                'max_iter' : hp.quniform('LibSVM_SVC_max_iter', -1, 1e6, 1)
             },
             {
                 'model' : 'MLPClassifier',
@@ -216,7 +284,7 @@ class AutoClassifier() :
                 'activation' : hp.choice('MLPClassifier_activation', ['identity', 'logistic', 'tanh', 'relu']), 
                 'alpha' : hp.loguniform('MLPClassifier_alpha', -6, 1),
                 'learning_rate_init' : hp.loguniform('MLPClassifier_learning_rate_init', -6, 1), 
-                'early_stopping' : hp.choice('MLPClassifier_early_stopping', [True, False]), 
+                'early_stopping' : hp.choice('MLPClassifier_early_stopping', ['train', 'valid']), 
                 'solver' : hp.choice('MLPClassifier_solver', ['lbfgs', 'sgd', 'adam']), 
                 'batch_size' : hp.quniform('MLPClassifier_batch_size', 2, 200, 1),
                 'n_iter_no_change' : hp.quniform('MLPClassifier_n_iter_no_change', 1, 20, 1), 
@@ -226,6 +294,7 @@ class AutoClassifier() :
                 'beta_2' : hp.uniform('MLPClassifier_beta_2', 0, 0.999), 
                 'epsilon' : hp.loguniform('MLPClassifier_epsilon', -10, 10)
             },
+            ####################################################################
             {
                 'model' : 'MultinomialNB',
                 'alpha' : hp.loguniform('MultinomialNB_alpha', -3, 1),
@@ -246,15 +315,17 @@ class AutoClassifier() :
             {
                 'model' : 'RandomForest',
                 'criterion' : hp.choice('RandomForest_criterion', ['gini', 'entropy']), 
-                'max_features' : hp.choice('RandomForest_max_features', [None, 'auto', 'sqrt', 'log2']),
+                'max_features' : hp.choice('RandomForest_max_features', ['auto', 'sqrt', 'log2', \
+                    hp.uniform('RandomForest_max_features_float', 0, 1)]),
                 'max_depth' : hp.quniform('RandomForest_max_depth', 2, 10, 1), 
                 'min_samples_split' : hp.quniform('RandomForest_min_samples_split', 2, 10, 1), 
                 'min_samples_leaf' : hp.quniform('RandomForest_min_samples_leaf', 1, 30, 1),
-                'min_weight_fraction_leaf' : hp.uniform('RandomForest_min_weight_fraction_leaf', 0, 1), 
+                'min_weight_fraction_leaf' : hp.uniform('RandomForest_min_weight_fraction_leaf', 0, 0.5), 
                 'bootstrap' : hp.choice('RandomForest_bootstrap', [True, False]), 
                 'max_leaf_nodes' : hp.quniform('RandomForest_max_leaf_nodes', 1, 100000, 1),
                 'min_impurity_decrease' : hp.uniform('RandomForest_min_impurity_decrease', 0, 1)
             },
+            #########################################################################
             {
                 'model' : 'SGD',
                 'loss' : hp.choice('SGD_loss', ['hinge', 'log', 'modified_huber', 'squared_hinge', 'perceptron']), 
@@ -264,6 +335,7 @@ class AutoClassifier() :
                 'tol' : hp.loguniform('SGD_tol', -10, 1),
                 'learning_rate' : hp.choice('SGD_learning_rate', ['constant', 'optimal', 'invscaling', 'adaptive'])
             }
+            #########################################################################
         ]
 
         self.hyperparameter_space = None
@@ -334,6 +406,7 @@ class AutoClassifier() :
             _model = params['model']
             del params['model']
             clf = models[_model](**params) # call the model using passed parameters
+                                           # params must be ordered and for positional arguments
         
             from sklearn.metrics import accuracy_score
 
@@ -426,6 +499,7 @@ class AutoRegressor() :
         self.spark_trials = spark_trials
         self.seed = seed
 
+        # autosklearn regressors
         from autosklearn.pipeline.components.regression.adaboost import AdaboostRegressor
         from autosklearn.pipeline.components.regression.ard_regression import ARDRegression
         from autosklearn.pipeline.components.regression.decision_tree import DecisionTree

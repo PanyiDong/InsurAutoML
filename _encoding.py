@@ -36,9 +36,9 @@ class DataEncoding():
         self.mean_scaler = {}
         self.sigma_scaler = {}
         for column in features:
-            if df[column].dtype == np.object and is_date(df[[column]]) and len(df[column].dropna().unique()) > 31:
+            if df[column].dtype == object and is_date(df[[column]]) and len(df[column].dropna().unique()) > 31:
                 df[column] = pd.to_numeric(pd.to_datetime(df[column]))
-            elif (df[column].dtype == np.object) or (str(df[column].dtype) == 'category') :
+            elif (df[column].dtype == object) or (str(df[column].dtype) == 'category') :
                 # dummy coding for string categorical features
                 if str(df[column].dtype) == "category" :
                     df[column] = df[column].astype(str)
@@ -97,9 +97,9 @@ class DataEncoding():
             raise ValueError('No category table exists!')
         categorical_features = list(self.category.columns)
         for column in list(df.columns) :
-            if df[column].dtype == np.object and is_date(df[[column]]) and len(df[column].dropna().unique()) > 31 :
+            if df[column].dtype == object and is_date(df[[column]]) and len(df[column].dropna().unique()) > 31 :
                 df[column] = pd.to_numeric(pd.to_datetime(df[column]))
-            elif df[column].dtype == np.object or str(df[column].dtype) == 'category':
+            elif df[column].dtype == object or str(df[column].dtype) == 'category':
                 if str(df[column].dtype) == 'category' :
                     df[column] = df[column].astype(str)
                 if column in categorical_features:  # map categorical testdata based on category
@@ -165,7 +165,7 @@ class CategoryShift() :
         # Check data type
         columns = list(X.columns)
         for _column in columns :
-            if X[_column].dtype == np.object :
+            if X[_column].dtype == object :
                 raise ValueError('Cannot handle object type!')
             elif str(X[_column].dtype) == 'category' :
                 raise ValueError('Cannot handle categorical type!')
