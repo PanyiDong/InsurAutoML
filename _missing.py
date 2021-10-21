@@ -134,8 +134,6 @@ class JointImputer() :
 
     '''
     Impute the missing values assume a joint distribution, default as multivariate Gaussian distribution
-
-    Not yet ready
     '''
 
     def __init__(
@@ -225,6 +223,9 @@ class ExpectationMaximization() :
         self.seed = seed
 
     def fill(self, X) :
+
+        self.iterations = int(self.iterations)
+        self.threshold = float(self.threshold)
 
         _X = X.copy(deep = True)
         n = _X.shape[0]
@@ -562,6 +563,8 @@ class MICE() :
         self.seed = seed
 
     def fill(self, X) :
+
+        self.cycle = int(self.cycle)
 
         _X = X.copy(deep = True)
         

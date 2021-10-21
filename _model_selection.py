@@ -13,9 +13,12 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
+from My_AutoML._hyperparameters import encoder_hyperparameter, imputer_hyperparameter, \
+    scaling_hyperparameter, balancing_hyperparameter, feature_selection_hyperparameter, \
+    classifiers, classifier_hyperparameter
 
 '''
-Classifiers/Hyperparameters from sklearn:
+Classifiers/Hyperparameters from autosklearn:
 1. AdaBoost: n_estimators, learning_rate, algorithm, max_depth
 2. Bernoulli naive Bayes: alpha, fit_prior
 3. Decision Tree: criterion, max_features, max_depth_factor, min_samples_split, 
@@ -80,8 +83,14 @@ class AutoClassifier() :
         self,
         timeout = 360,
         max_evals = 32,
+        encoder = 'auto',
+        imputer = 'auto',
+        scaling = 'auto',
+        balancing = 'auto',
+        feature_selection = 'auto',
         models = 'auto',
         test_size = 0.15,
+        objective = 'accuracy',
         method = 'Bayeisan',
         algo = 'tpe',
         spark_trials = True,
@@ -90,435 +99,57 @@ class AutoClassifier() :
     ) : 
         self.timeout = timeout
         self.max_evals = max_evals
+        self.encoder = encoder
+        self.imputer = imputer
+        self.scaling = scaling
+        self.balancing = balancing
+        self.feature_selection = feature_selection
         self.models = models
         self.test_size = test_size
+        self.objective = objective
         self.method = method
         self.algo = algo
         self.spark_trials = spark_trials
         self.progressbar = progressbar
         self.seed = seed
 
-        # autosklearn classifiers
-        from autosklearn.pipeline.components.classification.adaboost import AdaboostClassifier
-        from autosklearn.pipeline.components.classification.bernoulli_nb import BernoulliNB
-        from autosklearn.pipeline.components.classification.decision_tree import DecisionTree
-        from autosklearn.pipeline.components.classification.extra_trees import ExtraTreesClassifier
-        from autosklearn.pipeline.components.classification.gaussian_nb import GaussianNB
-        from autosklearn.pipeline.components.classification.k_nearest_neighbors import KNearestNeighborsClassifier
-        from autosklearn.pipeline.components.classification.lda import LDA
-        from autosklearn.pipeline.components.classification.liblinear_svc import LibLinear_SVC
-        from autosklearn.pipeline.components.classification.libsvm_svc import LibSVM_SVC
-        from autosklearn.pipeline.components.classification.mlp import MLPClassifier
-        from autosklearn.pipeline.components.classification.multinomial_nb import MultinomialNB
-        from autosklearn.pipeline.components.classification.passive_aggressive import PassiveAggressive
-        from autosklearn.pipeline.components.classification.qda import QDA
-        from autosklearn.pipeline.components.classification.random_forest import RandomForest
-        from autosklearn.pipeline.components.classification.sgd import SGD
-
-        # modifications required
-        # autosklearn.GradientBoostingClassifier set validation_fraction = None, 
-        # which result in early_stop = 'valid' errors
-        # autosklearn.MLPRegressor set validation_fraction = None, 
-        # which result in early_stopping = 'valid' errors
-        class GradientBoostingClassifier() :
-
-            def __init__(
-                self,
-                loss, 
-                learning_rate, 
-                min_samples_leaf, 
-                max_depth,
-                max_leaf_nodes, 
-                max_bins, 
-                l2_regularization, 
-                early_stop, 
-                tol, 
-                scoring,
-                max_iter = 512,
-                n_iter_no_change = 0, 
-                validation_fraction = 0.1
-            ) :
-                self.loss = loss
-                self.learning_rate = learning_rate
-                self.min_samples_leaf = min_samples_leaf
-                self.max_depth = max_depth
-                self.max_leaf_nodes = max_leaf_nodes
-                self.max_bins = max_bins
-                self.l2_regularization = l2_regularization
-                self.early_stop = early_stop
-                self.tol = tol
-                self.scoring = scoring
-                self.max_iter = max_iter
-                self.n_iter_no_change = n_iter_no_change
-                self.validation_fraction = validation_fraction
-
-                from autosklearn.pipeline.components.classification.gradient_boosting \
-                    import GradientBoostingClassifier
-                self.clf = GradientBoostingClassifier(
-                    self.loss,
-                    self.learning_rate,
-                    self.min_samples_leaf,
-                    self.max_depth,
-                    self.max_leaf_nodes,
-                    self.max_bins,
-                    self.l2_regularization,
-                    self.early_stop,
-                    self.tol,
-                    self.scoring,
-                    self.n_iter_no_change,
-                    validation_fraction = self.validation_fraction
-                )
-    
-            def fit(self, X, y) :
-
-                return self.clf.fit(X, y)
-    
-            def predict(self, X) :
-
-                return self.clf.predict(X)
-
-            def predict_proba(self, X) :
-
-                return self.clf.predict_proba(X)
+        
 
         # all encoders avaiable
         self._all_encoders = My_AutoML.encoders
 
         # all hyperparameters for encoders
-        self._all_encoders_hyperparameters = [
-            {
-                'encoder' : 'DataEncoding'
-            }
-        ]
+        self._all_encoders_hyperparameters = encoder_hyperparameter
         
         # all imputers available
         self._all_imputers = My_AutoML.imputers
 
         # all hyperparemeters for imputers
-        self._all_imputers_hyperparameters = [
-            {
-                'imputer' : 'SimpleImputer'
-            },
-            {
-                'imputer' : 'DummyImputer'
-            },
-            {
-                'imputer' : 'JointImputer'
-            },
-            {
-                'imputer' : 'ExpectationMaximization'
-            },
-            {
-                'imputer' : 'KNNImputer'
-            },
-            {
-                'imputer' : 'MissForestImputer'
-            },
-            {
-                'imputer' : 'MICE'
-            },
-            {
-                'imputer' : 'GAIN'
-            }
-        ]
+        self._all_imputers_hyperparameters = imputer_hyperparameter
 
         # all scalings avaiable
         self._all_scalings = My_AutoML.scalings
 
         # all hyperparameters for scalings
-        self._all_scalings_hyperparameters = [
-            {
-                'scaling' : 'NoScaling'
-            },
-            {
-                'scaling' : 'Standardize'
-            },
-            {
-                'scaling' : 'Normalize'
-            },
-            {
-                'scaling' : 'RobustScale'
-            },
-            {
-                'scaling' : 'MinMaxScale'
-            },
-            {
-                'scaling' : 'Winsorization'
-            }
-        ]
+        self._all_scalings_hyperparameters = scaling_hyperparameter
 
         # all balancings available
         self._all_balancings = My_AutoML.imbalance
 
         # all hyperparameters for balancing methods
-        self._all_balancings_hyperparameters = [
-            {
-                'balancing' : 'no_processing'
-            },
-            {
-                'balancing' : 'SimpleRandomOverSampling'
-            },
-            {
-                'balancing' : 'SimpleRandomUnderSampling'
-            },
-            {
-                'balancing' : 'TomekLink'
-            },
-            {
-                'balancing' : 'EditedNearestNeighbor'
-            },
-            {
-                'balancing' : 'CondensedNearestNeighbor'
-            },
-            {
-                'balancing' : 'OneSidedSelection'
-            },
-            {
-                'balancing' : 'CNN_TomekLink'
-            },
-            {
-                'balancing' : 'Smote'
-            },
-            {
-                'balancing' : 'Smote_TomekLink'
-            },
-            {
-                'balancing' : 'Smote_ENN'
-            }
-        ]
+        self._all_balancings_hyperparameters = balancing_hyperparameter
 
         # all feature selections available
         self._all_feature_selection = My_AutoML.feature_selection
 
         # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = [
-            {
-                'feature_selection' : 'no_processing'
-            },
-            {
-                'feature_selection' : 'LDASelection'
-            },
-            {
-                'feature_selection' : 'PCA_FeatureSelection'
-            },
-            {
-                'feature_selection' : 'RBFSampler'
-            },
-            {
-                'feature_selection' : 'FeatureFilter'
-            },
-            {
-                'feature_selection' : 'ASFFS'
-            },
-            {
-                'feature_selection' : 'GeneticAlgorithm'
-            },
-            {
-                'feature_selection' : 'extra_trees_preproc_for_classification'
-            },
-            {
-                'feature_selection' : 'fast_ica'
-            },
-            {
-                'feature_selection' : 'feature_agglomeration'
-            },
-            {
-                'feature_selection' : 'kernel_pca'
-            },
-            {
-                'feature_selection' : 'kitchen_sinks'
-            },
-            {
-                'feature_selection' : 'liblinear_svc_preprocessor'
-            },
-            {
-                'feature_selection' : 'nystroem_sampler'
-            },
-            {
-                'feature_selection' : 'pca'
-            },
-            {
-                'feature_selection' : 'polynomial'
-            },
-            {
-                'feature_selection' : 'random_trees_embedding'
-            },
-            {
-                'feature_selection' : 'select_percentile_classification'
-            },
-            {
-                'feature_selection' : 'select_rates_classification'
-            },
-            {
-                'feature_selection' : 'truncatedSVD'
-            }
-        ]
+        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
         
         # all classfication models available
-        self._all_models = {
-            'AdaboostClassifier' : AdaboostClassifier,
-            'BernoulliNB' : BernoulliNB,
-            'DecisionTree' : DecisionTree,
-            'ExtraTreesClassifier' : ExtraTreesClassifier,
-            'GaussianNB' : GaussianNB,
-            'GradientBoostingClassifier' : GradientBoostingClassifier,
-            'KNearestNeighborsClassifier' : KNearestNeighborsClassifier,
-            'LDA' : LDA,
-            'LibLinear_SVC' : LibLinear_SVC,
-            'LibSVM_SVC' : LibSVM_SVC,
-            'MLPClassifier' : MLPClassifier,
-            'MultinomialNB' : MultinomialNB,
-            'PassiveAggressive' : PassiveAggressive,
-            'QDA' : QDA,
-            'RandomForest' : RandomForest,
-            'SGD' : SGD
-        }
+        self._all_models = classifiers
         
         # all hyperparameters for the classification models
-        self._all_models_hyperparameters = [
-            {
-                'model' : 'AdaboostClassifier',
-                'n_estimators' : hp.quniform('AdaboostClassifier_n_estimators', 10, 100, 1), 
-                'learning_rate' : hp.uniform('AdaboostClassifier_learning_rate', 0.00001, 1), 
-                'algorithm' : hp.choice('AdaboostClassifier_algorithm', ['SAMME', 'SAMME.R']), 
-                # for base_estimator of Decision Tree
-                'max_depth' : hp.quniform('AdaboostClassifier_max_depth', 2, 10, 1)
-            },
-            {
-                'model' : 'BernoulliNB',
-                'alpha' : hp.loguniform('BernoulliNB_alpha', -3, 1),
-                'fit_prior' : hp.choice('BernoulliNB_fit_prior', [True, False])
-            },
-            {
-                'model' : 'DecisionTree',
-                'criterion' : hp.choice('DecisionTree_criterion', ['gini', 'entropy']), 
-                'max_features' : hp.uniform('DecisionTree_max_features', 0, 1), 
-                'max_depth_factor' : hp.uniform('DecisionTree_max_depth_factor', 0, 1),
-                'min_samples_split' : hp.quniform('DecisionTree_min_samples_split', 2, 10, 1), 
-                'min_samples_leaf' : hp.quniform('DecisionTree_min_samples_leaf', 1, 10, 1), 
-                'min_weight_fraction_leaf' : hp.uniform('DecisionTree_min_weight_fraction_leaf', 0, 0.5),
-                'max_leaf_nodes' : hp.quniform('DecisionTree_max_leaf_nodes', 1, 100000, 1), 
-                'min_impurity_decrease' : hp.uniform('DecisionTree_min_impurity_decrease', 0, 1)
-            },
-            {
-                'model' : 'ExtraTreesClassifier',
-                'criterion' : hp.choice('ExtraTreesClassifier_criterion', ['gini', 'entropy']), 
-                'min_samples_leaf' : hp.quniform('ExtraTreesClassifier_min_samples_leaf', 1, 10, 1),
-                'min_samples_split' : hp.quniform('ExtraTreesClassifier_min_samples_split', 2, 10, 1),  
-                'max_features' : hp.choice('ExtraTreesClassifier_max_features', [None, 'auto', 'sqrt', 'log2']), 
-                'bootstrap' : hp.choice('ExtraTreesClassifier_bootstrap', [True, False]), 
-                'max_leaf_nodes' : hp.quniform('ExtraTreesClassifier_max_leaf_nodes', 1, 100000, 1),
-                'max_depth' : hp.quniform('ExtraTreesClassifier_max_depth', 2, 10, 1), 
-                'min_weight_fraction_leaf' : hp.uniform('ExtraTreesClassifier_min_weight_fraction_leaf', 0, 1), 
-                'min_impurity_decrease' : hp.uniform('ExtraTreesClassifier_min_impurity_decrease', 0, 1)
-            },
-            {
-                'model' : 'GaussianNB'
-            },
-            {
-                'model' : 'GradientBoostingClassifier',
-                'loss' : hp.choice('GradientBoostingClassifier_loss', ['auto', 'binary_crossentropy']), 
-                # 'categorical_crossentropy' only for multi-class classification
-                'learning_rate' : hp.loguniform('GradientBoostingClassifier_learning_rate', -3, 1), 
-                'min_samples_leaf' : hp.quniform('GradientBoostingClassifier_min_samples_leaf', 1, 30, 1), 
-                'max_depth' : hp.quniform('GradientBoostingClassifier_max_depth', 2, 50, 1),
-                'max_leaf_nodes' : hp.quniform('GradientBoostingClassifier_max_leaf_nodes', 1, 100000, 1), 
-                'max_bins' : hp.quniform('GradientBoostingClassifier_max_bins', 1, 255, 1), 
-                'l2_regularization' : hp.uniform('GradientBoostingClassifier_l2_regularization', 0, 10), 
-                'early_stop' : hp.choice('GradientBoostingClassifier_early_stop', ['off', 'train', 'valid']), 
-                'tol' : hp.loguniform('GradientBoostingClassifier_tol', -10, 1), 
-                'scoring' : hp.choice('GradientBoostingClassifier_scoring', ['loss', 'accuracy', 'roc_auc'])
-            },
-            {
-                'model' : 'KNearestNeighborsClassifier',
-                'n_neighbors' : hp.choice('KNearestNeighborsClassifier_n_neighbors', np.arange(1, 21, dtype = int)), 
-                'weights' : hp.choice('KNearestNeighborsClassifier_weights', ['uniform', 'distance']), 
-                'p' : hp.quniform('KNearestNeighborsClassifier_p', 1, 5, 1)
-            },
-            {
-                'model' : 'LDA',
-                'shrinkage' : hp.choice('LDA_shrinkage', [None, 'auto', 'manual']), 
-                'tol' : hp.uniform('LDA_tol', 1e-10, 1)
-            },
-            ###################################################################
-            {
-                'model' : 'LibLinear_SVC',
-                'penalty' : hp.choice('LibLinear_SVC_penalty', ['l1', 'l2']), # conditional 'l1' and 'hinge' not supported
-                'loss' : hp.choice('LibLinear_SVC_loss', ['hinge', 'squared_hinge']), 
-                'dual' : hp.choice('LibLinear_SVC_dual', [True, False]), 
-                'tol' : hp.loguniform('LibLinear_SVC_tol', -10, 1), 
-                'C' : hp.loguniform('LibLinear_SVC_C', -5, 1), 
-                'multi_class' : hp.choice('LibLinear_SVC_multi_class', ['ovr', 'crammer_singer']),
-                'fit_intercept' : hp.choice('LibLinear_SVC_fit_intercept', [True, False]), 
-                'intercept_scaling' : hp.loguniform('LibLinear_SVC_intercept_scaling', -5, 1)
-            },
-            {
-                'model' : 'LibSVM_SVC',
-                'C' : hp.loguniform('LibSVM_SVC_C', -5, 1), 
-                'kernel' : hp.choice('LibSVM_SVC_kernel', ['linear', 'poly', 'rbf', 'sigmoid', 'precomputed']), # conditional, precomputed can only be used for n * n kernel matrix
-                'gamma' : hp.uniform('LibSVM_SVC_gamma', 0, 1), 
-                'shrinking' : hp.choice('LibSVM_SVC_shrinking', [True, False]), 
-                'tol' : hp.loguniform('LibSVM_SVC_tol', -10, 1), 
-                'max_iter' : hp.quniform('LibSVM_SVC_max_iter', -1, 1e6, 1)
-            },
-            {
-                'model' : 'MLPClassifier',
-                'hidden_layer_depth' : hp.quniform('MLPClassifier_hidden_layer_depth', 1, 10, 1), 
-                'num_nodes_per_layer' : hp.quniform('MLPClassifier_num_nodes_per_layer', 1, 20, 1), 
-                'activation' : hp.choice('MLPClassifier_activation', ['identity', 'logistic', 'tanh', 'relu']), 
-                'alpha' : hp.loguniform('MLPClassifier_alpha', -6, 1),
-                'learning_rate_init' : hp.loguniform('MLPClassifier_learning_rate_init', -6, 1), 
-                'early_stopping' : hp.choice('MLPClassifier_early_stopping', ['train', 'valid']), 
-                'solver' : hp.choice('MLPClassifier_solver', ['lbfgs', 'sgd', 'adam']), 
-                'batch_size' : hp.quniform('MLPClassifier_batch_size', 2, 200, 1),
-                'n_iter_no_change' : hp.quniform('MLPClassifier_n_iter_no_change', 1, 20, 1), 
-                'tol' : hp.loguniform('MLPClassifier_tol', -10, 1),
-                'shuffle' : hp.choice('MLPClassifier_shuffle', [True, False]), 
-                'beta_1' : hp.uniform('MLPClassifier_beta_1', 0, 0.999), 
-                'beta_2' : hp.uniform('MLPClassifier_beta_2', 0, 0.999), 
-                'epsilon' : hp.loguniform('MLPClassifier_epsilon', -10, 10)
-            },
-            ####################################################################
-            {
-                'model' : 'MultinomialNB',
-                'alpha' : hp.loguniform('MultinomialNB_alpha', -3, 1),
-                'fit_prior' : hp.choice('MultinomialNB_fit_prior', [True, False])
-            },
-            {
-                'model' : 'PassiveAggressive',
-                'C' : hp.loguniform('PassiveAggressive_C', -3, 1), 
-                'fit_intercept' : hp.choice('PassiveAggressive_fit_intercept', [True, False]), 
-                'tol' : hp.loguniform('PassiveAggressive_tol', -10, 1), 
-                'loss' : hp.choice('PassiveAggressive_loss', ['hinge', 'squared_hinge']), 
-                'average' : hp.choice('PassiveAggressive_average', [True, False])
-            },
-            {
-                'model' : 'QDA',
-                'reg_param' : hp.uniform('QDA_reg_param', 0, 1)
-            },
-            {
-                'model' : 'RandomForest',
-                'criterion' : hp.choice('RandomForest_criterion', ['gini', 'entropy']), 
-                'max_features' : hp.choice('RandomForest_max_features', ['auto', 'sqrt', 'log2', \
-                    hp.uniform('RandomForest_max_features_float', 0, 1)]),
-                'max_depth' : hp.quniform('RandomForest_max_depth', 2, 10, 1), 
-                'min_samples_split' : hp.quniform('RandomForest_min_samples_split', 2, 10, 1), 
-                'min_samples_leaf' : hp.quniform('RandomForest_min_samples_leaf', 1, 30, 1),
-                'min_weight_fraction_leaf' : hp.uniform('RandomForest_min_weight_fraction_leaf', 0, 0.5), 
-                'bootstrap' : hp.choice('RandomForest_bootstrap', [True, False]), 
-                'max_leaf_nodes' : hp.quniform('RandomForest_max_leaf_nodes', 1, 100000, 1),
-                'min_impurity_decrease' : hp.uniform('RandomForest_min_impurity_decrease', 0, 1)
-            },
-            {
-                'model' : 'SGD',
-                'loss' : hp.choice('SGD_loss', ['hinge', 'log', 'modified_huber', 'squared_hinge', 'perceptron']), 
-                'penalty' : hp.choice('SGD_penalty', ['l1', 'l2']), 
-                'alpha' : hp.loguniform('SGD_alpha', -6, 1), 
-                'fit_intercept' : hp.choice('SGD_fit_intercept', [True, False]), 
-                'tol' : hp.loguniform('SGD_tol', -10, 1),
-                'learning_rate' : hp.choice('SGD_learning_rate', ['constant', 'optimal', 'invscaling', 'adaptive'])
-            }
-        ]
+        self._all_models_hyperparameters = classifier_hyperparameter
 
         self.hyperparameter_space = None
 
@@ -527,14 +158,30 @@ class AutoClassifier() :
     def get_hyperparameter_space(self, model_hyperparameters, models) :
 
         # encoding space
+        _encoding_hyperparameter = []
+
+        _encoding_hyperparameter = hp.choice('classification_encoders', _encoding_hyperparameter)
 
         # imputation space
+        _imputer_hyperparameter = []
+
+        _imputer_hyperparameter = hp.choice('classification_imputers', _imputer_hyperparameter)
 
         # scaling space
+        _scaling_hyperparameter = []
+
+        _scaling_hyperparameter = hp.choice('classification_scaling', _scaling_hyperparameter)
 
         # balancing space
+        _balancing_hyperparameter = []
+
+        _balancing_hyperparameter = hp.choice('classiciation_balancing', _balancing_hyperparameter)
 
         # feature selection space
+        _feature_selection_hyperparameter = []
+
+        _feature_selection_hyperparameter = hp.choice('classification_feature_selection', \
+            _feature_selection_hyperparameter)
         
         # model selection and hyperparameter optimization space
         _model_hyperparameter = []
@@ -590,14 +237,9 @@ class AutoClassifier() :
         # Feature selection
         # Remove redundant features, reduce dimensionality
         
-        # train test split so the performance of model selection and 
-        # hyperparameter optimization can be evaluated
-        from sklearn.model_selection import train_test_split
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            _X, _y, test_size = self.test_size, random_state = self.seed
-        )
-
+        # Model selection/Hyperparameter optimization
+        # using Bayesian Optimization
+        # only select chosen ones to space
         if self.models == 'auto' : # if auto, model pool will be all default models
             models = self._all_models.copy()
         else :
@@ -608,23 +250,42 @@ class AutoClassifier() :
                         'Only supported models are {}, get {}.'.format([*self._all_models], _model)
                     )
                 models[_model] = self._all_models[_model]
+
+        # train test split so the performance of model selection and 
+        # hyperparameter optimization can be evaluated
+        from sklearn.model_selection import train_test_split
+
+        X_train, X_test, y_train, y_test = train_test_split(
+            _X, _y, test_size = self.test_size, random_state = self.seed
+        )
         
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
         @ignore_warnings(category = ConvergenceWarning)
         def _objective(params) :
-
-            from sklearn.metrics import accuracy_score
+            
+            if self.objective == 'accuracy' :
+                from sklearn.metrics import accuracy_score
+                _obj = accuracy_score
+            elif self.objective == 'auc' :
+                from sklearn.metrics import roc_auc_score
+                _obj = roc_auc_score
 
             _model = params['model']
             del params['model']
-            clf = models[_model](**params) # call the model using passed parameters
-                                           # params must be ordered and for positional arguments
+            if _model in ['GradientBoostingClassifier', 'MLPClassifier'] :
+                # modifications required
+                # autosklearn.GradientBoostingClassifier/autosklearn.MLPRegressor 
+                # set validation_fraction = None, which result in early_stop = 'valid' errors
+                clf = models[_model](**params, validation_fraction = 0.1)
+            else :
+                clf = models[_model](**params) # call the model using passed parameters
+                                               # params must be ordered and for positional arguments
             clf.fit(X_train.values, y_train.values.ravel())        
             y_pred = clf.predict(X_test.values)
 
             # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-            return {'loss' : - accuracy_score(y_pred, y_test.values), 'status' : STATUS_OK}
+            return {'loss' : - _obj(y_pred, y_test.values), 'status' : STATUS_OK}
         
         # initialize the hyperparameter space
         _all_models_hyperparameters = self._all_models_hyperparameters.copy()
