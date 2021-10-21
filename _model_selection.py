@@ -251,14 +251,6 @@ class AutoClassifier() :
                     )
                 models[_model] = self._all_models[_model]
 
-        # train test split so the performance of model selection and 
-        # hyperparameter optimization can be evaluated
-        from sklearn.model_selection import train_test_split
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            _X, _y, test_size = self.test_size, random_state = self.seed
-        )
-        
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
         @ignore_warnings(category = ConvergenceWarning)
@@ -281,18 +273,18 @@ class AutoClassifier() :
             else :
                 clf = models[_model](**params) # call the model using passed parameters
                                                # params must be ordered and for positional arguments
-            clf.fit(X_train.values, y_train.values.ravel())        
-            y_pred = clf.predict(X_test.values)
+            clf.fit(X.values, y.values.ravel())        
+            y_pred = clf.predict(X.values)
 
             # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-            return {'loss' : - _obj(y_pred, y_test.values), 'status' : STATUS_OK}
+            return {'loss' : - _obj(y_pred, y.values), 'status' : STATUS_OK}
         
         # initialize the hyperparameter space
         _all_models_hyperparameters = self._all_models_hyperparameters.copy()
 
         # special treatment for LibSVM_SVC kernel
         # if dataset not in shape of n * n, precomputed should be disabled
-        n, p = X_test.shape
+        n, p = X.shape
         if n != p :
             for item in _all_models_hyperparameters :
                 if item['model'] == 'LibSVM_SVC' :
