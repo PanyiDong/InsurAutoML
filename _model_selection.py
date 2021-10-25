@@ -350,7 +350,7 @@ class AutoClassifier() :
                 y_pred = clf.predict(_X.values)
 
             # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-            return {'loss' : - _obj(y_pred, y_test.values), 'status' : STATUS_OK}
+            return {'loss' : - _obj(y_pred, y.values), 'status' : STATUS_OK}
         
         # initialize the hyperparameter space
         _all_models_hyperparameters = self._all_models_hyperparameters.copy()
