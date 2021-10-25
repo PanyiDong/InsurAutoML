@@ -301,7 +301,9 @@ classifier_hyperparameter = [
         'alpha' : hp.loguniform('MLPClassifier_alpha', -6, 1),
         'learning_rate_init' : hp.loguniform('MLPClassifier_learning_rate_init', -6, 1), 
         'early_stopping' : hp.choice('MLPClassifier_early_stopping', ['train', 'valid']), 
-        'solver' : hp.choice('MLPClassifier_solver', ['lbfgs', 'sgd', 'adam']), 
+        #'solver' : hp.choice('MLPClassifier_solver', ['lbfgs', 'sgd', 'adam']), 
+        # autosklearn must include _no_improvement_count, where only supported by 'sgd' and 'adam'
+        'solver' : hp.choice('MLPClassifier_solver', ['sgd', 'adam']), 
         'batch_size' : hp.quniform('MLPClassifier_batch_size', 2, 200, 1),
         'n_iter_no_change' : hp.quniform('MLPClassifier_n_iter_no_change', 1, 20, 1), 
         'tol' : hp.loguniform('MLPClassifier_tol', -10, 1),

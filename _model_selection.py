@@ -91,6 +91,7 @@ class AutoClassifier() :
         models = 'auto',
         test_size = 0.15,
         objective = 'accuracy',
+        validation = True,
         method = 'Bayeisan',
         algo = 'tpe',
         spark_trials = True,
@@ -107,13 +108,12 @@ class AutoClassifier() :
         self.models = models
         self.test_size = test_size
         self.objective = objective
+        self.validation = validation
         self.method = method
         self.algo = algo
         self.spark_trials = spark_trials
         self.progressbar = progressbar
         self.seed = seed
-
-        
 
         # all encoders avaiable
         self._all_encoders = My_AutoML.encoders
@@ -209,6 +209,7 @@ class AutoClassifier() :
 
         # Encoding
         # convert string types to numerical type
+        # get encoder space
         from My_AutoML import DataEncoding
 
         x_encoder = DataEncoding()
@@ -217,29 +218,88 @@ class AutoClassifier() :
         y_encoder = DataEncoding()
         _y = y_encoder.fit(y)
 
+        # if self.encoder == 'auto' :
+        #     encoder = self._all_encoders.copy()
+        # else :
+        #     encoder = {} # if specified, check if encoders in default encoders
+        #     for _encoder in self.encoder :
+        #         if _encoder not in [*self._all_encoders] :
+        #             raise ValueError(
+        #                 'Only supported encoders are {}, get {}.'.format([*self._all_encoders], _encoder)
+        #             )
+        #         encoder[_encoder] = self._all_encoders[_encoder]
+
         # Imputer
         # fill missing values
+        # get imputer space
         from My_AutoML import SimpleImputer
         
         imputer = SimpleImputer(method = 'mean')
         _X = imputer.fill(_X)
 
+        # if self.imputer == 'auto' :
+        #     imputer = self._all_imputers.copy()
+        # else :
+        #     imputer = {} # if specified, check if imputers in default imputers
+        #     for _imputer in self.imputer :
+        #         if _imputer not in [*self._all_imputers] :
+        #             raise ValueError(
+        #                 'Only supported imputers are {}, get {}.'.format([*self._all_imputers], _imputer)
+        #             )
+        #         imputer[_imputer] = self._all_imputers[_imputer]
+
         # Scaling
+        # get scaling space
         from My_AutoML import Standardize
 
         scaling = Standardize()
         scaling.fit(_X)
         _X = scaling.transform(_X)
 
+        # if self.scaling == 'auto' :
+        #     scaling = self._all_scalings.copy()
+        # else :
+        #     scaling = {} # if specified, check if scalings in default scalings
+        #     for _scaling in self.scaling :
+        #         if _scaling not in [*self._all_scalings] :
+        #             raise ValueError(
+        #                 'Only supported scalings are {}, get {}.'.format([*self._all_scalings], _scaling)
+        #             )
+        #         scaling[_scaling] = self._all_scalings[_scaling]
+
         # Balancing
         # deal with imbalanced dataset, using over-/under-sampling methods
+        # get balancing space
+        # if self.balancing == 'auto' :
+        #     balancing = self._all_balancings.copy()
+        # else :
+        #     balancing = {} # if specified, check if balancings in default balancings
+        #     for _balancing in self.balancing :
+        #         if _balancing not in [*self._all_balancings] :
+        #             raise ValueError(
+        #                 'Only supported balancings are {}, get {}.'.format([*self._all_balancings], _balancing)
+        #             )
+        #         balancing[_balancing] = self._all_balancings[_balancing]
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
+        # get feature selection space
+        # feature_selection = 'auto'
+        # if self.feature_selection == 'auto' :
+        #     feature_selection = self._all_feature_selection.copy()
+        # else :
+        #     feature_selection = {} # if specified, check if balancings in default balancings
+        #     for _feature_selection in self.feature_selection :
+        #         if _feature_selection not in [*self._all_feature_selection] :
+        #             raise ValueError(
+        #                 'Only supported balancings are {}, get {}.'\
+        #                     .format([*self._all_feature_selection], _feature_selection)
+        #             )
+        #         feature_selection[_feature_selection] = self._all_feature_selection[_feature_selection]
         
         # Model selection/Hyperparameter optimization
         # using Bayesian Optimization
-        # only select chosen ones to space
+        # model space, only select chosen models to space
         if self.models == 'auto' : # if auto, model pool will be all default models
             models = self._all_models.copy()
         else :
@@ -250,14 +310,15 @@ class AutoClassifier() :
                         'Only supported models are {}, get {}.'.format([*self._all_models], _model)
                     )
                 models[_model] = self._all_models[_model]
+        
+        if self.validation : # only perform train_test_split when validation
+            # train test split so the performance of model selection and 
+            # hyperparameter optimization can be evaluated
+            from sklearn.model_selection import train_test_split
 
-        # train test split so the performance of model selection and 
-        # hyperparameter optimization can be evaluated
-        from sklearn.model_selection import train_test_split
-
-        X_train, X_test, y_train, y_test = train_test_split(
-            _X, _y, test_size = self.test_size, random_state = self.seed
-        )
+            X_train, X_test, y_train, y_test = train_test_split(
+                _X, _y, test_size = self.test_size, random_state = self.seed
+            )
         
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
@@ -281,8 +342,12 @@ class AutoClassifier() :
             else :
                 clf = models[_model](**params) # call the model using passed parameters
                                                # params must be ordered and for positional arguments
-            clf.fit(X_train.values, y_train.values.ravel())        
-            y_pred = clf.predict(X_test.values)
+            if self.validation :
+                clf.fit(X_train.values, y_train.values.ravel())        
+                y_pred = clf.predict(X_test.values)
+            else :
+                clf.fit(_X.values, _y.values.ravel())
+                y_pred = clf.predict(_X.values)
 
             # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
             return {'loss' : - _obj(y_pred, y_test.values), 'status' : STATUS_OK}
@@ -292,7 +357,10 @@ class AutoClassifier() :
 
         # special treatment for LibSVM_SVC kernel
         # if dataset not in shape of n * n, precomputed should be disabled
-        n, p = X_test.shape
+        if self.validation :
+            n, p = X_test.shape
+        else :
+            n, p = _X.shape
         if n != p :
             for item in _all_models_hyperparameters :
                 if item['model'] == 'LibSVM_SVC' :
