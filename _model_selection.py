@@ -357,7 +357,7 @@ class AutoClassifier() :
             for _feature_selection in self.feature_selection :
                 if _feature_selection not in [*self._all_feature_selection] :
                     raise ValueError(
-                        'Only supported balancings are {}, get {}.'\
+                        'Only supported feature selections are {}, get {}.'\
                             .format([*self._all_feature_selection], _feature_selection)
                     )
                 feature_selection[_feature_selection] = self._all_feature_selection[_feature_selection]
@@ -497,6 +497,8 @@ class AutoClassifier() :
         x_encoder = DataEncoding()
         _X = x_encoder.fit(X)
 
+        #_X = self.optimal_encoder.refit(_X)
+
         # Imputer
         # fill missing values
         from My_AutoML import SimpleImputer
@@ -504,13 +506,18 @@ class AutoClassifier() :
         imputer = SimpleImputer(method = 'mean')
         _X = imputer.fill(_X)
 
+        #_X = self.optimal_imputer.fill(_X)
+
         # Scaling
+        #_X = self.optimal_scaling.fit(_X)
 
         # Balancing
         # deal with imbalanced dataset, using over-/under-sampling methods
+        # No need to balance on test data
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
+        #_X = self.optimal_feature_selection.transform(_X)
 
         return self._fit_model.predict(_X.values)
 
