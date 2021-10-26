@@ -13,6 +13,7 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
+from My_AutoML._base import no_processing
 from My_AutoML._hyperparameters import encoder_hyperparameter, imputer_hyperparameter, \
     scaling_hyperparameter, balancing_hyperparameter, feature_selection_hyperparameter, \
     classifiers, classifier_hyperparameter, regressors, regressor_hyperparameters
@@ -216,10 +217,10 @@ class AutoClassifier() :
         _encoding_hyperparameter = hp.choice('classification_encoders', _encoding_hyperparameter)
 
         # imputation space
+        _imputer_hyperparameter = []
         if not X.isnull().values.any() : # if no missing, no need for imputation
-            _imputer_hyperparameter = hp.choice('classification_imputers', [])
+            _imputer_hyperparameter = hp.choice('classification_imputers', [{'imputer' : 'no_processing'}])
         else :
-            _imputer_hyperparameter = []
             for _imputer in [*imputer] :
                 for item in imputers_hyperparameters : # search the imputer' hyperparameters
                     if item['imputer'] == _imputer :
@@ -310,15 +311,21 @@ class AutoClassifier() :
         # _X = imputer.fill(_X)
 
         if self.imputer == 'auto' :
-            imputer = self._all_imputers.copy()
+            if not X.isnull().values.any() : # if no missing values
+                imputer = {'no_processing' : no_processing}
+            else :
+                imputer = self._all_imputers.copy()
         else :
-            imputer = {} # if specified, check if imputers in default imputers
-            for _imputer in self.imputer :
-                if _imputer not in [*self._all_imputers] :
-                    raise ValueError(
-                        'Only supported imputers are {}, get {}.'.format([*self._all_imputers], _imputer)
-                    )
-                imputer[_imputer] = self._all_imputers[_imputer]
+            if not X.isnull().values.any() : # if no missing values
+                imputer = {'no_processing' : no_processing}
+            else :
+                imputer = {} # if specified, check if imputers in default imputers
+                for _imputer in self.imputer :
+                    if _imputer not in [*self._all_imputers] :
+                        raise ValueError(
+                            'Only supported imputers are {}, get {}.'.format([*self._all_imputers], _imputer)
+                        )
+                    imputer[_imputer] = self._all_imputers[_imputer]
 
         # Scaling
         # get scaling space
@@ -415,7 +422,7 @@ class AutoClassifier() :
         # use accuracy score
         @ignore_warnings(category = ConvergenceWarning)
         def _objective(params) :
-            
+            print(params)
             # evaluation for predictions
             if self.objective == 'accuracy' :
                 from sklearn.metrics import accuracy_score
@@ -447,10 +454,9 @@ class AutoClassifier() :
             
             # select imputer and set hyperparameters
             _imputer_hyper = params['imputer']
-            if _imputer_hyper : # only select when imputer exists
-                _imputer = _imputer_hyper['imputer']
-                del _imputer_hyper['imputer']
-                imp = imputer[_imputer](**_imputer_hyper)
+            _imputer = _imputer_hyper['imputer']
+            del _imputer_hyper['imputer']
+            imp = imputer[_imputer](**_imputer_hyper)
 
             # select scaling and set hyperparameters
             # must have scaling, since no_preprocessing is included
@@ -488,11 +494,8 @@ class AutoClassifier() :
                 _X_train_obj = enc.fit(_X_train_obj)
                 _X_test_obj = enc.refit(_X_test_obj)
                 # imputer
-                try :
-                    _X_train_obj = imp.fill(_X_train_obj)
-                    _X_test_obj = imp.fill(_X_test_obj)
-                except NameError : # if imputer do not exist, pass
-                    pass
+                _X_train_obj = imp.fill(_X_train_obj)
+                _X_test_obj = imp.fill(_X_test_obj)
                 # scaling
                 scl.fit(_X_train_obj)
                 _X_train_obj = scl.transform(_X_train_obj)
@@ -516,10 +519,7 @@ class AutoClassifier() :
                 # encoding
                 _X_obj = enc.fit(_X_obj)
                 # imputer
-                try :
-                    _X_obj = imp.fill(_X_obj)
-                except NameError : # if imputer do not exist, pass
-                    pass
+                _X_obj = imp.fill(_X_obj)
                 # scaling
                 scl.fit(_X_obj)
                 _X_obj = scl.transform(_X_obj)
@@ -571,12 +571,8 @@ class AutoClassifier() :
         del self.optimal_encoder_hyperparameters['encoder']
         # optimal imputer
         self.optimal_imputer_hyperparameters = optimal_point['imputer']
-        if self.optimal_imputer_hyperparameters :
-            self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
-            del self.optimal_imputer_hyperparameters['imputer']
-        else : # if no imputer exists, create empty imputer and hyperparamter space
-            self.optimal_imputer = None
-            self.optimal_imputer_hyperparameters = {}
+        self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
+        del self.optimal_imputer_hyperparameters['imputer']
         # optimal scaling
         self.optimal_scaling_hyperparameters = optimal_point['scaling']
         self.optimal_scaling = self.optimal_scaling_hyperparameters['scaling']
@@ -600,9 +596,8 @@ class AutoClassifier() :
         self._fit_encoder = self._all_encoders[self.optimal_encoder](**self.optimal_encoder_hyperparameters)
         _X_obj = self._fit_encoder.fit(_X)
         # imputer
-        if not self.optimal_imputer : # only fit when imputer exists
-            self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
-            _X_obj = self._fit_imputer.fill(_X_obj)
+        self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
+        _X_obj = self._fit_imputer.fill(_X_obj)
         # scaling
         self._fit_scaling = self._all_scalings[self.optimal_scaling](**self.optimal_scaling_hyperparameters)
         self._fit_scaling.fit(_X_obj)
@@ -633,7 +628,6 @@ class AutoClassifier() :
 
         # x_encoder = DataEncoding()
         # _X = x_encoder.fit(X)
-
         _X = self._fit_encoder.refit(_X)
 
         # Imputer
@@ -642,8 +636,7 @@ class AutoClassifier() :
         
         # imputer = SimpleImputer(method = 'mean')
         # _X = imputer.fill(_X)
-        if not self._fit_imputer :
-            _X = self._fit_imputer.fill(_X)
+        _X = self._fit_imputer.fill(_X)
 
         # Scaling
         _X = self._fit_scaling.transform(_X)
