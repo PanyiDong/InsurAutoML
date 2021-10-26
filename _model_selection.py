@@ -259,17 +259,17 @@ class AutoClassifier() :
 
         _model_hyperparameter = hp.choice('classification_models', _model_hyperparameter)
 
-        return _model_hyperparameter
+        # return _model_hyperparameter
         
         # the pipeline search space
-        # return pyll.as_apply({
-        #     'encoding' : _encoder,
-        #     'imputation' : _imputer,
-        #     'scaling' : _scaling,
-        #     'balancing' : _balancing,
-        #     'feature_selection' : _feature_selection,
-        #     'classificaiont' : _model_hyperparameter
-        # })
+        return pyll.as_apply({
+            'encoder' : _encoding_hyperparameter,
+            'imputer' : _imputer_hyperparameter,
+            'scaling' : _scaling_hyperparameter,
+            'balancing' : _balancing_hyperparameter,
+            'feature_selection' : _feature_selection_hyperparameter,
+            'classification' : _model_hyperparameter
+        })
 
     def fit(self, X, y) :
 
@@ -390,6 +390,7 @@ class AutoClassifier() :
         @ignore_warnings(category = ConvergenceWarning)
         def _objective(params) :
             
+            # evaluation for predictions
             if self.objective == 'accuracy' :
                 from sklearn.metrics import accuracy_score
                 _obj = accuracy_score
@@ -409,22 +410,92 @@ class AutoClassifier() :
                 raise ValueError(
                     'Only support ["accuracy", "precision", "auc", "hinge", "f1"], get{}'.format(self.objective)
                 )
+            
+            # pipeline of objective, [encoder, imputer, scaling, balancing, feature_selection, model]
+            # select encoder and set hyperparameters
+            _encoder_hyper = params['encoder']
+            _encoder = _encoder_hyper['encoder']
+            del _encoder_hyper['encoder']
+            enc = encoder[_encoder](**_encoder_hyper)
+            
+            # select imputer and set hyperparameters
+            _imputer_hyper = params['imputer']
+            _imputer = _imputer_hyper['imputer']
+            del _imputer_hyper['imputer']
+            imp = imputer[_imputer](**_imputer_hyper)
 
-            _model = params['model']
-            del params['model']
-            clf = models[_model](**params) # call the model using passed parameters
-                                           # params must be ordered and for positional arguments
+            # select scaling and set hyperparameters
+            _scaling_hyper = params['scaling']
+            _scaling = _scaling_hyper['scaling']
+            del _scaling_hyper['scaling']
+            scl = scaling[_scaling](**_scaling_hyper)
+            
+            # select balancing and set hyperparameters
+            _balancing_hyper = params['balancing']
+            _balancing = _balancing_hyper['balancing']
+            del _balancing_hyper['balancing']
+            blc = balancing[_balancing](**_balancing_hyper)
+            
+            # select feature selection and set hyperparameters
+            _feature_selection_hyper = params['feature_selection']
+            _feature_selection = _feature_selection_hyper['feature_selection']
+            del _feature_selection_hyper['feature_selection']
+            fts = feature_selection[_feature_selection](**_feature_selection_hyper)
+            
+            # select classifier model and set hyperparameters
+            _classifier_hyper = params['classification']
+            _classifier = _classifier_hyper['model']
+            del _classifier_hyper['model']
+            clf = models[_classifier](**_classifier_hyper) # call the model using passed parameters
+
+
             if self.validation :
-                clf.fit(X_train.values, y_train.values.ravel())        
-                y_pred = clf.predict(X_test.values)
+                _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
+                _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
+                
+                # encoding
+                _X_train_obj = enc.fit(_X_train_obj)
+                _X_test_obj = enc.refit(_X_test_obj)
+                # imputer
+                _X_train_obj = imp.fill(_X_train_obj)
+                _X_test_obj = imp.fill(_X_test_obj)
+                # scaling
+                scl.fit(_X_train_obj)
+                _X_train_obj = scl.transform(_X_train_obj)
+                _X_test_obj = scl.transform(_X_test_obj)
+                # balancing
+                _X_train_obj = blc.fit_transform(_X_train_obj)
+                _X_test_obj = blc.fit_transform(_X_test_obj)
+                # feature selection
+                fts.fit(_X_train_obj, _y_train_obj)
+                _X_train_obj = fts.transform(_X_train_obj)
+                # classification
+                clf.fit(_X_train_obj.values, _y_train_obj.values.ravel())        
+                y_pred = clf.predict(_X_test_obj.values)
 
                 # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-                return {'loss' : - _obj(y_pred, y_test.values), 'status' : STATUS_OK}
+                return {'loss' : - _obj(y_pred, _y_test_obj.values), 'status' : STATUS_OK}
             else :
-                clf.fit(_X.values, _y.values.ravel())
-                y_pred = clf.predict(_X.values)
+                _X_obj = _X.copy()
+                _y_obj = _y.copy()
 
-                return {'loss' : - _obj(y_pred, _y.values), 'status' : STATUS_OK}
+                # encoding
+                _X_obj = enc.fit(_X_obj)
+                # imputer
+                _X_obj = imp.fill(_X_obj)
+                # scaling
+                scl.fit(_X_obj)
+                _X_obj = scl.transform(_X_obj)
+                # balancing
+                _X_obj = blc.fit_transform(_X_obj)
+                # feature selection
+                fts.fit(_X_obj, _y_obj)
+                _X_obj = fts.transform(_X_obj)
+                # classification
+                clf.fit(_X_obj.values, _y_obj.values.ravel())
+                y_pred = clf.predict(_X_obj.values)
+
+                return {'loss' : - _obj(y_pred, _y_obj.values), 'status' : STATUS_OK}
 
         # initialize the hyperparameter space
         _all_encoders_hyperparameters = self._all_encoders_hyperparameters.copy()
@@ -476,12 +547,55 @@ class AutoClassifier() :
         # mapping the optimal model and hyperparameters selected
         # fit the optimal setting
         optimal_point = space_eval(self.hyperparameter_space, best_results)
-        self.optimal_model = optimal_point['model'] # optimal model selected
-        self.optimal_hyperparameters = optimal_point # optimal hyperparameter settings selected
-        del self.optimal_hyperparameters['model']
-
-        self._fit_model = self._all_models[self.optimal_model](**self.optimal_hyperparameters)
-        self._fit_model.fit(_X.values, _y.values.ravel())
+        # optimal encoder
+        self.optimal_encoder_hyperparameters = optimal_point['encoder']
+        self.optimal_encoder = self.optimal_encoder_hyperparameters['encoder']
+        del self.optimal_encoder_hyperparameters['encoder']
+        # optimal imputer
+        self.optimal_imputer_hyperparameters = optimal_point['imputer']
+        self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
+        del self.optimal_imputer_hyperparameters['imputer']
+        # optimal scaling
+        self.optimal_scaling_hyperparameters = optimal_point['scaling']
+        self.optimal_scaling = self.optimal_scaling_hyperparameters['scaling']
+        del self.optimal_scaling_hyperparameters['scaling']
+        # optimal balancing
+        self.optimal_balancing_hyperparameters = optimal_point['balancing']
+        self.optimal_balancing = self.optimal_balancing_hyperparameters['balancing']
+        del self.optimal_balancing_hyperparameters['balancing']
+        # optimal feature selection
+        self.optimal_feature_selection_hyperparameters = optimal_point['feature_selection']
+        self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters['feature_selection']
+        del self.optimal_feature_selection_hyperparameters['feature_selection']
+        # optimal classifier
+        self.optimal_classifier_hyperparameters = optimal_point['classification'] # optimal model selected
+        self.optimal_classifier = self.optimal_classifier_hyperparameters['model'] # optimal hyperparameter settings selected
+        del self.optimal_classifier_hyperparameters['model']
+        
+        _X_obj = _X.copy()
+        _y_obj = _y.copy()
+        # encoding
+        self._fit_encoder = self._all_encoders[self.optimal_encoder](**self.optimal_encoder_hyperparameters)
+        _X_obj = self._fit_encoder.fit(_X)
+        # imputer
+        self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
+        _X_obj = self._fit_imputer.fill(_X_obj)
+        # scaling
+        self._fit_scaling = self._all_scalings[self.optimal_scaling](**self.optimal_scaling_hyperparameters)
+        self._fit_scaling.fit(_X_obj)
+        _X_obj = self._fit_scaling.transform(_X_obj)
+        # balancing
+        self._fit_balancing = self._all_balancings[self.optimal_balancing](**self.optimal_balancing_hyperparameters)
+        _X_obj = self._fit_balancing.fit_transform(_X_obj)
+        # feature selection
+        self._fit_feature_selection = self._all_feature_selection[self.optimal_feature_selection](
+            **self.optimal_feature_selection_hyperparameters
+        )
+        self._fit_feature_selection.fit(_X_obj, _y_obj)
+        _X_obj = self._fit_feature_selection.transform(_X_obj)
+        # classification
+        self._fit_classifier = self._all_models[self.optimal_classifier](**self.optimal_classifier_hyperparameters)
+        self._fit_classifier.fit(_X_obj.values, _y_obj.values.ravel())
 
         return self
 
@@ -492,24 +606,24 @@ class AutoClassifier() :
         # may need preprocessing for test data, the preprocessing shoul be the same as in fit part
         # Encoding
         # convert string types to numerical type
-        from My_AutoML import DataEncoding
+        # from My_AutoML import DataEncoding
 
-        x_encoder = DataEncoding()
-        _X = x_encoder.fit(X)
+        # x_encoder = DataEncoding()
+        # _X = x_encoder.fit(X)
 
-        #_X = self.optimal_encoder.refit(_X)
+        _X = self._fit_encoder.refit(_X)
 
         # Imputer
         # fill missing values
-        from My_AutoML import SimpleImputer
+        # from My_AutoML import SimpleImputer
         
-        imputer = SimpleImputer(method = 'mean')
-        _X = imputer.fill(_X)
+        # imputer = SimpleImputer(method = 'mean')
+        # _X = imputer.fill(_X)
 
-        #_X = self.optimal_imputer.fill(_X)
+        _X = self._fit_imputer.fill(_X)
 
         # Scaling
-        #_X = self.optimal_scaling.fit(_X)
+        _X = self._fit_scaling.transform(_X)
 
         # Balancing
         # deal with imbalanced dataset, using over-/under-sampling methods
@@ -517,9 +631,9 @@ class AutoClassifier() :
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
-        #_X = self.optimal_feature_selection.transform(_X)
+        _X = self._fit_feature_selection.transform(_X)
 
-        return self._fit_model.predict(_X.values)
+        return self._fit_classifier.predict(_X.values)
 
 '''
 Regressors/Hyperparameters from sklearn:
