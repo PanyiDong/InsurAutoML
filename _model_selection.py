@@ -197,6 +197,7 @@ class AutoClassifier() :
     # only chosen ones will be added to hyperparameter space
     def get_hyperparameter_space(
         self, 
+        X, 
         encoders_hyperparameters, encoder,
         imputers_hyperparameters, imputer,
         scalings_hyperparameters, scaling,
@@ -215,13 +216,16 @@ class AutoClassifier() :
         _encoding_hyperparameter = hp.choice('classification_encoders', _encoding_hyperparameter)
 
         # imputation space
-        _imputer_hyperparameter = []
-        for _imputer in [*imputer] :
-            for item in imputers_hyperparameters : # search the imputer' hyperparameters
-                if item['imputer'] == _imputer :
-                    _imputer_hyperparameter.append(item)
+        if not X.isnull().values.any() : # if no missing, no need for imputation
+            _imputer_hyperparameter = hp.choice('classification_imputers', [])
+        else :
+            _imputer_hyperparameter = []
+            for _imputer in [*imputer] :
+                for item in imputers_hyperparameters : # search the imputer' hyperparameters
+                    if item['imputer'] == _imputer :
+                        _imputer_hyperparameter.append(item)
 
-        _imputer_hyperparameter = hp.choice('classification_imputers', _imputer_hyperparameter)
+            _imputer_hyperparameter = hp.choice('classification_imputers', _imputer_hyperparameter)
 
         # scaling space
         _scaling_hyperparameter = []
@@ -378,6 +382,26 @@ class AutoClassifier() :
                     )
                 models[_model] = self._all_models[_model]
         
+        # initialize the hyperparameter space
+        _all_encoders_hyperparameters = self._all_encoders_hyperparameters.copy()
+        _all_imputers_hyperparameters = self._all_imputers_hyperparameters.copy()
+        _all_scalings_hyperparameters = self._all_scalings_hyperparameters.copy()
+        _all_balancings_hyperparameters = self._all_balancings_hyperparameters.copy()
+        _all_feature_selection_hyperparameters = self._all_feature_selection_hyperparameters.copy()
+        _all_models_hyperparameters = self._all_models_hyperparameters.copy()
+        
+        # generate the hyperparameter space
+        if self.hyperparameter_space is None :
+            self.hyperparameter_space = self.get_hyperparameter_space(
+                _X,
+                _all_encoders_hyperparameters, encoder,
+                _all_imputers_hyperparameters, imputer,
+                _all_scalings_hyperparameters, scaling,
+                _all_balancings_hyperparameters, balancing,
+                _all_feature_selection_hyperparameters, feature_selection,
+                _all_models_hyperparameters, models
+            )
+        
         if self.validation : # only perform train_test_split when validation
             # train test split so the performance of model selection and 
             # hyperparameter optimization can be evaluated
@@ -386,7 +410,7 @@ class AutoClassifier() :
             X_train, X_test, y_train, y_test = train_test_split(
                 _X, _y, test_size = self.test_size, random_state = self.seed
             )
-        
+
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
         @ignore_warnings(category = ConvergenceWarning)
@@ -415,6 +439,7 @@ class AutoClassifier() :
             
             # pipeline of objective, [encoder, imputer, scaling, balancing, feature_selection, model]
             # select encoder and set hyperparameters
+            # must have encoder
             _encoder_hyper = params['encoder']
             _encoder = _encoder_hyper['encoder']
             del _encoder_hyper['encoder']
@@ -422,34 +447,38 @@ class AutoClassifier() :
             
             # select imputer and set hyperparameters
             _imputer_hyper = params['imputer']
-            _imputer = _imputer_hyper['imputer']
-            del _imputer_hyper['imputer']
-            imp = imputer[_imputer](**_imputer_hyper)
+            if _imputer_hyper : # only select when imputer exists
+                _imputer = _imputer_hyper['imputer']
+                del _imputer_hyper['imputer']
+                imp = imputer[_imputer](**_imputer_hyper)
 
             # select scaling and set hyperparameters
+            # must have scaling, since no_preprocessing is included
             _scaling_hyper = params['scaling']
             _scaling = _scaling_hyper['scaling']
             del _scaling_hyper['scaling']
             scl = scaling[_scaling](**_scaling_hyper)
             
             # select balancing and set hyperparameters
+            # must have balancing, since no_preprocessing is included
             _balancing_hyper = params['balancing']
             _balancing = _balancing_hyper['balancing']
             del _balancing_hyper['balancing']
             blc = balancing[_balancing](**_balancing_hyper)
             
             # select feature selection and set hyperparameters
+            # must have feature selection, since no_preprocessing is included
             _feature_selection_hyper = params['feature_selection']
             _feature_selection = _feature_selection_hyper['feature_selection']
             del _feature_selection_hyper['feature_selection']
             fts = feature_selection[_feature_selection](**_feature_selection_hyper)
             
             # select classifier model and set hyperparameters
+            # must have a classifier
             _classifier_hyper = params['classification']
             _classifier = _classifier_hyper['model']
             del _classifier_hyper['model']
             clf = models[_classifier](**_classifier_hyper) # call the model using passed parameters
-
 
             if self.validation :
                 _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
@@ -459,8 +488,11 @@ class AutoClassifier() :
                 _X_train_obj = enc.fit(_X_train_obj)
                 _X_test_obj = enc.refit(_X_test_obj)
                 # imputer
-                _X_train_obj = imp.fill(_X_train_obj)
-                _X_test_obj = imp.fill(_X_test_obj)
+                try :
+                    _X_train_obj = imp.fill(_X_train_obj)
+                    _X_test_obj = imp.fill(_X_test_obj)
+                except NameError : # if imputer do not exist, pass
+                    pass
                 # scaling
                 scl.fit(_X_train_obj)
                 _X_train_obj = scl.transform(_X_train_obj)
@@ -484,7 +516,10 @@ class AutoClassifier() :
                 # encoding
                 _X_obj = enc.fit(_X_obj)
                 # imputer
-                _X_obj = imp.fill(_X_obj)
+                try :
+                    _X_obj = imp.fill(_X_obj)
+                except NameError : # if imputer do not exist, pass
+                    pass
                 # scaling
                 scl.fit(_X_obj)
                 _X_obj = scl.transform(_X_obj)
@@ -499,25 +534,6 @@ class AutoClassifier() :
 
                 return {'loss' : - _obj(y_pred, _y_obj.values), 'status' : STATUS_OK}
 
-        # initialize the hyperparameter space
-        _all_encoders_hyperparameters = self._all_encoders_hyperparameters.copy()
-        _all_imputers_hyperparameters = self._all_imputers_hyperparameters.copy()
-        _all_scalings_hyperparameters = self._all_scalings_hyperparameters.copy()
-        _all_balancings_hyperparameters = self._all_balancings_hyperparameters.copy()
-        _all_feature_selection_hyperparameters = self._all_feature_selection_hyperparameters.copy()
-        _all_models_hyperparameters = self._all_models_hyperparameters.copy()
-        
-        # generate the hyperparameter space
-        if self.hyperparameter_space is None :
-            self.hyperparameter_space = self.get_hyperparameter_space(
-                _all_encoders_hyperparameters, encoder,
-                _all_imputers_hyperparameters, imputer,
-                _all_scalings_hyperparameters, scaling,
-                _all_balancings_hyperparameters, balancing,
-                _all_feature_selection_hyperparameters, feature_selection,
-                _all_models_hyperparameters, models
-            )
-        
         # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
 
         # search algorithm
@@ -555,8 +571,12 @@ class AutoClassifier() :
         del self.optimal_encoder_hyperparameters['encoder']
         # optimal imputer
         self.optimal_imputer_hyperparameters = optimal_point['imputer']
-        self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
-        del self.optimal_imputer_hyperparameters['imputer']
+        if self.optimal_imputer_hyperparameters :
+            self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
+            del self.optimal_imputer_hyperparameters['imputer']
+        else : # if no imputer exists, create empty imputer and hyperparamter space
+            self.optimal_imputer = None
+            self.optimal_imputer_hyperparameters = {}
         # optimal scaling
         self.optimal_scaling_hyperparameters = optimal_point['scaling']
         self.optimal_scaling = self.optimal_scaling_hyperparameters['scaling']
@@ -580,8 +600,9 @@ class AutoClassifier() :
         self._fit_encoder = self._all_encoders[self.optimal_encoder](**self.optimal_encoder_hyperparameters)
         _X_obj = self._fit_encoder.fit(_X)
         # imputer
-        self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
-        _X_obj = self._fit_imputer.fill(_X_obj)
+        if not self.optimal_imputer : # only fit when imputer exists
+            self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
+            _X_obj = self._fit_imputer.fill(_X_obj)
         # scaling
         self._fit_scaling = self._all_scalings[self.optimal_scaling](**self.optimal_scaling_hyperparameters)
         self._fit_scaling.fit(_X_obj)
@@ -621,8 +642,8 @@ class AutoClassifier() :
         
         # imputer = SimpleImputer(method = 'mean')
         # _X = imputer.fill(_X)
-
-        _X = self._fit_imputer.fill(_X)
+        if not self._fit_imputer :
+            _X = self._fit_imputer.fill(_X)
 
         # Scaling
         _X = self._fit_scaling.transform(_X)
