@@ -279,16 +279,16 @@ class AutoClassifier() :
 
     def fit(self, X, y) :
 
+        _X = X.copy()
+        _y = y.copy()
+
         # Encoding
         # convert string types to numerical type
         # get encoder space
-        from My_AutoML import DataEncoding
+        # from My_AutoML import DataEncoding
 
-        x_encoder = DataEncoding()
-        _X = x_encoder.fit(X)
-
-        y_encoder = DataEncoding()
-        _y = y_encoder.fit(y)
+        # x_encoder = DataEncoding()
+        # _X = x_encoder.fit(X)
 
         if self.encoder == 'auto' :
             encoder = self._all_encoders.copy()
@@ -304,10 +304,10 @@ class AutoClassifier() :
         # Imputer
         # fill missing values
         # get imputer space
-        from My_AutoML import SimpleImputer
+        # from My_AutoML import SimpleImputer
         
-        imputer = SimpleImputer(method = 'mean')
-        _X = imputer.fill(_X)
+        # imputer = SimpleImputer(method = 'mean')
+        # _X = imputer.fill(_X)
 
         if self.imputer == 'auto' :
             imputer = self._all_imputers.copy()
@@ -322,11 +322,11 @@ class AutoClassifier() :
 
         # Scaling
         # get scaling space
-        from My_AutoML import Standardize
+        # from My_AutoML import Standardize
 
-        scaling = Standardize()
-        scaling.fit(_X)
-        _X = scaling.transform(_X)
+        # scaling = Standardize()
+        # scaling.fit(_X)
+        # _X = scaling.transform(_X)
 
         if self.scaling == 'auto' :
             scaling = self._all_scalings.copy()

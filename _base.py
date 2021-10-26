@@ -27,6 +27,9 @@ class no_processing() :
 
     def fit(self, X) :
         return self
+
+    def fill(self, X) :
+        return X
     
     def transform(self, X) :
         return X
