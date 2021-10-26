@@ -58,7 +58,7 @@ class PCA_FeatureSelection() :
         self.n_iter = n_iter
         self.seed = seed
 
-    def fit(self, X) :
+    def fit(self, X, y = None) :
 
         n, p = X.shape
 
@@ -297,7 +297,7 @@ class RBFSampler() :
         self.n_components = n_components
         self.seed = seed
 
-    def fit(self, X) :
+    def fit(self, X, y = None) :
         
         if isinstance(X, list) :
             n_features = len(X[0])
