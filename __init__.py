@@ -79,7 +79,7 @@ encoders = {'DataEncoding' : DataEncoding}
 
 imputers = {
     'SimpleImputer' : SimpleImputer,
-    'DummyImputer' : DummyImputer,
+#    'DummyImputer' : DummyImputer,
     'JointImputer' : JointImputer,
     'ExpectationMaximization' : ExpectationMaximization,
     'KNNImputer' : KNNImputer,

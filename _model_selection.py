@@ -63,8 +63,8 @@ class AutoClassifier() :
     'auto' will select all default encoders, or use a list to select
 
     imputer: Imputers selected for the job, default = 'auto'
-    support ('SimpleImputer', 'DummyImputer', 'JointImputer', 'ExpectationMaximization',
-    'KNNImputer', 'MissForestImputer', 'MICE', 'GAIN')
+    support ('SimpleImputer', 'JointImputer', 'ExpectationMaximization', 'KNNImputer',
+    'MissForestImputer', 'MICE', 'GAIN')
     'auto' will select all default imputers, or use a list to select
 
     scaling: Scalings selected for the job, default = 'auto'
@@ -73,16 +73,18 @@ class AutoClassifier() :
     'auto' will select all default scalings, or use a list to select
 
     balancing: Balancings selected for the job, default = 'auto'
-    support ('no_processing', 'SimpleRandomOverSampling', 'SimpleRandomUnderSampling', 'TomekLink',
-    'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection', 'CNN_TomekLink', 
-    'Smote', 'Smote_TomekLink', 'Smote_ENN')
+    support ('no_processing', 'SimpleRandomOverSampling', 'SimpleRandomUnderSampling',
+    'TomekLink', 'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection', 
+    'CNN_TomekLink', 'Smote', 'Smote_TomekLink', 'Smote_ENN')
     'auto' will select all default balancings, or use a list to select
 
     feature_selection: Feature selections selected for the job, default = 'auto'
-    support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler', 'FeatureFilter',
-    'ASFFS', 'GeneticAlgorithm', 'extra_trees_preproc_for_classification', 'fast_ica', 'feature_agglomeration',
-    'kernel_pca', 'kitchen_sinks', 'liblinear_svc_preprocessor', 'nystroem_sampler', 'pca', 'polynomial', 
-    'random_trees_embedding', 'select_percentile_classification','select_rates_classification', 'truncatedSVD')
+    support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler', 
+    'FeatureFilter', 'ASFFS', 'GeneticAlgorithm', 'extra_trees_preproc_for_classification',
+    'fast_ica', 'feature_agglomeration', 'kernel_pca', 'kitchen_sinks', 
+    'liblinear_svc_preprocessor', 'nystroem_sampler', 'pca', 'polynomial', 
+    'random_trees_embedding', 'select_percentile_classification','select_rates_classification', 
+    'truncatedSVD')
     'auto' will select all default feature selections, or use a list to select
     
     models: Models selected for the job, default = 'auto'
