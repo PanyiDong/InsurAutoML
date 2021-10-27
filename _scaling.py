@@ -182,7 +182,12 @@ class RobustScale:
             if self.with_centering == True:
                 self._median[i] = np.nanmedian(_data)
             if self.with_scale == True:
-                quantile = np.nanquantile(_data, (q_min, q_max))
+                quantile = []
+                for column in list(_X.columns):
+                    _column_data = _X[column]
+                    quantile.append(
+                        np.nanquantile(_column_data, (q_min / 100, q_max / 100))
+                    )
                 quantile = np.transpose(quantile)
                 self._scale[i] = quantile[1] - quantile[0]
                 if self.unit_variance == True:
