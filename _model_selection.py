@@ -169,48 +169,6 @@ class AutoClassifier:
         self.progressbar = progressbar
         self.seed = seed
 
-        # all encoders avaiable
-        self._all_encoders = My_AutoML.encoders
-
-        # all hyperparameters for encoders
-        self._all_encoders_hyperparameters = encoder_hyperparameter
-
-        # all imputers available
-        self._all_imputers = My_AutoML.imputers
-
-        # all hyperparemeters for imputers
-        self._all_imputers_hyperparameters = imputer_hyperparameter
-
-        # all scalings avaiable
-        self._all_scalings = My_AutoML.scalings
-
-        # all hyperparameters for scalings
-        self._all_scalings_hyperparameters = scaling_hyperparameter
-
-        # all balancings available
-        self._all_balancings = My_AutoML.imbalance
-
-        # all hyperparameters for balancing methods
-        self._all_balancings_hyperparameters = balancing_hyperparameter
-
-        # all feature selections available
-        self._all_feature_selection = My_AutoML.feature_selection
-        # special treatment, remove some feature selection for regression
-        del self._all_feature_selection["extra_trees_preproc_for_regression"]
-        del self._all_feature_selection["select_percentile_regression"]
-        del self._all_feature_selection["select_rates_regression"]
-
-        # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
-
-        # all classfication models available
-        self._all_models = classifiers
-
-        # all hyperparameters for the classification models
-        self._all_models_hyperparameters = classifier_hyperparameter
-
-        self.hyperparameter_space = None
-
     # create hyperparameter space using Hyperopt.hp.choice
     # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
     # only chosen ones will be added to hyperparameter space
@@ -331,6 +289,49 @@ class AutoClassifier:
 
     # initialize and get hyperparameter search space
     def get_hyperparameter_space(self, X, y):
+        
+        # initialize default search options
+        # all encoders avaiable
+        self._all_encoders = My_AutoML.encoders
+
+        # all hyperparameters for encoders
+        self._all_encoders_hyperparameters = encoder_hyperparameter
+
+        # all imputers available
+        self._all_imputers = My_AutoML.imputers
+
+        # all hyperparemeters for imputers
+        self._all_imputers_hyperparameters = imputer_hyperparameter
+
+        # all scalings avaiable
+        self._all_scalings = My_AutoML.scalings
+
+        # all hyperparameters for scalings
+        self._all_scalings_hyperparameters = scaling_hyperparameter
+
+        # all balancings available
+        self._all_balancings = My_AutoML.balancing
+
+        # all hyperparameters for balancing methods
+        self._all_balancings_hyperparameters = balancing_hyperparameter
+
+        # all feature selections available
+        self._all_feature_selection = My_AutoML.feature_selection
+        # special treatment, remove some feature selection for regression
+        del self._all_feature_selection["extra_trees_preproc_for_regression"]
+        del self._all_feature_selection["select_percentile_regression"]
+        del self._all_feature_selection["select_rates_regression"]
+
+        # all hyperparameters for feature selections
+        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
+
+        # all classfication models available
+        self._all_models = classifiers
+
+        # all hyperparameters for the classification models
+        self._all_models_hyperparameters = classifier_hyperparameter
+
+        self.hyperparameter_space = None
 
         # Encoding
         # convert string types to numerical type
