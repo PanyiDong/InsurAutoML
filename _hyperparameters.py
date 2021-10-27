@@ -151,7 +151,7 @@ feature_selection_hyperparameter = [
         "n_estimators": hp.choice(
             "extra_trees_preproc_for_regression_n_estimators", [100]
         ),
-        "criterion": hp.cohice(
+        "criterion": hp.choice(
             "extra_trees_preproc_for_regression_criterion",
             ["mse", "friedman_mse", "mae"],
         ),

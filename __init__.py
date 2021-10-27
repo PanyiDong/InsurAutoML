@@ -16,7 +16,7 @@ from ._utils import (
     Pearson_Corr,
     MI,
     t_score,
-    ANOVA
+    ANOVA,
 )
 from ._imputation import (
     SimpleImputer,
@@ -77,6 +77,7 @@ from ._feature_selection import (
     SelectRegressionRates,
     TruncatedSVD,
 )
+
 from ._model_selection import AutoClassifier, AutoRegressor
 
 __all__ = [
@@ -176,6 +177,9 @@ balancing = {
     "Smote_ENN": Smote_ENN,
 }
 
+import autosklearn
+import autosklearn.pipeline.components.feature_preprocessing
+
 feature_selection = {
     "no_processing": no_processing,
     "LDASelection": LDASelection,
@@ -184,28 +188,27 @@ feature_selection = {
     "FeatureFilter": FeatureFilter,
     "ASFFS": ASFFS,
     "GeneticAlgorithm": GeneticAlgorithm,
-    #    'densifier' : Densifier,  # from autosklearn
-    "extra_trees_preproc_for_classification": ExtraTreesPreprocessorClassification,
-    "extra_trees_preproc_for_regression": ExtraTreesPreprocessorRegression,
-    "fast_ica": FastICA,
-    "feature_agglomeration": FeatureAgglomeration,
-    "kernel_pca": KernelPCA,
-    "kitchen_sinks": RandomKitchenSinks,
-    "liblinear_svc_preprocessor": LibLinear_Preprocessor,
-    "nystroem_sampler": Nystroem,
-    "pca": PCA,
-    "polynomial": PolynomialFeatures,
-    "random_trees_embedding": RandomTreesEmbedding,
-    #    'select_percentile' : SelectPercentileBase,
-    "select_percentile_classification": SelectPercentileClassification,
-    "select_percentile_regression": SelectPercentileRegression,
-    "select_rates_classification": SelectClassificationRates,
-    "select_rates_regression": SelectRegressionRates,
-    "truncatedSVD": TruncatedSVD,
+    #    'densifier' : autosklearn.pipeline.components.feature_preprocessing.densifier.Densifier,  # from autosklearn
+    "extra_trees_preproc_for_classification": autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification.ExtraTreesPreprocessorClassification,
+    "extra_trees_preproc_for_regression": autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression.ExtraTreesPreprocessorRegression,
+    "fast_ica": autosklearn.pipeline.components.feature_preprocessing.fast_ica.FastICA,
+    "feature_agglomeration": autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration.FeatureAgglomeration,
+    "kernel_pca": autosklearn.pipeline.components.feature_preprocessing.kernel_pca.KernelPCA,
+    "kitchen_sinks": autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks.RandomKitchenSinks,
+    "liblinear_svc_preprocessor": autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor.LibLinear_Preprocessor,
+    "nystroem_sampler": autosklearn.pipeline.components.feature_preprocessing.nystorem_sampler.Nystroem,
+    "pca": autosklearn.pipeline.components.feature_preprocessing.pca.PCA,
+    "polynomial": autosklearn.pipeline.components.feature_preprocessing.polynomial.PolynomialFeatures,
+    "random_trees_embedding": autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding.RandomTreesEmbedding,
+    #    'select_percentile' : autosklearn.pipeline.components.feature_preprocessing.select_percentile.SelectPercentileBase,
+    "select_percentile_classification": autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification.SelectPercentileClassification,
+    "select_percentile_regression": autosklearn.pipeline.components.feature_preprocessing.select_percentile.regression.SelectPercentileRegression,
+    "select_rates_classification": autosklearn.pipeline.components.feature_preprocessing.select_rates_classification.SelectClassificationRates,
+    "select_rates_regression": autosklearn.pipeline.components.feature_preprocessing.select_rates.regression.SelectRegressionRates,
+    "truncatedSVD": autosklearn.pipeline.components.feature_preprocessing.truncatedSVD.TruncatedSVD,
 }
 
 model_selection = {
     "AutoClassifier": AutoClassifier, 
     "AutoRegressor": AutoRegressor
 }
-
