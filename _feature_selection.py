@@ -757,7 +757,7 @@ class GeneticAlgorithm() :
         # using sklearn RFE to recursively remove one feature using SVR, until n_components left
         _estimator = SVR(kernel="linear")
         _selector = RFE(_estimator, n_features_to_select = n, step = 1)
-        _selector = _selector.fit(X, y)
+        _selector = _selector.fit(X.values, y.values.ravel())
 
         _selected = _selector.support_.tolist() # retunr the mask list of feature selection
         _selected = [int(item) for item in _selected]
@@ -874,11 +874,11 @@ class GeneticAlgorithm() :
         
         # both probability of crossover and mutation must within range [0, 1]
         self.p_crossover = float(self.p_crossover)
-        if self.p_crossover > 1 :
+        if self.p_crossover > 1 or self.p_crossover < 0 :
             raise ValueError('Probability of crossover must in [0, 1], get {}.'.format(self.p_crossover))
 
         self.p_mutation = float(self.p_mutation)
-        if self.p_mutation > 1 :
+        if self.p_mutation > 1 or self.p_mutation < 0 :
             raise ValueError('Probability of mutation must in [0, 1], get {}.'.format(self.p_mutation))
         
         # select feature selection methods
