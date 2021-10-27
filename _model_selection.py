@@ -196,9 +196,9 @@ class AutoClassifier() :
     # create hyperparameter space using Hyperopt.hp.choice
     # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
     # only chosen ones will be added to hyperparameter space
-    def get_hyperparameter_space(
+    def _get_hyperparameter_space(
         self, 
-        X, 
+        X,
         encoders_hyperparameters, encoder,
         imputers_hyperparameters, imputer,
         scalings_hyperparameters, scaling,
@@ -277,11 +277,9 @@ class AutoClassifier() :
             'feature_selection' : _feature_selection_hyperparameter,
             'classification' : _model_hyperparameter
         })
-
-    def fit(self, X, y) :
-
-        _X = X.copy()
-        _y = y.copy()
+    
+    # initialize and get hyperparameter search space
+    def get_hyperparameter_space(self, X, y) :
 
         # Encoding
         # convert string types to numerical type
@@ -399,15 +397,82 @@ class AutoClassifier() :
         
         # generate the hyperparameter space
         if self.hyperparameter_space is None :
-            self.hyperparameter_space = self.get_hyperparameter_space(
-                _X,
+            self.hyperparameter_space = self._get_hyperparameter_space(
+                X,
                 _all_encoders_hyperparameters, encoder,
                 _all_imputers_hyperparameters, imputer,
                 _all_scalings_hyperparameters, scaling,
                 _all_balancings_hyperparameters, balancing,
                 _all_feature_selection_hyperparameters, feature_selection,
                 _all_models_hyperparameters, models
-            )
+            ) # _X to choose whether include imputer
+              # others are the combinations of default hyperparamter space & methods selected
+
+        return encoder, imputer, scaling, balancing, feature_selection, models
+    
+    # select optimal settings and fit on opitmal hyperparameters
+    def _fit_optimal(self, best_results, _X, _y) :
+
+        # mapping the optimal model and hyperparameters selected
+        # fit the optimal setting
+        optimal_point = space_eval(self.hyperparameter_space, best_results)
+        # optimal encoder
+        self.optimal_encoder_hyperparameters = optimal_point['encoder']
+        self.optimal_encoder = self.optimal_encoder_hyperparameters['encoder']
+        del self.optimal_encoder_hyperparameters['encoder']
+        # optimal imputer
+        self.optimal_imputer_hyperparameters = optimal_point['imputer']
+        self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
+        del self.optimal_imputer_hyperparameters['imputer']
+        # optimal scaling
+        self.optimal_scaling_hyperparameters = optimal_point['scaling']
+        self.optimal_scaling = self.optimal_scaling_hyperparameters['scaling']
+        del self.optimal_scaling_hyperparameters['scaling']
+        # optimal balancing
+        self.optimal_balancing_hyperparameters = optimal_point['balancing']
+        self.optimal_balancing = self.optimal_balancing_hyperparameters['balancing']
+        del self.optimal_balancing_hyperparameters['balancing']
+        # optimal feature selection
+        self.optimal_feature_selection_hyperparameters = optimal_point['feature_selection']
+        self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters['feature_selection']
+        del self.optimal_feature_selection_hyperparameters['feature_selection']
+        # optimal classifier
+        self.optimal_classifier_hyperparameters = optimal_point['classification'] # optimal model selected
+        self.optimal_classifier = self.optimal_classifier_hyperparameters['model'] # optimal hyperparameter settings selected
+        del self.optimal_classifier_hyperparameters['model']
+        
+        # encoding
+        self._fit_encoder = self._all_encoders[self.optimal_encoder](**self.optimal_encoder_hyperparameters)
+        _X = self._fit_encoder.fit(_X)
+        # imputer
+        self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
+        _X= self._fit_imputer.fill(_X)
+        # scaling
+        self._fit_scaling = self._all_scalings[self.optimal_scaling](**self.optimal_scaling_hyperparameters)
+        self._fit_scaling.fit(_X)
+        _X = self._fit_scaling.transform(_X)
+        # balancing
+        self._fit_balancing = self._all_balancings[self.optimal_balancing](**self.optimal_balancing_hyperparameters)
+        _X = self._fit_balancing.fit_transform(_X)
+        # feature selection
+        self._fit_feature_selection = self._all_feature_selection[self.optimal_feature_selection](
+            **self.optimal_feature_selection_hyperparameters
+        )
+        self._fit_feature_selection.fit(_X, _y)
+        _X = self._fit_feature_selection.transform(_X)
+        # classification
+        self._fit_classifier = self._all_models[self.optimal_classifier](**self.optimal_classifier_hyperparameters)
+        self._fit_classifier.fit(_X.values, _y.values.ravel())
+
+        return self
+
+    def fit(self, X, y) :
+
+        _X = X.copy()
+        _y = y.copy()
+
+        encoder, imputer, scaling, balancing, feature_selection, models = \
+            self.get_hyperparameter_space(_X, _y)
         
         if self.validation : # only perform train_test_split when validation
             # train test split so the performance of model selection and 
@@ -549,7 +614,8 @@ class AutoClassifier() :
             trials = SparkTrials()
         else :
             trials = Trials()
-
+        
+        # run fmin to search for optimal hyperparameter settings
         with mlflow.start_run() :
             best_results = fmin(
                 fn = _objective,
@@ -562,58 +628,8 @@ class AutoClassifier() :
                 rstate = np.random.RandomState(seed = self.seed)
             )
         
-        # mapping the optimal model and hyperparameters selected
-        # fit the optimal setting
-        optimal_point = space_eval(self.hyperparameter_space, best_results)
-        # optimal encoder
-        self.optimal_encoder_hyperparameters = optimal_point['encoder']
-        self.optimal_encoder = self.optimal_encoder_hyperparameters['encoder']
-        del self.optimal_encoder_hyperparameters['encoder']
-        # optimal imputer
-        self.optimal_imputer_hyperparameters = optimal_point['imputer']
-        self.optimal_imputer = self.optimal_imputer_hyperparameters['imputer']
-        del self.optimal_imputer_hyperparameters['imputer']
-        # optimal scaling
-        self.optimal_scaling_hyperparameters = optimal_point['scaling']
-        self.optimal_scaling = self.optimal_scaling_hyperparameters['scaling']
-        del self.optimal_scaling_hyperparameters['scaling']
-        # optimal balancing
-        self.optimal_balancing_hyperparameters = optimal_point['balancing']
-        self.optimal_balancing = self.optimal_balancing_hyperparameters['balancing']
-        del self.optimal_balancing_hyperparameters['balancing']
-        # optimal feature selection
-        self.optimal_feature_selection_hyperparameters = optimal_point['feature_selection']
-        self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters['feature_selection']
-        del self.optimal_feature_selection_hyperparameters['feature_selection']
-        # optimal classifier
-        self.optimal_classifier_hyperparameters = optimal_point['classification'] # optimal model selected
-        self.optimal_classifier = self.optimal_classifier_hyperparameters['model'] # optimal hyperparameter settings selected
-        del self.optimal_classifier_hyperparameters['model']
-        
-        _X_obj = _X.copy()
-        _y_obj = _y.copy()
-        # encoding
-        self._fit_encoder = self._all_encoders[self.optimal_encoder](**self.optimal_encoder_hyperparameters)
-        _X_obj = self._fit_encoder.fit(_X)
-        # imputer
-        self._fit_imputer = self._all_imputers[self.optimal_imputer](**self.optimal_imputer_hyperparameters)
-        _X_obj = self._fit_imputer.fill(_X_obj)
-        # scaling
-        self._fit_scaling = self._all_scalings[self.optimal_scaling](**self.optimal_scaling_hyperparameters)
-        self._fit_scaling.fit(_X_obj)
-        _X_obj = self._fit_scaling.transform(_X_obj)
-        # balancing
-        self._fit_balancing = self._all_balancings[self.optimal_balancing](**self.optimal_balancing_hyperparameters)
-        _X_obj = self._fit_balancing.fit_transform(_X_obj)
-        # feature selection
-        self._fit_feature_selection = self._all_feature_selection[self.optimal_feature_selection](
-            **self.optimal_feature_selection_hyperparameters
-        )
-        self._fit_feature_selection.fit(_X_obj, _y_obj)
-        _X_obj = self._fit_feature_selection.transform(_X_obj)
-        # classification
-        self._fit_classifier = self._all_models[self.optimal_classifier](**self.optimal_classifier_hyperparameters)
-        self._fit_classifier.fit(_X_obj.values, _y_obj.values.ravel())
+        # select optimal settings and fit optimal pipeline
+        self._fit_optimal(best_results, _X, _y)
 
         return self
 
