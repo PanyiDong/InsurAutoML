@@ -703,7 +703,7 @@ class GeneticAlgorithm() :
     def _random(self, X, y, n) :
 
         # randomly select n features from X
-        n, p = X.shape
+        _, p = X.shape
 
         if n > p :
             raise ValueError('Selected features can not be larger than dataset limit {}, get {}.'.format(p, n))
@@ -752,10 +752,10 @@ class GeneticAlgorithm() :
     def _SVM_RFE(self, X, y, n) :
 
         from sklearn.feature_selection import RFE
-        from sklearn.svm import SVR
+        from sklearn.svm import SVC
         
         # using sklearn RFE to recursively remove one feature using SVR, until n_components left
-        _estimator = SVR(kernel="linear")
+        _estimator = SVC(kernel="linear")
         _selector = RFE(_estimator, n_features_to_select = n, step = 1)
         _selector = _selector.fit(X.values, y.values.ravel())
 
@@ -778,10 +778,18 @@ class GeneticAlgorithm() :
             elif self.fitness_fit == 'Random Forest' :
                 from sklearn.ensemble import RandomForestRegressor
                 model = RandomForestRegressor()
-            elif self.fitness_fit == 'SVM' :
-                from sklearn.svm import SVR
-                model = SVR()
-            model.fit(X.iloc[:, True_index(selection)], y)
+            elif self.fitness_fit == 'SVM' : # select by y using SVC and SVR
+                if len(pd.unique(y.values.ravel())) <= 30 :
+                    from sklearn.svm import SVC
+                    model = SVC()
+                else :
+                    from sklearn.svm import SVR
+                    model = SVR()
+            else :
+                raise ValueError(
+                    'Only support ["Linear", "Logistic", "Random Forest", "SVM"], get {}'.format(self.fitness_fit)
+                )
+            model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
             y_pred = model.predict(X.iloc[:, True_index(selection)])
             _accuracy_score = accuracy_score(y, y_pred)
 
@@ -794,19 +802,27 @@ class GeneticAlgorithm() :
         n, p = X.shape
         
         # calculate the fitness of all feature selection in the pool
-        if not self._fitness : # first round of calculating fitness for all feature selections
+        try : # self._fitness from None value to np.array, type change
+            _fitness_empty = not self._fitness
+        except ValueError :
+            _fitness_empty = not self._fitness.any()
+
+        if _fitness_empty : # first round of calculating fitness for all feature selections
             self._fitness = []
             for _seletion in selection_pool :
                 self._fitness.append(self._cal_fitness(X, y, _seletion))
+            
+            # normalize the fitness
             self._fitness = np.array(self._fitness)
             self._sum_fitness = sum(self._fitness)
-            self._fitness = [item / self._sum_fitness for item in self._fitness] # normalize the fitness
+            self._fitness /= self._sum_fitness            
         else :
-            self._fitness = self._sum_fitness * self._fitness
+            self._fitness *= self._sum_fitness
             for i in range(2 * self.n_pair) :
                 self._fitness = np.append(self._fitness, self._cal_fitness(X, y, selection_pool[-(i + 1)])) # only need to calculate the newly added ones
                 self._sum_fitness += self._fitness[-1]
-            self._fitness = [item / self._sum_fitness for item in self._fitness] # normalize the fitness
+            # normalize the fitness
+            self._fitness /= self._sum_fitness
 
         # Selection
         if self.ga_selection == 'Roulette Wheel' :
@@ -920,11 +936,11 @@ class GeneticAlgorithm() :
                 _sel_pool.append(self._feature_sel_methods[_method](X, y, n))
 
         # loop through generations to run Genetic algorithm and Induction algorithm
-        for _gen in self.n_generations :
+        for _gen in range(self.n_generations) :
             _sel_pool = self._GeneticAlgorithm(X, y, _sel_pool)
 
-            if self._early_stopping() :
-                break
+            # if self._early_stopping() :
+            #     break
 
         self.selection_ = _sel_pool[np.flip(np.argsort(self._fitness))[0]] # selected features, {1, 0} list
 

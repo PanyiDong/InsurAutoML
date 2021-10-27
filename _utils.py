@@ -130,10 +130,7 @@ def maxloc(vlist) :
 # default 1 consider as True
 def True_index(X, _true = [True, 1]) :
     
-    result = []
-    for i in range(X) :
-        if X[i] in _true :
-            result.append(i)
+    result = [i for i, value in enumerate(X) if value in _true]
     
     return result
 
