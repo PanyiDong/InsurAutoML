@@ -46,7 +46,7 @@ from rpy2.robjects.conversion import localconverter
 from rpy2.robjects.packages import importr
 from sklearn.tree import ExtraTreeClassifier
 
-from ._encoding import DataEncoding
+from My_AutoML._encoding import DataEncoding
 
 _feature_mol : dict = {
     'no_preprocessing' : NoPreprocessing,
