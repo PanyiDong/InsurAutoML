@@ -196,15 +196,15 @@ feature_selection = {
     "kernel_pca": autosklearn.pipeline.components.feature_preprocessing.kernel_pca.KernelPCA,
     "kitchen_sinks": autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks.RandomKitchenSinks,
     "liblinear_svc_preprocessor": autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor.LibLinear_Preprocessor,
-    "nystroem_sampler": autosklearn.pipeline.components.feature_preprocessing.nystorem_sampler.Nystroem,
+    "nystroem_sampler": autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler.Nystroem,
     "pca": autosklearn.pipeline.components.feature_preprocessing.pca.PCA,
     "polynomial": autosklearn.pipeline.components.feature_preprocessing.polynomial.PolynomialFeatures,
     "random_trees_embedding": autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding.RandomTreesEmbedding,
     #    'select_percentile' : autosklearn.pipeline.components.feature_preprocessing.select_percentile.SelectPercentileBase,
     "select_percentile_classification": autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification.SelectPercentileClassification,
-    "select_percentile_regression": autosklearn.pipeline.components.feature_preprocessing.select_percentile.regression.SelectPercentileRegression,
+    "select_percentile_regression": autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression.SelectPercentileRegression,
     "select_rates_classification": autosklearn.pipeline.components.feature_preprocessing.select_rates_classification.SelectClassificationRates,
-    "select_rates_regression": autosklearn.pipeline.components.feature_preprocessing.select_rates.regression.SelectRegressionRates,
+    "select_rates_regression": autosklearn.pipeline.components.feature_preprocessing.select_rates_regression.SelectRegressionRates,
     "truncatedSVD": autosklearn.pipeline.components.feature_preprocessing.truncatedSVD.TruncatedSVD,
 }
 
