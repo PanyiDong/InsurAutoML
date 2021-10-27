@@ -1,12 +1,12 @@
 from ._base import no_processing, load_data
 from ._utils import random_guess, random_index, random_list, train_test_split, minloc, \
     is_date
-from ._missing import SimpleImputer, DummyImputer, JointImputer, ExpectationMaximization, \
+from ._imputation import SimpleImputer, DummyImputer, JointImputer, ExpectationMaximization, \
     KNNImputer, MissForestImputer, MICE, GAIN
 from ._encoding import DataEncoding
 from ._scaling import MinMaxScale, Standardize, Normalize, RobustScale, PowerTransformer, \
     QuantileTransformer, Winsorization
-from ._imbalance import SimpleRandomOverSampling, SimpleRandomUnderSampling, TomekLink, \
+from ._balancing import SimpleRandomOverSampling, SimpleRandomUnderSampling, TomekLink, \
     EditedNearestNeighbor, CondensedNearestNeighbor, OneSidedSelection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
 from ._feature_selection import PCA_FeatureSelection, LDASelection, FeatureFilter, \
