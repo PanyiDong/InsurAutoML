@@ -112,9 +112,10 @@ class DataEncoding():
                             # if False in (np.sort(unique_values) == np.sort(df[column].unique())) :
                             #     raise ValueError('Testdata has unkown categories!')
                     else :
-                        for i in range(len(unique_values)) :
-                            df.loc[df[column] == unique_values[i], column] = i
+                        # update, put notin in front of refit, so after refit, there will be no mistake
                         df.loc[~df[column].isin(unique_values), column] = np.NaN
+                        for i in range(len(unique_values)) : 
+                            df.loc[df[column] == unique_values[i], column] = i
                         df.loc[~df[column].isnull(), column] = df.loc[~df[column].isnull(), column].astype(int)
             else :
                 df.loc[~df[column].isnull(), column] = df.loc[~df[column].isnull(), column].astype(float)

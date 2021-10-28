@@ -365,11 +365,13 @@ class AutoClassifier:
         if self.imputer == "auto":
             if not X.isnull().values.any():  # if no missing values
                 imputer = {"no_processing": no_processing}
+                self._all_imputers = imputer # limit default imputer space
             else:
                 imputer = self._all_imputers.copy()
         else:
             if not X.isnull().values.any():  # if no missing values
                 imputer = {"no_processing": no_processing}
+                self._all_imputers = imputer
             else:
                 imputer = {}  # if specified, check if imputers in default imputers
                 for _imputer in self.imputer:
@@ -670,17 +672,18 @@ class AutoClassifier:
                 _X_train_obj = imp.fill(_X_train_obj)
                 _X_test_obj = imp.fill(_X_test_obj)
                 # scaling
-                scl.fit(_X_train_obj)
+                scl.fit(_X_train_obj, _y_train_obj)
                 _X_train_obj = scl.transform(_X_train_obj)
                 _X_test_obj = scl.transform(_X_test_obj)
                 # balancing
-                _X_train_obj = blc.fit_transform(_X_train_obj)
-                _X_test_obj = blc.fit_transform(_X_test_obj)
+                # _X_train_obj = blc.fit_transform(_X_train_obj)
                 # feature selection
-                fts.fit(_X_train_obj, _y_train_obj)
-                _X_train_obj = fts.transform(_X_train_obj)
+                # fts.fit(_X_train_obj, _y_train_obj)
+                # _X_train_obj = fts.transform(_X_train_obj)
+                # _X_test_obj = fts.transform(_X_test_obj)
                 # classification
                 clf.fit(_X_train_obj.values, _y_train_obj.values.ravel())
+                
                 y_pred = clf.predict(_X_test_obj.values)
 
                 # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
@@ -694,7 +697,7 @@ class AutoClassifier:
                 # imputer
                 _X_obj = imp.fill(_X_obj)
                 # scaling
-                scl.fit(_X_obj)
+                scl.fit(_X_obj, _y_obj)
                 _X_obj = scl.transform(_X_obj)
                 # balancing
                 _X_obj = blc.fit_transform(_X_obj)

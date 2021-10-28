@@ -10,7 +10,7 @@ from ._encoding import DataEncoding
 
 
 class NoScaling:
-    def fit(self, X):
+    def fit(self, X, y =None):
         return self
 
     def transform(self, X):
@@ -36,7 +36,7 @@ class Standardize:
         self.with_mean = with_mean
         self.with_std = with_std
 
-    def fit(self, X):
+    def fit(self, X, y =None):
 
         _X = X.copy(deep=True)
 
@@ -97,7 +97,7 @@ class Normalize:
     ):
         self.norm = norm
 
-    def fit(self, X):
+    def fit(self, X, y =None):
 
         if self.norm not in ["l1", "l2", "max"]:
             raise ValueError("Not recognizing norm method!")
@@ -158,7 +158,7 @@ class RobustScale:
         self.quantile = quantile
         self.unit_variance = unit_variance
 
-    def fit(self, X):
+    def fit(self, X, y =None):
 
         q_min, q_max = self.quantile
         if q_min == None:  # in case no input
@@ -231,7 +231,7 @@ class MinMaxScale:
     def __init__(self, feature_range=(0, 1)):
         self.feature_range = feature_range
 
-    def fit(self, X):
+    def fit(self, X, y =None):
 
         _X = X.copy(deep=True)
         n, p = _X.shape
@@ -300,8 +300,12 @@ class Winsorization:
         for _column in features:
             quantile = np.nanquantile(X[_column], self.quantile, axis=0)
             self._quantile_list.append(quantile)
-            _above_quantile = y[X[_column] > quantile].mean()
-            _below_quantile = y[X[_column] <= quantile].mean()
+            _above_quantile = y[X[_column] > quantile].mean()[0]
+            _below_quantile = y[X[_column] <= quantile].mean()[0]
+            # deal with the case where above quantile do not exists
+            if not _above_quantile :
+                _above_quantile = quantile 
+
             if abs(_above_quantile / _below_quantile - 1) > self.threshold:
                 self._list.append(True)
             else:
