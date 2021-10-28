@@ -534,21 +534,21 @@ class AutoClassifier:
         self._fit_scaling.fit(_X)
         _X = self._fit_scaling.transform(_X)
         # balancing
-        self._fit_balancing = self._all_balancings[self.optimal_balancing](
-            **self.optimal_balancing_hyperparameters
-        )
-        _X = self._fit_balancing.fit_transform(_X)
+        # self._fit_balancing = self._all_balancings[self.optimal_balancing](
+        #     **self.optimal_balancing_hyperparameters
+        # )
+        # _X = self._fit_balancing.fit_transform(_X)
         # feature selection
-        self._fit_feature_selection = self._all_feature_selection[
-            self.optimal_feature_selection
-        ](**self.optimal_feature_selection_hyperparameters)
-        self._fit_feature_selection.fit(_X, _y)
-        _X = self._fit_feature_selection.transform(_X)
+        # self._fit_feature_selection = self._all_feature_selection[
+        #     self.optimal_feature_selection
+        # ](**self.optimal_feature_selection_hyperparameters)
+        # self._fit_feature_selection.fit(_X, _y)
+        # _X = self._fit_feature_selection.transform(_X)
         # classification
         self._fit_classifier = self._all_models[self.optimal_classifier](
             **self.optimal_classifier_hyperparameters
         )
-        self._fit_classifier.fit(_X.values, _y.values.ravel())
+        self._fit_classifier.fit(_X, _y.values.ravel())
 
         return self
 
@@ -706,9 +706,9 @@ class AutoClassifier:
                 # balancing
                 # _X_train_obj = blc.fit_transform(_X_train_obj)
                 # feature selection
-                fts.fit(_X_train_obj, _y_train_obj)
-                _X_train_obj = fts.transform(_X_train_obj)
-                _X_test_obj = fts.transform(_X_test_obj)
+                # fts.fit(_X_train_obj, _y_train_obj)
+                # _X_train_obj = fts.transform(_X_train_obj)
+                # _X_test_obj = fts.transform(_X_test_obj)
                 # classification
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 
