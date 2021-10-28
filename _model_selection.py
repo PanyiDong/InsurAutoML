@@ -609,7 +609,6 @@ class AutoClassifier:
         # use accuracy score
         @ignore_warnings(category=ConvergenceWarning)
         def _objective(params):
-            print(params)
             # evaluation for predictions
             if self.objective == "accuracy":
                 from sklearn.metrics import accuracy_score
@@ -687,30 +686,24 @@ class AutoClassifier:
                 os.makedirs(obj_tmp_dicretory)
             
             with open(obj_tmp_dicretory + '/hyperparamter_settings.txt', 'w') as f:
-                f.write('Encoding method: {}'.format(_encoder))
+                f.write('Encoding method: {}\n'.format(_encoder))
                 f.write('Encoding Hyperparameters:')
-                print(_encoder_hyper, file = f)
-                print('\n')
-                f.write('Imputation method: {}'.format(_imputer))
+                print(_encoder_hyper, file = f, end = '\n\n')
+                f.write('Imputation method: {}\n'.format(_imputer))
                 f.write('Imputation Hyperparameters:')
-                print(_imputer_hyper)
-                print('\n')
-                f.write('Scaling method: {}'.format(_scaling))
+                print(_imputer_hyper, file = f, end = '\n\n')
+                f.write('Scaling method: {}\n'.format(_scaling))
                 f.write('Scaling Hyperparameters:')
-                print(_scaling_hyper)
-                print('\n')
-                f.write('Balancing method: {}'.format(_balancing))
+                print(_scaling_hyper, file = f, end = '\n\n')
+                f.write('Balancing method: {}\n'.format(_balancing))
                 f.write('Balancing Hyperparameters:')
-                print(_balancing_hyper)
-                print('\n')
-                f.write('Feature Selection method: {}'.format(_feature_selection))
+                print(_balancing_hyper, file = f, end = '\n\n')
+                f.write('Feature Selection method: {}\n'.format(_feature_selection))
                 f.write('Feature Selection Hyperparameters:')
-                print(_feature_selection_hyper)
-                print('\n')
-                f.write('Classification model: {}'.format(_classifier))
+                print(_feature_selection_hyper, file = f, end = '\n\n')
+                f.write('Classification model: {}\n'.format(_classifier))
                 f.write('Classifier Hyperparameters:')
-                print(_classifier_hyper)
-                print('\n')
+                print(_classifier_hyper, file = f, end = '\n\n')
 
             if self.validation:
                 _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
@@ -739,7 +732,7 @@ class AutoClassifier:
                 _loss = -_obj(y_pred, _y_test_obj.values)
                 
                 with open(obj_tmp_dicretory + '/testing_objective.txt', 'w') as f:
-                    f.write('Loss from objective function is: {.6f}'.format(_loss))
+                    f.write('Loss from objective function is: {:.6f}\n'.format(_loss))
                     f.write('Loss is calculate using {}.'.format(self.objective))
                 self._iter += 1
 
@@ -768,7 +761,7 @@ class AutoClassifier:
                 _loss = -_obj(y_pred, _y_obj.values)
 
                 with open(obj_tmp_dicretory + '/testing_objective.txt', 'w') as f:
-                    f.write('Loss from objective function is: {.6f}'.format(_loss))
+                    f.write('Loss from objective function is: {.6f}\n'.format(_loss))
                     f.write('Loss is calculate using {}.'.format(self.objective))
                 self._iter += 1
 
