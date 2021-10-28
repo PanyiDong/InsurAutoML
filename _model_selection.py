@@ -1,4 +1,5 @@
-from unicodedata import category
+import os
+import shutil
 import warnings
 import numpy as np
 import pandas as pd
@@ -137,6 +138,8 @@ class AutoClassifier:
         self,
         timeout=360,
         max_evals=32,
+        temp_directory = 'tmp',
+        delete_temp_after_terminate = False,
         encoder="auto",
         imputer="auto",
         scaling="auto",
@@ -154,6 +157,8 @@ class AutoClassifier:
     ):
         self.timeout = timeout
         self.max_evals = max_evals
+        self.temp_directory = temp_directory
+        self.delete_temp_after_terminate = delete_temp_after_terminate
         self.encoder = encoder
         self.imputer = imputer
         self.scaling = scaling
@@ -168,6 +173,8 @@ class AutoClassifier:
         self.spark_trials = spark_trials
         self.progressbar = progressbar
         self.seed = seed
+
+        self._iter = 0 # record iteration number
 
     # create hyperparameter space using Hyperopt.hp.choice
     # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
@@ -563,6 +570,20 @@ class AutoClassifier:
 
     def fit(self, X, y):
 
+        # initialize temp directory
+        # check if temp directory exists, if exists, empty it
+        if os.path.isdir(self.temp_directory) :
+            shutil.rmtree(self.temp_directory)
+        os.makedirs(self.temp_directory)
+
+        # write basic information to init.txt
+        with open(self.temp_directory + '/init.txt', 'w') as f:
+            f.write('Features of the dataset: {}'.format(list(X.columns)))
+            f.write('Shape of the design matrix: {} * {}'.format(X.shape[0], X.shape[1]))
+            f.write('Resposne of the dataset: {}'.format(list(y.columns)))
+            f.write('Shape of the response vector: {} * {}'.format(y.shape[0], y.shape[1]))
+            f.write('Type of the task: Classification.')
+
         _X = X.copy()
         _y = y.copy()
 
@@ -661,6 +682,36 @@ class AutoClassifier:
                 **_classifier_hyper
             )  # call the model using passed parameters
 
+            obj_tmp_dicretory = self.temp_directory + '/iter_' + str(self._iter + 1)
+            if not os.path.isdir(obj_tmp_dicretory) :
+                os.makedirs(obj_tmp_dicretory)
+            
+            with open(obj_tmp_dicretory + '/hyperparamter_settings.txt', 'w') as f:
+                f.write('Encoding method: {}'.format(_encoder))
+                f.write('Encoding Hyperparameters:')
+                print(_encoder_hyper, file = f)
+                print('\n')
+                f.write('Imputation method: {}'.format(_imputer))
+                f.write('Imputation Hyperparameters:')
+                print(_imputer_hyper)
+                print('\n')
+                f.write('Scaling method: {}'.format(_scaling))
+                f.write('Scaling Hyperparameters:')
+                print(_scaling_hyper)
+                print('\n')
+                f.write('Balancing method: {}'.format(_balancing))
+                f.write('Balancing Hyperparameters:')
+                print(_balancing_hyper)
+                print('\n')
+                f.write('Feature Selection method: {}'.format(_feature_selection))
+                f.write('Feature Selection Hyperparameters:')
+                print(_feature_selection_hyper)
+                print('\n')
+                f.write('Classification model: {}'.format(_classifier))
+                f.write('Classifier Hyperparameters:')
+                print(_classifier_hyper)
+                print('\n')
+
             if self.validation:
                 _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
                 _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
@@ -685,9 +736,15 @@ class AutoClassifier:
                 clf.fit(_X_train_obj.values, _y_train_obj.values.ravel())
                 
                 y_pred = clf.predict(_X_test_obj.values)
+                _loss = -_obj(y_pred, _y_test_obj.values)
+                
+                with open(obj_tmp_dicretory + '/testing_objective.txt', 'w') as f:
+                    f.write('Loss from objective function is: {.6f}'.format(_loss))
+                    f.write('Loss is calculate using {}.'.format(self.objective))
+                self._iter += 1
 
                 # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
-                return {"loss": -_obj(y_pred, _y_test_obj.values), "status": STATUS_OK}
+                return {"loss": _loss, "status": STATUS_OK}
             else:
                 _X_obj = _X.copy()
                 _y_obj = _y.copy()
@@ -706,9 +763,16 @@ class AutoClassifier:
                 _X_obj = fts.transform(_X_obj)
                 # classification
                 clf.fit(_X_obj.values, _y_obj.values.ravel())
-                y_pred = clf.predict(_X_obj.values)
 
-                return {"loss": -_obj(y_pred, _y_obj.values), "status": STATUS_OK}
+                y_pred = clf.predict(_X_obj.values)
+                _loss = -_obj(y_pred, _y_obj.values)
+
+                with open(obj_tmp_dicretory + '/testing_objective.txt', 'w') as f:
+                    f.write('Loss from objective function is: {.6f}'.format(_loss))
+                    f.write('Loss is calculate using {}.'.format(self.objective))
+                self._iter += 1
+
+                return {"loss": _loss, "status": STATUS_OK}
 
         # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
 
@@ -741,6 +805,10 @@ class AutoClassifier:
 
         # select optimal settings and fit optimal pipeline
         self._fit_optimal(best_results, _X, _y)
+
+        # whether to retain temp files
+        if not self.delete_temp_after_terminate :
+            shutil.rmtree(self.temp_directory)
 
         return self
 
