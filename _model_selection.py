@@ -137,7 +137,7 @@ class AutoClassifier:
     def __init__(
         self,
         timeout=360,
-        max_evals=32,
+        max_evals=64,
         temp_directory = 'tmp',
         delete_temp_after_terminate = False,
         encoder="auto",
@@ -343,11 +343,6 @@ class AutoClassifier:
         # Encoding
         # convert string types to numerical type
         # get encoder space
-        # from My_AutoML import DataEncoding
-
-        # x_encoder = DataEncoding()
-        # _X = x_encoder.fit(X)
-
         if self.encoder == "auto":
             encoder = self._all_encoders.copy()
         else:
@@ -364,11 +359,6 @@ class AutoClassifier:
         # Imputer
         # fill missing values
         # get imputer space
-        # from My_AutoML import SimpleImputer
-
-        # imputer = SimpleImputer(method = 'mean')
-        # _X = imputer.fill(_X)
-
         if self.imputer == "auto":
             if not X.isnull().values.any():  # if no missing values
                 imputer = {"no_processing": no_processing}
@@ -392,12 +382,6 @@ class AutoClassifier:
 
         # Scaling
         # get scaling space
-        # from My_AutoML import Standardize
-
-        # scaling = Standardize()
-        # scaling.fit(_X)
-        # _X = scaling.transform(_X)
-
         if self.scaling == "auto":
             scaling = self._all_scalings.copy()
         else:
@@ -722,13 +706,13 @@ class AutoClassifier:
                 # balancing
                 # _X_train_obj = blc.fit_transform(_X_train_obj)
                 # feature selection
-                # fts.fit(_X_train_obj, _y_train_obj)
-                # _X_train_obj = fts.transform(_X_train_obj)
-                # _X_test_obj = fts.transform(_X_test_obj)
+                fts.fit(_X_train_obj, _y_train_obj)
+                _X_train_obj = fts.transform(_X_train_obj)
+                _X_test_obj = fts.transform(_X_test_obj)
                 # classification
-                clf.fit(_X_train_obj.values, _y_train_obj.values.ravel())
+                clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 
-                y_pred = clf.predict(_X_test_obj.values)
+                y_pred = clf.predict(_X_test_obj)
                 _loss = -_obj(y_pred, _y_test_obj.values)
                 
                 with open(obj_tmp_dicretory + '/testing_objective.txt', 'w') as f:
@@ -812,18 +796,10 @@ class AutoClassifier:
         # may need preprocessing for test data, the preprocessing shoul be the same as in fit part
         # Encoding
         # convert string types to numerical type
-        # from My_AutoML import DataEncoding
-
-        # x_encoder = DataEncoding()
-        # _X = x_encoder.fit(X)
         _X = self._fit_encoder.refit(_X)
 
         # Imputer
         # fill missing values
-        # from My_AutoML import SimpleImputer
-
-        # imputer = SimpleImputer(method = 'mean')
-        # _X = imputer.fill(_X)
         _X = self._fit_imputer.fill(_X)
 
         # Scaling

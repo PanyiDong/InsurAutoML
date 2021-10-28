@@ -139,7 +139,7 @@ def True_index(X, _true = [True, 1]) :
 def nan_cov(X, y = None, axis = 0) :
 
     try :
-        _empty = (y == None).all()
+        _empty = (y == None).all().values[0]
     except AttributeError :
         _empty = (y == None)
 

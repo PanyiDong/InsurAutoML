@@ -247,6 +247,7 @@ class LDASelection() :
             self.priors_ = []
             for _value in _y_uni :
                 self.priors_.append(y.loc[y.values == _value].count()[0] / len(y))
+            self.priors_ = np.asarray(self.priors_)
         else:
             self.priors_ = np.asarray(self.priors)
 
@@ -361,7 +362,7 @@ class FeatureFilter() :
     def fit(self, X, y = None) :
 
         try :
-            _empty = (y == None).all()
+            _empty = (y == None).all().values[0]
         except AttributeError :
             _empty = (y == None)
         if _empty :

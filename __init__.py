@@ -182,8 +182,8 @@ import autosklearn.pipeline.components.feature_preprocessing
 
 feature_selection = {
     "no_processing": no_processing,
-    "LDASelection": LDASelection,
-    "PCA_FeatureSelection": PCA_FeatureSelection,
+#    "LDASelection": LDASelection,
+#    "PCA_FeatureSelection": PCA_FeatureSelection,
     "RBFSampler": RBFSampler,
     "FeatureFilter": FeatureFilter,
     "ASFFS": ASFFS,
