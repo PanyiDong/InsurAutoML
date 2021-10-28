@@ -151,7 +151,7 @@ class AutoClassifier:
         objective="accuracy",
         method="Bayeisan",
         algo="tpe",
-        spark_trials=True,
+        spark_trials=False,
         progressbar=False,
         seed=1,
     ):
