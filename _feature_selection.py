@@ -665,7 +665,7 @@ class GeneticAlgorithm() :
         self,
         n_components = 20,
         n_generations = 10,
-        feature_selection = 'auto',
+        feature_selection = 'random',
         n_initial = 10,
         fitness_func = None,
         fitness_fit = 'SVM',
