@@ -82,6 +82,13 @@ class ExtremeClass() :
                     break
         return _X
 
+'''
+Oct. 29, 2021 Update: Since balancing requries input of both X and y (features and response), 
+or the shape of X and y will cause problems (over-/under-sampling will increase/decrease the 
+observations), add a choice of input for y in all fit_transform methods so the shape will be
+consistent. The idea is to combine X and y if y exists, and record the features/response column
+names. When balancing completed, divide the combined dataset into balanced X and y.
+'''
 class SimpleRandomOverSampling() :
 
     '''
@@ -108,18 +115,34 @@ class SimpleRandomOverSampling() :
         self.all = all
         self.seed = seed
 
-    def fit_transform(self, X):
+    def fit_transform(self, X, y = None):
         
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
+        
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             if self.all == True :
-                while is_imbalance(_X, self.imbalance_threshold) :
-                    _X = self._fit_transform(_X) 
-                return _X
+                while is_imbalance(_data, self.imbalance_threshold) :
+                    _data = self._fit_transform(_data)
+                if self.response != None : # return balanced X and y if y is also inputted
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
             else :
-                return self._fit_transform(_X)
+                _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
 
     def _fit_transform(self, X) : # using random over-sampling to balance the first imbalanced feature
         
@@ -161,18 +184,34 @@ class SimpleRandomUnderSampling() :
         self.all = all
         self.seed = seed
 
-    def fit_transform(self, X):
+    def fit_transform(self, X, y = None):
+
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
         
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             if self.all == True :
-                while is_imbalance(_X, self.imbalance_threshold) :
-                    _X = self._fit_transform(_X) 
-                return _X
+                while is_imbalance(_data, self.imbalance_threshold) :
+                    _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
             else :
-                return self._fit_transform(_X)
+                _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
 
     def _fit_transform(self, X) : # using random over-sampling to balance the first imbalanced feature
         
@@ -220,18 +259,34 @@ class TomekLink() :
         self.all = all
         self.seed = seed
 
-    def fit_transform(self, X) :
-        print("TL worked!")
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+    def fit_transform(self, X, y = None) :
+
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
+        
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             if self.all == True :
-                while is_imbalance(_X, self.imbalance_threshold) :
-                    _X = self._fit_transform(_X) 
-                return _X
+                while is_imbalance(_data, self.imbalance_threshold) :
+                    _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
             else :
-                return self._fit_transform(_X)
+                _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
 
     def _fit_transform(self, X) :
 
@@ -284,22 +339,38 @@ class EditedNearestNeighbor() :
         self.seed = seed
         self.k = k
 
-    def fit_transform(self, X) :
+    def fit_transform(self, X, y = None) :
+
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
         
-        _X = X.copy(deep = True)
+        _data = data.copy(deep = True)
 
         if (self.k % 2) == 0 :
             warnings.warn('Criteria of majority better select odd k nearest neighbors, get {}.'.format(self.k))
 
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             if self.all == True :
-                while is_imbalance(_X, self.imbalance_threshold) :
-                    _X = self._fit_transform(_X) 
-                return _X
+                while is_imbalance(_data, self.imbalance_threshold) :
+                    _data = self._fit_transform(_data) 
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
             else :
-                return self._fit_transform(_X)
+                _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
 
     def _fit_transform(self, X) :
 
@@ -364,18 +435,34 @@ class CondensedNearestNeighbor() :
         self.all = all
         self.seed = seed
 
-    def fit_transform(self, X) :
-        print('CNN workd!')
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+    def fit_transform(self, X, y = None) :
+
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
+
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             if self.all == True :
-                while is_imbalance(_X, self.imbalance_threshold) :
-                    _X = self._fit_transform(_X) 
-                return _X
+                while is_imbalance(_data, self.imbalance_threshold) :
+                    _data = self._fit_transform(_data) 
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
             else :
-                return self._fit_transform(_X)
+                _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
 
     def _fit_transform(self, X) :
 
@@ -431,10 +518,19 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
         self.all = all
         self.seed = seed
 
-    def fit_transform(self, X) :
+    def fit_transform(self, X, y = None) :
        
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
+
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             super().__init__(
@@ -443,16 +539,19 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
                 all = self.all,
                 seed = self.seed
             )
-            _X = super().fit_transform(_X)
+            _data = super().fit_transform(_data)
 
             super(TomekLink, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 all = self.all,
                 seed = self.seed
             )
-            _X = super(TomekLink, self).fit_transform(_X)
-
-        return _X
+            _data = super(TomekLink, self).fit_transform(_data)
+        
+        if self.response != None :
+            return _data[self.features], _data[self.response]
+        else :
+            return _data
 
 class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
 
@@ -486,10 +585,19 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
         self.all = all
         self.seed = seed
 
-    def fit_transform(self, X) :
+    def fit_transform(self, X, y = None) :
+
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
        
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             super().__init__(
@@ -497,7 +605,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
                 all = self.all,
                 seed = self.seed
             )
-            _X = super().fit_transform(_X)
+            _data = super().fit_transform(_data)
 
             super(CondensedNearestNeighbor, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
@@ -505,9 +613,12 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
                 all = self.all,
                 seed = self.seed
             )
-            _X = super(CondensedNearestNeighbor, self).fit_transform(_X)
-
-        return _X
+            _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
+        
+        if self.response != None :
+            return _data[self.features], _data[self.response]
+        else :
+            return _data
 
 class Smote() :
 
@@ -550,18 +661,34 @@ class Smote() :
         self.k = k
         self.generation = generation
 
-    def fit_transform(self, X) :
+    def fit_transform(self, X, y = None) :
 
-        _X = X.copy(deep = True)
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
+
+        _data = data.copy(deep = True)
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             if self.all == True :
-                while is_imbalance(_X, self.imbalance_threshold) :
-                    _X = self._fit_transform(_X)
-                return _X
+                while is_imbalance(_data, self.imbalance_threshold) :
+                    _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
             else :
-                return self._fit_transform(_X)
+                _data = self._fit_transform(_data)
+                if self.response != None :
+                    return _data[self.features], _data[self.response]
+                else :
+                    return _data
 
     def _fit_transform(self, X) :
         
@@ -621,9 +748,18 @@ class Smote_TomekLink(Smote, TomekLink) :
             else :
                 return self._fit_transform(_X)
 
-    def _fit_transform(self, X) :
+    def _fit_transform(self, X, y = None) :
+
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
         
-        _X = X.copy(deep = True)
+        _data = data.copy(deep = True)
         super().__init__(
             imbalance_threshold = self.imbalance_threshold,
             norm = self.norm,
@@ -632,7 +768,7 @@ class Smote_TomekLink(Smote, TomekLink) :
             k = self.k,
             generation = self.generation
         )
-        _X = super().fit_transform(_X)
+        _data = super().fit_transform(_data)
 
         super(Smote, self).__init__(
             imbalance_threshold = self.imbalance_threshold,
@@ -640,9 +776,12 @@ class Smote_TomekLink(Smote, TomekLink) :
             all = self.all,
             seed = self.seed
         )
-        _X = super(Smote, self).fit_transform(_X)
-
-        return _X
+        _data = super(Smote, self).fit_transform(_data)
+        
+        if self.response != None :
+            return _data[self.features], _data[self.response]
+        else :
+            return _data
 
 class Smote_ENN(Smote, EditedNearestNeighbor) :
 
@@ -666,11 +805,20 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
         self.k = k
         self.generation = generation
 
-    def fit_transform(self, X) :
+    def fit_transform(self, X, y = None) :
+        
+        if y != None : # if no y input, only convert X; or, combine X and y to consider balancing
+            self.features = list(X.columns)
+            self.response = list(y.columns)
+            data = pd.concat([X, y], axis = 1, ignore_index = True)
+        else :
+            self.features = list(X.columns)
+            self.response = None
+            data = X
 
-        _X = X.copy(deep = True)
+        _data = data.copy(deep = True)
 
-        if not is_imbalance(_X, self.imbalance_threshold) :
+        if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
             super().__init__(
@@ -681,7 +829,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
                 k = self.k,
                 generation = self.generation
             )
-            _X = super().fit_transform(_X)
+            _data = super().fit_transform(_data)
 
             super(Smote, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
@@ -689,6 +837,9 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
                 seed = self.seed,
                 k = self.k
             )
-            _X = super(Smote, self).fit_transform(_X)
-
-        return _X
+            _data = super(Smote, self).fit_transform(_data)
+        
+        if self.response != None :
+            return _data[self.features], _data[self.response]
+        else :
+            return _data
