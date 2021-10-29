@@ -784,7 +784,7 @@ class AutoClassifier:
         self._fit_optimal(best_results, _X, _y)
 
         # whether to retain temp files
-        if not self.delete_temp_after_terminate :
+        if self.delete_temp_after_terminate :
             shutil.rmtree(self.temp_directory)
 
         return self
