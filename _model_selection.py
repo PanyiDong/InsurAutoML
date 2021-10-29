@@ -562,11 +562,11 @@ class AutoClassifier:
 
         # write basic information to init.txt
         with open(self.temp_directory + '/init.txt', 'w') as f:
-            f.write('Features of the dataset: {}'.format(list(X.columns)))
+            f.write('Features of the dataset: {}\n'.format(list(X.columns)))
             f.write('Shape of the design matrix: {} * {}'.format(X.shape[0], X.shape[1]))
-            f.write('Resposne of the dataset: {}'.format(list(y.columns)))
+            f.write('Resposne of the dataset: {}\n'.format(list(y.columns)))
             f.write('Shape of the response vector: {} * {}'.format(y.shape[0], y.shape[1]))
-            f.write('Type of the task: Classification.')
+            f.write('Type of the task: Classification.\n')
 
         _X = X.copy()
         _y = y.copy()
