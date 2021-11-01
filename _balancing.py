@@ -118,9 +118,9 @@ class SimpleRandomOverSampling() :
     def fit_transform(self, X, y = None):
          
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -192,9 +192,9 @@ class SimpleRandomUnderSampling() :
     def fit_transform(self, X, y = None):
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -272,9 +272,9 @@ class TomekLink() :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -357,9 +357,9 @@ class EditedNearestNeighbor() :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -458,9 +458,9 @@ class CondensedNearestNeighbor() :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -546,9 +546,9 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
        
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -618,9 +618,9 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -699,9 +699,9 @@ class Smote() :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -778,9 +778,9 @@ class Smote_TomekLink(Smote, TomekLink) :
     def fit_transform(self, X, y = None) :
         
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
         
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
@@ -857,9 +857,9 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
     def fit_transform(self, X, y = None) :
 
         try : # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y == None
-        except ValueError :
             _empty = y.empty
+        except AttributeError :
+            _empty = y == None
         
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
             self.features = list(X.columns)
