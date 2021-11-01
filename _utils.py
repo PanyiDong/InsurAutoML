@@ -320,3 +320,44 @@ def ANOVA(X, y, fvalue = True, pvalue = False) :
         return _f
     elif pvalue :
         return _p
+
+# transform between numpy array and pandas dataframe
+# to deal with some problems where dataframe will be converted to array using sklearn objects
+class as_dataframe :
+
+    def __init__(self) :
+        self.design_matrix = None # record the values of dataframe
+        self.columns = None # record column heads for the dataframe
+
+    def to_array(self, X) :
+
+        if not isinstance(X, pd.DataFrame) :
+            raise TypeError('Input should be dataframe!')
+        
+        self.design_matrix = X.values
+        self.columns = list(X.columns)
+
+        return self.design_matrix
+
+    def to_df(self, X = None, columns = None) :
+
+        if not isinstance(X, np.ndarray) :
+            if not X :
+                X = self.design_matrix # using original values from dataframe
+            else :
+                raise TypeError('Input should be numpy array!')
+        
+        try :
+            _empty = (columns == None).all()
+        except AttributeError :
+            _empty = columns == None
+        
+        if _empty :
+            columns = self.columns
+
+        if len(columns) != X.shape[1] :
+            raise ValueError(
+                'Columns of array {} does not match length of columns {}!'.format(X.shape[1], len(columns))
+            )
+
+        return pd.DataFrame(X, columns = columns)
