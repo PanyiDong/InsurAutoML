@@ -280,8 +280,6 @@ class AutoClassifier:
             "classification_models", _model_hyperparameter
         )
 
-        # return _model_hyperparameter
-
         # the pipeline search space
         return pyll.as_apply(
             {
@@ -534,10 +532,10 @@ class AutoClassifier:
         self._fit_scaling.fit(_X)
         _X = self._fit_scaling.transform(_X)
         # balancing
-        # self._fit_balancing = self._all_balancings[self.optimal_balancing](
-        #     **self.optimal_balancing_hyperparameters
-        # )
-        # _X = self._fit_balancing.fit_transform(_X)
+        self._fit_balancing = self._all_balancings[self.optimal_balancing](
+            **self.optimal_balancing_hyperparameters
+        )
+        _X, _y = self._fit_balancing.fit_transform(_X, _y)
         # feature selection
         # self._fit_feature_selection = self._all_feature_selection[
         #     self.optimal_feature_selection
@@ -704,7 +702,7 @@ class AutoClassifier:
                 _X_train_obj = scl.transform(_X_train_obj)
                 _X_test_obj = scl.transform(_X_test_obj)
                 # balancing
-                # _X_train_obj = blc.fit_transform(_X_train_obj)
+                _X_train_obj, _y_train_obj = blc.fit_transform(_X_train_obj, _y_train_obj)
                 # feature selection
                 # fts.fit(_X_train_obj, _y_train_obj)
                 # _X_train_obj = fts.transform(_X_train_obj)
