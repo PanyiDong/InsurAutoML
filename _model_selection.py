@@ -1,3 +1,5 @@
+import sys
+sys.setrecursionlimit(10000) # add recursive depth
 import os
 import shutil
 import warnings
@@ -472,11 +474,11 @@ class AutoClassifier:
                 _all_models_hyperparameters,
                 models,
             )  # _X to choose whether include imputer
-            # others are the combinations of default hyperparamter space & methods selected
+            # others are the combinations of default hyperparameter space & methods selected
 
         return encoder, imputer, scaling, balancing, feature_selection, models
 
-    # select optimal settings and fit on opitmal hyperparameters
+    # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(self, best_results, _X, _y):
 
         # mapping the optimal model and hyperparameters selected
@@ -667,11 +669,11 @@ class AutoClassifier:
                 **_classifier_hyper
             )  # call the model using passed parameters
 
-            obj_tmp_dicretory = self.temp_directory + "/iter_" + str(self._iter + 1)
-            if not os.path.isdir(obj_tmp_dicretory):
-                os.makedirs(obj_tmp_dicretory)
+            obj_tmp_directory = self.temp_directory + "/iter_" + str(self._iter + 1)
+            if not os.path.isdir(obj_tmp_directory):
+                os.makedirs(obj_tmp_directory)
 
-            with open(obj_tmp_dicretory + "/hyperparamter_settings.txt", "w") as f:
+            with open(obj_tmp_directory + "/hyperparamter_settings.txt", "w") as f:
                 f.write("Encoding method: {}\n".format(_encoder))
                 f.write("Encoding Hyperparameters:")
                 print(_encoder_hyper, file=f, end="\n\n")
@@ -719,7 +721,7 @@ class AutoClassifier:
                 y_pred = clf.predict(_X_test_obj)
                 _loss = -_obj(y_pred, _y_test_obj.values)
 
-                with open(obj_tmp_dicretory + "/testing_objective.txt", "w") as f:
+                with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                     f.write("Loss from objective function is: {:.6f}\n".format(_loss))
                     f.write("Loss is calculate using {}.".format(self.objective))
                 self._iter += 1
@@ -748,7 +750,7 @@ class AutoClassifier:
                 y_pred = clf.predict(_X_obj.values)
                 _loss = -_obj(y_pred, _y_obj.values)
 
-                with open(obj_tmp_dicretory + "/testing_objective.txt", "w") as f:
+                with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                     f.write("Loss from objective function is: {.6f}\n".format(_loss))
                     f.write("Loss is calculate using {}.".format(self.objective))
                 self._iter += 1

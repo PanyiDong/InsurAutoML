@@ -426,7 +426,6 @@ class EditedNearestNeighbor() :
 
         return X
 
-
 class CondensedNearestNeighbor() :
 
     '''
@@ -563,20 +562,20 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
         if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
-            super().__init__(
+            super(TomekLink, self).__init__(
                 imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 norm = self.norm,
                 all = self.all,
                 seed = self.seed
             )
-            _data = super().fit_transform(_data)
+            _data = super(TomekLink, self).fit_transform(_data)
 
-            super(TomekLink, self).__init__(
+            super(CondensedNearestNeighbor, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 all = self.all,
                 seed = self.seed
             )
-            _data = super(TomekLink, self).fit_transform(_data)
+            _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
         
         if not _empty :
             return _data[self.features], _data[self.response]
@@ -587,7 +586,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
 
     '''
     CNN_Tomek Link
-    empolys CNN first and Tomek Link to reduce the calcualation for Tomek Link (large calculation for ditance 
+    employs CNN first and Tomek Link to reduce the calculation for Tomek Link (large calculation for distance 
     between each sample points, especially for large sample size)
 
     Parameters
@@ -635,20 +634,20 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
         if not is_imbalance(_data, self.imbalance_threshold) :
             warnings.warn('The dataset is balanced, no change.')
         else :
-            super().__init__(
+            super(CondensedNearestNeighbor, self).__init__(
                 imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 all = self.all,
                 seed = self.seed
             )
-            _data = super().fit_transform(_data)
+            _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
 
-            super(CondensedNearestNeighbor, self).__init__(
+            super(TomekLink, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 norm = self.norm,
                 all = self.all,
                 seed = self.seed
             )
-            _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
+            _data = super(TomekLink, self).fit_transform(_data)
         
         if not _empty :
             return _data[self.features], _data[self.response]
@@ -812,23 +811,23 @@ class Smote_TomekLink(Smote, TomekLink) :
     def _fit_transform(self, X) :
         
         _X = X.copy(deep = True)
-        super().__init__(
-            imbalance_threshold = self.imbalance_threshold,
+        super(Smote, self).__init__(
+            imbalance_threshold = (1. + self.imbalance_threshold) / 2,
             norm = self.norm,
             all = self.all,
             seed= self.seed,
             k = self.k,
             generation = self.generation
         )
-        _X = super().fit_transform(_X)
+        _X = super(Smote, self).fit_transform(_X)
 
-        super(Smote, self).__init__(
+        super(TomekLink, self).__init__(
             imbalance_threshold = self.imbalance_threshold,
             norm = self.norm,
             all = self.all,
             seed = self.seed
         )
-        _X = super(Smote, self).fit_transform(_X)
+        _X = super(TomekLink, self).fit_transform(_X)
 
         return _X
 
@@ -891,22 +890,22 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
     def _fit_transform(self, X):
         
         _X = X.copy(deep = True)
-        super().__init__(
-            imbalance_threshold = self.imbalance_threshold,
+        super(Smote, self).__init__(
+            imbalance_threshold = (1. + self.imbalance_threshold) / 2,
             norm = self.norm,
             all = self.all,
             seed= self.seed,
             k = self.k,
             generation = self.generation
         )
-        _X = super().fit_transform(_X)
+        _X = super(Smote, self).fit_transform(_X)
 
-        super(Smote, self).__init__(
+        super(EditedNearestNeighbor,self).__init__(
             imbalance_threshold = self.imbalance_threshold,
             all = self.all,
             seed = self.seed,
             k = self.k
         )
-        _X = super(Smote, self).fit_transform(_X)
+        _X = super(EditedNearestNeighbor, self).fit_transform(_X)
         
         return _X
