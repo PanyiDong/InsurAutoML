@@ -112,6 +112,8 @@ class SimpleRandomOverSampling() :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the minority class will increase the random seed by 1
     '''
@@ -120,10 +122,12 @@ class SimpleRandomOverSampling() :
         self,
         imbalance_threshold = 0.9,
         all = True,
+        max_iter = 1000,
         seed = 1,
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.all = all
+        self.max_iter = 1000
         self.seed = seed
 
     def fit_transform(self, X, y = None):
@@ -162,11 +166,13 @@ class SimpleRandomOverSampling() :
         features = list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(X, self.imbalance_threshold, value = True)
         _seed = self.seed
+        _iter = 0
 
-        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
+        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) and _iter <= self.max_iter :
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             X = pd.concat([X, _minority_class.sample(n = 1, random_state = _seed)])
             _seed += 1
+            _iter += 1
         X = sklearn.utils.shuffle(X.reset_index(drop = True)).reset_index(drop = True)
         
         return X
@@ -183,6 +189,8 @@ class SimpleRandomUnderSampling() :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
     '''
@@ -191,10 +199,12 @@ class SimpleRandomUnderSampling() :
         self,
         imbalance_threshold = 0.9,
         all = True,
+        max_iter = 1000,
         seed = 1,
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
 
     def fit_transform(self, X, y = None):
@@ -233,12 +243,14 @@ class SimpleRandomUnderSampling() :
         features = list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(X, self.imbalance_threshold, value = True)
         _seed = self.seed
+        _iter = 0
 
-        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
+        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) and _iter <= self.max_iter :
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
             sample = _majority_class.sample(n = 1, random_state = _seed)
             X = X.drop(sample.index)
             _seed += 1
+            _iter += 1
         X = sklearn.utils.shuffle(X.reset_index(drop = True)).reset_index(drop = True)
         
         return X
@@ -258,6 +270,8 @@ class TomekLink() :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
     '''
@@ -267,11 +281,13 @@ class TomekLink() :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
 
     def fit_transform(self, X, y = None) :
@@ -309,8 +325,9 @@ class TomekLink() :
 
         _imbalanced_feature, _majority = is_imbalance(X, self.imbalance_threshold, value = True)
         _seed = self.seed
+        _iter = 0
 
-        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
+        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) and _iter <= self.max_iter :
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _minority_sample = _minority_class.sample(
                 n = max(int(len(_minority_class) / 100), 1), random_state = _seed
@@ -321,6 +338,7 @@ class TomekLink() :
                 if X.iloc[_nearest, :][_imbalanced_feature] == _majority :
                     X = X.drop(X.index[_nearest]).reset_index(drop = True)
             _seed += 1
+            _iter += 1
         
         return X
 
@@ -339,6 +357,8 @@ class EditedNearestNeighbor() :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
 
@@ -350,12 +370,14 @@ class EditedNearestNeighbor() :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1,
         k = 3,
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
         self.k = k
 
@@ -398,8 +420,9 @@ class EditedNearestNeighbor() :
 
         _imbalanced_feature, _majority = is_imbalance(X, self.imbalance_threshold, value = True)
         _seed = self.seed
+        _iter = 0
 
-        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
+        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) and _iter <= self.max_iter :
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
             _majority_index = _majority_class.index
             _sample = X.sample(n = 1, random_state = _seed)
@@ -419,6 +442,7 @@ class EditedNearestNeighbor() :
                     else :
                         X = X.drop(_link_item.index(sorted(_link_item)[1])).reset_index(drop = True)
             _seed += 1
+            _iter += 1
 
             if len(_majority_class) == len(X) :
                 warnings.warn('No minority class left!')
@@ -443,6 +467,8 @@ class CondensedNearestNeighbor() :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
     '''
@@ -451,10 +477,12 @@ class CondensedNearestNeighbor() :
         self,
         imbalance_threshold = 0.9,
         all = True,
+        max_iter = 1000,
         seed = 1
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
 
     def fit_transform(self, X, y = None) :
@@ -494,8 +522,9 @@ class CondensedNearestNeighbor() :
 
         _imbalanced_feature, _majority = is_imbalance(X, self.imbalance_threshold, value = True)
         _seed = self.seed
+        _iter = 0
 
-        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
+        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) and _iter <= self.max_iter :
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
             _subset = pd.concat([_minority_class, _majority_class.sample(n = 1, random_state = _seed)])\
@@ -507,6 +536,7 @@ class CondensedNearestNeighbor() :
             _not_matching_index = np.where((np.array(y_predict) != np.array(y_true)))[0]
             X = pd.concat([_subset, X.iloc[_not_matching_index, :]]).reset_index(drop = True)
             _seed += 1
+            _iter += 1
 
         return X
 
@@ -526,6 +556,8 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
     '''
@@ -535,11 +567,13 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
 
     def fit_transform(self, X, y = None) :
@@ -566,6 +600,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
                 imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 norm = self.norm,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed = self.seed
             )
             _data = super().fit_transform(_data)
@@ -573,6 +608,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
             super(TomekLink, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed = self.seed
             )
             _data = super(TomekLink, self).fit_transform(_data)
@@ -598,6 +634,8 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
     '''
@@ -607,11 +645,13 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
 
     def fit_transform(self, X, y = None) :
@@ -637,6 +677,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
             super().__init__(
                 imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed = self.seed
             )
             _data = super().fit_transform(_data)
@@ -645,6 +686,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
                 imbalance_threshold = self.imbalance_threshold,
                 norm = self.norm,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed = self.seed
             )
             _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
@@ -669,6 +711,8 @@ class Smote() :
 
     all: whether to stop until all features are balanced, default = True
 
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+
     seed: random seed, default = 1
     every random draw from the minority class will increase the random seed by 1
 
@@ -684,6 +728,7 @@ class Smote() :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1,
         k = 5,
         generation = 'mean'
@@ -691,6 +736,7 @@ class Smote() :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
         self.k = k
         self.generation = generation
@@ -730,8 +776,9 @@ class Smote() :
         
         _imbalanced_feature, _majority = is_imbalance(X, self.imbalance_threshold, value = True)
         _seed = self.seed
+        _iter = 0
 
-        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
+        while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) and _iter <= self.max_iter :
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _sample = _minority_class.sample(n = 1, random_state = _seed)
             _link_table = LinkTable(_sample, X, self.norm)
@@ -747,6 +794,7 @@ class Smote() :
                     raise ValueError('Not recognizing generation method! Should be in \
                         ["mean", "random"], get {}'.format(self.generation))
             _seed += 1
+            _iter += 1
 
         return X
 
@@ -761,6 +809,7 @@ class Smote_TomekLink(Smote, TomekLink) :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1,
         k = 5,
         generation = 'mean'
@@ -768,6 +817,7 @@ class Smote_TomekLink(Smote, TomekLink) :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
         self.k = k
         self.generation = generation
@@ -796,6 +846,7 @@ class Smote_TomekLink(Smote, TomekLink) :
                 imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 norm = self.norm,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed= self.seed,
                 k = self.k,
                 generation = self.generation
@@ -806,6 +857,7 @@ class Smote_TomekLink(Smote, TomekLink) :
                 imbalance_threshold = self.imbalance_threshold,
                 norm = self.norm,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed = self.seed
             )
             _data = super(Smote, self).fit_transform(_data)
@@ -826,6 +878,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
         imbalance_threshold = 0.9,
         norm = 'l2',
         all = True,
+        max_iter = 1000,
         seed = 1,
         k = 5,
         generation = 'mean'
@@ -833,6 +886,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
+        self.max_iter = max_iter
         self.seed = seed
         self.k = k
         self.generation = generation
@@ -862,6 +916,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
                 imbalance_threshold = (1. + self.imbalance_threshold) / 2,
                 norm = self.norm,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed= self.seed,
                 k = self.k,
                 generation = self.generation
@@ -871,6 +926,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
             super(Smote, self).__init__(
                 imbalance_threshold = self.imbalance_threshold,
                 all = self.all,
+                max_iter = self.max_iter,
                 seed = self.seed,
                 k = self.k
             )
