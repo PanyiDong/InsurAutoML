@@ -256,7 +256,7 @@ class AutoClassifier:
                     _balancing_hyperparameter.append(item)
 
         _balancing_hyperparameter = hp.choice(
-            "classiciation_balancing", _balancing_hyperparameter
+            "classification_balancing", _balancing_hyperparameter
         )
 
         # feature selection space
@@ -302,7 +302,7 @@ class AutoClassifier:
     def get_hyperparameter_space(self, X, y):
 
         # initialize default search options
-        # all encoders avaiable
+        # all encoders available
         self._all_encoders = My_AutoML.encoders
 
         # all hyperparameters for encoders
@@ -554,6 +554,32 @@ class AutoClassifier:
         )
         self._fit_classifier.fit(_X, _y.values.ravel())
 
+        with open(self.temp_directory + "/optimal.txt", "w") as f:
+            f.write("Optimal encoding method is: {}.\n".format(self.optimal_encoder))
+            f.write("Optimal encoding hyperparameters:")
+            print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
+            f.write("Optimal imputation hyperparameters:")
+            print(self.optimal_imputer_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
+            f.write("Optimal scaling hyperparameters:")
+            print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
+            f.write("Optimal balancing hyperparamters:")
+            print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
+            f.write(
+                "Optimal feature selection method is: {}\n".format(
+                    self.optimal_feature_selection
+                )
+            )
+            f.write("Optimal feature selection hyperparameters:")
+            print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
+            f.write(
+                "Optimal classification model is: {}\n".format(self.optimal_classifier)
+            )
+            f.write("Optimal classification hyperparameters:")
+            print(self.optimal_classifier_hyperparameters, file=f, end="\n\n")
+
         return self
 
     def fit(self, X, y):
@@ -731,10 +757,10 @@ class AutoClassifier:
                 #     f.write("Feature selection finished, in classification model.")
                 # classification
                 pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
-                    obj_tmp_directory + "/train_preprocessed.csv", index = False
+                    obj_tmp_directory + "/train_preprocessed.csv", index=False
                 )
-                pd.concat([_X_test_obj, _y_test_obj], axis = 1).to_csv(
-                    obj_tmp_directory + "/test_preprocessed.csv", index = False
+                pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
+                    obj_tmp_directory + "/test_preprocessed.csv", index=False
                 )
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
@@ -777,8 +803,8 @@ class AutoClassifier:
                     f.write("Feature selection finished, in classification model.")
                 # classification
                 clf.fit(_X_obj.values, _y_obj.values.ravel())
-                pd.concat([_X_obj, _y_obj], axis = 1).to_csv(
-                    obj_tmp_directory + "/data_preprocessed.csv", index = False
+                pd.concat([_X_obj, _y_obj], axis=1).to_csv(
+                    obj_tmp_directory + "/data_preprocessed.csv", index=False
                 )
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
