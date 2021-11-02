@@ -731,10 +731,10 @@ class AutoClassifier:
                 #     f.write("Feature selection finished, in classification model.")
                 # classification
                 pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
-                    obj_tmp_directory + "train_preprocessed.csv"
+                    obj_tmp_directory + "/train_preprocessed.csv"
                 )
                 pd.concat([_X_test_obj, _y_test_obj], axis = 1).to_csv(
-                    obj_tmp_directory + "test_preprocessed.csv"
+                    obj_tmp_directory + "/test_preprocessed.csv"
                 )
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
@@ -778,7 +778,7 @@ class AutoClassifier:
                 # classification
                 clf.fit(_X_obj.values, _y_obj.values.ravel())
                 pd.concat([_X_obj, _y_obj], axis = 1).to_csv(
-                    obj_tmp_directory + "data_preprocessed.csv"
+                    obj_tmp_directory + "/data_preprocessed.csv"
                 )
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
