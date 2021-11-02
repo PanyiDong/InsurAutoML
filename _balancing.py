@@ -38,17 +38,21 @@ def LinkTable(sample, table, norm = 'l2') :
     if sample.shape[1] != table.shape[1] :
         raise ValueError('Not same size of columns!')
 
-    _sample = sample.values[0]
+    _sample = sample.values
     features = list(table.columns)
     _table = table.copy(deep = True)
-    for i in range(len(features)) :
-        if norm == 'l2' :
-            #print(sample[_column], sample[_column][0])
-            _table.iloc[:, i] = (_table.iloc[:, i] - _sample[i]) ** 2
-        if norm == 'l1' :
-            _table.iloc[:, i] = np.abs(_table.iloc[:, i] - _sample[i])
+    _linktable = []
 
-    return _table.sum(axis = 1).values.tolist()
+    for sample_point in _sample :
+        for i in range(len(features)) :
+            if norm == 'l2' :
+                # print(sample[_column], sample[_column][0])
+                _table.iloc[:, i] = (_table.iloc[:, i] - sample_point[i]) ** 2
+            if norm == 'l1' :
+                _table.iloc[:, i] = np.abs(_table.iloc[:, i] - sample_point[i])
+        _linktable.append(_table.sum(axis = 1).values.tolist())
+
+    return _linktable
 
 '''
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
@@ -130,12 +134,12 @@ class SimpleRandomOverSampling() :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
         
         _data = data.copy(deep = True)
@@ -145,16 +149,13 @@ class SimpleRandomOverSampling() :
             if self.all == True :
                 while is_imbalance(_data, self.imbalance_threshold) :
                     _data = self._fit_transform(_data)
-                if not _empty : # return balanced X and y if y is also inputted
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
             else :
                 _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
+        
+        if not _empty : # return balanced X and y if y is also inputted
+            return _data[features], _data[response]
+        else :
+            return _data
 
     def _fit_transform(self, X) : # using random over-sampling to balance the first imbalanced feature
         
@@ -204,12 +205,12 @@ class SimpleRandomUnderSampling() :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
         
         _data = data.copy(deep = True)
@@ -219,16 +220,13 @@ class SimpleRandomUnderSampling() :
             if self.all == True :
                 while is_imbalance(_data, self.imbalance_threshold) :
                     _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
             else :
                 _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
+        
+        if not _empty :
+            return _data[features], _data[response]
+        else :
+            return _data
 
     def _fit_transform(self, X) : # using random over-sampling to balance the first imbalanced feature
         
@@ -284,12 +282,12 @@ class TomekLink() :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
         
         _data = data.copy(deep = True)
@@ -299,16 +297,13 @@ class TomekLink() :
             if self.all == True :
                 while is_imbalance(_data, self.imbalance_threshold) :
                     _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
             else :
                 _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
+
+        if not _empty :
+            return _data[features], _data[response]
+        else :
+            return _data
 
     def _fit_transform(self, X) :
 
@@ -317,13 +312,16 @@ class TomekLink() :
 
         while is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold) :
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-            _minority_sample = _minority_class.sample(n = 1, random_state = _seed)
+            _minority_sample = _minority_class.sample(
+                n = max(int(len(_minority_class) / 100), 1), random_state = _seed
+            )
             _link_table = LinkTable(_minority_sample, X, self.norm)
-            _nearest = _link_table.index(sorted(_link_table)[1]) # since the closest will always be the sample itself
-            if X.iloc[_nearest, :][_imbalanced_feature] == _majority :
-                X = X.drop(X.index[_nearest]).reset_index(drop = True)
+            for _link_item in _link_table :
+                _nearest = _link_item.index(sorted(_link_item)[1]) # since the closest will always be the sample itself
+                if X.iloc[_nearest, :][_imbalanced_feature] == _majority :
+                    X = X.drop(X.index[_nearest]).reset_index(drop = True)
             _seed += 1
-
+        
         return X
 
 class EditedNearestNeighbor() :
@@ -369,12 +367,12 @@ class EditedNearestNeighbor() :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
         
         _data = data.copy(deep = True)
@@ -388,16 +386,13 @@ class EditedNearestNeighbor() :
             if self.all == True :
                 while is_imbalance(_data, self.imbalance_threshold) :
                     _data = self._fit_transform(_data) 
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
             else :
                 _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
+        
+        if not _empty :
+            return _data[features], _data[response]
+        else :
+            return _data
 
     def _fit_transform(self, X) :
 
@@ -410,18 +405,19 @@ class EditedNearestNeighbor() :
             _sample = X.sample(n = 1, random_state = _seed)
             _sample_type = 'majority' if (_sample.index[0] in _majority_index) else 'minority'
             _link_table = LinkTable(_sample, X, self.norm)
-            _k_nearest = [_link_table.index(item) for item in sorted(_link_table)[1:(self.k + 1)]]
-            count = 0
-            for _index in _k_nearest :
-                _class = 'majority' if (_index in _majority_index) else 'minority'
-                if _class == _sample_type :
-                    count += 1
-            if count < (self.k + 1) / 2 :
-                # if sample belongs to majority, remove the sample; else, remove the nearest neibghbor
-                if _sample_type == 'majority' : 
-                    X = X.drop(_sample.index).reset_index(drop = True)
-                else :
-                    X = X.drop(_link_table.index(sorted(_link_table)[1])).reset_index(drop = True)
+            for _link_item in _link_table :
+                _k_nearest = [_link_item.index(item) for item in sorted(_link_item)[1:(self.k + 1)]]
+                count = 0
+                for _index in _k_nearest :
+                    _class = 'majority' if (_index in _majority_index) else 'minority'
+                    if _class == _sample_type :
+                        count += 1
+                if count < (self.k + 1) / 2 :
+                    # if sample belongs to majority, remove the sample; else, remove the nearest neighbor
+                    if _sample_type == 'majority' : 
+                        X = X.drop(_sample.index).reset_index(drop = True)
+                    else :
+                        X = X.drop(_link_item.index(sorted(_link_item)[1])).reset_index(drop = True)
             _seed += 1
 
             if len(_majority_class) == len(X) :
@@ -469,12 +465,12 @@ class CondensedNearestNeighbor() :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
 
         _data = data.copy(deep = True)
@@ -484,16 +480,13 @@ class CondensedNearestNeighbor() :
             if self.all == True :
                 while is_imbalance(_data, self.imbalance_threshold) :
                     _data = self._fit_transform(_data) 
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
             else :
                 _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
+        
+        if not _empty :
+            return _data[features], _data[response]
+        else :
+            return _data
 
     def _fit_transform(self, X) :
 
@@ -557,12 +550,12 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
             _empty = y == None
        
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
 
         _data = data.copy(deep = True)
@@ -585,7 +578,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
             _data = super(TomekLink, self).fit_transform(_data)
         
         if not _empty :
-            return _data[self.features], _data[self.response]
+            return _data[features], _data[response]
         else :
             return _data
 
@@ -629,12 +622,12 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
        
         _data = data.copy(deep = True)
@@ -657,7 +650,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
             _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
         
         if not _empty :
-            return _data[self.features], _data[self.response]
+            return _data[features], _data[response]
         else :
             return _data
 
@@ -710,12 +703,12 @@ class Smote() :
             _empty = y == None
 
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
 
         _data = data.copy(deep = True)
@@ -725,16 +718,13 @@ class Smote() :
             if self.all == True :
                 while is_imbalance(_data, self.imbalance_threshold) :
                     _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
             else :
                 _data = self._fit_transform(_data)
-                if not _empty :
-                    return _data[self.features], _data[self.response]
-                else :
-                    return _data
+        
+        if not _empty :
+            return _data[features], _data[response]
+        else :
+            return _data
 
     def _fit_transform(self, X) :
         
@@ -745,16 +735,17 @@ class Smote() :
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _sample = _minority_class.sample(n = 1, random_state = _seed)
             _link_table = LinkTable(_sample, X, self.norm)
-            _k_nearest = [_link_table.index(item) for item in sorted(_link_table)[1:(self.k + 1)]]
-            _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
-            if self.generation == 'mean' :
-                X.loc[len(X), :] = X.loc[[_sample.index[0], X.index[_link]], :].mean()
-            elif self.generation == 'random' :
-                X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() \
-                    * (X.loc[X.index[_link], :] - X.lox[_sample.index, :])
-            else :
-                raise ValueError('Not recognizing generation method! Should be in \
-                    ["mean", "random"], get {}'.format(self.generation))
+            for _link_item in _link_table :
+                _k_nearest = [_link_item.index(item) for item in sorted(_link_item)[1:(self.k + 1)]]
+                _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
+                if self.generation == 'mean' :
+                    X.loc[len(X), :] = X.loc[[_sample.index[0], X.index[_link]], :].mean()
+                elif self.generation == 'random' :
+                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() \
+                        * (X.loc[X.index[_link], :] - X.lox[_sample.index, :])
+                else :
+                    raise ValueError('Not recognizing generation method! Should be in \
+                        ["mean", "random"], get {}'.format(self.generation))
             _seed += 1
 
         return X
@@ -789,12 +780,12 @@ class Smote_TomekLink(Smote, TomekLink) :
             _empty = y == None
         
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
 
         _data = data.copy(deep = True)
@@ -818,9 +809,9 @@ class Smote_TomekLink(Smote, TomekLink) :
                 seed = self.seed
             )
             _data = super(Smote, self).fit_transform(_data)
-
+        
         if not _empty :
-            return _data[self.features], _data[self.response]
+            return _data[features], _data[response]
         else :
             return _data
 
@@ -854,12 +845,12 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
             _empty = y == None
         
         if not _empty : # if no y input, only convert X; or, combine X and y to consider balancing
-            self.features = list(X.columns)
-            self.response = list(y.columns)
+            features = list(X.columns)
+            response = list(y.columns)
             data = pd.concat([X, y], axis = 1)
         else :
-            self.features = list(X.columns)
-            self.response = None
+            features = list(X.columns)
+            response = None
             data = X
 
         _data = data.copy(deep = True)
@@ -886,6 +877,6 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
             _data = super(Smote, self).fit_transform(_data)
 
         if not _empty :
-            return _data[self.features], _data[self.response]
+            return _data[features], _data[response]
         else :
             return _data

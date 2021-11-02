@@ -49,54 +49,54 @@ balancing_hyperparameter = [
     {
         "balancing": "SimpleRandomOverSampling",
         "imbalance_threshold": hp.uniform(
-            "SimpleRandomOverSampling_imbalance_threshold", 0.5, 1
+            "SimpleRandomOverSampling_imbalance_threshold", 0.7, 1
         ),
     },
     {
         "balancing": "SimpleRandomUnderSampling",
         "imbalance_threshold": hp.uniform(
-            "SimpleRandomUnderSampling_imbalance_threshold", 0.5, 1
+            "SimpleRandomUnderSampling_imbalance_threshold", 0.7, 1
         ),
     },
     {
         "balancing": "TomekLink",
-        "imbalance_threshold": hp.uniform("TomekLink_imbalance_threshold", 0.5, 1),
+        "imbalance_threshold": hp.uniform("TomekLink_imbalance_threshold", 0.7, 1),
     },
     {
         "balancing": "EditedNearestNeighbor",
         "imbalance_threshold": hp.uniform(
-            "EditedNearestNeighbor_imbalance_threshold", 0.5, 1
+            "EditedNearestNeighbor_imbalance_threshold", 0.7, 1
         ),
     },
     {
         "balancing": "CondensedNearestNeighbor",
         "imbalance_threshold": hp.uniform(
-            "CondensedNearestNeighbor_imbalance_threshold", 0.5, 1
+            "CondensedNearestNeighbor_imbalance_threshold", 0.7, 1
         ),
     },
     {
         "balancing": "OneSidedSelection",
         "imbalance_threshold": hp.uniform(
-            "OneSidedSelection_imbalance_threshold", 0.5, 1
+            "OneSidedSelection_imbalance_threshold", 0.7, 1
         ),
     },
     {
         "balancing": "CNN_TomekLink",
-        "imbalance_threshold": hp.uniform("CNN_TomekLink_imbalance_threshold", 0.5, 1),
+        "imbalance_threshold": hp.uniform("CNN_TomekLink_imbalance_threshold", 0.7, 1),
     },
     {
         "balancing": "Smote",
-        "imbalance_threshold": hp.uniform("Smote_imbalance_threshold", 0.5, 1),
+        "imbalance_threshold": hp.uniform("Smote_imbalance_threshold", 0.7, 1),
     },
     {
         "balancing": "Smote_TomekLink",
         "imbalance_threshold": hp.uniform(
-            "Smote_TomekLink_imbalance_threshold", 0.5, 1
+            "Smote_TomekLink_imbalance_threshold", 0.7, 1
         ),
     },
     {
         "balancing": "Smote_ENN",
-        "imbalance_threshold": hp.uniform("Smote_ENN_imbalance_threshold", 0.5, 1),
+        "imbalance_threshold": hp.uniform("Smote_ENN_imbalance_threshold", 0.7, 1),
     },
 ]
 
