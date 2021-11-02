@@ -93,16 +93,16 @@ class AutoClassifier:
     'MissForestImputer', 'MICE', 'GAIN')
     'auto' will select all default imputers, or use a list to select
 
-    scaling: Scalings selected for the job, default = 'auto'
-    support ('no_processing', 'MinMaxScale', 'Standardize', 'Normalize', 'RobustScale',
-    'PowerTransformer', 'QuantileTransformer', 'Winsorization')
-    'auto' will select all default scalings, or use a list to select
-
     balancing: Balancings selected for the job, default = 'auto'
     support ('no_processing', 'SimpleRandomOverSampling', 'SimpleRandomUnderSampling',
     'TomekLink', 'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection', 
     'CNN_TomekLink', 'Smote', 'Smote_TomekLink', 'Smote_ENN')
     'auto' will select all default balancings, or use a list to select
+    
+    scaling: Scalings selected for the job, default = 'auto'
+    support ('no_processing', 'MinMaxScale', 'Standardize', 'Normalize', 'RobustScale',
+    'PowerTransformer', 'QuantileTransformer', 'Winsorization')
+    'auto' will select all default scalings, or use a list to select
 
     feature_selection: Feature selections selected for the job, default = 'auto'
     support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler', 
@@ -148,8 +148,8 @@ class AutoClassifier:
         delete_temp_after_terminate=False,
         encoder="auto",
         imputer="auto",
-        scaling="auto",
         balancing="auto",
+        scaling="auto",
         feature_selection="auto",
         models="auto",
         validation=True,
@@ -167,8 +167,8 @@ class AutoClassifier:
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.encoder = encoder
         self.imputer = imputer
-        self.scaling = scaling
         self.balancing = balancing
+        self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
         self.validation = validation
@@ -192,10 +192,10 @@ class AutoClassifier:
         encoder,
         imputers_hyperparameters,
         imputer,
-        scalings_hyperparameters,
-        scaling,
         balancings_hyperparameters,
         balancing,
+        scalings_hyperparameters,
+        scaling,
         feature_selection_hyperparameters,
         feature_selection,
         models_hyperparameters,
@@ -233,19 +233,6 @@ class AutoClassifier:
                 "classification_imputers", _imputer_hyperparameter
             )
 
-        # scaling space
-        _scaling_hyperparameter = []
-        for _scaling in [*scaling]:
-            for (
-                item
-            ) in scalings_hyperparameters:  # search the scalings' hyperparameters
-                if item["scaling"] == _scaling:
-                    _scaling_hyperparameter.append(item)
-
-        _scaling_hyperparameter = hp.choice(
-            "classification_scaling", _scaling_hyperparameter
-        )
-
         # balancing space
         _balancing_hyperparameter = []
         for _balancing in [*balancing]:
@@ -257,6 +244,19 @@ class AutoClassifier:
 
         _balancing_hyperparameter = hp.choice(
             "classification_balancing", _balancing_hyperparameter
+        )
+        
+        # scaling space
+        _scaling_hyperparameter = []
+        for _scaling in [*scaling]:
+            for (
+                item
+            ) in scalings_hyperparameters:  # search the scalings' hyperparameters
+                if item["scaling"] == _scaling:
+                    _scaling_hyperparameter.append(item)
+
+        _scaling_hyperparameter = hp.choice(
+            "classification_scaling", _scaling_hyperparameter
         )
 
         # feature selection space
@@ -291,8 +291,8 @@ class AutoClassifier:
             {
                 "encoder": _encoding_hyperparameter,
                 "imputer": _imputer_hyperparameter,
-                "scaling": _scaling_hyperparameter,
                 "balancing": _balancing_hyperparameter,
+                "scaling": _scaling_hyperparameter,
                 "feature_selection": _feature_selection_hyperparameter,
                 "classification": _model_hyperparameter,
             }
@@ -317,15 +317,15 @@ class AutoClassifier:
         # all scalings available
         self._all_scalings = My_AutoML.scalings
 
-        # all hyperparameters for scalings
-        self._all_scalings_hyperparameters = scaling_hyperparameter
-
         # all balancings available
         self._all_balancings = My_AutoML.balancing
 
         # all hyperparameters for balancing methods
         self._all_balancings_hyperparameters = balancing_hyperparameter
 
+        # all hyperparameters for scalings
+        self._all_scalings_hyperparameters = scaling_hyperparameter
+        
         # all feature selections available
         self._all_feature_selection = My_AutoML.feature_selection
         # special treatment, remove some feature selection for regression
@@ -384,21 +384,6 @@ class AutoClassifier:
                         )
                     imputer[_imputer] = self._all_imputers[_imputer]
 
-        # Scaling
-        # get scaling space
-        if self.scaling == "auto":
-            scaling = self._all_scalings.copy()
-        else:
-            scaling = {}  # if specified, check if scalings in default scalings
-            for _scaling in self.scaling:
-                if _scaling not in [*self._all_scalings]:
-                    raise ValueError(
-                        "Only supported scalings are {}, get {}.".format(
-                            [*self._all_scalings], _scaling
-                        )
-                    )
-                scaling[_scaling] = self._all_scalings[_scaling]
-
         # Balancing
         # deal with imbalanced dataset, using over-/under-sampling methods
         # get balancing space
@@ -414,6 +399,21 @@ class AutoClassifier:
                         )
                     )
                 balancing[_balancing] = self._all_balancings[_balancing]
+        
+        # Scaling
+        # get scaling space
+        if self.scaling == "auto":
+            scaling = self._all_scalings.copy()
+        else:
+            scaling = {}  # if specified, check if scalings in default scalings
+            for _scaling in self.scaling:
+                if _scaling not in [*self._all_scalings]:
+                    raise ValueError(
+                        "Only supported scalings are {}, get {}.".format(
+                            [*self._all_scalings], _scaling
+                        )
+                    )
+                scaling[_scaling] = self._all_scalings[_scaling]
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
@@ -454,8 +454,8 @@ class AutoClassifier:
         # initialize the hyperparameter space
         _all_encoders_hyperparameters = self._all_encoders_hyperparameters.copy()
         _all_imputers_hyperparameters = self._all_imputers_hyperparameters.copy()
-        _all_scalings_hyperparameters = self._all_scalings_hyperparameters.copy()
         _all_balancings_hyperparameters = self._all_balancings_hyperparameters.copy()
+        _all_scalings_hyperparameters = self._all_scalings_hyperparameters.copy()
         _all_feature_selection_hyperparameters = (
             self._all_feature_selection_hyperparameters.copy()
         )
@@ -469,10 +469,10 @@ class AutoClassifier:
                 encoder,
                 _all_imputers_hyperparameters,
                 imputer,
-                _all_scalings_hyperparameters,
-                scaling,
                 _all_balancings_hyperparameters,
                 balancing,
+                _all_scalings_hyperparameters,
+                scaling,
                 _all_feature_selection_hyperparameters,
                 feature_selection,
                 _all_models_hyperparameters,
@@ -480,7 +480,7 @@ class AutoClassifier:
             )  # _X to choose whether include imputer
             # others are the combinations of default hyperparameter space & methods selected
 
-        return encoder, imputer, scaling, balancing, feature_selection, models
+        return encoder, imputer, balancing, scaling, feature_selection, models
 
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(self, best_results, _X, _y):
@@ -496,14 +496,14 @@ class AutoClassifier:
         self.optimal_imputer_hyperparameters = optimal_point["imputer"]
         self.optimal_imputer = self.optimal_imputer_hyperparameters["imputer"]
         del self.optimal_imputer_hyperparameters["imputer"]
-        # optimal scaling
-        self.optimal_scaling_hyperparameters = optimal_point["scaling"]
-        self.optimal_scaling = self.optimal_scaling_hyperparameters["scaling"]
-        del self.optimal_scaling_hyperparameters["scaling"]
         # optimal balancing
         self.optimal_balancing_hyperparameters = optimal_point["balancing"]
         self.optimal_balancing = self.optimal_balancing_hyperparameters["balancing"]
         del self.optimal_balancing_hyperparameters["balancing"]
+        # optimal scaling
+        self.optimal_scaling_hyperparameters = optimal_point["scaling"]
+        self.optimal_scaling = self.optimal_scaling_hyperparameters["scaling"]
+        del self.optimal_scaling_hyperparameters["scaling"]
         # optimal feature selection
         self.optimal_feature_selection_hyperparameters = optimal_point[
             "feature_selection"
@@ -520,6 +520,33 @@ class AutoClassifier:
             "model"
         ]  # optimal hyperparameter settings selected
         del self.optimal_classifier_hyperparameters["model"]
+        
+        # record optimal settings
+        with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
+            f.write("Optimal encoding method is: {}.\n".format(self.optimal_encoder))
+            f.write("Optimal encoding hyperparameters:")
+            print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
+            f.write("Optimal imputation hyperparameters:")
+            print(self.optimal_imputer_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
+            f.write("Optimal balancing hyperparamters:")
+            print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
+            f.write(
+                "Optimal feature selection method is: {}\n".format(
+                    self.optimal_feature_selection
+                )
+            )
+            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
+            f.write("Optimal scaling hyperparameters:")
+            print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal feature selection hyperparameters:")
+            print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
+            f.write(
+                "Optimal classification model is: {}\n".format(self.optimal_classifier)
+            )
+            f.write("Optimal classification hyperparameters:")
+            print(self.optimal_classifier_hyperparameters, file=f, end="\n\n")
 
         # encoding
         self._fit_encoder = self._all_encoders[self.optimal_encoder](
@@ -531,17 +558,21 @@ class AutoClassifier:
             **self.optimal_imputer_hyperparameters
         )
         _X = self._fit_imputer.fill(_X)
+        # balancing
+        self._fit_balancing = self._all_balancings[self.optimal_balancing](
+            **self.optimal_balancing_hyperparameters
+        )
+        _X, _y = self._fit_balancing.fit_transform(_X, _y)
+
+        # make sure the classes are integers (belongs to certain classes)
+        _y = _y.astype(int)
+        _y = _y.astype(int)
         # scaling
         self._fit_scaling = self._all_scalings[self.optimal_scaling](
             **self.optimal_scaling_hyperparameters
         )
         self._fit_scaling.fit(_X)
         _X = self._fit_scaling.transform(_X)
-        # balancing
-        self._fit_balancing = self._all_balancings[self.optimal_balancing](
-            **self.optimal_balancing_hyperparameters
-        )
-        _X, _y = self._fit_balancing.fit_transform(_X, _y)
         # feature selection
         # self._fit_feature_selection = self._all_feature_selection[
         #     self.optimal_feature_selection
@@ -553,32 +584,6 @@ class AutoClassifier:
             **self.optimal_classifier_hyperparameters
         )
         self._fit_classifier.fit(_X, _y.values.ravel())
-
-        with open(self.temp_directory + "/optimal.txt", "w") as f:
-            f.write("Optimal encoding method is: {}.\n".format(self.optimal_encoder))
-            f.write("Optimal encoding hyperparameters:")
-            print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
-            f.write("Optimal imputation hyperparameters:")
-            print(self.optimal_imputer_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
-            f.write("Optimal scaling hyperparameters:")
-            print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
-            f.write("Optimal balancing hyperparamters:")
-            print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
-            f.write(
-                "Optimal feature selection method is: {}\n".format(
-                    self.optimal_feature_selection
-                )
-            )
-            f.write("Optimal feature selection hyperparameters:")
-            print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
-            f.write(
-                "Optimal classification model is: {}\n".format(self.optimal_classifier)
-            )
-            f.write("Optimal classification hyperparameters:")
-            print(self.optimal_classifier_hyperparameters, file=f, end="\n\n")
 
         return self
 
@@ -608,8 +613,8 @@ class AutoClassifier:
         (
             encoder,
             imputer,
-            scaling,
             balancing,
+            scaling,
             feature_selection,
             models,
         ) = self.get_hyperparameter_space(_X, _y)
@@ -669,19 +674,19 @@ class AutoClassifier:
             del _imputer_hyper["imputer"]
             imp = imputer[_imputer](**_imputer_hyper)
 
-            # select scaling and set hyperparameters
-            # must have scaling, since no_preprocessing is included
-            _scaling_hyper = params["scaling"]
-            _scaling = _scaling_hyper["scaling"]
-            del _scaling_hyper["scaling"]
-            scl = scaling[_scaling](**_scaling_hyper)
-
             # select balancing and set hyperparameters
             # must have balancing, since no_preprocessing is included
             _balancing_hyper = params["balancing"]
             _balancing = _balancing_hyper["balancing"]
             del _balancing_hyper["balancing"]
             blc = balancing[_balancing](**_balancing_hyper)
+            
+            # select scaling and set hyperparameters
+            # must have scaling, since no_preprocessing is included
+            _scaling_hyper = params["scaling"]
+            _scaling = _scaling_hyper["scaling"]
+            del _scaling_hyper["scaling"]
+            scl = scaling[_scaling](**_scaling_hyper)
 
             # select feature selection and set hyperparameters
             # must have feature selection, since no_preprocessing is included
@@ -710,12 +715,12 @@ class AutoClassifier:
                 f.write("Imputation method: {}\n".format(_imputer))
                 f.write("Imputation Hyperparameters:")
                 print(_imputer_hyper, file=f, end="\n\n")
-                f.write("Scaling method: {}\n".format(_scaling))
-                f.write("Scaling Hyperparameters:")
-                print(_scaling_hyper, file=f, end="\n\n")
                 f.write("Balancing method: {}\n".format(_balancing))
                 f.write("Balancing Hyperparameters:")
                 print(_balancing_hyper, file=f, end="\n\n")
+                f.write("Scaling method: {}\n".format(_scaling))
+                f.write("Scaling Hyperparameters:")
+                print(_scaling_hyper, file=f, end="\n\n")
                 f.write("Feature Selection method: {}\n".format(_feature_selection))
                 f.write("Feature Selection Hyperparameters:")
                 print(_feature_selection_hyper, file=f, end="\n\n")
@@ -737,18 +742,22 @@ class AutoClassifier:
                 _X_test_obj = imp.fill(_X_test_obj)
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Imputation finished, in scaling process.")
-                # scaling
-                scl.fit(_X_train_obj, _y_train_obj)
-                _X_train_obj = scl.transform(_X_train_obj)
-                _X_test_obj = scl.transform(_X_test_obj)
-                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-                    f.write("Scaling finished, in balancing process.")
                 # balancing
                 _X_train_obj, _y_train_obj = blc.fit_transform(
                     _X_train_obj, _y_train_obj
                 )
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-                    f.write("Balancing finished, in feature selection process.")
+                    f.write("Balancing finished, in scaling process.")
+
+                # make sure the classes are integers (belongs to certain classes)
+                _y_train_obj = _y_train_obj.astype(int)
+                _y_test_obj = _y_test_obj.astype(int)
+                # scaling
+                scl.fit(_X_train_obj, _y_train_obj)
+                _X_train_obj = scl.transform(_X_train_obj)
+                _X_test_obj = scl.transform(_X_test_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Scaling finished, in feature selection process.")
                 # feature selection
                 # fts.fit(_X_train_obj, _y_train_obj)
                 # _X_train_obj = fts.transform(_X_train_obj)
@@ -762,6 +771,7 @@ class AutoClassifier:
                 pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
                     obj_tmp_directory + "/test_preprocessed.csv", index=False
                 )
+
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
@@ -787,15 +797,15 @@ class AutoClassifier:
                 _X_obj = imp.fill(_X_obj)
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Imputation finished, in scaling process.")
+                # balancing
+                _X_obj = blc.fit_transform(_X_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Balancing finished, in feature selection process.")
                 # scaling
                 scl.fit(_X_obj, _y_obj)
                 _X_obj = scl.transform(_X_obj)
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Scaling finished, in balancing process.")
-                # balancing
-                _X_obj = blc.fit_transform(_X_obj)
-                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-                    f.write("Balancing finished, in feature selection process.")
                 # feature selection
                 fts.fit(_X_obj, _y_obj)
                 _X_obj = fts.transform(_X_obj)
@@ -869,12 +879,12 @@ class AutoClassifier:
         # fill missing values
         _X = self._fit_imputer.fill(_X)
 
-        # Scaling
-        _X = self._fit_scaling.transform(_X)
-
         # Balancing
         # deal with imbalanced dataset, using over-/under-sampling methods
         # No need to balance on test data
+
+        # Scaling
+        _X = self._fit_scaling.transform(_X)
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
