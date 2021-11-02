@@ -1,8 +1,9 @@
 import sys
-sys.setrecursionlimit(10000) # add recursive depth
+
+sys.setrecursionlimit(10000)  # add recursive depth
 import os
 import shutil
-import warnings 
+import warnings
 import numpy as np
 import pandas as pd
 import scipy
@@ -40,7 +41,7 @@ from My_AutoML._hyperparameters import (
 )
 
 # filter certain warnings
-warnings.filterwarnings('ignore', message = 'The dataset is balanced, no change.')
+warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 
 """
 Classifiers/Hyperparameters from autosklearn:
@@ -729,6 +730,12 @@ class AutoClassifier:
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 #     f.write("Feature selection finished, in classification model.")
                 # classification
+                pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
+                    obj_tmp_directory + "train_preprocessed.csv"
+                )
+                pd.concat([_X_test_obj, _y_test_obj], axis = 1).to_csv(
+                    obj_tmp_directory + "test_preprocessed.csv"
+                )
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
@@ -770,6 +777,9 @@ class AutoClassifier:
                     f.write("Feature selection finished, in classification model.")
                 # classification
                 clf.fit(_X_obj.values, _y_obj.values.ravel())
+                pd.concat([_X_obj, _y_obj], axis = 1).to_csv(
+                    obj_tmp_directory + "data_preprocessed.csv"
+                )
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
                 y_pred = clf.predict(_X_obj.values)
