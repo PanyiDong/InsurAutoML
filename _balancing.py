@@ -110,7 +110,7 @@ class SimpleRandomOverSampling() :
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -121,7 +121,7 @@ class SimpleRandomOverSampling() :
     def __init__(
         self,
         imbalance_threshold = 0.9,
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1,
     ) :
@@ -187,7 +187,7 @@ class SimpleRandomUnderSampling() :
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -198,7 +198,7 @@ class SimpleRandomUnderSampling() :
     def __init__(
         self,
         imbalance_threshold = 0.9,
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1,
     ) :
@@ -268,7 +268,7 @@ class TomekLink() :
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -280,7 +280,7 @@ class TomekLink() :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1
     ) :
@@ -355,7 +355,7 @@ class EditedNearestNeighbor() :
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -369,7 +369,7 @@ class EditedNearestNeighbor() :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1,
         k = 3,
@@ -465,7 +465,7 @@ class CondensedNearestNeighbor() :
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -476,7 +476,7 @@ class CondensedNearestNeighbor() :
     def __init__(
         self,
         imbalance_threshold = 0.9,
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1
     ) :
@@ -554,7 +554,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -566,7 +566,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor) :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1
     ) :
@@ -632,7 +632,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -644,7 +644,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink) :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1
     ) :
@@ -709,7 +709,7 @@ class Smote() :
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = True
+    all: whether to stop until all features are balanced, default = False
 
     max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
 
@@ -727,7 +727,7 @@ class Smote() :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1,
         k = 5,
@@ -808,7 +808,7 @@ class Smote_TomekLink(Smote, TomekLink) :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1,
         k = 5,
@@ -877,7 +877,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor) :
         self,
         imbalance_threshold = 0.9,
         norm = 'l2',
-        all = True,
+        all = False,
         max_iter = 1000,
         seed = 1,
         k = 5,
