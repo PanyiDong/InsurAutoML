@@ -34,8 +34,16 @@ class no_processing() :
     def transform(self, X) :
         return X
 
-    def fit_transform(self, X) :
-        return X
+    def fit_transform(self, X, y = None) :
+        try :
+            _empty = y.empty
+        except AttributeError :
+            _empty = y == None
+        
+        if _empty :
+            return X
+        else :
+            return X, y
 
 class load_data() :
 
