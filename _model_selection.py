@@ -42,6 +42,7 @@ from My_AutoML._hyperparameters import (
 
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
+warnings.filterwarnings("ignore", message="Variables are collinear")
 
 """
 Classifiers/Hyperparameters from autosklearn:
@@ -322,7 +323,7 @@ class AutoClassifier:
 
         # all hyperparameters for balancing methods
         self._all_balancings_hyperparameters = balancing_hyperparameter
-
+        
         # all hyperparameters for scalings
         self._all_scalings_hyperparameters = scaling_hyperparameter
         
@@ -338,6 +339,12 @@ class AutoClassifier:
 
         # all classification models available
         self._all_models = classifiers
+        # special treatment, remove SVM methods when observations are large
+        # SVM suffers from the complexity o(n_samples^2 * n_features), 
+        # which is time-consuming for large datasets
+        if X.shape[0] * X.shape[1] > 10000 :
+            del self._all_models["LibLinear_SVC"]
+            del self._all_models["LibSVM_SVC"]
 
         # all hyperparameters for the classification models
         self._all_models_hyperparameters = classifier_hyperparameter
@@ -888,7 +895,7 @@ class AutoClassifier:
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
-        _X = self._fit_feature_selection.transform(_X)
+        #_X = self._fit_feature_selection.transform(_X)
 
         return self._fit_classifier.predict(_X.values)
 
