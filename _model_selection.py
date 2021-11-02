@@ -2,7 +2,7 @@ import sys
 sys.setrecursionlimit(10000) # add recursive depth
 import os
 import shutil
-import warnings
+import warnings 
 import numpy as np
 import pandas as pd
 import scipy
@@ -38,6 +38,9 @@ from My_AutoML._hyperparameters import (
     regressors,
     regressor_hyperparameters,
 )
+
+# filter certain warnings
+warnings.filterwarnings('ignore', message = 'The dataset is balanced, no change.')
 
 """
 Classifiers/Hyperparameters from autosklearn:
