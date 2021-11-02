@@ -313,7 +313,7 @@ class AutoClassifier:
         # all hyperparemeters for imputers
         self._all_imputers_hyperparameters = imputer_hyperparameter
 
-        # all scalings avaiable
+        # all scalings available
         self._all_scalings = My_AutoML.scalings
 
         # all hyperparameters for scalings
@@ -335,7 +335,7 @@ class AutoClassifier:
         # all hyperparameters for feature selections
         self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
 
-        # all classfication models available
+        # all classification models available
         self._all_models = classifiers
 
         # all hyperparameters for the classification models
@@ -569,7 +569,7 @@ class AutoClassifier:
             f.write(
                 "Shape of the design matrix: {} * {}".format(X.shape[0], X.shape[1])
             )
-            f.write("Resposne of the dataset: {}\n".format(list(y.columns)))
+            f.write("Response of the dataset: {}\n".format(list(y.columns)))
             f.write(
                 "Shape of the response vector: {} * {}".format(y.shape[0], y.shape[1])
             )
@@ -676,7 +676,7 @@ class AutoClassifier:
             if not os.path.isdir(obj_tmp_directory):
                 os.makedirs(obj_tmp_directory)
 
-            with open(obj_tmp_directory + "/hyperparamter_settings.txt", "w") as f:
+            with open(obj_tmp_directory + "/hyperparameter_settings.txt", "w") as f:
                 f.write("Encoding method: {}\n".format(_encoder))
                 f.write("Encoding Hyperparameters:")
                 print(_encoder_hyper, file=f, end="\n\n")
@@ -703,23 +703,34 @@ class AutoClassifier:
                 # encoding
                 _X_train_obj = enc.fit(_X_train_obj)
                 _X_test_obj = enc.refit(_X_test_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Encoding finished, in imputation process.")
                 # imputer
                 _X_train_obj = imp.fill(_X_train_obj)
                 _X_test_obj = imp.fill(_X_test_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Imputation finished, in scaling process.")
                 # scaling
                 scl.fit(_X_train_obj, _y_train_obj)
                 _X_train_obj = scl.transform(_X_train_obj)
                 _X_test_obj = scl.transform(_X_test_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Scaling finished, in balancing process.")
                 # balancing
                 _X_train_obj, _y_train_obj = blc.fit_transform(
                     _X_train_obj, _y_train_obj
                 )
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Balancing finished, in feature selection process.")
                 # feature selection
                 # fts.fit(_X_train_obj, _y_train_obj)
                 # _X_train_obj = fts.transform(_X_train_obj)
                 # _X_test_obj = fts.transform(_X_test_obj)
+                # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                #     f.write("Feature selection finished, in classification model.")
                 # classification
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
+                os.remove(obj_tmp_directory + "/objective_process.txt")
 
                 y_pred = clf.predict(_X_test_obj)
                 _loss = -_obj(y_pred, _y_test_obj.values)
@@ -737,18 +748,29 @@ class AutoClassifier:
 
                 # encoding
                 _X_obj = enc.fit(_X_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Encoding finished, in imputation process.")
                 # imputer
                 _X_obj = imp.fill(_X_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Imputation finished, in scaling process.")
                 # scaling
                 scl.fit(_X_obj, _y_obj)
                 _X_obj = scl.transform(_X_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Scaling finished, in balancing process.")
                 # balancing
                 _X_obj = blc.fit_transform(_X_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Balancing finished, in feature selection process.")
                 # feature selection
                 fts.fit(_X_obj, _y_obj)
                 _X_obj = fts.transform(_X_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Feature selection finished, in classification model.")
                 # classification
                 clf.fit(_X_obj.values, _y_obj.values.ravel())
+                os.remove(obj_tmp_directory + "/objective_process.txt")
 
                 y_pred = clf.predict(_X_obj.values)
                 _loss = -_obj(y_pred, _y_obj.values)
