@@ -582,7 +582,7 @@ regressors = {
 
 # regressor hyperparameters
 # extract from autosklearn
-regressor_hyperparameters = [
+regressor_hyperparameter = [
     {
         "model": "AdaboostRegressor",
         "n_estimators": scope.int(
