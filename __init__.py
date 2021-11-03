@@ -78,7 +78,7 @@ from ._feature_selection import (
     TruncatedSVD,
 )
 
-from ._model_selection import AutoClassifier, AutoRegressor
+from ._model_selection import AutoML, AutoClassifier, AutoRegressor
 
 __all__ = [
     "load_data",  # _base
@@ -209,6 +209,7 @@ feature_selection = {
 }
 
 model_selection = {
+    "AutoML" : AutoML,
     "AutoClassifier": AutoClassifier, 
     "AutoRegressor": AutoRegressor
 }

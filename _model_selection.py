@@ -30,6 +30,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
 from My_AutoML._base import no_processing
+from My_AutoML._utils import type_of_task
 from My_AutoML._hyperparameters import (
     encoder_hyperparameter,
     imputer_hyperparameter,
@@ -46,6 +47,120 @@ from My_AutoML._hyperparameters import (
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
 warnings.filterwarnings("ignore", category=UserWarning)
+
+class AutoML(AutoClassifier, AutoRegressor) :
+
+    """
+    Automatically assign to AutoClassifier or AutoRegressor
+    """
+
+    def __init__(
+        self,
+        timeout=360,
+        max_evals=64,
+        temp_directory="tmp",
+        delete_temp_after_terminate=False,
+        encoder="auto",
+        imputer="auto",
+        balancing="auto",
+        scaling="auto",
+        feature_selection="auto",
+        models="auto",
+        validation=True,
+        test_size=0.15,
+        objective=None,
+        method="Bayesian",
+        algo="tpe",
+        spark_trials=False,
+        progressbar=False,
+        seed=1,
+    ):
+        self.timeout = timeout
+        self.max_evals = max_evals
+        self.temp_directory = temp_directory
+        self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.encoder = encoder
+        self.imputer = imputer
+        self.balancing = balancing
+        self.scaling = scaling
+        self.feature_selection = feature_selection
+        self.models = models
+        self.validation = validation
+        self.test_size = test_size
+        self.objective = objective
+        self.method = method
+        self.algo = algo
+        self.spark_trials = spark_trials
+        self.progressbar = progressbar
+        self.seed = seed
+
+    def fit(self, X, y) :
+
+        self._type = type_of_task(y)
+
+        if self._type in ['binary', 'multiclass'] : # assign classification tasks
+            super().__init__(
+                timeout=self.timeout,
+                max_evals=self.max_evals,
+                temp_directory=self.temp_directory,
+                delete_temp_after_terminate=self.delete_temp_after_terminate,
+                encoder=self.encoder,
+                imputer=self.imputer,
+                balancing=self.balancing,
+                scaling=self.scaling,
+                feature_selection=self.feature_selection,
+                models=self.models,
+                validation=self.validation,
+                test_size=self.test_size,
+                objective="accuracy" if not self.objective else self.objective,
+                method=self.method,
+                algo=self.algo,
+                spark_trials=self.spark_trials,
+                progressbar=self.progressbar,
+                seed=self.seed
+            )
+            super().fit(X, y)
+        elif self._type == 'continuous' : # assign regression tasks
+            super(AutoClassifier, self).__init__(
+                timeout=self.timeout,
+                max_evals=self.max_evals,
+                temp_directory=self.temp_directory,
+                delete_temp_after_terminate=self.delete_temp_after_terminate,
+                encoder=self.encoder,
+                imputer=self.imputer,
+                balancing=self.balancing,
+                scaling=self.scaling,
+                feature_selection=self.feature_selection,
+                models=self.models,
+                validation=self.validation,
+                test_size=self.test_size,
+                objective="MSE" if not self.objective else self.objective,
+                method=self.method,
+                algo=self.algo,
+                spark_trials=self.spark_trials,
+                progressbar=self.progressbar,
+                seed=self.seed
+            )
+            super(AutoClassifier, self).fit(X, y)
+        else :
+            raise ValueError(
+                'Not recognizing type, only ["binary", "multiclass", "continuous"] accepted, get {}!'.format(
+                    self._type
+                )
+            )
+
+    def predict(self, X) :
+
+        if self._type in ['binary', 'multiclass'] :
+            super().predict(X)
+        elif self._type == 'continuous' :
+            super(AutoClassifier, self).predict(X)
+        else :
+            raise ValueError(
+                'Not recognizing type, only ["binary", "multiclass", "continuous"] accepted, get {}!'.format(
+                    self._type
+                )
+            )
 
 """
 Classifiers/Hyperparameters from autosklearn:

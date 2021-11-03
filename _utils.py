@@ -361,3 +361,18 @@ class as_dataframe :
             )
 
         return pd.DataFrame(X, columns = columns)
+
+# determine the task types
+def type_of_task(y) :
+
+    if isinstance(y, pd.DataFrame) :
+        y = y.values
+    
+    if y.dtype.kind == 'f' and np.any(y != y.astype(int)) :
+        return 'continuous' # assign for regression tasks
+
+    if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
+        return 'multiclass' # assign for classification tasks
+    else :
+        return 'binary'
+    
