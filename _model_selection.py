@@ -1,5 +1,4 @@
 import sys
-
 from pandas.core.algorithms import isin
 from pandas.core.frame import DataFrame
 
@@ -46,6 +45,7 @@ from My_AutoML._hyperparameters import (
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
+warnings.filterwarnings("ignore", category=UserWarning)
 
 """
 Classifiers/Hyperparameters from autosklearn:
@@ -86,7 +86,7 @@ class AutoClassifier:
     ----------
     timeout: Total time limit for the job in seconds, default = 360
     
-    max_evals: Maximum number of function evaluations allowd, default = 32
+    max_evals: Maximum number of function evaluations allowed, default = 32
 
     encoder: Encoders selected for the job, default = 'auto'
     support ('DataEncoding')
@@ -336,6 +336,8 @@ class AutoClassifier:
         del self._all_feature_selection["extra_trees_preproc_for_regression"]
         del self._all_feature_selection["select_percentile_regression"]
         del self._all_feature_selection["select_rates_regression"]
+        if X.shape[0] * X.shape[1] > 10000 :
+            del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # all hyperparameters for feature selections
         self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
@@ -774,9 +776,13 @@ class AutoClassifier:
                 _X_test_obj = fts.transform(_X_test_obj)
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Feature selection finished, in classification model.")
+                if scipy.sparse.issparse(_X_train_obj) : # check if returns sparse matrix
+                    _X_train_obj = _X_train_obj.toarray()
+                if scipy.sparse.issparse(_X_test_obj) :
+                    _X_test_obj = _X_test_obj.toarray()
                 # classification
                 if isinstance(_X_train_obj, np.ndarray) : # in case numpy array is returned
-                    pd.concat([pd.DataFrame(_X_train_obj), _y_train_obj], axis=1).to_csv(
+                    pd.concat([pd.DataFrame(_X_train_obj), _y_train_obj], axis=1, ignore_index=True).to_csv(
                         obj_tmp_directory + "/train_preprocessed.csv", index=False
                     )
                 elif isinstance(_X_train_obj, pd.DataFrame) :
@@ -789,7 +795,7 @@ class AutoClassifier:
                     )
                 
                 if isinstance(_X_test_obj, np.ndarray) :
-                    pd.concat([pd.DataFrame(_X_test_obj), _y_test_obj], axis=1).to_csv(
+                    pd.concat([pd.DataFrame(_X_test_obj), _y_test_obj], axis=1, ignore_index=True).to_csv(
                         obj_tmp_directory + "/test_preprocessed.csv", index=False
                     )
                 elif isinstance(_X_test_obj, pd.DataFrame) :
@@ -919,7 +925,7 @@ class AutoClassifier:
         # Remove redundant features, reduce dimensionality
         _X = self._fit_feature_selection.transform(_X)
 
-        return self._fit_classifier.predict(_X.values)
+        return self._fit_classifier.predict(_X)
 
 
 """

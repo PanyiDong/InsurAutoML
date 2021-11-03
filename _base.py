@@ -25,7 +25,7 @@ class no_processing() :
     No processing on data, asa comparison
     '''
 
-    def fit(self, X) :
+    def fit(self, X, y = None) :
         return self
 
     def fill(self, X) :

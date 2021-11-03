@@ -227,7 +227,7 @@ feature_selection_hyperparameter = [
         # forbid penalty = 'l1' while loss = 'hinge'
         "penalty": hp.choice("liblinear_svc_preprocessor_penalty", ["l1"]),
         "loss": hp.choice(
-            "liblinear_svc_preprocessor_loss", ["hinge", "squared_hinge"]
+            "liblinear_svc_preprocessor_loss", ["squared_hinge"]
         ),
         "dual": hp.choice("liblinear_svc_preprocessor_dual", [False]),
         "tol": hp.loguniform(
