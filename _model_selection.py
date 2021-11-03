@@ -544,14 +544,14 @@ class AutoClassifier:
             f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
             f.write("Optimal balancing hyperparamters:")
             print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
+            f.write("Optimal scaling hyperparameters:")
+            print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
             f.write(
                 "Optimal feature selection method is: {}\n".format(
                     self.optimal_feature_selection
                 )
             )
-            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
-            f.write("Optimal scaling hyperparameters:")
-            print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
             f.write("Optimal feature selection hyperparameters:")
             print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
             f.write(
