@@ -395,10 +395,10 @@ class FeatureFilter() :
 class ASFFS() :
 
     '''
-    Adapative Sequential Forward Floating Selection (ASFFS)
+    Adaptive Sequential Forward Floating Selection (ASFFS)
     Mostly, ASFFS performs the same as Sequential Floating Forward Selection (SFFS),
     where only one feature is considered as a time. But, when the selected features are coming
-    close to the predefined maximum, a adapative generalization limit will be activated, and 
+    close to the predefined maximum, a adaptive generalization limit will be activated, and 
     more than one features can be considered at one time. The idea is to consider the correlation
     between features. [1]
 
@@ -481,12 +481,12 @@ class ASFFS() :
         for _set in _comb_subset :
             _model.fit(X[_set], y)
             _predict = _model.predict(X[_set])
-            _objective_list.append(- _obj(y, _predict)) # the goal is to maximize the obejctive function
+            _objective_list.append(1 / _obj(y, _predict)) # the goal is to maximize the objective function
 
         return _subset[maxloc(_objective_list)], _objective_list[maxloc(_objective_list)]
 
     def _Backward_Objective(self, selected, o, X, y) :
-
+        
         _subset = list(itertools.combinations(selected, o))
         _comb_subset = [[_full for _full in selected if _full not in item] for item in _subset] # remove new features from selected features 
 
@@ -513,7 +513,7 @@ class ASFFS() :
         for _set in _comb_subset :
             _model.fit(X[_set], y)
             _predict = _model.predict(X[_set])
-            _objective_list.append(1 / _obj(y, _predict)) # the goal is to maximize the obejctive function
+            _objective_list.append(1 / _obj(y, _predict)) # the goal is to maximize the objective function
 
         return _subset[maxloc(_objective_list)], _objective_list[maxloc(_objective_list)]
 
@@ -523,11 +523,11 @@ class ASFFS() :
         features = list(X.columns)
 
         if self.n_components == None :
-            _n_components = max(max(20, p), int(0.5 * p))
+            _n_components = min(max(20, p), int(0.5 * p))
         else :
             _n_components = self.n_components
         if self.b == None :
-            _b = max(5, int(0.05 * p))
+            _b = min(5, int(0.05 * p))
 
         _k = 0
         self.J_max = [0 for _ in range(p + 1)] # mark the most significant objective function value
@@ -585,16 +585,12 @@ class ASFFS() :
                     for _f in _new_feature :
                         _selected.remove(_f)
                     self._subset_max[_k] = _selected.copy()
-                    break
+                    
+                    _o = 1 # return to the start of backward phase, make sure the best subset is selected
                 else :
                     if _o < _r :
                         _o += 1
                     else :
-                        _k -= 1 # the marked in J_max and _subset_max are considered as best for _k features
-                        _selected = self._subset_max[_k].copy() # read stored best subset
-                        _unselected = features.copy()
-                        for _f in _selected :
-                            _unselected.remove(_f)
                         break
         
         self.selected_ = _selected
@@ -635,7 +631,7 @@ class GeneticAlgorithm() :
     fitness_func: Fitness function, default None
     deafult will set as w * Accuracy + (1 - w) / regularization, all functions must be maximization optimization
 
-    fitness_fit: Model to fit seleciton and calculate accuracy for fitness, default = 'SVM'
+    fitness_fit: Model to fit selection and calculate accuracy for fitness, default = 'SVM'
     support ('Linear', 'Logistic', 'Random Forest', 'SVM')
 
     fitness_weight: Default fitness function weight for accuracy, default = 0.9

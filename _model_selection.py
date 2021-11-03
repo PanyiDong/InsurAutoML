@@ -1,5 +1,8 @@
 import sys
 
+from pandas.core.algorithms import isin
+from pandas.core.frame import DataFrame
+
 sys.setrecursionlimit(10000)  # add recursive depth
 import os
 import shutil
@@ -581,11 +584,11 @@ class AutoClassifier:
         self._fit_scaling.fit(_X)
         _X = self._fit_scaling.transform(_X)
         # feature selection
-        # self._fit_feature_selection = self._all_feature_selection[
-        #     self.optimal_feature_selection
-        # ](**self.optimal_feature_selection_hyperparameters)
-        # self._fit_feature_selection.fit(_X, _y)
-        # _X = self._fit_feature_selection.transform(_X)
+        self._fit_feature_selection = self._all_feature_selection[
+            self.optimal_feature_selection
+        ](**self.optimal_feature_selection_hyperparameters)
+        self._fit_feature_selection.fit(_X, _y)
+        _X = self._fit_feature_selection.transform(_X)
         # classification
         self._fit_classifier = self._all_models[self.optimal_classifier](
             **self.optimal_classifier_hyperparameters
@@ -766,18 +769,37 @@ class AutoClassifier:
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Scaling finished, in feature selection process.")
                 # feature selection
-                # fts.fit(_X_train_obj, _y_train_obj)
-                # _X_train_obj = fts.transform(_X_train_obj)
-                # _X_test_obj = fts.transform(_X_test_obj)
-                # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-                #     f.write("Feature selection finished, in classification model.")
+                fts.fit(_X_train_obj, _y_train_obj)
+                _X_train_obj = fts.transform(_X_train_obj)
+                _X_test_obj = fts.transform(_X_test_obj)
+                with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+                    f.write("Feature selection finished, in classification model.")
                 # classification
-                pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
-                    obj_tmp_directory + "/train_preprocessed.csv", index=False
-                )
-                pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
-                    obj_tmp_directory + "/test_preprocessed.csv", index=False
-                )
+                if isinstance(_X_train_obj, np.ndarray) : # in case numpy array is returned
+                    pd.concat([pd.DataFrame(_X_train_obj), _y_train_obj], axis=1).to_csv(
+                        obj_tmp_directory + "/train_preprocessed.csv", index=False
+                    )
+                elif isinstance(_X_train_obj, pd.DataFrame) :
+                    pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
+                        obj_tmp_directory + "/train_preprocessed.csv", index=False
+                    )
+                else :
+                    raise TypeError(
+                        "Only accept numpy array or pandas dataframe!"
+                    )
+                
+                if isinstance(_X_test_obj, np.ndarray) :
+                    pd.concat([pd.DataFrame(_X_test_obj), _y_test_obj], axis=1).to_csv(
+                        obj_tmp_directory + "/test_preprocessed.csv", index=False
+                    )
+                elif isinstance(_X_test_obj, pd.DataFrame) :
+                    pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
+                        obj_tmp_directory + "/test_preprocessed.csv", index=False
+                    )
+                else :
+                    raise TypeError(
+                        "Only accept numpy array or pandas dataframe!"
+                    )
 
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
@@ -895,7 +917,7 @@ class AutoClassifier:
 
         # Feature selection
         # Remove redundant features, reduce dimensionality
-        #_X = self._fit_feature_selection.transform(_X)
+        _X = self._fit_feature_selection.transform(_X)
 
         return self._fit_classifier.predict(_X.values)
 
