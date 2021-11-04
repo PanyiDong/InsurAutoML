@@ -127,7 +127,7 @@ class SimpleRandomOverSampling() :
     ) :
         self.imbalance_threshold = imbalance_threshold
         self.all = all
-        self.max_iter = 1000
+        self.max_iter = max_iter
         self.seed = seed
 
     def fit_transform(self, X, y = None):

@@ -27,7 +27,13 @@ imputer_hyperparameter = [
             "ExpectationMaximization_iterations_threshold", 1e-5, 1
         ),
     },
-    {"imputer": "KNNImputer"},
+    {
+        "imputer": "KNNImputer",
+        "n_neighbors": hp.choice[None, scope.int(
+            hp.quniform("KNNImputer_n_neighbors", 1, 15, 1)
+        )],
+        "fold" : scope.int(hp.quniform("KNNImputer_fold", 5, 15, 1))
+    },
     {"imputer": "MissForestImputer"},
     {"imputer": "MICE", "cycle": hp.quniform("MICE_cycle", 5, 20, 1)},
     {"imputer": "GAIN"},
@@ -50,54 +56,58 @@ balancing_hyperparameter = [
     {
         "balancing": "SimpleRandomOverSampling",
         "imbalance_threshold": hp.uniform(
-            "SimpleRandomOverSampling_imbalance_threshold", 0.9, 1
+            "SimpleRandomOverSampling_imbalance_threshold", 0.8, 1
         ),
     },
     {
         "balancing": "SimpleRandomUnderSampling",
         "imbalance_threshold": hp.uniform(
-            "SimpleRandomUnderSampling_imbalance_threshold", 0.9, 1
+            "SimpleRandomUnderSampling_imbalance_threshold", 0.8, 1
         ),
     },
     {
         "balancing": "TomekLink",
-        "imbalance_threshold": hp.uniform("TomekLink_imbalance_threshold", 0.9, 1),
+        "imbalance_threshold": hp.uniform("TomekLink_imbalance_threshold", 0.8, 1),
     },
     {
         "balancing": "EditedNearestNeighbor",
         "imbalance_threshold": hp.uniform(
-            "EditedNearestNeighbor_imbalance_threshold", 0.9, 1
+            "EditedNearestNeighbor_imbalance_threshold", 0.8, 1
         ),
+        "k" : scope.int(hp.quniform("EditedNearestNeighbor_k", 1, 7, 1))
     },
     {
         "balancing": "CondensedNearestNeighbor",
         "imbalance_threshold": hp.uniform(
-            "CondensedNearestNeighbor_imbalance_threshold", 0.9, 1
+            "CondensedNearestNeighbor_imbalance_threshold", 0.8, 1
         ),
     },
     {
         "balancing": "OneSidedSelection",
         "imbalance_threshold": hp.uniform(
-            "OneSidedSelection_imbalance_threshold", 0.9, 1
+            "OneSidedSelection_imbalance_threshold", 0.8, 1
         ),
     },
     {
         "balancing": "CNN_TomekLink",
-        "imbalance_threshold": hp.uniform("CNN_TomekLink_imbalance_threshold", 0.9, 1),
+        "imbalance_threshold": hp.uniform("CNN_TomekLink_imbalance_threshold", 0.8, 1),
     },
     {
         "balancing": "Smote",
-        "imbalance_threshold": hp.uniform("Smote_imbalance_threshold", 0.9, 1),
+        "imbalance_threshold": hp.uniform("Smote_imbalance_threshold", 0.8, 1),
+        "k" : scope.int(hp.quniform("Smote_k", 1, 10, 1))
     },
     {
         "balancing": "Smote_TomekLink",
         "imbalance_threshold": hp.uniform(
-            "Smote_TomekLink_imbalance_threshold", 0.9, 1
+            "Smote_TomekLink_imbalance_threshold", 0.8, 1
         ),
+        "k" : scope.int(hp.quniform("Smote_TomekLink_k", 1, 10, 1))
     },
     {
         "balancing": "Smote_ENN",
-        "imbalance_threshold": hp.uniform("Smote_ENN_imbalance_threshold", 0.9, 1),
+        "imbalance_threshold": hp.uniform("Smote_ENN_imbalance_threshold", 0.8, 1),
+        "k" : scope.int(hp.quniform("Smote_ENN_k", 1, 10, 1))
     },
 ]
 

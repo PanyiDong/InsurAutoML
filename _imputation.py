@@ -286,7 +286,7 @@ class KNNImputer() :
     n_neighbors: list of k, default = None
     default will set to 1:10
 
-    fold: cross validation numer of folds, default = 10
+    fold: cross validation number of folds, default = 10
 
     uni_class: unique class to be considered as categorical columns, default = 31
     '''
