@@ -7,193 +7,213 @@ from dateutil.parser import parse
 import copy
 
 # set response to [0, 1] class, random guess at 0.5
-def random_guess(number, seed = 1) :
-    if seed != None :
+def random_guess(number, seed=1):
+    if seed != None:
         np.random.seed(seed)
-    if number > 0.5 :
+    if number > 0.5:
         return 1
-    elif number < 0.5 :
+    elif number < 0.5:
         return 0
-    else :
+    else:
         return np.random.randint(0, 2)
+
 
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-def random_index(n, total = None, seed = 1) :
-    if seed != None :
+def random_index(n, total=None, seed=1):
+    if seed != None:
         np.random.seed(seed)
-    if total == None :
+    if total == None:
         total == n
     output = []
     vlist = [i for i in range(total)]
-    for _ in range(n) :
-        #np.random.seed(int(datetime.now().strftime("%H%M%S")))
-        index = np.random.randint(0, high = len(vlist), size = 1)[0]
+    for _ in range(n):
+        # np.random.seed(int(datetime.now().strftime("%H%M%S")))
+        index = np.random.randint(0, high=len(vlist), size=1)[0]
         output.append(vlist[index])
         vlist.pop(index)
 
     return output
+
 
 # Return randomly shuffle of a list (unique values only)
-def random_list(vlist, seed = 1) :
-    if seed != None :
+def random_list(vlist, seed=1):
+    if seed != None:
         np.random.seed(seed)
     output = []
-    for _ in range(len(vlist)) :
-        #np.random.seed(int(datetime.now().strftime("%H%M%S")))
-        index = np.random.randint(0, high = len(vlist), size = 1)[0]
+    for _ in range(len(vlist)):
+        # np.random.seed(int(datetime.now().strftime("%H%M%S")))
+        index = np.random.randint(0, high=len(vlist), size=1)[0]
         output.append(vlist[index])
         vlist.pop(index)
 
     return output
+
 
 # check if values in the dataframe is time string
 # rule = 'any' will consider the column as date type as long as one value is date type,
 # rule = 'all' will consider the column as date type only when all values are date type.
-def is_date(df, rule = 'any') :
-
-    def _is_date(string, fuzzy = False) :
+def is_date(df, rule="any"):
+    def _is_date(string, fuzzy=False):
         try:
-            parse(string, fuzzy = fuzzy)
+            parse(string, fuzzy=fuzzy)
             return True
-    
-        except ValueError :
+
+        except ValueError:
             return False
-    
+
     _check = []
-    for item in df.values :
+    for item in df.values:
         _check.append(_is_date(str(item[0])))
-    if rule == 'any' :
+    if rule == "any":
         return any(_check)
-    elif rule == 'all' :
+    elif rule == "all":
         return all(_check)
 
+
 # Round data for categorical features (in case after preprocessing/modification, the data changed)
-def feature_rounding(X, uni_class = 20) :
+def feature_rounding(X, uni_class=20):
 
     features = list(X.columns)
-    _X = X.copy(deep = True)
+    _X = X.copy(deep=True)
 
-    for _column in features :
+    for _column in features:
         _unique = np.sort(_X[_column].dropna().unique())
-        if len(_unique) <= uni_class :
+        if len(_unique) <= uni_class:
             _X[_column] = np.round(_X[_column])
 
     return _X
 
+
 # Train test split using test set percentage
-def train_test_split(X, y, test_perc = 0.15, seed = 1) :
-    
-    '''
+def train_test_split(X, y, test_perc=0.15, seed=1):
+
+    """
     return order: X_train, X_test, y_train, y_test
-    '''
+    """
 
     n = len(X)
     index_list = random_index(n, seed)
-    valid_index = index_list[:int(test_perc * n)]
+    valid_index = index_list[: int(test_perc * n)]
     train_index = list(set([i for i in range(n)]) - set(valid_index))
 
-    return X.iloc[train_index], X.iloc[valid_index], y.iloc[train_index], \
-        y.iloc[valid_index]
+    return (
+        X.iloc[train_index],
+        X.iloc[valid_index],
+        y.iloc[train_index],
+        y.iloc[valid_index],
+    )
+
 
 # Return location of minimum values
-def minloc(vlist) :
-    if len(vlist) == 0 :
-        raise ValueError('Invalid List!')
-    elif len(vlist) == 1 :
+def minloc(vlist):
+    if len(vlist) == 0:
+        raise ValueError("Invalid List!")
+    elif len(vlist) == 1:
         return 0
-    else :
+    else:
         result = 0
-        for i in range(len(vlist) - 1) :
-            if vlist[i + 1] < vlist[result] :
+        for i in range(len(vlist) - 1):
+            if vlist[i + 1] < vlist[result]:
                 result = i + 1
-            else :
+            else:
                 continue
         return result
 
+
 # Return location of maximum values
-def maxloc(vlist) :
-    if len(vlist) == 0 :
-        raise ValueError('Invalid List!')
-    elif len(vlist) == 1 :
+def maxloc(vlist):
+    if len(vlist) == 0:
+        raise ValueError("Invalid List!")
+    elif len(vlist) == 1:
         return 0
-    else :
+    else:
         result = 0
-        for i in range(len(vlist) - 1) :
-            if vlist[i + 1] > vlist[result] :
+        for i in range(len(vlist) - 1):
+            if vlist[i + 1] > vlist[result]:
                 result = i + 1
-            else :
+            else:
                 continue
         return result
+
 
 # return the index of Boolean list or {0, 1} list
 # default 1 consider as True
-def True_index(X, _true = [True, 1]) :
-    
+def True_index(X, _true=[True, 1]):
+
     result = [i for i, value in enumerate(X) if value in _true]
-    
+
     return result
+
 
 # return non-nan covariance matrix between X and y, (return covariance of X if y = None)
 # default calculate at columns (axis = 0), axis = 1 at rows
-def nan_cov(X, y = None, axis = 0) :
+def nan_cov(X, y=None, axis=0):
 
-    try :
+    try:
         _empty = (y == None).all().values[0]
-    except AttributeError :
-        _empty = (y == None)
+    except AttributeError:
+        _empty = y == None
 
-    if _empty :
+    if _empty:
         y = copy.deepcopy(X)
-    else :
+    else:
         y = y
 
-    if axis == 0 :
-        if len(X) != len(y) :
-            raise ValueError('X and y must have same length of rows!')
-    elif axis == 1 :
-        if len(X[0]) != len(y[0]) :
-            raise ValueError('X and y must have same length of columns!')
+    if axis == 0:
+        if len(X) != len(y):
+            raise ValueError("X and y must have same length of rows!")
+    elif axis == 1:
+        if len(X[0]) != len(y[0]):
+            raise ValueError("X and y must have same length of columns!")
 
     X = np.array(X)
     y = np.array(y)
-    
+
     # reshape the X/y
-    try :
+    try:
         X.shape[1]
-    except IndexError :
+    except IndexError:
         X = X.reshape(len(X), 1)
-    
-    try :
+
+    try:
         y.shape[1]
-    except IndexError :
+    except IndexError:
         y = y.reshape(len(y), 1)
 
-    _x_mean = np.nanmean(X, axis = axis)
-    _y_mean = np.nanmean(y, axis = axis)
+    _x_mean = np.nanmean(X, axis=axis)
+    _y_mean = np.nanmean(y, axis=axis)
 
-    _cov = np.array([[0. for _i in range(y.shape[1 - axis])] for _j in range(X.shape[1 - axis])]) # initialize covariance matrix
+    _cov = np.array(
+        [[0.0 for _i in range(y.shape[1 - axis])] for _j in range(X.shape[1 - axis])]
+    )  # initialize covariance matrix
 
-    for i in range(_cov.shape[0]) :
-        for j in range(_cov.shape[1]) :
-            if axis == 0 :
-                _cov[i, j] = np.nansum((X[:, i] - _x_mean[i]) * (y[:, j] - _y_mean[j])) / (len(X) - 1)
-            elif axis == 1 :
-                _cov[i, j] = np.nansum((X[i, :] - _x_mean[i]) * (y[j, :] - _y_mean[j])) / (len(X[0]) - 1)
+    for i in range(_cov.shape[0]):
+        for j in range(_cov.shape[1]):
+            if axis == 0:
+                _cov[i, j] = np.nansum(
+                    (X[:, i] - _x_mean[i]) * (y[:, j] - _y_mean[j])
+                ) / (len(X) - 1)
+            elif axis == 1:
+                _cov[i, j] = np.nansum(
+                    (X[i, :] - _x_mean[i]) * (y[j, :] - _y_mean[j])
+                ) / (len(X[0]) - 1)
 
     return _cov
 
+
 # return class (unique in y) mean of X
-def class_means(X, y) :
+def class_means(X, y):
 
     _class = np.unique(y)
     result = []
 
-    for _cl in _class :
+    for _cl in _class:
         data = X.loc[y.values == _cl]
-        result.append(np.mean(data, axis = 0).values)
+        result.append(np.mean(data, axis=0).values)
 
     return result
+
 
 # return maximum likelihood estimate for covaraiance
 def empirical_covariance(X, *, assume_centered=False):
@@ -202,10 +222,10 @@ def empirical_covariance(X, *, assume_centered=False):
 
     if X.ndim == 1:
         X = np.reshape(X, (1, -1))
-    
+
     if X.shape[0] == 1:
-        warnings.warn('Only one data sample available!')
-    
+        warnings.warn("Only one data sample available!")
+
     if assume_centered:
         covariance = np.dot(X.T, X) / X.shape[0]
     else:
@@ -215,8 +235,9 @@ def empirical_covariance(X, *, assume_centered=False):
         covariance = np.array([[covariance]])
     return covariance
 
+
 # return weighted within-class covariance matrix
-def class_cov(X, y, priors) :
+def class_cov(X, y, priors):
 
     _class = np.unique(y)
     cov = np.zeros(shape=(X.shape[1], X.shape[1]))
@@ -225,154 +246,203 @@ def class_cov(X, y, priors) :
         cov += priors[idx] * empirical_covariance(_data)
     return cov
 
+
 # return Pearson Correlation Coefficients
-def Pearson_Corr(X, y) :
+def Pearson_Corr(X, y):
 
     features = list(X.columns)
     result = []
-    for _column in features :
-        result.append((nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0])
-        
+    for _column in features:
+        result.append(
+            (nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
+        )
+
     return result
 
+
 # return Mutual Information
-def MI(X, y) :
-        
-    if len(X) != len(y) :
-        raise ValueError('X and y not same size!')
- 
+def MI(X, y):
+
+    if len(X) != len(y):
+        raise ValueError("X and y not same size!")
+
     features = list(X.columns)
     _y_column = list(y.columns)
     result = []
 
     _y_pro = y.groupby(_y_column[0]).size().div(len(X)).values
-    _H_y = - sum(item * np.log(item) for item in _y_pro)
+    _H_y = -sum(item * np.log(item) for item in _y_pro)
 
-    for _column in features :
+    for _column in features:
 
-        _X_y = pd.concat([X[_column], y], axis = 1)
-        _pro = _X_y.groupby([_column, _y_column[0]]).size().div(len(X)) # combine probability (x, y)
-        _pro_val = _pro.values # take only values
-        _X_pro = X[[_column]].groupby(_column).size().div(len(X)) # probability (x)
-        _H_y_X = - sum(_pro_val[i] * np.log(_pro_val[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]].values[0]) \
-            for i in range(len(_pro)))
+        _X_y = pd.concat([X[_column], y], axis=1)
+        _pro = (
+            _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
+        )  # combine probability (x, y)
+        _pro_val = _pro.values  # take only values
+        _X_pro = X[[_column]].groupby(_column).size().div(len(X))  # probability (x)
+        _H_y_X = -sum(
+            _pro_val[i]
+            * np.log(
+                _pro_val[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]].values[0]
+            )
+            for i in range(len(_pro))
+        )
         result.append(_H_y - _H_y_X)
 
     return result
 
-# return t-statistics of dataset, only two groups dataset are suitable
-def t_score(X, y, fvalue = True, pvalue = False) :
 
-    if len(X) != len(y) :
-        raise ValueError('X and y not same size!')
- 
+# return t-statistics of dataset, only two groups dataset are suitable
+def t_score(X, y, fvalue=True, pvalue=False):
+
+    if len(X) != len(y):
+        raise ValueError("X and y not same size!")
+
     features = list(X.columns)
-    _y_column = list(y.columns)[0] # only accept one column of response
+    _y_column = list(y.columns)[0]  # only accept one column of response
 
     _group = y[_y_column].unique()
-    if len(_group) != 2 :
-        raise ValueError('Only 2 group datasets are acceptable, get {}.'.format(len(_group)))
+    if len(_group) != 2:
+        raise ValueError(
+            "Only 2 group datasets are acceptable, get {}.".format(len(_group))
+        )
 
     _f = []
     _p = []
 
-    for _col in features :
-        t_test = scipy.stats.ttest_ind(X.loc[y[_y_column] == _group[0], _col], X.loc[y[_y_column] == _group[1], _col])
-        if fvalue :
+    for _col in features:
+        t_test = scipy.stats.ttest_ind(
+            X.loc[y[_y_column] == _group[0], _col],
+            X.loc[y[_y_column] == _group[1], _col],
+        )
+        if fvalue:
             _f.append(t_test[0])
-        if pvalue :
+        if pvalue:
             _p.append(t_test[1])
 
-    if fvalue and pvalue :
+    if fvalue and pvalue:
         return _f, _p
-    elif fvalue :
+    elif fvalue:
         return _f
-    elif pvalue :
+    elif pvalue:
         return _p
 
-# return ANOVA of dataset, more than two groups dataset are suitable
-def ANOVA(X, y, fvalue = True, pvalue = False) :
 
-    if len(X) != len(y) :
-        raise ValueError('X and y not same size!')
- 
+# return ANOVA of dataset, more than two groups dataset are suitable
+def ANOVA(X, y, fvalue=True, pvalue=False):
+
+    if len(X) != len(y):
+        raise ValueError("X and y not same size!")
+
     features = list(X.columns)
-    _y_column = list(y.columns)[0] # only accept one column of response
+    _y_column = list(y.columns)[0]  # only accept one column of response
 
     _group = y[_y_column].unique()
 
     _f = []
     _p = []
 
-    for _col in features :
+    for _col in features:
         _group_value = []
-        for _g in _group :
+        for _g in _group:
             _group_value.append(X.loc[y[_y_column] == _g, _col].flatten())
         _test = scipy.stats.f_oneway(*_group_value)
-        if fvalue :
+        if fvalue:
             _f.append(_test[0])
-        if pvalue :
+        if pvalue:
             _p.append(_test[1])
 
-    if fvalue and pvalue :
+    if fvalue and pvalue:
         return _f, _p
-    elif fvalue :
+    elif fvalue:
         return _f
-    elif pvalue :
+    elif pvalue:
         return _p
+
 
 # transform between numpy array and pandas dataframe
 # to deal with some problems where dataframe will be converted to array using sklearn objects
-class as_dataframe :
+class as_dataframe:
+    def __init__(self):
+        self.design_matrix = None  # record the values of dataframe
+        self.columns = None  # record column heads for the dataframe
 
-    def __init__(self) :
-        self.design_matrix = None # record the values of dataframe
-        self.columns = None # record column heads for the dataframe
+    def to_array(self, X):
 
-    def to_array(self, X) :
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("Input should be dataframe!")
 
-        if not isinstance(X, pd.DataFrame) :
-            raise TypeError('Input should be dataframe!')
-        
         self.design_matrix = X.values
         self.columns = list(X.columns)
 
         return self.design_matrix
 
-    def to_df(self, X = None, columns = None) :
+    def to_df(self, X=None, columns=None):
 
-        if not isinstance(X, np.ndarray) :
-            if not X :
-                X = self.design_matrix # using original values from dataframe
-            else :
-                raise TypeError('Input should be numpy array!')
-        
-        try :
+        if not isinstance(X, np.ndarray):
+            if not X:
+                X = self.design_matrix  # using original values from dataframe
+            else:
+                raise TypeError("Input should be numpy array!")
+
+        try:
             _empty = (columns == None).all()
-        except AttributeError :
+        except AttributeError:
             _empty = columns == None
-        
-        if _empty :
+
+        if _empty:
             columns = self.columns
 
-        if len(columns) != X.shape[1] :
+        if len(columns) != X.shape[1]:
             raise ValueError(
-                'Columns of array {} does not match length of columns {}!'.format(X.shape[1], len(columns))
+                "Columns of array {} does not match length of columns {}!".format(
+                    X.shape[1], len(columns)
+                )
             )
 
-        return pd.DataFrame(X, columns = columns)
+        return pd.DataFrame(X, columns=columns)
+
 
 # determine the task types
-def type_of_task(y) :
+def type_of_task(y):
 
-    if isinstance(y, pd.DataFrame) :
+    if isinstance(y, pd.DataFrame):
         y = y.values
-    
-    if y.dtype.kind == 'f' and np.any(y != y.astype(int)) :
-        return 'continuous' # assign for regression tasks
+
+    if y.dtype.kind == "f" and np.any(y != y.astype(int)):
+        return "continuous"  # assign for regression tasks
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
-        return 'multiclass' # assign for classification tasks
-    else :
-        return 'binary'
-    
+        return "multiclass"  # assign for classification tasks
+    else:
+        return "binary"
+
+
+# formatting the type of features in a dataframe
+# to ensure the consistency of the features,
+# avoid class type (encoded as int) becomes continuous type
+class formatting:
+    def __init__(self, allow_str=False):
+        self.allow_str = allow_str
+
+        self.category_table = None
+
+    def fit(self, X):
+        # get dtype of the features
+        self.dtype_table = X.dtypes.values
+
+        if not self.allow_str:  # if not allow str, transform string types to int
+            for i in range(len(self.dtype_table)):
+                if self.dtype_table[i] == object:
+                    self.dtype_table[i] = np.int64
+
+        return self
+
+    def transform(self, X):
+
+        for i in range(len(self.dtype_table)):
+            X.iloc[:, i] = X.iloc[:, i].astype(self.dtype_table[i])
+
+        return X
+
