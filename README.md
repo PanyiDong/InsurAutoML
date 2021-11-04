@@ -4,6 +4,8 @@ IRisk Lab Project, UIUC, Fall 2021
 
 The project aims to create a AutoML package with special focus on insurance data (with some inbalance in nature).
 
+Required Packages: numpy, pandas, scipy, os, shutil, time, itertools, functools, cmath, tqdm, warnings, rpy2, tensorflow, mlflow, hyperopt, sklearn, autosklearn
+(rpy2 only for reading .rda/.rdata datasets)
 
 Current Progress:
 1. base: load data with some common file format (.csv, .data, .rda, etc.) given path into a database dict, and some common utilities
