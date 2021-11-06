@@ -1,4 +1,4 @@
-from re import L
+import time
 import warnings
 import numpy as np
 import pandas as pd
@@ -446,3 +446,26 @@ class formatting:
 
         return X
 
+# define a Timer to record efficiency
+# enable multiple running times for comparison
+class Timer :
+    
+    def __init__(self) :
+        self.times = []
+        self.start()
+
+    def start(self) : # start the timer
+        self.tik = time.time()
+    
+    def stop(self) : # stop the timer and record the time
+        self.times.append(time.time() - self.tik)
+        return self.times[-1]
+
+    def avg(self) :
+        return sum(self.times) / len(self.times)
+    
+    def sum(self) :
+        return sum(self.times)
+    
+    def cumsum(self) :
+        return np.array(self.times).cumsum().tolist()
