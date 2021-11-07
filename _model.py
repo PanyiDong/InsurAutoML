@@ -7,6 +7,8 @@ from torch import nn
 
 import warnings
 
+from My_AutoML._utils import type_of_task
+
 device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
 
 #############################################################################################
