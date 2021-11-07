@@ -36,6 +36,10 @@ class LNN :
     
     outputSize:
 
+    criteria: loss function, default = 'MSE'
+
+    optimizer: optimizer used for backpropagation, default = 'SGD'
+
     learning_rate: learning rate for gradient descent, default = 0.03
 
     max_iter: maximum iterations allowed, default = 1000
