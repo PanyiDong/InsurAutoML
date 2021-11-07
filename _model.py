@@ -9,6 +9,7 @@ import warnings
 
 device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
 
+#############################################################################################
 # Linear Neural Network
 # forward step
 class _LNN(nn.Module) :
@@ -118,3 +119,6 @@ class LNN :
         with torch.no_grad() :
 
             return self._model(inputs).detach().cpu().numpy() # convert to numpy
+
+
+#############################################################################################
