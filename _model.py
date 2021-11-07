@@ -1,9 +1,17 @@
+from cProfile import label
 import numpy as np
 import pandas as pd
 import torch
+import torch.optim
 from torch import nn
 
-class LNN(nn.Module) :
+import warnings
+
+device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
+
+# Linear Neural Network
+# forward step
+class _LNN(nn.Module) :
     
     def __init__(
         self,
@@ -13,49 +21,84 @@ class LNN(nn.Module) :
         super().__init__()
         self.linear = nn.Linear(inputSize, outputSize)
 
-        if torch.cuda.is_available() :
+        if torch.cuda.is_available() : # convert to cuda
             super().cuda()
 
     def forward(self, X) :
         out = self.linear(X)
         return out
 
-X = np.array([[1., 2., 3.], [4., 5., 6.], [7., 8., 9.], [10., 11., 12.]])
-y = np.array([1., 2., 3., 4.])
+# optimization step
+class LNN :
 
-learning_rate = 0.03,
-max_iter = 1000
+    '''
+    inputSize:
+    
+    outputSize:
 
-# initialize forward steps
-model = LNN(inputSize = 4, outputSize = 1)
-        
-# define the loss function and optimizer
-criterion = nn.MSELoss()
-optimizer = torch.optim.SGD(model.parameters(), lr = learning_rate)
+    learning_rate: learning rate for gradient descent, default = 0.03
 
-# converting inputs to pytorch tensors
-if torch.cuda.is_available() :
-    inputs = torch.from_numpy(X).cuda()
-    labels = torch.from_numpy(y).cuda()
-else :
-    inputs = torch.from_numpy(X)
-    labels = torch.from_numpy(y)
+    max_iter: maximum iterations allowed, default = 1000
+    '''
 
-for _iter in range(max_iter) :
+    def __init__(
+        self, 
+        inputSize = 1, 
+        outputSize = 1,
+        criteria = 'MSE',
+        optimizer = 'SGD',
+        learning_rate = 0.03,
+        max_iter = 100
+    ):
+        self.inputSize = inputSize
+        self.outputSize = outputSize
+        self.criteria = criteria
+        self.optimizer = optimizer
+        self.learning_rate = learning_rate
+        self.max_iter = max_iter
 
-    # clear gradient buffers
-    optimizer.zero_grad()
+    def fit(self, X, y) :
 
-    # calculate output using inputs
-    outputs = model(inputs)
+        if self.inputSize != X.shape[1] :
+            self.inputSize = X.shape[1]
 
-    # get loss from outputs
-    loss = criterion(outputs, labels)
+        # converting inputs to pytorch tensors
+        if isinstance(X, np.ndarray) :
+            inputs = torch.from_numpy(X).astype(np.float64).to(device)
+        elif isinstance(X, pd.DataFrame) :
+            inputs = torch.from_numpy(X.values).astype(np.float64).to(device)
 
-    # get gradient for parameters
-    loss.backward()
+        if isinstance(y, np.ndarray) :
+            labels = torch.from_numpy(y).reshape(-1, 1).to(device)
+        elif isinstance(y, pd.DataFrame) :
+            labels = torch.from_numpy(y.values).reshape(-1, 1).to(device)
 
-    # update parameters
-    optimizer.step()
+        # initialize forward steps
+        model = _LNN(inputSize = self.inputSize, outputSize = self.outputSize).to(device)
 
+        # define the loss function and optimizer
+        if self.criteria == 'MSE' :
+            criterion = nn.MSELoss()
 
+        if self.optimizer == 'SGD' :
+            optimizer = torch.optim.SGD(model.parameters(), lr = self.learning_rate)
+
+        Losses = [] # record losses for early stopping or 
+
+        for _ in range(self.max_iter) :
+    
+            # clear gradient buffers
+            optimizer.zero_grad()
+
+            # calculate output using inputs
+            outputs = model(inputs)
+
+            # get loss from outputs
+            loss = criterion(outputs, labels)
+            Losses.append(loss.item())
+
+            # get gradient for parameters
+            loss.backward()
+
+            # update parameters
+            optimizer.step()
