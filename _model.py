@@ -59,29 +59,29 @@ class LNN :
 
     def fit(self, X, y) :
 
+        # initialize forward steps
+        self._model = _LNN(inputSize = self.inputSize, outputSize = self.outputSize).to(device)
+
         if self.inputSize != X.shape[1] :
             self.inputSize = X.shape[1]
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
-            inputs = torch.from_numpy(X).astype(np.float64).to(device)
+            inputs = torch.from_numpy(X).to(device)
         elif isinstance(X, pd.DataFrame) :
-            inputs = torch.from_numpy(X.values).astype(np.float64).to(device)
+            inputs = torch.from_numpy(X.values).to(device)
 
         if isinstance(y, np.ndarray) :
             labels = torch.from_numpy(y).reshape(-1, 1).to(device)
         elif isinstance(y, pd.DataFrame) :
             labels = torch.from_numpy(y.values).reshape(-1, 1).to(device)
 
-        # initialize forward steps
-        model = _LNN(inputSize = self.inputSize, outputSize = self.outputSize).to(device)
-
         # define the loss function and optimizer
         if self.criteria == 'MSE' :
             criterion = nn.MSELoss()
 
         if self.optimizer == 'SGD' :
-            optimizer = torch.optim.SGD(model.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.SGD(self._model.parameters(), lr = self.learning_rate)
 
         Losses = [] # record losses for early stopping or 
 
@@ -91,7 +91,7 @@ class LNN :
             optimizer.zero_grad()
 
             # calculate output using inputs
-            outputs = model(inputs)
+            outputs = self._model(inputs)
 
             # get loss from outputs
             loss = criterion(outputs, labels)
@@ -102,3 +102,15 @@ class LNN :
 
             # update parameters
             optimizer.step()
+
+    def predict(self, X) :
+
+        # converting inputs to pytorch tensors
+        if isinstance(X, np.ndarray) :
+            inputs = torch.from_numpy(X).to(device)
+        elif isinstance(X, pd.DataFrame) :
+            inputs = torch.from_numpy(X.values).to(device)
+
+        with torch.no_grad() :
+
+            return self._model(inputs).detach().cpu().numpy() # convert to numpy
