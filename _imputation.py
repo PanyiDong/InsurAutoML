@@ -6,10 +6,16 @@ from numpy.lib.function_base import bartlett
 import pandas as pd
 import warnings
 import sklearn
-import tensorflow as tf
-from tensorflow.python.types.core import Value
-tf.compat.v1.disable_eager_execution()
-#tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
+
+# check if tensorflow exists
+# if exists, import tensorflow
+import importlib
+tensorflow_spec = importlib.util.find_spec('tensorflow')
+if tensorflow_spec is not None :
+    import tensorflow as tf
+    from tensorflow.python.types.core import Value
+    tf.compat.v1.disable_eager_execution()
+    #tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
 from ._utils import random_index, random_list, feature_rounding, nan_cov
 from ._scaling import MinMaxScale

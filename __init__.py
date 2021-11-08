@@ -151,6 +151,12 @@ imputers = {
     "GAIN": GAIN,
 }
 # Markov Chain Monte Carlo (MCMC)
+# check if tensorflow exists in environment
+# if not exists, do not use GAIN method
+import importlib
+tensorflow_spec = importlib.util.find_spec('tensorflow')
+if tensorflow_spec is None :
+    del imputers["GAIN"]
 
 scalings = {
     "no_processing": no_processing,
