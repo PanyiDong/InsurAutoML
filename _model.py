@@ -4,7 +4,8 @@ import pandas as pd
 import torch
 import torch.optim
 from torch import nn
-from torch.utils.data import DataLoader
+import pytorch_lightning as pl
+from pytorch_lightning import Trainer
 
 import warnings
 
@@ -13,17 +14,7 @@ from ._utils import type_of_task
 device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
 
 #############################################################################################
-# return softmax transformed tensor
-# get possibilities (for classification tasks) which is summed up to 1
-# softmax(X_{ij}) = exp(X_{ij}) / \sum_{j}exp(X_{ij})
-def softmax(X) :
-
-    X_exp = torch.exp(X)
-    partition = X_exp.sum(1, keepdim = True)
-    return X_exp / partition
-
-#############################################################################################
-# Linear Neural Network
+# Linear Neural Network (LNN)
 # forward step
 class _LNN(nn.Module) :
     
@@ -42,7 +33,7 @@ class _LNN(nn.Module) :
         out = self.linear(X)
         return out
 
-# optimization step, using mini-batch gradient descent
+# optimization step
 class LNN :
 
     '''
@@ -53,8 +44,6 @@ class LNN :
     criteria: loss function, default = 'MSE'
 
     optimizer: optimizer used for backpropagation, default = 'SGD'
-
-    batch_size: use small batch to increase efficiency, default = 10
 
     learning_rate: learning rate for gradient descent, default = 0.03
 
@@ -67,7 +56,6 @@ class LNN :
         outputSize = 1,
         criteria = 'MSE',
         optimizer = 'SGD',
-        batch_size = 10,
         learning_rate = 0.03,
         max_iter = 100
     ):
@@ -75,26 +63,16 @@ class LNN :
         self.outputSize = outputSize
         self.criteria = criteria
         self.optimizer = optimizer
-        self.batch_size = batch_size
         self.learning_rate = learning_rate
         self.max_iter = max_iter
 
     def fit(self, X, y) :
 
-        n, p = X.shape
-
         # initialize forward steps
         self._model = _LNN(inputSize = self.inputSize, outputSize = self.outputSize).to(device)
-        
-        # force the input/outputSize to coincide with datasize
-        if self.inputSize != p :
-            self.inputSize = p
 
-        if self.outputSize != y.shape[1] :
-            self.outputSize = y.shape[1]
-
-        if p < 100 : # if the observations are too small, no need for batch
-            self.batch_size = p
+        if self.inputSize != X.shape[1] :
+            self.inputSize = X.shape[1]
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
@@ -107,8 +85,6 @@ class LNN :
         elif isinstance(y, pd.DataFrame) :
             labels = torch.from_numpy(y.values).reshape(-1, 1).to(device)
 
-        data_iter = DataLoader((inputs, labels), batch_size = self.batch_size, shuffle = True)
-
         # define the loss function and optimizer
         if self.criteria == 'MSE' :
             criterion = nn.MSELoss()
@@ -119,24 +95,22 @@ class LNN :
         Losses = [] # record losses for early stopping or 
 
         for _ in range(self.max_iter) :
-
-            for X_batch, y_batch in data_iter :
     
-                # clear gradient buffers
-                optimizer.zero_grad()
+            # clear gradient buffers
+            optimizer.zero_grad()
 
-                # calculate output using inputs
-                outputs = self._model(X_batch)
+            # calculate output using inputs
+            outputs = self._model(inputs)
 
-                # get loss from outputs
-                loss = criterion(outputs, y_batch)
-                Losses.append(loss.item())
+            # get loss from outputs
+            loss = criterion(outputs, labels)
+            Losses.append(loss.item())
 
-                # get gradient for parameters
-                loss.backward()
+            # get gradient for parameters
+            loss.backward()
 
-                # update parameters
-                optimizer.step()
+            # update parameters
+            optimizer.step()
 
     def predict(self, X) :
 
@@ -152,3 +126,37 @@ class LNN :
 
 
 #############################################################################################
+# Multilayer Perceptrons (MLP)
+# Forward step
+class MLP(pl.LightningModule) :
+
+    def __init__(
+        self,
+        inputSize = 1,
+        hiddenSize = 5,
+        outputSize = 1,
+        learning_rate = 0.02,
+    ) :
+        super().__init__()
+        self.learning_rate = learning_rate
+        self.layers = nn.Sequential(
+            nn.Linear(inputSize, hiddenSize),
+            nn.ReLU(),
+            nn.Linear(hiddenSize, hiddenSize),
+            nn.ReLU(),
+            nn.Linear(hiddenSize, outputSize)
+        )
+
+    def forward(self, X) :
+
+        return self.layers(X)
+
+    def training_step(self, batch, batch_idx) :
+
+        x, y = batch
+        output = self(x)
+        loss = nn.CrossEntropyLoss(output, y)
+        return loss
+
+    def configure_optimizers(self) :
+        return torch.optim.SGD(self.parameters(), lr = self.learning_rate)
