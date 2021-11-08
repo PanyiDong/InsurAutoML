@@ -29,9 +29,7 @@ imputer_hyperparameter = [
     },
     {
         "imputer": "KNNImputer",
-        "n_neighbors": hp.choice[None, scope.int(
-            hp.quniform("KNNImputer_n_neighbors", 1, 15, 1)
-        )],
+        "n_neighbors": scope.int(hp.quniform("KNNImputer_n_neighbors", 1, 15, 1)),
         "fold" : scope.int(hp.quniform("KNNImputer_fold", 5, 15, 1))
     },
     {"imputer": "MissForestImputer"},

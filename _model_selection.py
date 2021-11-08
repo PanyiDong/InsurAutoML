@@ -28,6 +28,7 @@ from hyperopt import (
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
+import My_AutoML
 from ._base import no_processing
 from ._utils import type_of_task
 from ._hyperparameters import (
