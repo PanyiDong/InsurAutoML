@@ -13,6 +13,16 @@ from ._utils import type_of_task
 device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
 
 #############################################################################################
+# return softmax transformed tensor
+# get possibilities (for classification tasks) which is summed up to 1
+# softmax(X_{ij}) = exp(X_{ij}) / \sum_{j}exp(X_{ij})
+def softmax(X) :
+
+    X_exp = torch.exp(X)
+    partition = X_exp.sum(1, keepdim = True)
+    return X_exp / partition
+
+#############################################################################################
 # Linear Neural Network
 # forward step
 class _LNN(nn.Module) :
