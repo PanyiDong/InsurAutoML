@@ -1499,7 +1499,7 @@ class AutoRegressor:
             )
             f.write("Response of the dataset: {}\n".format(list(y.columns)))
             f.write(
-                "Shape of the response vector: {} * {}".format(y.shape[0], y.shape[1])
+                "Shape of the response vector: {} * {}\n".format(y.shape[0], y.shape[1])
             )
             f.write("Type of the task: Regression.\n")
 
@@ -1859,12 +1859,15 @@ class AutoML(AutoClassifier, AutoRegressor) :
         self.progressbar = progressbar
         self.seed = seed
 
-    def fit(self, X, y) :
-
-        self._type = type_of_task(y)
+    def fit(self, X, y = None) :
+        
+        if isinstance(y, pd.DataFrame) or isinstance(y, np.ndarray) :
+            self._type = type_of_task(y)
+        elif y == None :
+            self._type = 'Unsupervised'
 
         if self._type in ['binary', 'multiclass'] : # assign classification tasks
-            super().__init__(
+            self.model = AutoClassifier(
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
@@ -1884,9 +1887,8 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 progressbar=self.progressbar,
                 seed=self.seed
             )
-            super().fit(X, y)
         elif self._type == 'continuous' : # assign regression tasks
-            super(AutoClassifier, self).__init__(
+            self.model = AutoRegressor(
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
@@ -1906,23 +1908,18 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 progressbar=self.progressbar,
                 seed=self.seed
             )
-            super(AutoClassifier, self).fit(X, y)
         else :
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "continuous"] accepted, get {}!'.format(
                     self._type
                 )
             )
+
+        self.model.fit(X, y)
 
     def predict(self, X) :
 
-        if self._type in ['binary', 'multiclass'] :
-            super().predict(X)
-        elif self._type == 'continuous' :
-            super(AutoClassifier, self).predict(X)
+        if self.model :
+            self.model.predict(X)
         else :
-            raise ValueError(
-                'Not recognizing type, only ["binary", "multiclass", "continuous"] accepted, get {}!'.format(
-                    self._type
-                )
-            )
+            raise ValueError('No tasks found! Need to fit first.')

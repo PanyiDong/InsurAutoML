@@ -666,8 +666,8 @@ regressor_hyperparameter = [
     {
         "model": "GaussianProcess",
         "alpha": hp.lognormal("GaussianProcess_alpha", np.log(1e-14), np.log(1)),
-        "thetaL": hp.lognormal("GaussianProcess_alpha", np.log(1e-10), np.log(1e-3)),
-        "thetaU": hp.lognormal("GaussianProcess_alpha", np.log(1), np.log(1e5)),
+        "thetaL": hp.lognormal("GaussianProcess_thetaL", np.log(1e-10), np.log(1e-3)),
+        "thetaU": hp.lognormal("GaussianProcess_thetaU", np.log(1), np.log(1e5)),
     },
     {
         "model": "GradientBoosting",
