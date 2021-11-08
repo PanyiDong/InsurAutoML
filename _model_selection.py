@@ -1920,6 +1920,6 @@ class AutoML(AutoClassifier, AutoRegressor) :
     def predict(self, X) :
 
         if self.model :
-            self.model.predict(X)
+            return self.model.predict(X)
         else :
             raise ValueError('No tasks found! Need to fit first.')
