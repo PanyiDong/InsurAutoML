@@ -307,32 +307,33 @@ class AutoClassifier:
     def get_hyperparameter_space(self, X, y):
 
         # initialize default search options
+        # use copy to allows multiple manipulation
         # all encoders available
-        self._all_encoders = My_AutoML.encoders
+        self._all_encoders = My_AutoML.encoders.copy()
 
         # all hyperparameters for encoders
-        self._all_encoders_hyperparameters = encoder_hyperparameter
+        self._all_encoders_hyperparameters = encoder_hyperparameter.copy()
 
         # all imputers available
-        self._all_imputers = My_AutoML.imputers
+        self._all_imputers = My_AutoML.imputers.copy()
 
         # all hyperparemeters for imputers
-        self._all_imputers_hyperparameters = imputer_hyperparameter
+        self._all_imputers_hyperparameters = imputer_hyperparameter.copy()
 
         # all scalings available
-        self._all_scalings = My_AutoML.scalings
+        self._all_scalings = My_AutoML.scalings.copy()
 
         # all balancings available
-        self._all_balancings = My_AutoML.balancing
+        self._all_balancings = My_AutoML.balancing.copy()
 
         # all hyperparameters for balancing methods
-        self._all_balancings_hyperparameters = balancing_hyperparameter
+        self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
         
         # all hyperparameters for scalings
-        self._all_scalings_hyperparameters = scaling_hyperparameter
+        self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
         
         # all feature selections available
-        self._all_feature_selection = My_AutoML.feature_selection
+        self._all_feature_selection = My_AutoML.feature_selection.copy()
         # special treatment, remove some feature selection for regression
         del self._all_feature_selection["extra_trees_preproc_for_regression"]
         del self._all_feature_selection["select_percentile_regression"]
@@ -341,10 +342,10 @@ class AutoClassifier:
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
+        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter.copy()
 
         # all classification models available
-        self._all_models = classifiers
+        self._all_models = classifiers.copy()
         # special treatment, remove SVM methods when observations are large
         # SVM suffers from the complexity o(n_samples^2 * n_features), 
         # which is time-consuming for large datasets
@@ -353,7 +354,7 @@ class AutoClassifier:
             del self._all_models["LibSVM_SVC"]
 
         # all hyperparameters for the classification models
-        self._all_models_hyperparameters = classifier_hyperparameter
+        self._all_models_hyperparameters = classifier_hyperparameter.copy()
 
         self.hyperparameter_space = None
 
@@ -1189,32 +1190,33 @@ class AutoRegressor:
     def get_hyperparameter_space(self, X, y):
 
         # initialize default search options
+        # use copy to allows multiple manipulation
         # all encoders available
-        self._all_encoders = My_AutoML.encoders
+        self._all_encoders = My_AutoML.encoders.copy()
 
         # all hyperparameters for encoders
-        self._all_encoders_hyperparameters = encoder_hyperparameter
+        self._all_encoders_hyperparameters = encoder_hyperparameter.copy()
 
         # all imputers available
-        self._all_imputers = My_AutoML.imputers
+        self._all_imputers = My_AutoML.imputers.copy()
 
         # all hyperparemeters for imputers
-        self._all_imputers_hyperparameters = imputer_hyperparameter
+        self._all_imputers_hyperparameters = imputer_hyperparameter.copy()
 
         # all scalings available
-        self._all_scalings = My_AutoML.scalings
+        self._all_scalings = My_AutoML.scalings.copy()
 
         # all balancings available
-        self._all_balancings = My_AutoML.balancing
+        self._all_balancings = My_AutoML.balancing.copy()
 
         # all hyperparameters for balancing methods
-        self._all_balancings_hyperparameters = balancing_hyperparameter
+        self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
         
         # all hyperparameters for scalings
-        self._all_scalings_hyperparameters = scaling_hyperparameter
+        self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
         
         # all feature selections available
-        self._all_feature_selection = My_AutoML.feature_selection
+        self._all_feature_selection = My_AutoML.feature_selection.copy()
         # special treatment, remove some feature selection for classification
         del self._all_feature_selection["extra_trees_preproc_for_classification"]
         del self._all_feature_selection["select_percentile_classification"]
@@ -1224,10 +1226,10 @@ class AutoRegressor:
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter
+        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter.copy()
 
         # all regression models available
-        self._all_models = regressors
+        self._all_models = regressors.copy()
         # special treatment, remove SVM methods when observations are large
         # SVM suffers from the complexity o(n_samples^2 * n_features), 
         # which is time-consuming for large datasets
@@ -1236,7 +1238,7 @@ class AutoRegressor:
             del self._all_models["LibSVM_SVR"]
 
         # all hyperparameters for the regression models
-        self._all_models_hyperparameters = regressor_hyperparameter
+        self._all_models_hyperparameters = regressor_hyperparameter.copy()
 
         self.hyperparameter_space = None
 
