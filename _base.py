@@ -13,11 +13,16 @@ import autosklearn.classification
 import autosklearn.regression
 
 # R environment
-import rpy2
-import rpy2.robjects as ro
-from rpy2.robjects import Formula, pandas2ri
-from rpy2.robjects.conversion import localconverter
-from rpy2.robjects.packages import importr
+# check if rpy2 available
+# if not, can not read R type data
+import importlib
+rpy2_spec = importlib.util.find_spec('rpy2')
+if rpy2_spec is not None :
+    import rpy2
+    import rpy2.robjects as ro
+    from rpy2.robjects import Formula, pandas2ri
+    from rpy2.robjects.conversion import localconverter
+    from rpy2.robjects.packages import importr
 
 class no_processing() :
 
@@ -80,7 +85,7 @@ class load_data() :
 
     def _main(self, path, filename) :
         
-        # initilize path sets
+        # initialize path sets
         _csv_files = []
         _data_files = []
         _rda_files = []
@@ -117,30 +122,37 @@ class load_data() :
                     self.database[_filename.split('.')[0]] = pd.read_csv(_data_path)
 
         # load .rda/.rdata files in the path
-        if self.data_type == '.rda' or self.data_type == '.rdata' or self.data_type == 'all' :
-            if self.data_type == '.rda' or self.data_type == 'all' :
-                if filename == None :
-                    _rda_files = glob.glob(path + '*.rda')
-                else :
-                    _rda_files = glob.glob(path + filename + '.rda')
-            if self.data_type == '.rdata' or self.data_type == 'all' :
-                if filename == None :
-                    _rdata_files = glob.glob(path + '*.rdata')
-                else :
-                    _rdata_files = glob.glob(path + filename + '.rdata')
+        # will not read any files if rpy2 is not available
+        if rpy2_spec is None :
+            if self.data_type == '.rda' or self.data_type == '.rdata':
+                raise ImportError("Require rpy2 package, package not found!")
+            if self.data_type == 'all' :
+                pass
+        else :
+            if self.data_type == '.rda' or self.data_type == '.rdata' or self.data_type == 'all' :
+                if self.data_type == '.rda' or self.data_type == 'all' :
+                    if filename == None :
+                        _rda_files = glob.glob(path + '*.rda')
+                    else :
+                        _rda_files = glob.glob(path + filename + '.rda')
+                if self.data_type == '.rdata' or self.data_type == 'all' :
+                    if filename == None :
+                        _rdata_files = glob.glob(path + '*.rdata')
+                    else :
+                        _rdata_files = glob.glob(path + filename + '.rdata')
             
-            if not _rda_files and self.data_type == '.rda' :
-                warnings.warn('No .rda file found!')
-            elif not _rdata_files and self.data_type == '.rdata' :
-                warnings.warn('No .rdata file found!')
-            elif _rda_files + _rdata_files :
-                for _data_path in (_rda_files + _rdata_files) :
-                    _filename = _data_path.split('/')[-1]
-                    ro.r('load("' + _data_path + '")')
-                    ro.r('rdata = ' + _filename.split('.')[0])
-                    with localconverter(ro.default_converter + pandas2ri.converter):
-                        self.database[_filename.split('.')[0]] = \
-                            ro.conversion.rpy2py(ro.r.rdata)
+                if not _rda_files and self.data_type == '.rda' :
+                    warnings.warn('No .rda file found!')
+                elif not _rdata_files and self.data_type == '.rdata' :
+                    warnings.warn('No .rdata file found!')
+                elif _rda_files + _rdata_files :
+                    for _data_path in (_rda_files + _rdata_files) :
+                        _filename = _data_path.split('/')[-1]
+                        ro.r('load("' + _data_path + '")')
+                        ro.r('rdata = ' + _filename.split('.')[0])
+                        with localconverter(ro.default_converter + pandas2ri.converter):
+                            self.database[_filename.split('.')[0]] = \
+                                ro.conversion.rpy2py(ro.r.rdata)
 
         if self.data_type == 'all' and not self.database :
             warnings.warn('No file found!')
