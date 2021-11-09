@@ -17,25 +17,6 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
 
 #############################################################################################
 # Linear Neural Network (LNN)
-# forward step
-class _LNN(nn.Module) :
-    
-    def __init__(
-        self,
-        inputSize,
-        outputSize
-    ):
-        super().__init__()
-        self.linear = nn.Linear(inputSize, outputSize)
-
-        if torch.cuda.is_available() : # convert to cuda
-            super().cuda()
-
-    def forward(self, X) :
-        out = self.linear(X)
-        return out
-
-# optimization step
 class LNN :
 
     '''
@@ -74,7 +55,7 @@ class LNN :
             self.inputSize = X.shape[1]
 
         # initialize forward steps
-        self._model = _LNN(inputSize = self.inputSize, outputSize = self.outputSize).to(device)
+        self.net = nn.Linear(self.inputSize, self.outputSize)
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
@@ -92,7 +73,7 @@ class LNN :
             criterion = nn.MSELoss()
 
         if self.optimizer == 'SGD' :
-            optimizer = torch.optim.SGD(self._model.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.SGD(self.net.parameters(), lr = self.learning_rate)
 
         Losses = [] # record losses for early stopping or 
 
@@ -102,7 +83,7 @@ class LNN :
             optimizer.zero_grad()
 
             # calculate output using inputs
-            outputs = self._model(inputs)
+            outputs = self.net(inputs)
 
             # get loss from outputs
             loss = criterion(outputs, labels)
@@ -129,31 +110,6 @@ class LNN :
 
 #############################################################################################
 # Multilayer Perceptrons (MLP)
-# Forward step
-class _MLP(nn.Module) :
-
-    def __init__(
-        self,
-        inputSize = 1,
-        hiddenSize = 5,
-        outputSize = 1,
-        learning_rate = 0.02,
-    ) :
-        super().__init__()
-        self.learning_rate = learning_rate
-        self.layers = nn.Sequential(
-            nn.Linear(inputSize, hiddenSize),
-            nn.ReLU(),
-            nn.Linear(hiddenSize, hiddenSize),
-            nn.ReLU(),
-            nn.Linear(hiddenSize, outputSize)
-        )
-
-    def forward(self, X) :
-
-        return self.layers(X)
-
-# Optimization step
 class MLP :
     
     '''
@@ -194,9 +150,13 @@ class MLP :
             self.inputSize = X.shape[1]
 
         # initialize forward steps
-        self._model = _MLP(
-            inputSize = self.inputSize, hiddenSize = self.hiddenSize, outputSize = self.outputSize
-        ).to(device)
+        self.net =  nn.Sequential(
+            nn.Linear(self.inputSize, self.hiddenSize),
+            nn.ReLU(),
+            nn.Linear(self.hiddenSize, self.hiddenSize),
+            nn.ReLU(),
+            nn.Linear(self.hiddenSize, self.outputSize)
+        )
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
@@ -212,9 +172,13 @@ class MLP :
         # define the loss function and optimizer
         if self.criteria == 'MSE' :
             criterion = nn.MSELoss()
+        elif self.criteria == 'CrossEntropy' :
+            criterion = nn.CrossEntropyLoss()
 
         if self.optimizer == 'SGD' :
-            optimizer = torch.optim.SGD(self._model.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.SGD(self.net.parameters(), lr = self.learning_rate)
+        elif self.optimizer == 'Adam' :
+            optimizer = torch.optim.Adam(self.net.parameters(), lr = self.learning_rate)
 
         Losses = [] # record losses for early stopping or 
 
@@ -224,7 +188,7 @@ class MLP :
             optimizer.zero_grad()
 
             # calculate output using inputs
-            outputs = self._model(inputs)
+            outputs = self.net(inputs)
 
             # get loss from outputs
             loss = criterion(outputs, labels)
@@ -246,6 +210,6 @@ class MLP :
 
         with torch.no_grad() :
 
-            return self._model(inputs).detach().cpu().numpy() # convert to numpy
+            return self.net(inputs).detach().cpu().numpy() # convert to numpy
 
 #############################################################################################
