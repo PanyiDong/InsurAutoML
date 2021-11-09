@@ -582,11 +582,12 @@ regressors = {
     "GradientBoosting": autosklearn.pipeline.components.regression.gradient_boosting.GradientBoosting,
     "KNearestNeighborsRegressor": autosklearn.pipeline.components.regression.k_nearest_neighbors.KNearestNeighborsRegressor,
     "LibLinear_SVR": autosklearn.pipeline.components.regression.liblinear_svr.LibLinear_SVR,
-    "LibSVM_SVR": autosklearn.pipeline.components.regression.libsvm_svr.LibSVM_SVR,
-    "MLPRegressor": autosklearn.pipeline.components.regression.mlp.MLPRegressor,
+    #"LibSVM_SVR": autosklearn.pipeline.components.regression.libsvm_svr.LibSVM_SVR,
+    # "MLPRegressor": autosklearn.pipeline.components.regression.mlp.MLPRegressor,
     "RandomForest": autosklearn.pipeline.components.regression.random_forest.RandomForest,
-    "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
-}
+    # "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
+} # LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform of StandardScaler while having 1D array
+  # https://github.com/automl/auto-sklearn/issues/1297
 
 # regressor hyperparameters
 # extract from autosklearn
@@ -646,12 +647,12 @@ regressor_hyperparameter = [
         "criterion": hp.choice(
             "ExtraTreesRegressor_criterion", ["mse", "friedman_mse", "mae"]
         ),
-        "min_samples_leaf": hp.uniform(
+        "min_samples_leaf": scope.int(hp.quniform(
             "ExtraTreesRegressor_min_samples_leaf", 1, 20, 1
-        ),
-        "min_samples_split": hp.quniform(
+        )),
+        "min_samples_split": scope.int(hp.quniform(
             "ExtraTreesRegressor_min_samples_split", 2, 20, 1
-        ),
+        )),
         "max_features": hp.uniform("ExtraTreesRegressor_max_features", 0.1, 1.0),
         "bootstrap": hp.choice("ExtraTreesRegressor_bootstrap", [True, False]),
         "max_leaf_nodes": hp.choice("ExtraTreesRegressor_max_leaf_nodes", [None]),
@@ -665,9 +666,9 @@ regressor_hyperparameter = [
     },
     {
         "model": "GaussianProcess",
-        "alpha": hp.lognormal("GaussianProcess_alpha", np.log(1e-14), np.log(1)),
-        "thetaL": hp.lognormal("GaussianProcess_thetaL", np.log(1e-10), np.log(1e-3)),
-        "thetaU": hp.lognormal("GaussianProcess_thetaU", np.log(1), np.log(1e5)),
+        "alpha": hp.loguniform("GaussianProcess_alpha", np.log(1e-14), np.log(1)),
+        "thetaL": hp.loguniform("GaussianProcess_thetaL", np.log(1e-10), np.log(1e-3)),
+        "thetaU": hp.loguniform("GaussianProcess_thetaU", np.log(1), np.log(1e5)),
     },
     {
         "model": "GradientBoosting",
@@ -679,7 +680,7 @@ regressor_hyperparameter = [
         ),
         "min_samples_leaf": scope.int(
             hp.loguniform(
-                "GradientBoosting_min_samples_leaf", np.log(1), np.log(200), 1
+                "GradientBoosting_min_samples_leaf", np.log(1), np.log(200)
             )
         ),
         "max_depth": hp.choice("GradientBoosting_max_depth", [None]),
@@ -705,7 +706,7 @@ regressor_hyperparameter = [
     {
         "model": "KNearestNeighborsRegressor",
         "n_neighbors": scope.int(
-            hp.loguniform("KNearestNeighborsRegressor_n_neighbors", 1, 100)
+            hp.quniform("KNearestNeighborsRegressor_n_neighbors", 1, 100, 1)
         ),
         "weights": hp.choice(
             "KNearestNeighborsRegressor_weights", ["uniform", "distance"]
@@ -717,8 +718,7 @@ regressor_hyperparameter = [
         # forbid loss = 'epsilon_insensitive' and dual = False
         "epsilon": hp.loguniform("LibLinear_SVR_tol", np.log(0.001), np.log(1)),
         "loss": hp.choice(
-            "LibLinear_SVR__loss",
-            ["epsilon_insensitive", "squared_epsilon_insensitive"],
+            "LibLinear_SVR__loss", ["squared_epsilon_insensitive"],
         ),
         "dual": hp.choice("LibLinear_SVR__dual", [False]),
         "tol": hp.loguniform("LibLinear_SVR__tol", np.log(1e-5), np.log(1e-1)),

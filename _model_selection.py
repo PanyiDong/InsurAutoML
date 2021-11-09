@@ -585,7 +585,7 @@ class AutoClassifier:
         self._fit_scaling = self._all_scalings[self.optimal_scaling](
             **self.optimal_scaling_hyperparameters
         )
-        self._fit_scaling.fit(_X)
+        self._fit_scaling.fit(_X, _y)
         _X = self._fit_scaling.transform(_X)
         # feature selection
         self._fit_feature_selection = self._all_feature_selection[
@@ -1469,7 +1469,7 @@ class AutoRegressor:
         self._fit_scaling = self._all_scalings[self.optimal_scaling](
             **self.optimal_scaling_hyperparameters
         )
-        self._fit_scaling.fit(_X)
+        self._fit_scaling.fit(_X, _y)
         _X = self._fit_scaling.transform(_X)
         # feature selection
         self._fit_feature_selection = self._all_feature_selection[
@@ -1697,7 +1697,7 @@ class AutoRegressor:
 
                 reg.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
-
+                
                 y_pred = reg.predict(_X_test_obj)
                 _loss = -_obj(y_pred, _y_test_obj.values)
 

@@ -66,7 +66,7 @@ class DataEncoding():
                     df.loc[~df[column].isnull(), column] = df.loc[~df[column].isnull(), column].astype(int)
             else :
                 df.loc[~df[column].isnull(), column] = df.loc[~df[column].isnull(), column].astype(float)
-                # standardardize numerical features
+                # standardize numerical features
                 if self.transform == 'standardize':
                     standard_scaler = preprocessing.StandardScaler().fit(
                         df[[column]].values)
@@ -94,7 +94,7 @@ class DataEncoding():
     def refit(self, _df) :
         df = _df.copy(deep = True)
         if self.category.empty :
-            raise ValueError('No category table exists!')
+            return df
         categorical_features = list(self.category.columns)
         for column in list(df.columns) :
             if df[column].dtype == object and is_date(df[[column]]) and len(df[column].dropna().unique()) > 31 :

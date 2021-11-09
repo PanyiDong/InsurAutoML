@@ -71,9 +71,13 @@ class LNN :
         # define the loss function and optimizer
         if self.criteria == 'MSE' :
             criterion = nn.MSELoss()
+        elif self.criteria == 'CrossEntropy' :
+            criterion = nn.CrossEntropyLoss()
 
         if self.optimizer == 'SGD' :
             optimizer = torch.optim.SGD(self.net.parameters(), lr = self.learning_rate)
+        elif self.optimizer == 'Adam' :
+            optimizer = torch.optim.Adam(self.net.parameters(), lr = self.learning_rate)
 
         Losses = [] # record losses for early stopping or 
 
