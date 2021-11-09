@@ -105,7 +105,7 @@ class LNN :
 
         with torch.no_grad() :
 
-            return self._model(inputs).detach().cpu().numpy() # convert to numpy
+            return self.net(inputs).detach().cpu().numpy() # convert to numpy
 
 
 #############################################################################################
