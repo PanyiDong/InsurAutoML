@@ -1889,7 +1889,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 progressbar=self.progressbar,
                 seed=self.seed
             )
-        elif self._type == 'continuous' : # assign regression tasks
+        elif self._type in ['integer', 'continuous'] : # assign regression tasks
             self.model = AutoRegressor(
                 timeout=self.timeout,
                 max_evals=self.max_evals,
@@ -1912,7 +1912,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
             )
         else :
             raise ValueError(
-                'Not recognizing type, only ["binary", "multiclass", "continuous"] accepted, get {}!'.format(
+                'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
                     self._type
                 )
             )
