@@ -301,5 +301,3 @@ class MLP :
 # Forward Step
 
 # Optimization Step
-
-# Test step
