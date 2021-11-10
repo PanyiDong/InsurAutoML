@@ -294,3 +294,10 @@ class MLP :
             return self._model(inputs).detach().cpu().numpy() # convert to numpy
 
 #############################################################################################
+# Convolutional Neural Network (CNN)
+# Ideas: Translation Invariance and Locality
+# 1. Translation Invariance: Network should respond similarily to patches
+# 2. Locality: Network should focus on local regions
+# Forward Step
+
+# Optimization Step
