@@ -17,6 +17,21 @@ device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
 
 #############################################################################################
 # Linear Neural Network (LNN)
+# forward step
+class _LNN(nn.Module) :
+
+    def __init__(
+        self,
+        inputSize,
+        outputSize,
+    ) :
+        super().__init__()
+        self.Linear = nn.Linear(inputSize, outputSize)
+
+    def forward(self, X):
+
+        output = self.Linear(X)
+        return output
 class LNN :
 
     '''
@@ -55,7 +70,7 @@ class LNN :
             self.inputSize = X.shape[1]
 
         # initialize forward steps
-        self.net = nn.Linear(self.inputSize, self.outputSize)
+        self._model = _LNN(self.inputSize, self.outputSize)
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
@@ -75,9 +90,9 @@ class LNN :
             criterion = nn.CrossEntropyLoss()
 
         if self.optimizer == 'SGD' :
-            optimizer = torch.optim.SGD(self.net.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.SGD(self._model.parameters(), lr = self.learning_rate)
         elif self.optimizer == 'Adam' :
-            optimizer = torch.optim.Adam(self.net.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.Adam(self._model.parameters(), lr = self.learning_rate)
 
         Losses = [] # record losses for early stopping or 
 
@@ -87,7 +102,7 @@ class LNN :
             optimizer.zero_grad()
 
             # calculate output using inputs
-            outputs = self.net(inputs)
+            outputs = self._model(inputs)
 
             # get loss from outputs
             loss = criterion(outputs, labels)
@@ -109,11 +124,37 @@ class LNN :
 
         with torch.no_grad() :
 
-            return self.net(inputs).detach().cpu().numpy() # convert to numpy
+            return self._model(inputs).detach().cpu().numpy() # convert to numpy
 
 
 #############################################################################################
 # Multilayer Perceptrons (MLP)
+# forward step
+class _MLP(nn.Module) :
+
+    def __init__(
+        self,
+        inputSize, 
+        hiddenSize,
+        outputSize,
+    ) :
+        super().__init__()
+        self.linear1 = nn.Linear(inputSize, hiddenSize)
+        self.linear2 = nn.Linear(hiddenSize, hiddenSize)
+        self.linear3 = nn.Linear(hiddenSize, outputSize)
+        self.ReLU = nn.ReLU
+
+    def farward(self, X) :
+        
+        output = self.linear1(X)
+        output = self.ReLU(output)
+        output = self.linear2(output)
+        output = self.ReLU(output)
+        output = self.linear3(output)
+
+        return output
+
+# optimization step
 class MLP :
     
     '''
@@ -154,13 +195,7 @@ class MLP :
             self.inputSize = X.shape[1]
 
         # initialize forward steps
-        self.net =  nn.Sequential(
-            nn.Linear(self.inputSize, self.hiddenSize),
-            nn.ReLU(),
-            nn.Linear(self.hiddenSize, self.hiddenSize),
-            nn.ReLU(),
-            nn.Linear(self.hiddenSize, self.outputSize)
-        )
+        self._model =  _MLP(self.inputSize, self.hiddenSize, self.outputSize)
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
@@ -180,9 +215,9 @@ class MLP :
             criterion = nn.CrossEntropyLoss()
 
         if self.optimizer == 'SGD' :
-            optimizer = torch.optim.SGD(self.net.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.SGD(self._model.parameters(), lr = self.learning_rate)
         elif self.optimizer == 'Adam' :
-            optimizer = torch.optim.Adam(self.net.parameters(), lr = self.learning_rate)
+            optimizer = torch.optim.Adam(self._model.parameters(), lr = self.learning_rate)
 
         Losses = [] # record losses for early stopping or 
 
@@ -192,7 +227,7 @@ class MLP :
             optimizer.zero_grad()
 
             # calculate output using inputs
-            outputs = self.net(inputs)
+            outputs = self._model(inputs)
 
             # get loss from outputs
             loss = criterion(outputs, labels)
@@ -214,6 +249,6 @@ class MLP :
 
         with torch.no_grad() :
 
-            return self.net(inputs).detach().cpu().numpy() # convert to numpy
+            return self._model(inputs).detach().cpu().numpy() # convert to numpy
 
 #############################################################################################
