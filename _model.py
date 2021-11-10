@@ -1,19 +1,61 @@
-from cProfile import label
 import numpy as np
 import pandas as pd
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-import pytorch_lightning as pl
-from pytorch_lightning import Trainer
+import torch.nn.functional as F
 
 import warnings
 
-from ._utils import type_of_task
-
-device = 'cuda' if torch.cuda.is_available() else 'cpu' # check if gpu available
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # check if gpu available
 
 #############################################################################################
+# utils
+
+# Parameters initialization
+# perform apply to network
+# def init_normal(m) :
+#     if type(m) == nn.Linear :
+#         nn.init.normal_(m.weight, mean = 0, std = 0.01) # weight parameters as normal variables
+#         nn.init.zeros_(m.bias) # bias parameters as zeros
+
+# def init_constant(m) :
+#     if type(m) == nn.Linear :
+#         nn.init.constant_(m.weight, 1) # weight parameters as constants
+#         nn.init.zeros_(m.bias) # bias parameters as zeros
+
+# def xavier(m) :
+#     if type(m) == nn.Linear :
+#         nn.init.xavier_uniform_(m.weight) # Xavier initializer
+
+#############################################################################################
+# Common layers
+
+# Center the layer values, no parameters needed
+class CenteredLayer(nn.Module) :
+
+    def __init__(self) :
+        super().__init__()
+
+    def forward(self, X) :
+        return X - X.mean()
+
+# Linear layer
+class LinearLayer(nn.Module) :
+
+    def __init__(
+        self,
+        inputSize,
+        outputSize,
+    ) :
+        super().__init__()
+        self.weight = nn.Parameter(torch.randn(inputSize, outputSize))
+        self.bias = nn.Parameter(torch.randn(outputSize, ))
+
+    def forward(self, X) :
+
+        output = torch.matmul(X, self.weight.data) + self.bias.data
+        return output
 
 #############################################################################################
 # Linear Neural Network (LNN)
@@ -70,7 +112,7 @@ class LNN :
             self.inputSize = X.shape[1]
 
         # initialize forward steps
-        self._model = _LNN(self.inputSize, self.outputSize)
+        self._model = _LNN(self.inputSize, self.outputSize).to(device)
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
@@ -195,7 +237,7 @@ class MLP :
             self.inputSize = X.shape[1]
 
         # initialize forward steps
-        self._model =  _MLP(self.inputSize, self.hiddenSize, self.outputSize)
+        self._model =  _MLP(self.inputSize, self.hiddenSize, self.outputSize).to(device)
 
         # converting inputs to pytorch tensors
         if isinstance(X, np.ndarray) :
