@@ -1,9 +1,10 @@
 from typing import ForwardRef
 import numpy as np
 import pandas as pd
+from pandas.core.algorithms import isin
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
 
 import warnings
@@ -32,10 +33,16 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu') # check if
 # convert numpy array to pytorch tensor
 def to_tensor(X, y, batch_size = 10) :
 
+    if isinstance(X, pd.DataFrame) :
+        X = X.values
+    if isinstance(y, pd.DataFrame) :
+        y = y.values
+
     inputs = torch.tensor(X).to(device)
     labels = torch.tensor(y).to(device)
+    dataset = TensorDataset(inputs, labels)
 
-    return DataLoader(torch.cat([inputs, labels], dim = 1), batch_size = batch_size, shuffle = True)
+    return DataLoader(dataset, batch_size = batch_size, shuffle = True)
 
 #############################################################################################
 # Common layers
@@ -393,3 +400,21 @@ class LeNet(nn.Module) :
         output = self.Linear3(output)
 
         return output
+
+# Deep Convolutional Neural Networks
+# AlexNet
+
+# Networks using Blocks
+# VGG (Visual Geometry Group) Network
+
+# NiN (Network in Network)
+
+# Network with Parallel Concatenations
+# GoogLeNet
+
+# ResNet (Residual Networks)
+
+# DenseNet (Densely Connected Networks)
+
+#############################################################################################
+# Recurrent Neural Network (RNN)
