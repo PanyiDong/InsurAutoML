@@ -4,6 +4,7 @@ import pandas as pd
 from pandas.core.algorithms import isin
 import torch
 import torch.nn as nn
+from torch.nn.modules.linear import Linear
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
 
@@ -350,24 +351,23 @@ class LeNet(nn.Module) :
 
     def __init__(
         self,
-        Conv_inChannel = (1, 6),
-        Conv_outChannel = (6, 16),
+        Conv_Channel = (1, 6, 16),
         Conv_kernel = (5, 5),
         Conv_padding = (2, 0),
         Conv_stride = (1, 1),
         Pool_kernel = (2, 2),
         Pool_padding = (0, 0),
         Pool_stride = (2, 2),
-        denseSize = (120, 84, 10),
+        LinearSize = (400, 120, 84, 10),
     ) :
         super().__init__()
         self.Con2d1 = nn.Conv2d(
-            Conv_inChannel[0], Conv_outChannel[0], kernel_size = Conv_kernel[0],
-            padding = Conv_padding[0], stride = Conv_stride[0]
+            Conv_Channel[0], Conv_Channel[1], kernel_size = Conv_kernel[0],
+            padding = Conv_padding[0], stride = Conv_stride[0], device = device
         )
         self.Con2d2 = nn.Conv2d(
-            Conv_inChannel[1], Conv_outChannel[1], kernel_size = Conv_kernel[1], 
-            padding = Conv_padding[1], stride = Conv_stride[1]
+            Conv_Channel[1], Conv_Channel[2], kernel_size = Conv_kernel[1], 
+            padding = Conv_padding[1], stride = Conv_stride[1], device = device
         )
         self.AvgPool2d1 = nn.AvgPool2d(
             kernel_size = Pool_kernel[0], padding = Pool_padding[0], stride = Pool_stride[0]
@@ -383,18 +383,18 @@ class LeNet(nn.Module) :
             nn.Flatten() # flatten for linear layer
         )
 
-        self.denseSize = denseSize # mark the size of linear, self.Linear1 requires change of size
-        self.Linear1 = nn.Linear(120, denseSize[0])
-        self.Linear2 = nn.Linear(denseSize[0], denseSize[1])
-        self.Linear3 = nn.Linear(denseSize[1], denseSize[2])
+        self.LinearSize = LinearSize # mark the size of linear, self.Linear1 requires change of size
+        self.Linear1 = nn.Linear(LinearSize[0], LinearSize[1], device = device)
+        self.Linear2 = nn.Linear(LinearSize[1], LinearSize[2], device = device)
+        self.Linear3 = nn.Linear(LinearSize[2], LinearSize[3], device = device)
 
     def forward(self, X) :
         
         # Convolution block
-        output = self.Conv_block(X)
+        output = self.Conv_block(X.to(device))
 
         # three fully-connected linear layers
-        self.Linear1 = nn.Linear(output.size(dim = 1), self.denseSize[0])
+        self.Linear1 = nn.Linear(output.size(dim = 1), self.LinearSize[0], device = device)
         output = self.Linear1(output)
         output = self.Linear2(output)
         output = self.Linear3(output)
@@ -403,6 +403,95 @@ class LeNet(nn.Module) :
 
 # Deep Convolutional Neural Networks
 # AlexNet
+class AlexNet(nn.Module) :
+
+    def __init__(
+        self,
+        Conv_Channel = (1, 96, 256, 384, 384, 256),
+        Conv_kernel = (11, 5, 3, 3, 3),
+        Conv_padding = (1, 2, 1, 1, 1),
+        Conv_stride = (4, 1, 1, 1, 1),
+        Pool_kernel = (3, 3, 3),
+        Pool_padding = (0, 0, 0),
+        Pool_stride = (2, 2, 2),
+        LinearSize = (6400, 4096, 4096, 10),
+        Dropout_p = (0.5, 0.5)
+    ) :
+        super().__init__()
+
+        # five layers of Convolution
+        self.Conv2d1 = nn.Conv2d(
+            Conv_Channel[0], Conv_Channel[1], kernel_size = Conv_kernel[0],
+            padding = Conv_padding[0], stride = Conv_stride[0], device = device
+        )
+        self.Conv2d2 = nn.Conv2d(
+            Conv_Channel[1], Conv_Channel[2], kernel_size = Conv_kernel[1], 
+            padding = Conv_padding[1], stride = Conv_stride[1], device = device
+        )
+        self.Conv2d3 = nn.Conv2d(
+            Conv_Channel[2], Conv_Channel[3], kernel_size = Conv_kernel[2], 
+            padding = Conv_padding[2], stride = Conv_stride[2], device = device
+        )
+        self.Conv2d4 = nn.Conv2d(
+            Conv_Channel[3], Conv_Channel[4], kernel_size = Conv_kernel[3], 
+            padding = Conv_padding[3], stride = Conv_stride[3], device = device
+        )
+        self.Conv2d5 = nn.Conv2d(
+            Conv_Channel[4], Conv_Channel[5], kernel_size = Conv_kernel[4], 
+            padding = Conv_padding[4], stride = Conv_stride[4], device = device
+        )
+
+        # two maxpool layer
+        self.MaxPool2d1 = nn.MaxPool2d(
+            kernel_size = Pool_kernel[0], padding = Pool_padding[0], stride = Pool_stride[0]
+        )
+        self.MaxPool2d2 = nn.MaxPool2d(
+            kernel_size = Pool_kernel[1], padding = Pool_padding[1], stride = Pool_stride[1]
+        )
+        self.MaxPool2d3 = nn.MaxPool2d(
+            kernel_size = Pool_kernel[2], padding = Pool_padding[2], stride = Pool_stride[2]
+        )
+
+        # activation function
+        self.ReLU = nn.ReLU()
+
+        # Convolution block
+        self.Conv_block = nn.Sequential(
+            self.Conv2d1, self.ReLU, self.MaxPool2d1,
+            self.Conv2d2, self.ReLU, self.MaxPool2d2,
+            self.Conv2d3, self.ReLU,
+            self.Conv2d4, self.ReLU,
+            self.Conv2d5, self.ReLU, self.MaxPool2d3,
+            nn.Flatten() # flatten so linear layer can be incorporated
+        )
+
+        # fully-connected linear layers
+        self.LinearSize = LinearSize
+        self.Linear1 = nn.Linear(LinearSize[0], LinearSize[1], device = device)
+        self.Linear2 = nn.Linear(LinearSize[1], LinearSize[2], device = device)
+        self.Linear3 = nn.Linear(LinearSize[2], LinearSize[3], device = device)
+
+        # Dropout to reduce network complexity
+        self.Dropout1 = nn.Dropout(p = Dropout_p[0])
+        self.Dropout2 = nn.Dropout(p = Dropout_p[1])
+
+    def forward(self, X) :
+
+        # Convolution block
+        output = self.Conv_block(X.to(device))
+
+        # Three fully-connected layers
+
+        self.Linear1 = nn.Linear(output.size(dim = 1), self.LinearSize[1], device = device)
+        self.Dense_block = nn.Sequential(
+            self.Linear1, self.ReLU, self.Dropout1,
+            self.Linear2, self.ReLU, self.Dropout2,
+            self.Linear3
+        )
+
+        output = self.Dense_block(output)
+
+        return output
 
 # Networks using Blocks
 # VGG (Visual Geometry Group) Network
