@@ -634,6 +634,43 @@ class NiN(nn.Module) :
         Pool_stride = (2, 2, 2),
         Dropout_p = 0.5
     ) :
+        # check size of initialization
+        if len(Conv_kernel) != len(Conv_channel) - 1:
+            raise ValueError(
+                'Length of convolution kernels must be the same as the number of convolution channels - 1, expect {}, get{}.'
+                .format(len(Conv_channel) - 1, len(Conv_kernel))
+            )
+
+        if len(Conv_padding) != len(Conv_channel) - 1 :
+            raise ValueError(
+                'Length of convolution paddings must be the same as the number of convolution channels - 1, expect {}, get{}.'
+                .format(len(Conv_channel) - 1, len(Conv_padding))
+            )
+
+        if len(Conv_stride) != len(Conv_channel) - 1 :
+            raise ValueError(
+                'Length of convolution strides must be the same as the number of convolution channels - 1, expect {}, get{}.'
+                .format(len(Conv_channel) - 1, len(Conv_stride))
+            )
+
+        if len(Pool_kernel) != len(Conv_channel) - 2 :
+            raise ValueError(
+                'Length of pooling kernels must be the same as the number of convolution channels - 2, expect {}, get{}.'
+                .format(len(Conv_channel) - 2, len(Pool_kernel))
+            )
+
+        if len(Pool_padding) != len(Conv_channel) - 2 :
+            raise ValueError(
+                'Length of pooling paddings must be the same as the number of convolution channels - 2, expect {}, get{}.'
+                .format(len(Conv_channel) - 2, len(Pool_padding))
+            )
+
+        if len(Pool_stride) != len(Conv_channel) - 2 :
+            raise ValueError(
+                'Length of pooling strides must be the same as the number of convolution channels - 2, expect {}, get{}.'
+                .format(len(Conv_channel) - 2, len(Pool_stride))
+            )
+        
         super().__init__()
         
         self.ReLU = nn.ReLU() # activation function
@@ -672,9 +709,10 @@ class NiN(nn.Module) :
 
         return self.net(X.to(device))
 
-
 # Network with Parallel Concatenations
 # GoogLeNet
+# Introduce the Inception Blocks, where multiple convolution layers are concatenated to produce the final output
+# GooLeNet is built using 9 Inception Blocks and global average pooling
 
 # ResNet (Residual Networks)
 
