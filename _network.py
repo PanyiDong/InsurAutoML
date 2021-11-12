@@ -5,7 +5,7 @@ from pandas.core.algorithms import isin
 import torch
 import torch.nn as nn
 from torch.nn.modules.dropout import Dropout
-from torch.utils.data import DataLoader, TensorDataset
+from torch.utils.data import DataLoader, TensorDataset, Dataset
 import torch.nn.functional as F
 
 import warnings
@@ -41,9 +41,10 @@ def to_tensor(X, y, batch_size = 10) :
 
     inputs = torch.tensor(X).to(device)
     labels = torch.tensor(y).to(device)
-    dataset = TensorDataset(inputs, labels)
+        
+    torch_dataset = TensorDataset(inputs, labels)
 
-    return DataLoader(dataset, batch_size = batch_size, shuffle = True)
+    return DataLoader(torch_dataset, batch_size = batch_size, shuffle = True)
 
 #############################################################################################
 # Common layers
