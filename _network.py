@@ -4,6 +4,7 @@ import pandas as pd
 from pandas.core.algorithms import isin
 import torch
 import torch.nn as nn
+from torch.nn.modules.dropout import Dropout
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
 
@@ -498,7 +499,8 @@ class AlexNet(nn.Module) :
 class VGG_11(nn.Module) :
 
     '''
-    VGG-11: 8 convolutional layers and 3 fully-connected layers
+    VGG-11: 8 convolutional layers (each consists numbers of convolution, activation function and one final max pooling) 
+    and 3 fully-connected layers (Linear layers)
     
     Conv_num: sum of the tuple is total number of convolution layers, elements larger than 1 indicates repeating layer
     Conv_Channel tuple with size of (number of Conv_num + 1)
@@ -525,9 +527,53 @@ class VGG_11(nn.Module) :
         Dropout_p = (0.5, 0.5)
     ) :
         super().__init__()
+        
+        # check size of initialization
+        if len(Conv_Channel) != len(Conv_num) + 1:
+            raise ValueError(
+                'Length of channels must be 1 larger than number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num) + 1, len(Conv_Channel))
+            )
+
+        if len(Conv_kernel) != len(Conv_num) :
+            raise ValueError(
+                'Length of convolution kernels must be the same as the number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num), len(Conv_kernel))
+            )
+
+        if len(Conv_padding) != len(Conv_num) :
+            raise ValueError(
+                'Length of convolution paddings must be the same as the number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num), len(Conv_padding))
+            )
+
+        if len(Conv_stride) != len(Conv_num) :
+            raise ValueError(
+                'Length of convolution strides must be the same as the number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num), len(Conv_stride))
+            )
+
+        if len(Pool_kernel) != len(Conv_num) :
+            raise ValueError(
+                'Length of pooling kernels must be the same as the number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num), len(Pool_kernel))
+            )
+
+        if len(Pool_padding) != len(Conv_num) :
+            raise ValueError(
+                'Length of pooling paddings must be the same as the number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num), len(Pool_padding))
+            )
+
+        if len(Pool_stride) != len(Conv_num) :
+            raise ValueError(
+                'Length of pooling strides must be the same as the number of convolution layers, expect {}, get{}.'
+                .format(len(Conv_num), len(Pool_stride))
+            )
 
         self.Conv_block = []
         self.ReLU = nn.ReLU() # activation function
+        # create Convolution blocks
         for i in range(len(Conv_num)) :
             in_channel = Conv_Channel[i]
             out_channel = Conv_Channel[i + 1]
@@ -572,6 +618,60 @@ class VGG_11(nn.Module) :
         return output
 
 # NiN (Network in Network)
+# apply fully-connected layer on each pixel location
+# in implementation, apply two layers 1 * 1 convolution layer with 
+# activation function after convolutional layer
+class NiN(nn.Module) :
+
+    def __init__(
+        self,
+        Conv_channel = (1, 96, 256, 384, 10),
+        Conv_kernel = (11, 5, 3, 3),
+        Conv_padding = (0, 2, 1, 1),
+        Conv_stride = (4, 1, 1, 1),
+        Pool_kernel = (3, 3, 3),
+        Pool_padding = (0, 0, 0),
+        Pool_stride = (2, 2, 2),
+        Dropout_p = 0.5
+    ) :
+        super().__init__()
+        
+        self.ReLU = nn.ReLU() # activation function
+        self.Conv_block = []
+        for i in range(len(Conv_channel) - 1) :
+            self.Conv_block.append(
+                nn.Conv2d(
+                    Conv_channel[i], Conv_channel[i + 1], kernel_size = Conv_kernel[i], 
+                    padding = Conv_padding[i], stride = Conv_stride[i], device = device
+                )
+            )
+            self.Conv_block.append(self.ReLU)
+            self.Conv_block.append(nn.Conv2d(
+                Conv_channel[i + 1], Conv_channel[i + 1], kernel_size = 1, device = device
+            ))
+            self.Conv_block.append(self.ReLU)
+            self.Conv_block.append(nn.Conv2d(
+                Conv_channel[i + 1], Conv_channel[i + 1], kernel_size = 1, device = device
+            ))
+            self.Conv_block.append(self.ReLU)
+            if i < len(Conv_channel) - 3 :
+                self.Conv_block.append(nn.MaxPool2d(
+                    Pool_kernel[i], padding = Pool_padding[i], stride = Pool_stride[i]
+                ))
+            elif i == len(Conv_channel) - 3 : 
+                self.Conv_block.append(nn.MaxPool2d(
+                    Pool_kernel[i], padding = Pool_padding[i], stride = Pool_stride[i]
+                ))
+                self.Conv_block.append(nn.Dropout(Dropout_p))
+            else :
+                self.Conv_block.append(nn.AdaptiveAvgPool2d((1, 1)))
+
+        self.net = nn.Sequential(*self.Conv_block, nn.Flatten())
+
+    def forward(self, X) :
+
+        return self.net(X.to(device))
+
 
 # Network with Parallel Concatenations
 # GoogLeNet
