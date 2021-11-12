@@ -45,6 +45,78 @@ def to_tensor(X, y, batch_size = 10) :
 
     return DataLoader(dataset, batch_size = batch_size, shuffle = True)
 
+# Batch Normalization
+# improve network stability
+class BatchNorm(nn.Module) :
+
+    '''
+    num_features: number of outputs for a fully-connected layer/number of output channels for convolution layer
+
+    num_dims: 2 for fully-connected layer/4 for convolution layer
+    '''
+
+    def __init__(
+        self,
+        num_features = 1,
+        num_dims = 4
+    ) :
+        super().__init__()
+
+        if num_dims == 2 :
+            shape = (1, num_features)
+        elif num_dims == 4 :
+            shape = (1, num_features, 1, 1)
+        else :
+            raise ValueError('num_dims only accept 2 or 4, get {}.'.format(num_dims))
+        
+        # initialize scale/shift parameters
+        self.gamma = nn.Parameter(torch.ones(shape))
+        self.beta = nn.Parameter(torch.zeros(shape))
+
+        # initialize moving average for prediction
+        self.moving_mean = torch.zeros(shape)
+        self.moving_var = torch.ones(shape)
+
+    def batch_norm(X, gamma, beta, moving_mean, moving_var, eps, momentum) :
+
+        if not torch.is_grad_enabled() : # at prediction stage, no need for batch calculation
+            # calculate standardization using moving mean/variance
+            X_hat = (X - moving_mean) / torch.sqrt(moving_var + eps)
+        else :
+            assert len(X.shape) in (2, 4)
+            if len(X.shape) == 2 : # for fully-connected layer
+                mean = X.mean(dim = 0)
+                var = ((X - mean) ** 2).mean(dim = 0)
+            else : # for 2d convolution layer
+                mean = X.mean(dim = (0, 2, 3), keepdim = True)
+                var = ((X - mean) ** 2).mean(dim = (0, 2, 3), keepdim = True)
+            
+            # batch standardization
+            # calculate standardization using batch mean/variance
+            X_hat = (X - mean) / torch.sqrt(var + eps)
+
+            # update mean/variance using moving average
+            moving_mean = momentum * moving_mean + (1.0 - momentum) * mean
+            moving_var = momentum * moving_var + (1.0 - momentum) * var
+
+        Y = gamma * X_hat + beta # scale and shift
+
+        return Y, moving_mean.data, moving_var.data
+
+    def forward(self, X) :
+
+        # unify the device
+        if self.moving_mean.device != X.device :
+            self.moving_mean = self.moving_mean.to(X.device)
+            self.moving_var = self.moving_var.to(X.device)
+
+        # update batch normalization
+        Y, self.moving_mean, self.moving_var = self.batch_norm(
+            X, self.gamma, self.beta, self.moving_mean, self.moving_var, eps = 1e-5, momentum = 0.9
+        )
+
+        return Y
+
 #############################################################################################
 # Common layers
 
@@ -719,4 +791,4 @@ class NiN(nn.Module) :
 # DenseNet (Densely Connected Networks)
 
 #############################################################################################
-# Recurrent Neural Network (RNN)
+# Recurrent Neural Network (RNN) 
