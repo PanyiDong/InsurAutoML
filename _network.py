@@ -4,7 +4,6 @@ import pandas as pd
 from pandas.core.algorithms import isin
 import torch
 import torch.nn as nn
-from torch.nn.modules.linear import Linear
 from torch.utils.data import DataLoader, TensorDataset
 import torch.nn.functional as F
 
@@ -402,6 +401,7 @@ class LeNet(nn.Module) :
         return output
 
 # Deep Convolutional Neural Networks
+# Deeper layers version of CNN
 # AlexNet
 class AlexNet(nn.Module) :
 
@@ -481,7 +481,6 @@ class AlexNet(nn.Module) :
         output = self.Conv_block(X.to(device))
 
         # Three fully-connected layers
-
         self.Linear1 = nn.Linear(output.size(dim = 1), self.LinearSize[1], device = device)
         self.Dense_block = nn.Sequential(
             self.Linear1, self.ReLU, self.Dropout1,
@@ -494,7 +493,83 @@ class AlexNet(nn.Module) :
         return output
 
 # Networks using Blocks
+# Blocks of Convolution layers
 # VGG (Visual Geometry Group) Network
+class VGG_11(nn.Module) :
+
+    '''
+    VGG-11: 8 convolutional layers and 3 fully-connected layers
+    
+    Conv_num: sum of the tuple is total number of convolution layers, elements larger than 1 indicates repeating layer
+    Conv_Channel tuple with size of (number of Conv_num + 1)
+    Conv_kernel tuple with size of (number of Conv_num)
+    Conv_padding tuple with size of (number of Conv_num)
+    Conv_stride tuple with size of (number of Conv_num)
+
+    Pool_kernel tuple with size of (number of Conv_num)
+    Pool_padding tuple with size of (number of Conv_num)
+    Pool_stride tuple with size of (number of Conv_num)
+    '''
+
+    def __init__(
+        self,
+        Conv_num = (1, 1, 2, 2, 2),
+        Conv_Channel = (1, 64, 128, 256, 512, 512),
+        Conv_kernel = (3, 3, 3, 3, 3),
+        Conv_padding = (1, 1, 1, 1, 1),
+        Conv_stride = (1, 1, 1, 1, 1),
+        Pool_kernel = (2, 2, 2, 2, 2),
+        Pool_padding = (0, 0, 0, 0, 0),
+        Pool_stride = (2, 2, 2, 2, 2),
+        LinearSize = (25088, 4096, 4096, 10),
+        Dropout_p = (0.5, 0.5)
+    ) :
+        super().__init__()
+
+        self.Conv_block = []
+        self.ReLU = nn.ReLU() # activation function
+        for i in range(len(Conv_num)) :
+            in_channel = Conv_Channel[i]
+            out_channel = Conv_Channel[i + 1]
+            for _ in range(Conv_num[i]) :
+                self.Conv_block.append(
+                    nn.Conv2d(in_channel, out_channel, kernel_size = Conv_kernel[i],
+                    padding = Conv_padding[i], stride = Conv_stride[i], device = device)
+                )
+                self.Conv_block.append(self.ReLU)
+                in_channel = out_channel
+            self.Conv_block.append(
+                nn.MaxPool2d(kernel_size = Pool_kernel[i], padding = Pool_padding[i], stride = Pool_stride[i])
+            )
+
+        self.Conv_block = nn.Sequential(*self.Conv_block, nn.Flatten()) # convert list of Convolution block to Sequential
+        
+        # fully-connected linear layers
+        self.LinearSize = LinearSize
+        self.Linear1 = nn.Linear(LinearSize[0], LinearSize[1], device = device)
+        self.Linear2 = nn.Linear(LinearSize[1], LinearSize[2], device = device)
+        self.Linear3 = nn.Linear(LinearSize[2], LinearSize[3], device = device)
+
+        # Dropout to reduce network complexity
+        self.Dropout1 = nn.Dropout(p = Dropout_p[0])
+        self.Dropout2 = nn.Dropout(p = Dropout_p[1])
+
+    def forward(self, X) :
+
+        # Convolution block
+        output = self.Conv_block(X.to(device))
+
+        # Three fully-connected layers
+        self.Linear1 = nn.Linear(output.size(dim = 1), self.LinearSize[1], device = device)
+        self.Dense_block = nn.Sequential(
+            self.Linear1, self.ReLU, self.Dropout1,
+            self.Linear2, self.ReLU, self.Dropout2,
+            self.Linear3
+        )
+
+        output = self.Dense_block(output)
+
+        return output
 
 # NiN (Network in Network)
 
