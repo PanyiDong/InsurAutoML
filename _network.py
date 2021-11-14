@@ -899,3 +899,14 @@ class RNN(nn.Module):
         # We'll send the tensor holding the hidden state to the device we specified earlier as well
         hidden = torch.zeros(self.n_layers, batch_size, self.hidden_dim)
         return hidden
+
+# Early observations can have substantial impact on later observations, RNN layer can result in 
+# vanishing or exploding gradients. To avoid the circumstances, modified models are required
+
+# Gated Recurrent Units (GRU)
+# introduce Reset Gate and Update Gate to select how much of previous state should be retained or 
+# how much of new state should be copied
+# Reset Gate captures short-term dependencies
+# Update Gate captures long-term dependencies
+
+# Long Short-Term Memory (LSTM)
