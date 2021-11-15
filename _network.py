@@ -910,3 +910,17 @@ class RNN(nn.Module):
 # Update Gate captures long-term dependencies
 
 # Long Short-Term Memory (LSTM)
+# Add Input Gate, Forget Gate, Output Gate to create interactions between 
+# short-term/long-term memory,
+# Input variables, Hidden state, Memory are included in the layer
+
+# Deep Recurrent Neural Network
+# Multiple hidden states in a RNN layer
+
+# Bidirectional Recurrent Neural Network
+# The latent variables/hidden states can perform forward/backward recursion to interact 
+# between layers
+# Since forward/backward recursion are both performed in training stage, and test stage 
+# only performs forward recursion, test accuracy can be relatively lower. And the time
+# efficiency can be really slow in bidirectional training for convergence. The model is
+# only favorable for tasks like filling missing texts, encoding sequences
