@@ -21,10 +21,10 @@ def random_guess(number, seed=1):
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
 def random_index(n, total=None, seed=1):
-    if seed != None:
+    if seed is not None:
         np.random.seed(seed)
-    if total == None:
-        total == n
+    if total is None:
+        total = n
     output = []
     vlist = [i for i in range(total)]
     for _ in range(n):
@@ -93,7 +93,7 @@ def train_test_split(X, y, test_perc=0.15, seed=1):
     """
 
     n = len(X)
-    index_list = random_index(n, seed)
+    index_list = random_index(n, seed = seed)
     valid_index = index_list[: int(test_perc * n)]
     train_index = list(set([i for i in range(n)]) - set(valid_index))
 
