@@ -613,11 +613,11 @@ class AutoClassifier:
         with open(self.temp_directory + "/init.txt", "w") as f:
             f.write("Features of the dataset: {}\n".format(list(X.columns)))
             f.write(
-                "Shape of the design matrix: {} * {}".format(X.shape[0], X.shape[1])
+                "Shape of the design matrix: {} * {}\n".format(X.shape[0], X.shape[1])
             )
             f.write("Response of the dataset: {}\n".format(list(y.columns)))
             f.write(
-                "Shape of the response vector: {} * {}".format(y.shape[0], y.shape[1])
+                "Shape of the response vector: {} * {}\n".format(y.shape[0], y.shape[1])
             )
             f.write("Type of the task: Classification.\n")
 
@@ -1497,7 +1497,7 @@ class AutoRegressor:
         with open(self.temp_directory + "/init.txt", "w") as f:
             f.write("Features of the dataset: {}\n".format(list(X.columns)))
             f.write(
-                "Shape of the design matrix: {} * {}".format(X.shape[0], X.shape[1])
+                "Shape of the design matrix: {} * {}\n".format(X.shape[0], X.shape[1])
             )
             f.write("Response of the dataset: {}\n".format(list(y.columns)))
             f.write(
