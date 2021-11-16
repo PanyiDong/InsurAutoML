@@ -758,7 +758,7 @@ class AutoClassifier:
                 )
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Balancing finished, in scaling process.")
-
+       
                 # make sure the classes are integers (belongs to certain classes)
                 _y_train_obj = _y_train_obj.astype(int)
                 _y_test_obj = _y_test_obj.astype(int)
