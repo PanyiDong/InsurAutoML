@@ -144,6 +144,7 @@ class AutoClassifier:
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
+        ignore_warning = True,
         encoder="auto",
         imputer="auto",
         balancing="auto",
@@ -163,6 +164,7 @@ class AutoClassifier:
         self.max_evals = max_evals
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
         self.balancing = balancing
@@ -596,6 +598,9 @@ class AutoClassifier:
 
     def fit(self, X, y):
 
+        if self.ignore_warning : # ignore all warnings to generate clearer outputs
+            warnings.filterwarnings("ignore")
+
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(self.temp_directory):
@@ -1027,6 +1032,7 @@ class AutoRegressor:
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
+        ignore_warning = True,
         encoder="auto",
         imputer="auto",
         balancing="auto",
@@ -1046,6 +1052,7 @@ class AutoRegressor:
         self.max_evals = max_evals
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
         self.balancing = balancing
@@ -1180,7 +1187,7 @@ class AutoRegressor:
         )
 
     # initialize and get hyperparameter search space
-    def get_hyperparameter_space(self, X, y):
+    def get_hyperparameter_space(self, X, y = None):
 
         # initialize default search options
         # use copy to allows multiple manipulation
@@ -1479,6 +1486,9 @@ class AutoRegressor:
         return self
 
     def fit(self, X, y):
+
+        if self.ignore_warning : # ignore all warnings to generate clearer outputs
+            warnings.filterwarnings("ignore")
     
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
@@ -1820,6 +1830,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
+        ignore_warning = True,
         encoder="auto",
         imputer="auto",
         balancing="auto",
@@ -1839,6 +1850,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         self.max_evals = max_evals
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
         self.balancing = balancing
@@ -1867,6 +1879,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
+                ignore_warning = self.ignore_warning,
                 encoder=self.encoder,
                 imputer=self.imputer,
                 balancing=self.balancing,
@@ -1888,6 +1901,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
+                ignore_warning = self.ignore_warning,
                 encoder=self.encoder,
                 imputer=self.imputer,
                 balancing=self.balancing,
