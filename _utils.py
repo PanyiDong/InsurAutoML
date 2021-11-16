@@ -412,11 +412,11 @@ def type_of_task(y):
 
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         return "continuous"  # assign for regression tasks
-    
+
     if y.dtype.kind in ["i", "u"] and len(np.unique(y)) >= 0.5 * len(y) :
         return "integer" # assign for regression tasks
 
-    if (len(np.unique(y)) > 2) and (y.ndim >= 2 and len(y[0]) > 1):
+    if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):
         return "multiclass"  # assign for classification tasks
     else:
         return "binary" # assign for regression tasks

@@ -1,6 +1,3 @@
-import sys
-
-sys.setrecursionlimit(10000)  # add recursive depth
 import os
 import shutil
 import warnings
@@ -1693,7 +1690,7 @@ class AutoRegressor:
 
                 reg.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
-                
+
                 y_pred = reg.predict(_X_test_obj)
                 _loss = -_obj(y_pred, _y_test_obj.values)
 
