@@ -1702,7 +1702,10 @@ class AutoRegressor:
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
                 y_pred = reg.predict(_X_test_obj)
-                _loss = -_obj(y_pred, _y_test_obj.values)
+                if self.objective == 'R2' : #special treatment for r2_score
+                    _loss = -_obj(y_pred, _y_test_obj.values)
+                else :
+                    _loss = _obj(y_pred, _y_test_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                     f.write("Loss from objective function is: {:.6f}\n".format(_loss))
@@ -1745,7 +1748,11 @@ class AutoRegressor:
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
                 y_pred = reg.predict(_X_obj.values)
-                _loss = -_obj(y_pred, _y_obj.values)
+
+                if self.objective == 'R2' : #special treatment for r2_score
+                    _loss = -_obj(y_pred, _y_obj.values)
+                else :
+                    _loss = _obj(y_pred, _y_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                     f.write("Loss from objective function is: {.6f}\n".format(_loss))
