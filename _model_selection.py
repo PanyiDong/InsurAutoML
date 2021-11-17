@@ -1932,6 +1932,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
             )
 
         self.model.fit(X, y)
+        return self
 
     def predict(self, X) :
 
