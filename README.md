@@ -4,8 +4,9 @@ IRisk Lab Project, UIUC, Fall 2021
 
 The project aims to create a AutoML package with special focus on insurance data (with some inbalance in nature).
 
-Required Packages: numpy, pandas, scipy, os, shutil, time, itertools, functools, cmath, tqdm, warnings, rpy2, tensorflow, mlflow, hyperopt, sklearn, autosklearn
-(rpy2 only for reading .rda/.rdata datasets)
+Required Packages: numpy, pandas, scipy, os, shutil, time, itertools, functools, importlib, cmath, tqdm, warnings, rpy2*, tensorflow**, mlflow, hyperopt, sklearn, autosklearn
+* rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
+** tesnsorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
 
 Current Progress:
 1. base: load data with some common file format (.csv, .data, .rda, etc.) given path into a database dict, and some common utilities
