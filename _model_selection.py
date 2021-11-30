@@ -533,7 +533,7 @@ class AutoClassifier:
         
         # record optimal settings
         with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
-            f.write("Optimal encoding method is: {}.\n".format(self.optimal_encoder))
+            f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
             f.write("Optimal encoding hyperparameters:")
             print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
             f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
@@ -1422,7 +1422,7 @@ class AutoRegressor:
         
         # record optimal settings
         with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
-            f.write("Optimal encoding method is: {}.\n".format(self.optimal_encoder))
+            f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
             f.write("Optimal encoding hyperparameters:")
             print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
             f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
