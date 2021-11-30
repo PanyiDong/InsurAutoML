@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  automltest:
+    image: automltest
+    build:
+      context: .
+      dockerfile: ./Dockerfile
