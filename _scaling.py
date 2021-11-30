@@ -3,7 +3,6 @@ import numpy as np
 import pandas as pd
 import scipy
 import scipy.stats
-from sympy import SeqAdd
 from sklearn.preprocessing import PowerTransformer, QuantileTransformer
 
 from ._encoding import DataEncoding
