@@ -30,3 +30,7 @@ The pipeline of AutoML:
 5. Feature Selection: remove reducatant or insignificant features to improve the performance of the model. Can be selected as no_prorcessing.
 6. Regression/Classification: performan regression/classficaiton models to fit the datasets.
 ```
+
+`report.pdf` provides an introduction to the AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
+
+`Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
