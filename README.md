@@ -33,6 +33,8 @@ The pipeline of AutoML:
 
 Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the taining time (for optimization).
 
+Other files in the repository:
+
 `report.pdf` provides an introduction to the AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
 
 `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
