@@ -31,7 +31,7 @@ The pipeline of AutoML:
 6. Regression/Classification: performan regression/classficaiton models to fit the datasets.
 ```
 
-Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the taining time (for optimization).
+Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the taining time (for optimization). On test dataset Employee Future prediction, the over 3 mintues training time can be reduced to 2.1 seconds reproduction time.
 
 Other files in the repository:
 
