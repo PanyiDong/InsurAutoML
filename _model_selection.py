@@ -1,4 +1,5 @@
 import os
+import ast
 import shutil
 import warnings
 import numpy as np
@@ -41,6 +42,35 @@ from ._hyperparameters import (
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
 warnings.filterwarnings("ignore", category=UserWarning)
+
+# save model
+def save_model(
+    encoder,
+    encoder_hyperparameters,
+    imputer,
+    imputer_hyperparameters,
+    balancing,
+    balancing_hyperparameters,
+    scaling,
+    scaling_hyperparameters,
+    feature_selection,
+    feature_selection_hyperparameters,
+    model,
+    model_hyperparameters
+) :
+    with open("model", "w") as f:
+        f.write("{}\n".format(encoder))
+        print(encoder_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(imputer))
+        print(imputer_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(balancing))
+        print(balancing_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(scaling))
+        print(scaling_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(feature_selection))
+        print(feature_selection_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(model))
+        print(model_hyperparameters, file=f, end="\n")
 
 """
 Classifiers/Hyperparameters from autosklearn:
@@ -145,6 +175,7 @@ class AutoClassifier:
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
+        save = True,
         ignore_warning = True,
         encoder="auto",
         imputer="auto",
@@ -165,6 +196,7 @@ class AutoClassifier:
         self.max_evals = max_evals
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.save = save
         self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
@@ -595,30 +627,92 @@ class AutoClassifier:
         )
         self._fit_classifier.fit(_X, _y.values.ravel())
 
+        # save the model
+        if self.save :
+            save_model(
+                self.optimal_encoder,
+                self.optimal_encoder_hyperparameters,
+                self.optimal_imputer,
+                self.optimal_imputer_hyperparameters,
+                self.optimal_balancing,
+                self.optimal_balancing_hyperparameters,
+                self.optimal_scaling,
+                self.optimal_scaling_hyperparameters,
+                self.optimal_feature_selection,
+                self.optimal_feature_selection_hyperparameters,
+                self.optimal_classifier,
+                self.optimal_classifier_hyperparameters
+            )
+
+        return self
+
+    def load_model(self, _X, _y) :
+
+        with open('model') as f:
+            optimal_setting = f.readlines()
+        
+        # remove change line signs
+        optimal_setting = [item.replace('\n','') for item in optimal_setting]
+        # remove blank spaces
+        while '' in optimal_setting :
+            optimal_setting.remove('')
+
+        self.optimal_encoder = optimal_setting[0]
+        self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
+        self.optimal_imputer = optimal_setting[2]
+        self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
+        self.optimal_balancing = optimal_setting[4]
+        self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
+        self.optimal_scaling = optimal_setting[6]
+        self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
+        self.optimal_feature_selection = optimal_setting[8]
+        self.optimal_feature_selection_hyperparameters = ast.literal_eval(optimal_setting[9])
+        self.optimal_classifier = optimal_setting[10]
+        self.optimal_classifier_hyperparameters = ast.literal_eval(optimal_setting[11])
+
+        # encoding
+        self._fit_encoder = self._all_encoders[self.optimal_encoder](
+            **self.optimal_encoder_hyperparameters
+        )
+        _X = self._fit_encoder.fit(_X)
+        # imputer
+        self._fit_imputer = self._all_imputers[self.optimal_imputer](
+            **self.optimal_imputer_hyperparameters
+        )
+        _X = self._fit_imputer.fill(_X)
+        # balancing
+        self._fit_balancing = self._all_balancings[self.optimal_balancing](
+            **self.optimal_balancing_hyperparameters
+        )
+        _X, _y = self._fit_balancing.fit_transform(_X, _y)
+
+        # make sure the classes are integers (belongs to certain classes)
+        _y = _y.astype(int)
+        _y = _y.astype(int)
+        # scaling
+        self._fit_scaling = self._all_scalings[self.optimal_scaling](
+            **self.optimal_scaling_hyperparameters
+        )
+        self._fit_scaling.fit(_X, _y)
+        _X = self._fit_scaling.transform(_X)
+        # feature selection
+        self._fit_feature_selection = self._all_feature_selection[
+            self.optimal_feature_selection
+        ](**self.optimal_feature_selection_hyperparameters)
+        self._fit_feature_selection.fit(_X, _y)
+        _X = self._fit_feature_selection.transform(_X)
+        # classification
+        self._fit_classifier = self._all_models[self.optimal_classifier](
+            **self.optimal_classifier_hyperparameters
+        )
+        self._fit_classifier.fit(_X, _y.values.ravel())
+
         return self
 
     def fit(self, X, y):
 
         if self.ignore_warning : # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
-
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(self.temp_directory):
-            shutil.rmtree(self.temp_directory)
-        os.makedirs(self.temp_directory)
-
-        # write basic information to init.txt
-        with open(self.temp_directory + "/init.txt", "w") as f:
-            f.write("Features of the dataset: {}\n".format(list(X.columns)))
-            f.write(
-                "Shape of the design matrix: {} * {}\n".format(X.shape[0], X.shape[1])
-            )
-            f.write("Response of the dataset: {}\n".format(list(y.columns)))
-            f.write(
-                "Shape of the response vector: {} * {}\n".format(y.shape[0], y.shape[1])
-            )
-            f.write("Type of the task: Classification.\n")
 
         _X = X.copy()
         _y = y.copy()
@@ -631,6 +725,31 @@ class AutoClassifier:
             feature_selection,
             models,
         ) = self.get_hyperparameter_space(_X, _y)
+
+        # if the model is already trained, read the setting
+        if os.path.exists('model') :
+
+            self.load_model(_X, _y)
+
+            return self
+
+        # initialize temp directory
+        # check if temp directory exists, if exists, empty it
+        if os.path.isdir(self.temp_directory):
+            shutil.rmtree(self.temp_directory)
+        os.makedirs(self.temp_directory)
+
+        # write basic information to init.txt
+        with open(self.temp_directory + "/init.txt", "w") as f:
+            f.write("Features of the dataset: {}\n".format(list(_X.columns)))
+            f.write(
+                "Shape of the design matrix: {} * {}\n".format(_X.shape[0], _X.shape[1])
+            )
+            f.write("Response of the dataset: {}\n".format(list(_y.columns)))
+            f.write(
+                "Shape of the response vector: {} * {}\n".format(_y.shape[0], _y.shape[1])
+            )
+            f.write("Type of the task: Classification.\n")
 
         if self.validation:  # only perform train_test_split when validation
             # train test split so the performance of model selection and
@@ -1033,6 +1152,7 @@ class AutoRegressor:
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
+        save = True,
         ignore_warning = True,
         encoder="auto",
         imputer="auto",
@@ -1053,6 +1173,7 @@ class AutoRegressor:
         self.max_evals = max_evals
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.save = save
         self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
@@ -1484,30 +1605,92 @@ class AutoRegressor:
         )
         self._fit_regressor.fit(_X, _y.values.ravel())
 
+        # save the model
+        if self.save :
+            save_model(
+                self.optimal_encoder,
+                self.optimal_encoder_hyperparameters,
+                self.optimal_imputer,
+                self.optimal_imputer_hyperparameters,
+                self.optimal_balancing,
+                self.optimal_balancing_hyperparameters,
+                self.optimal_scaling,
+                self.optimal_scaling_hyperparameters,
+                self.optimal_feature_selection,
+                self.optimal_feature_selection_hyperparameters,
+                self.optimal_regressor,
+                self.optimal_regressor_hyperparameters
+            )
+
+        return self
+
+    def load_model(self, _X, _y) :
+
+        with open('model') as f:
+            optimal_setting = f.readlines()
+        
+        # remove change line signs
+        optimal_setting = [item.replace('\n','') for item in optimal_setting]
+        # remove blank spaces
+        while '' in optimal_setting :
+            optimal_setting.remove('')
+
+        self.optimal_encoder = optimal_setting[0]
+        self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
+        self.optimal_imputer = optimal_setting[2]
+        self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
+        self.optimal_balancing = optimal_setting[4]
+        self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
+        self.optimal_scaling = optimal_setting[6]
+        self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
+        self.optimal_feature_selection = optimal_setting[8]
+        self.optimal_feature_selection_hyperparameters = ast.literal_eval(optimal_setting[9])
+        self.optimal_regressor = optimal_setting[10]
+        self.optimal_regressor_hyperparameters = ast.literal_eval(optimal_setting[11])
+
+        # encoding
+        self._fit_encoder = self._all_encoders[self.optimal_encoder](
+            **self.optimal_encoder_hyperparameters
+        )
+        _X = self._fit_encoder.fit(_X)
+        # imputer
+        self._fit_imputer = self._all_imputers[self.optimal_imputer](
+            **self.optimal_imputer_hyperparameters
+        )
+        _X = self._fit_imputer.fill(_X)
+        # balancing
+        self._fit_balancing = self._all_balancings[self.optimal_balancing](
+            **self.optimal_balancing_hyperparameters
+        )
+        _X, _y = self._fit_balancing.fit_transform(_X, _y)
+
+        # make sure the classes are integers (belongs to certain classes)
+        _y = _y.astype(int)
+        _y = _y.astype(int)
+        # scaling
+        self._fit_scaling = self._all_scalings[self.optimal_scaling](
+            **self.optimal_scaling_hyperparameters
+        )
+        self._fit_scaling.fit(_X, _y)
+        _X = self._fit_scaling.transform(_X)
+        # feature selection
+        self._fit_feature_selection = self._all_feature_selection[
+            self.optimal_feature_selection
+        ](**self.optimal_feature_selection_hyperparameters)
+        self._fit_feature_selection.fit(_X, _y)
+        _X = self._fit_feature_selection.transform(_X)
+        # classification
+        self._fit_regressor = self._all_models[self.optimal_regressor](
+            **self.optimal_regressor_hyperparameters
+        )
+        self._fit_regressor.fit(_X, _y.values.ravel())
+
         return self
 
     def fit(self, X, y):
 
         if self.ignore_warning : # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
-    
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(self.temp_directory):
-            shutil.rmtree(self.temp_directory)
-        os.makedirs(self.temp_directory)
-
-        # write basic information to init.txt
-        with open(self.temp_directory + "/init.txt", "w") as f:
-            f.write("Features of the dataset: {}\n".format(list(X.columns)))
-            f.write(
-                "Shape of the design matrix: {} * {}\n".format(X.shape[0], X.shape[1])
-            )
-            f.write("Response of the dataset: {}\n".format(list(y.columns)))
-            f.write(
-                "Shape of the response vector: {} * {}\n".format(y.shape[0], y.shape[1])
-            )
-            f.write("Type of the task: Regression.\n")
 
         _X = X.copy()
         _y = y.copy()
@@ -1520,6 +1703,30 @@ class AutoRegressor:
             feature_selection,
             models,
         ) = self.get_hyperparameter_space(_X, _y)
+
+        if os.path.exists('model') :
+
+            self.load_model(_X, _y)
+
+            return self
+    
+        # initialize temp directory
+        # check if temp directory exists, if exists, empty it
+        if os.path.isdir(self.temp_directory):
+            shutil.rmtree(self.temp_directory)
+        os.makedirs(self.temp_directory)
+
+        # write basic information to init.txt
+        with open(self.temp_directory + "/init.txt", "w") as f:
+            f.write("Features of the dataset: {}\n".format(list(_X.columns)))
+            f.write(
+                "Shape of the design matrix: {} * {}\n".format(_X.shape[0], _X.shape[1])
+            )
+            f.write("Response of the dataset: {}\n".format(list(_y.columns)))
+            f.write(
+                "Shape of the response vector: {} * {}\n".format(_y.shape[0], _y.shape[1])
+            )
+            f.write("Type of the task: Regression.\n")
 
         if self.validation:  # only perform train_test_split when validation
             # train test split so the performance of model selection and
@@ -1838,6 +2045,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
+        save = True,
         ignore_warning = True,
         encoder="auto",
         imputer="auto",
@@ -1858,6 +2066,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         self.max_evals = max_evals
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
+        self.save = save
         self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
@@ -1887,6 +2096,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
+                save = self.save,
                 ignore_warning = self.ignore_warning,
                 encoder=self.encoder,
                 imputer=self.imputer,
@@ -1909,6 +2119,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
+                save = self.save,
                 ignore_warning = self.ignore_warning,
                 encoder=self.encoder,
                 imputer=self.imputer,
