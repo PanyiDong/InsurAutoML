@@ -18,6 +18,7 @@ from hyperopt import (
     STATUS_OK,
     pyll,
 )
+
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
@@ -157,7 +158,7 @@ class AutoClassifier:
         method="Bayesian",
         algo="tpe",
         spark_trials=False,
-        progressbar=False,
+        progressbar=True,
         seed=1,
     ):
         self.timeout = timeout
@@ -1045,7 +1046,7 @@ class AutoRegressor:
         method="Bayesian",
         algo="tpe",
         spark_trials=False,
-        progressbar=False,
+        progressbar=True,
         seed=1,
     ):
         self.timeout = timeout
@@ -1850,7 +1851,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         method="Bayesian",
         algo="tpe",
         spark_trials=False,
-        progressbar=False,
+        progressbar=True,
         seed=1,
     ):
         self.timeout = timeout
