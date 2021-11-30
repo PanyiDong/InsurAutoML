@@ -10,7 +10,6 @@ import scipy.linalg
 import sklearn
 from sklearn.feature_selection._univariate_selection import f_classif
 from sklearn.utils.extmath import stable_cumsum, svd_flip
-from sympy import solve
 import itertools
 from functools import partial
 
