@@ -1,4 +1,3 @@
-from cmath import nan
 import random
 from tqdm import tqdm
 import numpy as np
