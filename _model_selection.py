@@ -1826,7 +1826,7 @@ class AutoRegressor:
 
         return self._fit_regressor.predict(_X)
 
-class AutoMLPredictor(AutoClassifier, AutoRegressor) :
+class AutoML(AutoClassifier, AutoRegressor) :
     
     """
     Automatically assign to AutoClassifier or AutoRegressor
