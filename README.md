@@ -22,7 +22,9 @@ pip install -r requirements.txt
 3. Put data in the folder and run for training/evaluation
 
 Example below runs a classifcation task on heart.csv file in example/example_data folder
+
 `train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
+
 Your can specify the data folder (or by default at current folder), test_data name (or evaluation set will be split from train_data), evaluation metrics and all model parameters by arguments. 
 
 ```console
