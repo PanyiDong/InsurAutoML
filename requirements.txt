@@ -8,3 +8,6 @@ mlflow==1.21.0
 hyperopt==0.2.5
 scikit-learn
 auto-sklearn
+# optional packages
+# rpy2
+# tensorflow

@@ -1,12 +1,8 @@
-import os
-import shutil
 import glob
 from dateutil.parser import parse
 import numpy as np
 import pandas as pd
 import warnings
-import sklearn
-from sklearn.tree import ExtraTreeClassifier
 
 import autosklearn
 import autosklearn.classification
