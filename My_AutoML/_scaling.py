@@ -326,3 +326,191 @@ class Winsorization:
             i += 1
 
         return _X
+
+####################################################################################################
+# Special Case
+def Feature_Manipulation(
+    X, 
+    columns = [],
+    manipulation = [],
+    rename_columns = {},
+    replace = False,
+    deep_copy = False,
+    ):
+
+    """
+    Available methods: +, -, *, /, //, %, ln, log2, log10, exp
+
+    Parameters
+    ----------
+    columns: columns need manipulation, default = []
+    
+    manipulation: list of manipulation, default = []
+    
+    rename_columns: specific changing column names, default = {}
+
+    replace: whether to replace the new columns, default = False
+
+    deep_copy: whether need deep copy the input, default = False
+
+    Example
+    -------
+    >> data = np.arange(15).reshape(5, 3)
+    >> data = pd.DataFrame(data, columns = ['column_1', 'column_2', 'column_3'])
+    >> data
+
+       column_1  column_2  column_3
+    0         0         1         2
+    1         3         4         5
+    2         6         7         8
+    3         9        10        11
+    4        12        13        14
+
+    >> data = Feature_Manipulation(
+    >>     data, columns= ['column_1', 'column_2', 'column_3'], 
+    >>     manipulation = ['* 100', 'ln', '+ 1'],
+    >>     rename_columns= {'column_2': 'log_column_2'}
+    >> )
+    >> data
+
+       column_1  column_2  column_3  column_1_* 100  log_column_2  column_3_+ 1
+    0         0         1         2               0      0.000000             3
+    1         3         4         5             300      1.386294             6
+    2         6         7         8             600      1.945910             9
+    3         9        10        11             900      2.302585            12
+    4        12        13        14            1200      2.564949            15
+    """
+
+    # make sure input is dataframe
+    if not isinstance(X, pd.DataFrame) :
+        try :
+            X = pd.DataFrame(X)
+        except :
+            raise ValueError('Expect a dataframe, get {}.'.format(type(X)))
+
+    _X = X.copy(deep = deep_copy)
+        
+    # if no columns/manipulation specified, raise warning
+    if not columns or not manipulation :
+        warnings.warn('No manipulation executed.')
+        return _X
+        
+    # expect one manipulation for one column
+    # if not same size, raise Error
+    if len(columns) != len(manipulation) :
+        raise ValueError(
+            'Expect same length of columns and manipulation, get {} and {} respectively.'
+            .format(len(columns), len(manipulation))
+        )
+    manipulation = dict(zip(columns, manipulation))
+
+    for _column in columns :
+
+        # if observed in rename dict, change column names
+        new_column_name = rename_columns[_column] if _column in rename_columns.keys() else _column
+
+        # if not replace, and new column names coincide with old column names
+        # new column names = old column names + manipulation
+        # for distinguish
+        if not replace and new_column_name == _column :
+            new_column_name += '_' + manipulation[_column]
+
+        # column manipulation
+        if manipulation[_column] == 'ln' :
+            _X[new_column_name] = np.log(_X[_column])
+        elif manipulation[_column] == 'log2' :
+            _X[new_column_name] = np.log2(_X[_column])
+        elif manipulation[_column] == 'log10' :
+            _X[new_column_name] = np.log10(_X[_column])
+        elif manipulation[_column] == 'exp' :
+            _X[new_column_name] = np.exp(_X[_column])
+        else :
+            exec('_X[new_column_name] = _X[_column]' + manipulation[_column])
+
+    return _X
+
+####################################################################################################
+# Feature Truncation
+class Feature_Truncation:
+    
+    """
+    Truncate feature to certain quantile (remove the effect of extreme values)
+    No inverse transform available
+
+    Parameters
+    ----------
+    quantile: quantile to be considered as extreme, default = 0.95
+    if quantile less than 0.5, left truncation; else, right truncation
+
+    Example
+    -------
+    >> scaling = Feature_Truncation(
+    >>     columns = ['column_2', 'column_5', 'column_6', 'column_8', 'column_20'],
+    >>     quantile = [0.95, 0.95, 0.9, 0.1, 0.8]
+    >> )
+    >> data = scaling.fit_transform(data)
+
+    (column_2 right truncated at 95 percentile, column_8 left truncated at 10 
+    percentile, etc.)
+    """
+
+    def __init__(
+        self,
+        columns = [],
+        quantile=0.95, 
+        deep_copy = False
+    ):
+        self.columns = columns
+        self.quantile = quantile
+        self.deep_copy = deep_copy
+
+    def fit(self, X, y = None):
+
+        # make sure input is dataframe
+        if not isinstance(X, pd.DataFrame) :
+            try :
+                X = pd.DataFrame(X)
+            except :
+                raise ValueError('Expect a dataframe, get {}.'.format(type(X)))
+
+        _X = X.copy(deep = self.deep_copy)
+
+        self.columns = list(_X.columns) if not self.columns else self.columns
+
+        if isinstance(self.quantile, list) :
+            if len(self.columns) != len(self.quantile) :
+                raise ValueError(
+                    'Expect same length of columns and quantile, get {} and {} respectively.'
+                    .format(len(self.columns), len(self.quantile))
+                )
+            self.quantile = dict(zip(self.columns, self.quantile))
+
+        self.quantile_list = {}
+
+        for _column in self.columns:
+            quantile = np.nanquantile(X[_column], self.quantile[_column], axis = 0)
+            self.quantile_list[_column] = quantile
+
+        return self
+
+    def transform(self, X):
+
+        _X = X.copy(deep = self.deep_copy) 
+
+        for _column in self.columns:
+            if self.quantile_list[_column] >= 0.5 :
+                _X.loc[_X[_column] > self.quantile_list[_column], _column] = self.quantile_list[_column]
+            else :
+                _X.loc[_X[_column] < self.quantile_list[_column], _column] = self.quantile_list[_column]
+
+        return _X
+
+    def fit_transform(self, X, y = None) :
+
+        _X = X.copy(deep = self.deep_copy)
+
+        self.fit(X, y)
+        
+        _X = self.transform(_X)
+
+        return _X

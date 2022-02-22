@@ -24,17 +24,19 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
-from ._base import no_processing
-from ._utils import type_of_task
+from My_AutoML import (
+    classifiers,
+    regressors,
+    no_processing, # base
+    type_of_task, # utils
+)
 from ._hyperparameters import (
     encoder_hyperparameter,
     imputer_hyperparameter,
     scaling_hyperparameter,
     balancing_hyperparameter,
     feature_selection_hyperparameter,
-    classifiers,
     classifier_hyperparameter,
-    regressors,
     regressor_hyperparameter,
 )
 
