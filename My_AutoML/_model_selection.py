@@ -25,10 +25,12 @@ from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
 from My_AutoML import (
-    classifiers,
-    regressors,
     no_processing, # base
     type_of_task, # utils
+)
+from ._model import(
+    classifiers,
+    regressors,
 )
 from ._hyperparameters import (
     encoder_hyperparameter,
@@ -153,7 +155,7 @@ class AutoClassifier:
 
     validation: Whether to use train_test_split to test performance on test set, default = True
     
-    test_size: Test percentage used to evaluate the performance, default = 0.15
+    valid_size: Test percentage used to evaluate the performance, default = 0.15
     only effective when validation = True
 
     objective: Objective function to test performance, default = 'accuracy'
@@ -186,7 +188,7 @@ class AutoClassifier:
         feature_selection="auto",
         models="auto",
         validation=True,
-        test_size=0.15,
+        valid_size=0.15,
         objective="accuracy",
         method="Bayesian",
         algo="tpe",
@@ -207,7 +209,7 @@ class AutoClassifier:
         self.feature_selection = feature_selection
         self.models = models
         self.validation = validation
-        self.test_size = test_size
+        self.valid_size = valid_size
         self.objective = objective
         self.method = method
         self.algo = algo
@@ -759,7 +761,7 @@ class AutoClassifier:
             from sklearn.model_selection import train_test_split
 
             X_train, X_test, y_train, y_test = train_test_split(
-                _X, _y, test_size=self.test_size, random_state=self.seed
+                _X, _y, test_size=self.valid_size, random_state=self.seed
             )
 
         # the objective function of Bayesian Optimization tries to minimize
@@ -1130,7 +1132,7 @@ class AutoRegressor:
 
     validation: Whether to use train_test_split to test performance on test set, default = True
     
-    test_size: Test percentage used to evaluate the performance, default = 0.15
+    valid_size: Test percentage used to evaluate the performance, default = 0.15
     only effective when validation = True
 
     objective: Objective function to test performance, default = 'MSE'
@@ -1163,7 +1165,7 @@ class AutoRegressor:
         feature_selection="auto",
         models="auto",
         validation=True,
-        test_size=0.15,
+        valid_size=0.15,
         objective="MSE",
         method="Bayesian",
         algo="tpe",
@@ -1184,7 +1186,7 @@ class AutoRegressor:
         self.feature_selection = feature_selection
         self.models = models
         self.validation = validation
-        self.test_size = test_size
+        self.valid_size = valid_size
         self.objective = objective
         self.method = method
         self.algo = algo
@@ -1736,7 +1738,7 @@ class AutoRegressor:
             from sklearn.model_selection import train_test_split
 
             X_train, X_test, y_train, y_test = train_test_split(
-                _X, _y, test_size=self.test_size, random_state=self.seed
+                _X, _y, test_size=self.valid_size, random_state=self.seed
             )
 
         # the objective function of Bayesian Optimization tries to minimize
@@ -2056,7 +2058,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         feature_selection="auto",
         models="auto",
         validation=True,
-        test_size=0.15,
+        valid_size=0.15,
         objective=None,
         method="Bayesian",
         algo="tpe",
@@ -2077,7 +2079,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         self.feature_selection = feature_selection
         self.models = models
         self.validation = validation
-        self.test_size = test_size
+        self.valid_size = valid_size
         self.objective = objective
         self.method = method
         self.algo = algo
@@ -2107,7 +2109,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 feature_selection=self.feature_selection,
                 models=self.models,
                 validation=self.validation,
-                test_size=self.test_size,
+                valid_size=self.valid_size,
                 objective="accuracy" if not self.objective else self.objective,
                 method=self.method,
                 algo=self.algo,
@@ -2130,7 +2132,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 feature_selection=self.feature_selection,
                 models=self.models,
                 validation=self.validation,
-                test_size=self.test_size,
+                valid_size=self.valid_size,
                 objective="MSE" if not self.objective else self.objective,
                 method=self.method,
                 algo=self.algo,

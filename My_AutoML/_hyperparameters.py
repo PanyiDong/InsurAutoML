@@ -32,6 +32,10 @@ imputer_hyperparameter = [
     {"imputer": "MissForestImputer"},
     {"imputer": "MICE", "cycle": hp.quniform("MICE_cycle", 5, 20, 1)},
     {"imputer": "GAIN"},
+    # {"imputer": "AAI_kNN"},
+    # {"imputer": "KMI"},
+    # {"imputer": "CMI"},
+    # {"imputer": "k_Prototype_NN"},
 ]
 
 # scaling
@@ -42,6 +46,8 @@ scaling_hyperparameter = [
     {"scaling": "RobustScale"},
     {"scaling": "MinMaxScale"},
     {"scaling": "Winsorization"},
+    {"scaling": "Feature_Manipulation"},
+    {"scaling": "Feature_Truncation"},
 ]
 
 # balancing
