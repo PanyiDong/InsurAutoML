@@ -4,10 +4,6 @@ import numpy as np
 import pandas as pd
 import warnings
 
-import autosklearn
-import autosklearn.classification
-import autosklearn.regression
-
 # R environment
 # check if rpy2 available
 # if not, can not read R type data
