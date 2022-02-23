@@ -27,6 +27,7 @@ import My_AutoML
 from My_AutoML import (
     no_processing, # base
     type_of_task, # utils
+    formatting,
 )
 from ._model import(
     classifiers,
