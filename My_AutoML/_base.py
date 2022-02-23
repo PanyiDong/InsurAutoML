@@ -69,7 +69,7 @@ class load_data() :
         if isinstance(path, list) :  # add / at the end of path
             path = [(_path if (_path == '' or _path[-1] == '/') else _path + '/') for _path in path]
         else :
-            path = [(path if (path == '' or _path[-1] == '/') else path + '/')]
+            path = [(path if (path == '' or path[-1] == '/') else path + '/')]
         
         for _path in path :
             self._main(_path, filename)

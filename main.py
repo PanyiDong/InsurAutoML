@@ -77,6 +77,7 @@ MAX_EVALS = args.max_evals
 TEMP_DIRECTORY = args.temp_directory
 DELETE_TEMP_AFTER_TERMINATE = args.delete_temp_after_terminate
 SAVE = args.save
+MODEL_NAME = args.train_data + '_model'
 IGNORE_WARNING = args.ignore_warning
 ENCODER  = args.encoder
 IMPUTER = args.imputer
@@ -96,11 +97,11 @@ SEED = args.seed
 if __name__ == "__main__" :
     
     print('Preprocessing:')
-    
     train = args.train_data
     test = args.test_data
     response = args.response
     
+    print('Train/Test identification.')
     # if test_data provided, use train/test data seperately
     if test != '' :
         database = load_data().load(args.data_folder, [train, test])
@@ -136,6 +137,7 @@ if __name__ == "__main__" :
         temp_directory = TEMP_DIRECTORY,
         delete_temp_after_terminate = DELETE_TEMP_AFTER_TERMINATE,
         save = SAVE,
+        model_name = MODEL_NAME,
         ignore_warning = IGNORE_WARNING,
         encoder = ENCODER,
         imputer = IMPUTER,

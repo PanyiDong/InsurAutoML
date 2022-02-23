@@ -61,9 +61,10 @@ def save_model(
     feature_selection,
     feature_selection_hyperparameters,
     model,
-    model_hyperparameters
+    model_hyperparameters,
+    model_name,
 ) :
-    with open("model", "w") as f:
+    with open(model_name, "w") as f:
         f.write("{}\n".format(encoder))
         print(encoder_hyperparameters, file=f, end="\n")
         f.write("{}\n".format(imputer))
@@ -117,7 +118,17 @@ class AutoClassifier:
     timeout: Total time limit for the job in seconds, default = 360
     
     max_evals: Maximum number of function evaluations allowed, default = 32
-
+    
+    temp_directory: folder path to store temporary model, default = 'tmp'
+    
+    delete_temp_after_terminate: whether to delete temporary information, default = False
+    
+    save: whether to save model after training, default = True
+    
+    model_name: saved model name, default = 'model'
+    
+    ignore_warning: whether to ignore warning, default = True
+    
     encoder: Encoders selected for the job, default = 'auto'
     support ('DataEncoding')
     'auto' will select all default encoders, or use a list to select
@@ -181,6 +192,7 @@ class AutoClassifier:
         temp_directory="tmp",
         delete_temp_after_terminate=False,
         save = True,
+        model_name = 'model',
         ignore_warning = True,
         encoder="auto",
         imputer="auto",
@@ -202,6 +214,7 @@ class AutoClassifier:
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
@@ -646,14 +659,15 @@ class AutoClassifier:
                 self.optimal_feature_selection,
                 self.optimal_feature_selection_hyperparameters,
                 self.optimal_classifier,
-                self.optimal_classifier_hyperparameters
+                self.optimal_classifier_hyperparameters,
+                self.model_name
             )
 
         return self
 
     def load_model(self, _X, _y) :
 
-        with open('model') as f:
+        with open(self.model_name) as f:
             optimal_setting = f.readlines()
         
         # remove change line signs
@@ -732,8 +746,9 @@ class AutoClassifier:
         ) = self.get_hyperparameter_space(_X, _y)
 
         # if the model is already trained, read the setting
-        if os.path.exists('model') :
-
+        if os.path.exists(self.model_name) :
+            
+            print('Stored model found, load previous model.')
             self.load_model(_X, _y)
 
             return self
@@ -1095,6 +1110,16 @@ class AutoRegressor:
     timeout: Total time limit for the job in seconds, default = 360
     
     max_evals: Maximum number of function evaluations allowed, default = 32
+    
+    temp_directory: folder path to store temporary model, default = 'tmp'
+    
+    delete_temp_after_terminate: whether to delete temporary information, default = False
+    
+    save: whether to save model after training, default = True
+    
+    model_name: saved model name, default = 'model'
+    
+    ignore_warning: whether to ignore warning, default = True
 
     encoder: Encoders selected for the job, default = 'auto'
     support ('DataEncoding')
@@ -1158,6 +1183,7 @@ class AutoRegressor:
         temp_directory="tmp",
         delete_temp_after_terminate=False,
         save = True,
+        model_name = 'model',
         ignore_warning = True,
         encoder="auto",
         imputer="auto",
@@ -1179,6 +1205,7 @@ class AutoRegressor:
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
@@ -1624,14 +1651,15 @@ class AutoRegressor:
                 self.optimal_feature_selection,
                 self.optimal_feature_selection_hyperparameters,
                 self.optimal_regressor,
-                self.optimal_regressor_hyperparameters
+                self.optimal_regressor_hyperparameters,
+                self.model_name
             )
 
         return self
 
     def load_model(self, _X, _y) :
 
-        with open('model') as f:
+        with open(self.model_name) as f:
             optimal_setting = f.readlines()
         
         # remove change line signs
@@ -1709,8 +1737,9 @@ class AutoRegressor:
             models,
         ) = self.get_hyperparameter_space(_X, _y)
 
-        if os.path.exists('model') :
-
+        if os.path.exists(self.model_name) :
+            
+            print('Stored model found, load previous model.')
             self.load_model(_X, _y)
 
             return self
@@ -2051,6 +2080,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         temp_directory="tmp",
         delete_temp_after_terminate=False,
         save = True,
+        model_name = 'model',
         ignore_warning = True,
         encoder="auto",
         imputer="auto",
@@ -2072,6 +2102,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
         self.imputer = imputer
@@ -2102,6 +2133,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
                 save = self.save,
+                model_name = self.model_name,
                 ignore_warning = self.ignore_warning,
                 encoder=self.encoder,
                 imputer=self.imputer,
@@ -2125,6 +2157,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
                 save = self.save,
+                model_name = self.model_name,
                 ignore_warning = self.ignore_warning,
                 encoder=self.encoder,
                 imputer=self.imputer,
