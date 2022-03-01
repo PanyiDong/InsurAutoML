@@ -1,3 +1,20 @@
+'''
+File: _model.py
+Author: Panyi Dong
+Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+
+Project: My_AutoML
+Relative Path: /_model.py
+File Created: Friday, 25th February 2022 6:13:42 pm
+Author: Panyi Dong (panyid2@illinois.edu)
+-----
+Last Modified: Tuesday, 1st March 2022 12:09:12 am
+Modified By: Panyi Dong (panyid2@illinois.edu>)
+-----
+Copyright (c) 2022 - 2022, Panyi Dong
+All rights reserved.
+'''
+
 import autosklearn.pipeline.components.classification
 import autosklearn.pipeline.components.regression
 

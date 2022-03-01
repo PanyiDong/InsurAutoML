@@ -1,3 +1,20 @@
+'''
+File: _hyperparameters.py
+Author: Panyi Dong
+Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+
+Project: My_AutoML
+Relative Path: /_hyperparameters.py
+File Created: Friday, 25th February 2022 6:13:42 pm
+Author: Panyi Dong (panyid2@illinois.edu)
+-----
+Last Modified: Tuesday, 1st March 2022 12:08:50 am
+Modified By: Panyi Dong (panyid2@illinois.edu>)
+-----
+Copyright (c) 2022 - 2022, Panyi Dong
+All rights reserved.
+'''
+
 import numpy as np
 from hyperopt import hp
 from hyperopt.pyll import scope

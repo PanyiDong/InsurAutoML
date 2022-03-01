@@ -1,3 +1,20 @@
+'''
+File: __init__.py
+Author: Panyi Dong
+Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+
+Project: My_AutoML
+Relative Path: /__init__.py
+File Created: Friday, 25th February 2022 6:13:42 pm
+Author: Panyi Dong (panyid2@illinois.edu)
+-----
+Last Modified: Tuesday, 1st March 2022 12:07:41 am
+Modified By: Panyi Dong (panyid2@illinois.edu>)
+-----
+Copyright (c) 2022 - 2022, Panyi Dong
+All rights reserved.
+'''
+
 from ._base import no_processing, load_data
 from ._utils import (
     random_guess,
