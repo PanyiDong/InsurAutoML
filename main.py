@@ -41,13 +41,15 @@ from sqlite3 import DatabaseError
 
 import sklearn
 import My_AutoML
-from My_AutoML import load_data, train_test_split, type_of_task
-from My_AutoML import AutoML, AutoClassifier, AutoRegressor
+from My_AutoML import load_data, \
+    train_test_split, type_of_task
+from My_AutoML import AutoTabular, \
+    AutoTabularClassifier, AutoTabularRegressor
 
 model_dict = {
-    'auto': AutoML,
-    'classification': AutoClassifier,
-    'regression': AutoRegressor,
+    'auto': AutoTabular,
+    'classification': AutoTabularClassifier,
+    'regression': AutoTabularRegressor,
 }
 
 # read arguments

@@ -130,7 +130,8 @@ from ._feature_selection import (
     TruncatedSVD,
 )
 from ._model import classifiers, regressors
-from ._model_selection import AutoML, AutoClassifier, AutoRegressor
+from ._model_selection import AutoTabular, \
+    AutoTabularClassifier, AutoTabularRegressor
 
 __all__ = [
     "load_data",  # _base
@@ -215,9 +216,11 @@ __all__ = [
     "select_rates_classification",
     "select_rates_regression",
     "truncatedSVD",
-    "AutoClassifier",
     "classifiers", # _model
     "regressors",
+    "AutoTabular", # _model_selection
+    "AutoTabularClassifier", 
+    "AutoTabularRegressor",
 ]
 
 base = {"load_data": load_data}
@@ -305,7 +308,7 @@ feature_selection = {
 }
 
 model_selection = {
-    "AutoML" : AutoML,
-    "AutoClassifier": AutoClassifier, 
-    "AutoRegressor": AutoRegressor
+    "AutoTabular" : AutoTabular,
+    "AutoClassifier": AutoTabularClassifier, 
+    "AutoRegressor": AutoTabularRegressor
 }

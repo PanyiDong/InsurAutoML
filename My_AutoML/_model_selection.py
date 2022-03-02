@@ -144,7 +144,7 @@ Classifiers/Hyperparameters from autosklearn:
 """
 
 # Auto binary classifier
-class AutoClassifier:
+class AutoTabularClassifier():
 
     """
     Perform model selection and hyperparameter optimization for classification tasks
@@ -1136,7 +1136,7 @@ Regressors/Hyperparameters from sklearn:
 """
 
 
-class AutoRegressor:
+class AutoTabularRegressor():
 
     """
     Perform model selection and hyperparameter optimization for regression tasks
@@ -2104,10 +2104,10 @@ class AutoRegressor:
 
         return self._fit_regressor.predict(_X)
 
-class AutoML(AutoClassifier, AutoRegressor) :
+class AutoTabular(AutoTabularClassifier, AutoTabularRegressor) :
     
     """
-    Automatically assign to AutoClassifier or AutoRegressor
+    Automatically assign to AutoTabularClassifier or AutoTabularRegressor
     """
 
     def __init__(
@@ -2164,7 +2164,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
             self._type = 'Unsupervised'
 
         if self._type in ['binary', 'multiclass'] : # assign classification tasks
-            self.model = AutoClassifier(
+            self.model = AutoTabularClassifier(
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,
@@ -2188,7 +2188,7 @@ class AutoML(AutoClassifier, AutoRegressor) :
                 seed=self.seed
             )
         elif self._type in ['integer', 'continuous'] : # assign regression tasks
-            self.model = AutoRegressor(
+            self.model = AutoTabularRegressor(
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 temp_directory=self.temp_directory,

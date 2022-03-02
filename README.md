@@ -2,7 +2,7 @@
 
 IRisk Lab Project, UIUC, Fall 2021
 
-The project aims to create a AutoML package with special focus on insurance data (with some inbalance in nature).
+The project aims to create a AutoML package with special focus on insurance data (with some imbalance in nature).
 
 ## Usage
 
@@ -21,7 +21,7 @@ pip install -r requirements.txt
 
 3. Put data in the folder and run for training/evaluation
 
-Example below runs a classifcation task on heart.csv file in example/example_data folder
+Example below runs a classification task on heart.csv file in example/example_data folder
 
 `train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
 
@@ -34,8 +34,8 @@ python main.py --data_folder example/example_data --train_data heart --response 
 Or, you can treat it like a package and follows the fit/predict workflow like jupyter notebooks in `examples`.
 
 ```python
-from My_AutoML import AutoML
-model = AutoML()
+from My_AutoML import AutoTabular
+model = AutoTabular()
 model.fit(train_X, train_y)
 
 model.predict(test_X)
@@ -63,7 +63,7 @@ Current Progress:
 >
 > 6. feature selection: PCA, AFFS, etc. And some models from autosklearn will be applied.
 >
-> 7. apply hyperopt (Bayesian Optimization) to create a pipeline of AutoML workflow. Consider the methods as a hyperparamter, and create a hyperparamter space, where we can find the optimal ML workflow. Only supervised classfication/regression models supported.
+> 7. apply hyperopt (Bayesian Optimization) to create a pipeline of AutoML workflow. Consider the methods as a hyperparameter, and create a hyperparameter space, where we can find the optimal ML workflow. Only supervised classification/regression models supported.
 
 The pipeline of AutoML:
 
@@ -75,11 +75,11 @@ The pipeline of AutoML:
 >
 > 4. Scaling: scale the datasets to increase the efficiency of convergence, or allows better performance. Can be selected as no_processing.
 >
-> 5. Feature Selection: remove reducatant or insignificant features to improve the performance of the model. Can be selected as no_prorcessing.
+> 5. Feature Selection: remove redundant or insignificant features to improve the performance of the model. Can be selected as no_processing.
 >
-> 6. Regression/Classification: performan regression/classficaiton models to fit the datasets.
+> 6. Regression/Classification: perform regression/classficaiton models to fit the datasets.
 
-Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the taining time (for optimization). On test dataset Employee Future prediction, the over 3 mintues training time can be reduced to 2.1 seconds reproduction time.
+Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time.
 
 Other files in the repository:
 
