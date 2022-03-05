@@ -1,6 +1,7 @@
 '''
 File: _balancing.py
 Author: Panyi Dong
+GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
@@ -9,8 +10,9 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 1st March 2022 12:18:54 am
+Last Modified: Saturday, 5th March 2022 11:45:31 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
+
 
 -----
 MIT License

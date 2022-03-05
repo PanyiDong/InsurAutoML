@@ -1,6 +1,7 @@
 '''
 File: _feature_selection.py
 Author: Panyi Dong
+GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
@@ -9,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 1st March 2022 12:19:22 am
+Last Modified: Saturday, 5th March 2022 11:46:01 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,6 +34,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 '''
+
 
 import random
 import warnings
