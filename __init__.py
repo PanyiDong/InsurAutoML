@@ -35,5 +35,6 @@ SOFTWARE.
 '''
 
 import My_AutoML
-from My_AutoML import AutoTabular
-from My_AutoML._base import load_data
+from My_AutoML import AutoTabular, \
+    AutoTabularClassifier, AutoTabularRegressor
+from My_AutoML import load_data

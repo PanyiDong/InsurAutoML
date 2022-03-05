@@ -432,7 +432,7 @@ class KNNImputer() :
         for _column in random_feautres :
             _subfeature = features
             _subfeature.remove(_column)
-            X.loc[self._missing_table[_column] == 1, _column] = nan
+            X.loc[self._missing_table[_column] == 1, _column] = np.nan
             fit_model = KNeighborsRegressor(n_neighbors = k)
             fit_model.fit(X.loc[~X[_column].isnull(), _subfeature], X.loc[~X[_column].isnull(), _column])
             X.loc[X[_column].isnull(), _column] = fit_model.predict(X.loc[X[_column].isnull(), _subfeature])
