@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 9:15:01 am
+Last Modified: Tuesday, 5th April 2022 11:20:25 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,8 +46,8 @@ import importlib
 
 from sklearn.utils import shuffle
 
-tensorflow_spec = importlib.util.find_spec("torch")
-if tensorflow_spec is not None:
+pytorch_spec = importlib.util.find_spec("torch")
+if pytorch_spec is not None:
     import torch
     from torch import nn
     from torch import optim
@@ -526,6 +526,7 @@ class RNN_Classifier(RNN_Model):
         batch_size=32,
         num_epochs=20,
         is_cuda=True,
+        seed=1,
     ):
         # model parameters
         self.embedding_size = embedding_size
@@ -543,8 +544,12 @@ class RNN_Classifier(RNN_Model):
         self.num_epochs = num_epochs
 
         self.is_cuda = is_cuda
+        self.seed = seed
 
     def fit(self, X, y):
+
+        # set seed
+        torch.manual_seed(self.seed)
 
         # use cuda if detect GPU and is_cuda is True
         self.device = torch.device(
@@ -587,12 +592,12 @@ class RNN_Classifier(RNN_Model):
         if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
             train_tensor = TensorDataset(
                 torch.as_tensor(X.values, dtype=torch.float32),
-                torch.as_tensor(y.values, dtype=torch.long),
+                torch.as_tensor(y.values, dtype=torch.float32),
             )
         else:
             train_tensor = TensorDataset(
                 torch.as_tensor(X, dtype=torch.float32),
-                torch.as_tensor(y, dtype=torch.long),
+                torch.as_tensor(y, dtype=torch.float32),
             )
 
         train_loader = DataLoader(
@@ -619,7 +624,28 @@ class RNN_Classifier(RNN_Model):
 
     def transform(self, X, y=None):
 
-        return self.model(X)
+        # load data to DataLoader
+        if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
+            test_tensor = TensorDataset(
+                torch.as_tensor(X.values, dtype=torch.float32),
+            )
+        else:
+            test_tensor = TensorDataset(
+                torch.as_tensor(X, dtype=torch.float32),
+            )
+
+        test_loader = DataLoader(test_tensor, batch_size=len(test_tensor))
+
+        # initialize hidden state
+        h = self.model.init_hidden(len(test_tensor))
+
+        # predict
+        for batch_idx, [data] in enumerate(test_loader):
+
+            with torch.no_grad():
+                results = self.model(data.to(self.device))
+
+        return results.cpu().numpy()  # return prediction to cpu
 
 
 ####################################################################################################
