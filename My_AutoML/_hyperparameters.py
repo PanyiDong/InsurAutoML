@@ -1,4 +1,4 @@
-'''
+"""
 File: _hyperparameters.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 5th March 2022 11:46:06 am
+Last Modified: Monday, 4th April 2022 11:08:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,7 +33,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
+"""
 
 
 import numpy as np
@@ -65,7 +65,7 @@ imputer_hyperparameter = [
     {
         "imputer": "KNNImputer",
         "n_neighbors": scope.int(hp.quniform("KNNImputer_n_neighbors", 1, 15, 1)),
-        "fold" : scope.int(hp.quniform("KNNImputer_fold", 5, 15, 1))
+        "fold": scope.int(hp.quniform("KNNImputer_fold", 5, 15, 1)),
     },
     {"imputer": "MissForestImputer"},
     {"imputer": "MICE", "cycle": hp.quniform("MICE_cycle", 5, 20, 1)},
@@ -113,7 +113,7 @@ balancing_hyperparameter = [
         "imbalance_threshold": hp.uniform(
             "EditedNearestNeighbor_imbalance_threshold", 0.8, 1
         ),
-        "k" : scope.int(hp.quniform("EditedNearestNeighbor_k", 1, 7, 1))
+        "k": scope.int(hp.quniform("EditedNearestNeighbor_k", 1, 7, 1)),
     },
     {
         "balancing": "CondensedNearestNeighbor",
@@ -134,19 +134,19 @@ balancing_hyperparameter = [
     {
         "balancing": "Smote",
         "imbalance_threshold": hp.uniform("Smote_imbalance_threshold", 0.8, 1),
-        "k" : scope.int(hp.quniform("Smote_k", 1, 10, 1))
+        "k": scope.int(hp.quniform("Smote_k", 1, 10, 1)),
     },
     {
         "balancing": "Smote_TomekLink",
         "imbalance_threshold": hp.uniform(
             "Smote_TomekLink_imbalance_threshold", 0.8, 1
         ),
-        "k" : scope.int(hp.quniform("Smote_TomekLink_k", 1, 10, 1))
+        "k": scope.int(hp.quniform("Smote_TomekLink_k", 1, 10, 1)),
     },
     {
         "balancing": "Smote_ENN",
         "imbalance_threshold": hp.uniform("Smote_ENN_imbalance_threshold", 0.8, 1),
-        "k" : scope.int(hp.quniform("Smote_ENN_k", 1, 10, 1))
+        "k": scope.int(hp.quniform("Smote_ENN_k", 1, 10, 1)),
     },
 ]
 
@@ -275,9 +275,7 @@ feature_selection_hyperparameter = [
         "feature_selection": "liblinear_svc_preprocessor",
         # forbid penalty = 'l1' while loss = 'hinge'
         "penalty": hp.choice("liblinear_svc_preprocessor_penalty", ["l1"]),
-        "loss": hp.choice(
-            "liblinear_svc_preprocessor_loss", ["squared_hinge"]
-        ),
+        "loss": hp.choice("liblinear_svc_preprocessor_loss", ["squared_hinge"]),
         "dual": hp.choice("liblinear_svc_preprocessor_dual", [False]),
         "tol": hp.loguniform(
             "liblinear_svc_preprocessor_tol", np.log(1e-5), np.log(1e-1)
@@ -591,6 +589,19 @@ classifier_hyperparameter = [
         "power_t": hp.uniform("SGD_power_t", 1e-5, 1),
         "average": hp.choice("SGD_average", [True, False]),
     },
+    {
+        "model": "MLP_Classifier",
+        "hidden_layer": scope.int(hp.quniform("MLP_Classifier_hidden_layer", 1, 5, 1)),
+        "hidden_size": scope.int(hp.quniform("MLP_Classifier_hidden_size", 1, 20, 1)),
+        "activation": hp.choice(
+            "MLP_Classifier_activation", ["ReLU", "Tanh", "Sigmoid"]
+        ),
+        "learning_rate": hp.uniform("MLP_Classifier_learning_rate", 1e-5, 1),
+        "optimizer": hp.choice("MLP_Classifier_optimizer", ["Adam", "SGD"]),
+        "criteria": hp.choice("MLP_Classifier_criteria", ["CrossEntropy"]),
+        "batch_size": hp.choice("MLP_Classifier_batch_size", [16, 32, 64]),
+        "num_epochs": scope.int(hp.quniform("MLP_Classifier_num_epochs", 5, 50, 1)),
+    },
 ]
 
 # regressor hyperparameters
@@ -651,12 +662,12 @@ regressor_hyperparameter = [
         "criterion": hp.choice(
             "ExtraTreesRegressor_criterion", ["mse", "friedman_mse", "mae"]
         ),
-        "min_samples_leaf": scope.int(hp.quniform(
-            "ExtraTreesRegressor_min_samples_leaf", 1, 20, 1
-        )),
-        "min_samples_split": scope.int(hp.quniform(
-            "ExtraTreesRegressor_min_samples_split", 2, 20, 1
-        )),
+        "min_samples_leaf": scope.int(
+            hp.quniform("ExtraTreesRegressor_min_samples_leaf", 1, 20, 1)
+        ),
+        "min_samples_split": scope.int(
+            hp.quniform("ExtraTreesRegressor_min_samples_split", 2, 20, 1)
+        ),
         "max_features": hp.uniform("ExtraTreesRegressor_max_features", 0.1, 1.0),
         "bootstrap": hp.choice("ExtraTreesRegressor_bootstrap", [True, False]),
         "max_leaf_nodes": hp.choice("ExtraTreesRegressor_max_leaf_nodes", [None]),
@@ -683,9 +694,7 @@ regressor_hyperparameter = [
             "GradientBoosting_learning_rate", np.log(0.01), np.log(1)
         ),
         "min_samples_leaf": scope.int(
-            hp.loguniform(
-                "GradientBoosting_min_samples_leaf", np.log(1), np.log(200)
-            )
+            hp.loguniform("GradientBoosting_min_samples_leaf", np.log(1), np.log(200))
         ),
         "max_depth": hp.choice("GradientBoosting_max_depth", [None]),
         "max_leaf_nodes": scope.int(
@@ -722,7 +731,8 @@ regressor_hyperparameter = [
         # forbid loss = 'epsilon_insensitive' and dual = False
         "epsilon": hp.loguniform("LibLinear_SVR_tol", np.log(0.001), np.log(1)),
         "loss": hp.choice(
-            "LibLinear_SVR__loss", ["squared_epsilon_insensitive"],
+            "LibLinear_SVR__loss",
+            ["squared_epsilon_insensitive"],
         ),
         "dual": hp.choice("LibLinear_SVR__dual", [False]),
         "tol": hp.loguniform("LibLinear_SVR__tol", np.log(1e-5), np.log(1e-1)),
@@ -816,5 +826,18 @@ regressor_hyperparameter = [
         "epsilon": hp.loguniform("SGD_epsilon", np.log(1e-5), np.log(1e-1)),
         "power_t": hp.uniform("SGD_power_t", 1e-5, 1),
         "average": hp.choice("SGD_average", [True, False]),
+    },
+    {
+        "model": "MLP_Regressor",
+        "hidden_layer": scope.int(hp.quniform("MLP_Regressor_hidden_layer", 1, 5, 1)),
+        "hidden_size": scope.int(hp.quniform("MLP_Regressor_hidden_size", 1, 20, 1)),
+        "activation": hp.choice(
+            "MLP_Regressor_activation", ["ReLU", "Tanh", "Sigmoid"]
+        ),
+        "learning_rate": hp.uniform("MLP_Regressor_learning_rate", 1e-5, 1),
+        "optimizer": hp.choice("MLP_Regressor_optimizer", ["Adam", "SGD"]),
+        "criteria": hp.choice("MLP_Regressor_criteria", ["MSE", "MAE"]),
+        "batch_size": hp.choice("MLP_Regressor_batch_size", [16, 32, 64]),
+        "num_epochs": scope.int(hp.quniform("MLP_Regressor_num_epochs", 5, 50, 1)),
     },
 ]
