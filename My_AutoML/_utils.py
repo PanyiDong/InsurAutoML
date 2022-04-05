@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:44:26 am
+Last Modified: Tuesday, 5th April 2022 2:49:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import enum
 import importlib
 import time
 import warnings
@@ -48,6 +49,10 @@ pytorch_spec = importlib.util.find_spec("torch")
 if pytorch_spec is not None:
     import torch
     from torch.utils.data import TensorDataset, DataLoader
+
+    # torchtext methods
+    from torchtext.data.utils import get_tokenizer
+    from torchtext.vocab import build_vocab_from_iterator
 
 # set response to [0, 1] class, random guess at 0.5
 def random_guess(number, seed=1):
@@ -890,54 +895,67 @@ def get_missing_matrix(
 
 # text preprocessing
 # build a vocabulary from text
+# fixed length sequence needed
 def text_processing(
     data,
     batch_size=32,
     shuffle=True,
+    drop_first=True,
     return_offset=False,
 ):
-
-    from torchtext.data.utils import get_tokenizer
-    from torchtext.vocab import build_vocab_from_iterator
-
     tokenizer = get_tokenizer("basic_english")
-    data_iter = iter(data)
 
+    # yield tokens from a string
     def yield_tokens(data_iter):
-        for _, text in data_iter:
-            yield tokenizer(text)
+        for item in data_iter:
+            # if item is dict, get text/label
+            # assume from datasets packages
+            if isinstance(item, dict):
+                yield tokenizer(item["text"])
+            # else, assume in (text, label) format
+            else:
+                text, label = item
+                yield tokenizer(text)
 
     # define vocabulary
-    vocab = build_vocab_from_iterator(yield_tokens(data_iter), specials=["<unk>"])
+    vocab = build_vocab_from_iterator(yield_tokens(data), specials=["<unk>"])
     vocab.set_default_index(vocab["<unk>"])
 
     # tokenize data and build vocab
     text_pipeline = lambda x: vocab(tokenizer(x))
     # label_pipeline = lambda x: int(x) - 1
 
-    # return text, label, and offset (optional)
-    def collate_batch(batch):
-        text_list, label_list, offsets = [], [], []
-        for (_text, _label) in batch:
-            processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
-            text_list.append(processed_text)
-            label_list.append(_label)
-            if return_offset:
-                offsets.append(processed_text.size(0))
+    # return tensordataset text, label, and offset (optional)
+    text_list, label_list, offsets = [], [], [0]
 
-        text_list = torch.cat(text_list)
-        label_list = torch.tensor(label_list, dtype=torch.int64)
-        if return_offset:
-            offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
-
-        if return_offset:
-            return text_list.to(device), label_list.to(device), offsets.to(device)
+    for idx, item in enumerate(data):
+        # if item is dict, get text/label
+        # assume from datasets packages
+        if isinstance(item, dict):
+            _text, _label = item["text"], item["label"]
+        # else, assume in (text, label) format
         else:
-            return text_list.to(device), label_list.to(device)
+            _text, _label = item
+
+        processed_text = torch.tensor(text_pipeline(_text), dtype=torch.int64)
+        text_list.append(processed_text)
+        label_list.append(_label)
+        if return_offset:
+            offsets.append(processed_text.size(0))
+
+    text_list = torch.stack(text_list)
+    label_list = torch.tensor(label_list, dtype=torch.int64)
+    if return_offset:
+        offsets = torch.tensor(offsets[:-1]).cumsum(dim=0)
+
+    if return_offset:
+        data_tensor = TensorDataset(text_list, label_list, offsets)
+    else:
+        data_tensor = TensorDataset(text_list, label_list)
 
     # load data to DataLoader
     data_loader = DataLoader(
-        data_iter, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_batch
+        data_tensor, batch_size=batch_size, shuffle=shuffle, drop_first=drop_first
     )
 
     return data_loader, vocab
