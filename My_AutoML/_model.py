@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 4th April 2022 11:55:23 pm
+Last Modified: Tuesday, 5th April 2022 9:15:01 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -175,6 +175,7 @@ class MLP_Base:
         batch_size=32,
         num_epochs=20,
         is_cuda=True,
+        seed=1,
     ):
         self.input_size = input_size
         self.hidden_layer = hidden_layer
@@ -187,8 +188,12 @@ class MLP_Base:
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.is_cuda = is_cuda
+        self.seed = seed
 
     def fit(self, X, y):
+
+        # set seed
+        torch.manual_seed(self.seed)
 
         # use cuda if detect GPU and is_cuda is True
         self.device = torch.device(
@@ -312,6 +317,7 @@ class MLP_Classifier(MLP_Base):
         batch_size=32,
         num_epochs=20,
         is_cuda=True,
+        seed=1,
     ):
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -322,6 +328,7 @@ class MLP_Classifier(MLP_Base):
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.is_cuda = is_cuda
+        self.seed = seed
 
     def fit(self, X, y):
 
@@ -344,6 +351,7 @@ class MLP_Classifier(MLP_Base):
             batch_size=self.batch_size,
             num_epochs=self.num_epochs,
             is_cuda=self.is_cuda,
+            seed=self.seed,
         )
 
         return super().fit(X, y)
@@ -394,6 +402,7 @@ class MLP_Regressor(MLP_Base):
         batch_size=32,
         num_epochs=20,
         is_cuda=True,
+        seed=1,
     ):
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -404,6 +413,7 @@ class MLP_Regressor(MLP_Base):
         self.batch_size = batch_size
         self.num_epochs = num_epochs
         self.is_cuda = is_cuda
+        self.seed = seed
 
     def fit(self, X, y):
 
@@ -426,6 +436,7 @@ class MLP_Regressor(MLP_Base):
             batch_size=self.batch_size,
             num_epochs=self.num_epochs,
             is_cuda=self.is_cuda,
+            seed=self.seed,
         )
 
         return super().fit(X, y)
@@ -494,8 +505,8 @@ class RNN_Model(nn.Module):
         return tag_scores, (rnn_hiddne, rnn_cell)
 
     def init_hidden(self, batch_size):
-        h0 = torch.zeros((self.n_layers, batch_size, self.hidden_size)).to(device)
-        c0 = torch.zeros((self.n_layers, batch_size, self.hidden_size)).to(device)
+        h0 = torch.zeros((self.n_layers, batch_size, self.hidden_size))
+        c0 = torch.zeros((self.n_layers, batch_size, self.hidden_size))
 
         return (h0, c0)
 
@@ -571,6 +582,38 @@ class RNN_Classifier(RNN_Model):
             criteria = nn.CrossEntropyLoss()
         else:
             raise ValueError("Not recognized criteria: {}.".format(self.criteria))
+
+        # load data to DataLoader
+        if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
+            train_tensor = TensorDataset(
+                torch.as_tensor(X.values, dtype=torch.float32),
+                torch.as_tensor(y.values, dtype=torch.long),
+            )
+        else:
+            train_tensor = TensorDataset(
+                torch.as_tensor(X, dtype=torch.float32),
+                torch.as_tensor(y, dtype=torch.long),
+            )
+
+        train_loader = DataLoader(
+            train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
+        )
+
+        # training process
+        for _ in range(self.num_epochs):
+            # initialize hidden state for each batch
+            h = self.model.init_hidden(self.batch_size).to(self.device)
+            for batch_idx, (data, target) in enumerate(train_loader):
+
+                # put data, target to device
+                data = data.to(self.device)
+                target = target.to(self.device)
+
+                self.model.zero_grad()
+                output, h = self.model(data, h)  # forward step
+                loss = criteria(output, target)  # calculate loss
+                loss.backward()  # backpropagation
+                optimizer.step()  # update parameters
 
         return self
 
