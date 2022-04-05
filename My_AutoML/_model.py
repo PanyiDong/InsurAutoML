@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 4th April 2022 11:10:29 pm
+Last Modified: Monday, 4th April 2022 11:55:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -56,6 +56,7 @@ if tensorflow_spec is not None:
 ####################################################################################################
 # self-defined models
 
+####################################################################################################
 # Multi-Layer Perceptron Model
 # 1. MLP_Model, forward phase
 # 2. MLP_Base, base training/evaluation phase
@@ -74,7 +75,8 @@ class MLP_Model(nn.Module):
 
     hidden_size: number of neurons in each hidden layer
 
-    output_size: output shape, for classification, output_size equals number of classes; for regression, output_size equals 1
+    output_size: output shape, for classification, output_size equals number of classes;
+    for regression, output_size equals 1
 
     activation: activation functions, default: "ReLU"
     support activation ["ReLU", "Tanh", "Sigmoid"]
@@ -139,7 +141,8 @@ class MLP_Base:
 
     hidden_size: number of neurons in each hidden layer
 
-    output_size: output shape, for classification, output_size equals number of classes; for regression, output_size equals 1
+    output_size: output shape, for classification, output_size equals number of classes;
+    for regression, output_size equals 1
 
     activation: activation functions, default: "ReLU"
     support activation ["ReLU", "Tanh", "Sigmoid"]
@@ -430,6 +433,151 @@ class MLP_Regressor(MLP_Base):
     def transform(self, X, y=None):
 
         return super().transform(X, y)
+
+
+####################################################################################################
+# RNN models
+# RNN/LSTM/GRU models supported
+
+
+class RNN_Model(nn.Module):
+    def __init__(
+        self,
+        vocab_size,
+        embedding_size,
+        hidden_size,
+        output_size,
+        n_layers=1,
+        RNN_unit="RNN",
+        activation="Sigmoid",
+        dropout=0.2,
+    ):
+        super().__init__()
+
+        # hidden size and hidden layers
+        self.hidden_size = hidden_size
+        self.n_layers = n_layers
+
+        # embedding layer
+        self.embedding = nn.Embedding(vocab_size, embedding_size)
+
+        # select RNN unit from ["RNN", "LSTM", "GRU"]
+        if RNN_unit == "RNN":
+            self.rnn = nn.RNN(embedding_size, hidden_size, n_layers, batch_first=True)
+        elif RNN_unit == "LSTM":
+            self.rnn = nn.LSTM(embedding_size, hidden_size, n_layers, batch_first=True)
+        elif RNN_unit == "GRU":
+            self.rnn = nn.GRU(embedding_size, hidden_size, n_layers, batch_first=True)
+
+        # linear connection after RNN layers
+        self.hidden2tag = nn.Linear(hidden_size, output_size)
+
+        # activation function
+        if activation == "ReLU":
+            self.activation = nn.ReLU()
+        elif activation == "Tanh":
+            self.activation == nn.Tanh()
+        elif activation == "Sigmoid":
+            self.activation = nn.Sigmoid()
+
+        self.dropout = nn.Dropout(p=dropout)  # dropout layer
+        self.softmax = nn.LogSoftmax(dim=1)  # softmax layer
+
+    def forward(self, input, hidden):
+
+        embeds = self.embedding(input)
+        rnn_out, (rnn_hiddne, rnn_cell) = self.rnn(embeds, hidden)
+        tag_space = self.hidden2tag(rnn_out)
+        tag_space = self.dropout(self.activation(tag_space))
+        tag_scores = self.softmax(tag_space)[:, -1, :]
+
+        return tag_scores, (rnn_hiddne, rnn_cell)
+
+    def init_hidden(self, batch_size):
+        h0 = torch.zeros((self.n_layers, batch_size, self.hidden_size)).to(device)
+        c0 = torch.zeros((self.n_layers, batch_size, self.hidden_size)).to(device)
+
+        return (h0, c0)
+
+
+class RNN_Classifier(RNN_Model):
+    def __init__(
+        self,
+        embedding_size=512,
+        hidden_size=256,
+        n_layers=1,
+        RNN_unit="RNN",
+        activation="Sigmoid",
+        dropout=0.2,
+        learning_rate=None,
+        optimizer="Adam",
+        criteria="CrossEntropy",
+        batch_size=32,
+        num_epochs=20,
+        is_cuda=True,
+    ):
+        # model parameters
+        self.embedding_size = embedding_size
+        self.hidden_size = hidden_size
+        self.n_layers = n_layers
+        self.RNN_unit = RNN_unit
+        self.activation = activation
+        self.dropout = dropout
+
+        # training parameters
+        self.learning_rate = learning_rate
+        self.optimizer = optimizer
+        self.criteria = criteria
+        self.batch_size = batch_size
+        self.num_epochs = num_epochs
+
+        self.is_cuda = is_cuda
+
+    def fit(self, X, y):
+
+        # use cuda if detect GPU and is_cuda is True
+        self.device = torch.device(
+            "cuda" if torch.cuda.is_available() and self.is_cuda else "cpu"
+        )
+
+        # make sure RNN unit is supported
+        if self.RNN_unit not in ["RNN", "LSTM", "GRU"]:
+            raise ValueError("RNN unit must be RNN, LSTM or GRU!")
+
+        self.output_size = len(pd.unique(y))  # unique classes as output size
+
+        # load model
+        self.model = RNN_Model(
+            vocab_size=len(X.vocab),
+            embedding_size=self.embedding_size,
+            hidden_size=self.hidden_size,
+            output_size=self.output_size,
+            n_layers=self.n_layers,
+            RNN_unit=self.RNN_unit,
+            activation=self.activation,
+            dropout=self.dropout,
+        ).to(self.device)
+
+        # specify optimizer
+        if self.optimizer == "Adam":
+            lr = 0.001 if self.learning_rate is None else self.learning_rate
+            optimizer = optim.Adam(self.model.parameters(), lr=lr)
+        elif self.optimizer == "SGD":
+            lr = 0.1 if self.learning_rate is None else self.learning_rate
+            optimizer = optim.SGD(self.model.parameters(), lr=lr)
+
+        # specify loss function
+        if self.criteria == "CrossEntropy":
+            criteria = nn.CrossEntropyLoss()
+        else:
+            raise ValueError("Not recognized criteria: {}.".format(self.criteria))
+
+        return self
+
+    def transform(self, X, y=None):
+
+        return self.model(X)
+
 
 ####################################################################################################
 # classifiers
