@@ -1,16 +1,16 @@
 """
-File: setup.py
+File: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /setup.py
-File Created: Friday, 4th March 2022 11:33:55 pm
+Relative Path: /My_AutoML/_hyperparameters/__init__.py
+File Created: Tuesday, 5th April 2022 11:01:43 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 10:37:07 pm
+Last Modified: Tuesday, 5th April 2022 11:08:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -34,45 +34,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import os
-from setuptools import setup, find_packages
 
-# from Cython.Build import cythonize
-
-# EXCLUDE_FILES = [
-#     "main.py",
-# ]
-
-
-def get_ext_path(root_dir, exclude_files):
-
-    """
-    Get file paths needed compilation
-    Exclude certain files
-    """
-
-    paths = []
-
-    for root, dirs, files in os.walk(root_dir):
-        for filename in files:
-            if os.path.splitext(filename)[1] != ".py":
-                continue
-
-            file_path = os.path.join(root, filename)
-            if file_path in exclude_files:
-                continue
-
-            paths.append(file_path)
-
-    return paths
-
-
-setup(
-    name="My_AutoML",
-    version="0.0.1",
-    packages=find_packages(),
-    # ext_modules = cythonize(
-    #     get_ext_path("My_AutoML", EXCLUDE_FILES),
-    #     compiler_directives = {'language_level': 3}
-    # )
-)
+from ._encoder_hyperparameter import encoder_hyperparameter
+from ._imputer_hyperparameter import imputer_hyperparameter
+from ._scaling_hyperparameter import scaling_hyperparameter
+from ._balancing_hyperparameter import balancing_hyperparameter
+from ._feature_selection_hyperparameter import feature_selection_hyperparameter
+from ._classifier_hyperparameter import classifier_hyperparameter
+from ._regressor_hyperparameter import regressor_hyperparameter

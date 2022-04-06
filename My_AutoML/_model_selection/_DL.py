@@ -1,16 +1,16 @@
 """
-File: setup.py
+File: _DL.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /setup.py
-File Created: Friday, 4th March 2022 11:33:55 pm
+Relative Path: /My_AutoML/_model_selection/_DL.py
+File Created: Tuesday, 5th April 2022 10:50:34 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 10:37:07 pm
+Last Modified: Tuesday, 5th April 2022 11:00:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -34,45 +34,51 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import os
-from setuptools import setup, find_packages
-
-# from Cython.Build import cythonize
-
-# EXCLUDE_FILES = [
-#     "main.py",
-# ]
-
-
-def get_ext_path(root_dir, exclude_files):
+class AutoTextClassifier:
 
     """
-    Get file paths needed compilation
-    Exclude certain files
+    Automated sentence classification: sentiment analysis, topic detection, etc.
     """
 
-    paths = []
+    def __init__(
+        self,
+        seed=1,
+    ):
+        self.seed = seed
 
-    for root, dirs, files in os.walk(root_dir):
-        for filename in files:
-            if os.path.splitext(filename)[1] != ".py":
-                continue
+    def fit(self, X, y):
 
-            file_path = os.path.join(root, filename)
-            if file_path in exclude_files:
-                continue
+        raise NotImplementedError("AutoTextClassifier is not implemented yet!")
 
-            paths.append(file_path)
+        return self
 
-    return paths
+    def predict(self, X):
+
+        raise NotImplementedError("AutoTextClassifier is not implemented yet!")
+
+        return self
 
 
-setup(
-    name="My_AutoML",
-    version="0.0.1",
-    packages=find_packages(),
-    # ext_modules = cythonize(
-    #     get_ext_path("My_AutoML", EXCLUDE_FILES),
-    #     compiler_directives = {'language_level': 3}
-    # )
-)
+class AutoNextWordPrediction:
+
+    """
+    Automated Next Word Prediction: sequence modeling, etc.
+    """
+
+    def __init__(
+        self,
+        seed=1,
+    ):
+        self.seed = seed
+
+    def fit(self, X, y):
+
+        raise NotImplementedError("AutoNextWordPrediction is not implemented yet!")
+
+        return self
+
+    def predict(self, X):
+
+        raise NotImplementedError("AutoNextWordPrediction is not implemented yet!")
+
+        return self

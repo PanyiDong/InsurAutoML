@@ -1,16 +1,16 @@
-'''
+"""
 File: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /__init__.py
+Relative Path: /My_AutoML/__init__.py
 File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 5th March 2022 11:45:15 am
+Last Modified: Tuesday, 5th April 2022 10:59:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,9 +33,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
-
-
+"""
 from ._base import no_processing, load_data
 from ._utils import (
     random_guess,
@@ -109,6 +107,7 @@ from ._feature_selection import (
     ASFFS,
     GeneticAlgorithm,
 )
+
 # extracted from autosklearn
 # not all used in the pipeline
 from ._feature_selection import (
@@ -131,13 +130,18 @@ from ._feature_selection import (
     TruncatedSVD,
 )
 from ._model import classifiers, regressors
-from ._model_selection import AutoTabular, \
-    AutoTabularClassifier, AutoTabularRegressor
+from ._model_selection import (
+    AutoTabular,
+    AutoTabularClassifier,
+    AutoTabularRegressor,
+    AutoTextClassifier,
+    AutoNextWordPrediction,
+)
 
 __all__ = [
     "load_data",  # _base
     "no_processing",
-    "random_guess", # _utils
+    "random_guess",  # _utils
     "random_index",
     "random_list",
     "is_date",
@@ -217,10 +221,10 @@ __all__ = [
     "select_rates_classification",
     "select_rates_regression",
     "truncatedSVD",
-    "classifiers", # _model
+    "classifiers",  # _model
     "regressors",
-    "AutoTabular", # _model_selection
-    "AutoTabularClassifier", 
+    "AutoTabular",  # _model_selection
+    "AutoTabularClassifier",
     "AutoTabularRegressor",
 ]
 
@@ -246,8 +250,9 @@ imputers = {
 # check if tensorflow exists in environment
 # if not exists, do not use GAIN method
 import importlib
-tensorflow_spec = importlib.util.find_spec('tensorflow')
-if tensorflow_spec is None :
+
+tensorflow_spec = importlib.util.find_spec("tensorflow")
+if tensorflow_spec is None:
     del imputers["GAIN"]
 
 scalings = {
@@ -309,7 +314,9 @@ feature_selection = {
 }
 
 model_selection = {
-    "AutoTabular" : AutoTabular,
-    "AutoClassifier": AutoTabularClassifier, 
-    "AutoRegressor": AutoTabularRegressor
+    "AutoTabular": AutoTabular,
+    "AutoTabularClassifier": AutoTabularClassifier,
+    "AutoTabularRegressor": AutoTabularRegressor,
+    "AutoTextClassifier": AutoTextClassifier,
+    "AutoNextWordPrediction": AutoNextWordPrediction,
 }

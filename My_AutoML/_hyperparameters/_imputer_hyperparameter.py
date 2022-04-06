@@ -1,16 +1,16 @@
-'''
-File: __init__.py
+"""
+File: _imputer_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /__init__.py
-File Created: Friday, 25th February 2022 6:13:42 pm
+Relative Path: /My_AutoML/_hyperparameters/_imputer_hyperparameter.py
+File Created: Tuesday, 5th April 2022 11:02:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 5th March 2022 11:46:46 am
+Last Modified: Tuesday, 5th April 2022 11:03:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,10 +33,39 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
+"""
 
+import numpy as np
+from hyperopt import hp
+from hyperopt.pyll import scope
 
-import My_AutoML
-from My_AutoML import AutoTabular, \
-    AutoTabularClassifier, AutoTabularRegressor
-from My_AutoML import load_data
+# imputer
+imputer_hyperparameter = [
+    {
+        "imputer": "SimpleImputer",
+        "method": hp.choice(
+            "SimpleImputer_method", ["mean", "zero", "median", "most frequent"]
+        ),
+    },
+    {"imputer": "DummyImputer"},
+    {"imputer": "JointImputer"},
+    {
+        "imputer": "ExpectationMaximization",
+        "iterations": hp.quniform("ExpectationMaximization_iterations", 10, 100, 1),
+        "threshold": hp.uniform(
+            "ExpectationMaximization_iterations_threshold", 1e-5, 1
+        ),
+    },
+    {
+        "imputer": "KNNImputer",
+        "n_neighbors": scope.int(hp.quniform("KNNImputer_n_neighbors", 1, 15, 1)),
+        "fold": scope.int(hp.quniform("KNNImputer_fold", 5, 15, 1)),
+    },
+    {"imputer": "MissForestImputer"},
+    {"imputer": "MICE", "cycle": hp.quniform("MICE_cycle", 5, 20, 1)},
+    {"imputer": "GAIN"},
+    # {"imputer": "AAI_kNN"},
+    # {"imputer": "KMI"},
+    # {"imputer": "CMI"},
+    # {"imputer": "k_Prototype_NN"},
+]

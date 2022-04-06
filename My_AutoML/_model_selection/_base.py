@@ -1,16 +1,16 @@
-'''
-File: _model_selection.py
+"""
+File: _base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /_model_selection.py
-File Created: Friday, 25th February 2022 6:13:42 pm
+Relative Path: /My_AutoML/_model_selection/_base.py
+File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 5th March 2022 11:46:23 am
+Last Modified: Tuesday, 5th April 2022 11:00:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,9 +33,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
-
-
+"""
 import os
 import ast
 import shutil
@@ -63,15 +61,15 @@ from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
 from My_AutoML import (
-    no_processing, # base
-    type_of_task, # utils
+    no_processing,  # base
+    type_of_task,  # utils
     formatting,
 )
-from ._model import(
+from My_AutoML._model import (
     classifiers,
     regressors,
 )
-from ._hyperparameters import (
+from My_AutoML._hyperparameters import (
     encoder_hyperparameter,
     imputer_hyperparameter,
     scaling_hyperparameter,
@@ -101,7 +99,7 @@ def save_model(
     model,
     model_hyperparameters,
     model_name,
-) :
+):
     with open(model_name, "w") as f:
         f.write("{}\n".format(encoder))
         print(encoder_hyperparameters, file=f, end="\n")
@@ -115,6 +113,7 @@ def save_model(
         print(feature_selection_hyperparameters, file=f, end="\n")
         f.write("{}\n".format(model))
         print(model_hyperparameters, file=f, end="\n")
+
 
 """
 Classifiers/Hyperparameters from autosklearn:
@@ -145,7 +144,7 @@ Classifiers/Hyperparameters from autosklearn:
 """
 
 # Auto binary classifier
-class AutoTabularClassifier():
+class AutoTabularClassifier:
 
     """
     Perform model selection and hyperparameter optimization for classification tasks
@@ -154,19 +153,19 @@ class AutoTabularClassifier():
     Parameters
     ----------
     timeout: Total time limit for the job in seconds, default = 360
-    
+
     max_evals: Maximum number of function evaluations allowed, default = 32
-    
+
     temp_directory: folder path to store temporary model, default = 'tmp'
-    
+
     delete_temp_after_terminate: whether to delete temporary information, default = False
-    
+
     save: whether to save model after training, default = True
-    
+
     model_name: saved model name, default = 'model'
-    
+
     ignore_warning: whether to ignore warning, default = True
-    
+
     encoder: Encoders selected for the job, default = 'auto'
     support ('DataEncoding')
     'auto' will select all default encoders, or use a list to select
@@ -178,24 +177,24 @@ class AutoTabularClassifier():
 
     balancing: Balancings selected for the job, default = 'auto'
     support ('no_processing', 'SimpleRandomOverSampling', 'SimpleRandomUnderSampling',
-    'TomekLink', 'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection', 
+    'TomekLink', 'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection',
     'CNN_TomekLink', 'Smote', 'Smote_TomekLink', 'Smote_ENN')
     'auto' will select all default balancings, or use a list to select
-    
+
     scaling: Scalings selected for the job, default = 'auto'
     support ('no_processing', 'MinMaxScale', 'Standardize', 'Normalize', 'RobustScale',
     'PowerTransformer', 'QuantileTransformer', 'Winsorization')
     'auto' will select all default scalings, or use a list to select
 
     feature_selection: Feature selections selected for the job, default = 'auto'
-    support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler', 
+    support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler',
     'FeatureFilter', 'ASFFS', 'GeneticAlgorithm', 'extra_trees_preproc_for_classification',
-    'fast_ica', 'feature_agglomeration', 'kernel_pca', 'kitchen_sinks', 
-    'liblinear_svc_preprocessor', 'nystroem_sampler', 'pca', 'polynomial', 
-    'random_trees_embedding', 'select_percentile_classification','select_rates_classification', 
+    'fast_ica', 'feature_agglomeration', 'kernel_pca', 'kitchen_sinks',
+    'liblinear_svc_preprocessor', 'nystroem_sampler', 'pca', 'polynomial',
+    'random_trees_embedding', 'select_percentile_classification','select_rates_classification',
     'truncatedSVD')
     'auto' will select all default feature selections, or use a list to select
-    
+
     models: Models selected for the job, default = 'auto'
     support ('AdaboostClassifier', 'BernoulliNB', 'DecisionTree', 'ExtraTreesClassifier',
             'GaussianNB', 'GradientBoostingClassifier', 'KNearestNeighborsClassifier',
@@ -204,22 +203,22 @@ class AutoTabularClassifier():
     'auto' will select all default models, or use a list to select
 
     validation: Whether to use train_test_split to test performance on test set, default = True
-    
+
     valid_size: Test percentage used to evaluate the performance, default = 0.15
     only effective when validation = True
 
     objective: Objective function to test performance, default = 'accuracy'
     support ("accuracy", "precision", "auc", "hinge", "f1")
-    
+
     method: Model selection/hyperparameter optimization methods, default = 'Bayesian'
-    
+
     algo: Search algorithm, default = 'tpe'
     support (rand, tpe, atpe)
-    
+
     spark_trials: Whether to use SparkTrials, default = False
 
     progressbar: Whether to show progress bar, default = False
-    
+
     seed: Random seed, default = 1
     """
 
@@ -229,9 +228,9 @@ class AutoTabularClassifier():
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
-        save = True,
-        model_name = 'model',
-        ignore_warning = True,
+        save=True,
+        model_name="model",
+        ignore_warning=True,
         encoder="auto",
         imputer="auto",
         balancing="auto",
@@ -334,7 +333,7 @@ class AutoTabularClassifier():
         _balancing_hyperparameter = hp.choice(
             "classification_balancing", _balancing_hyperparameter
         )
-        
+
         # scaling space
         _scaling_hyperparameter = []
         for _scaling in [*scaling]:
@@ -412,28 +411,30 @@ class AutoTabularClassifier():
 
         # all hyperparameters for balancing methods
         self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
-        
+
         # all hyperparameters for scalings
         self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
-        
+
         # all feature selections available
         self._all_feature_selection = My_AutoML.feature_selection.copy()
         # special treatment, remove some feature selection for regression
         del self._all_feature_selection["extra_trees_preproc_for_regression"]
         del self._all_feature_selection["select_percentile_regression"]
         del self._all_feature_selection["select_rates_regression"]
-        if X.shape[0] * X.shape[1] > 10000 :
+        if X.shape[0] * X.shape[1] > 10000:
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter.copy()
+        self._all_feature_selection_hyperparameters = (
+            feature_selection_hyperparameter.copy()
+        )
 
         # all classification models available
         self._all_models = classifiers.copy()
         # special treatment, remove SVM methods when observations are large
-        # SVM suffers from the complexity o(n_samples^2 * n_features), 
+        # SVM suffers from the complexity o(n_samples^2 * n_features),
         # which is time-consuming for large datasets
-        if X.shape[0] * X.shape[1] > 10000 :
+        if X.shape[0] * X.shape[1] > 10000:
             del self._all_models["LibLinear_SVC"]
             del self._all_models["LibSVM_SVC"]
 
@@ -497,7 +498,7 @@ class AutoTabularClassifier():
                         )
                     )
                 balancing[_balancing] = self._all_balancings[_balancing]
-        
+
         # Scaling
         # get scaling space
         if self.scaling == "auto":
@@ -618,7 +619,7 @@ class AutoTabularClassifier():
             "model"
         ]  # optimal hyperparameter settings selected
         del self.optimal_classifier_hyperparameters["model"]
-        
+
         # record optimal settings
         with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
             f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
@@ -684,7 +685,7 @@ class AutoTabularClassifier():
         self._fit_classifier.fit(_X, _y.values.ravel())
 
         # save the model
-        if self.save :
+        if self.save:
             save_model(
                 self.optimal_encoder,
                 self.optimal_encoder_hyperparameters,
@@ -698,21 +699,21 @@ class AutoTabularClassifier():
                 self.optimal_feature_selection_hyperparameters,
                 self.optimal_classifier,
                 self.optimal_classifier_hyperparameters,
-                self.model_name
+                self.model_name,
             )
 
         return self
 
-    def load_model(self, _X, _y) :
+    def load_model(self, _X, _y):
 
         with open(self.model_name) as f:
             optimal_setting = f.readlines()
-        
+
         # remove change line signs
-        optimal_setting = [item.replace('\n','') for item in optimal_setting]
+        optimal_setting = [item.replace("\n", "") for item in optimal_setting]
         # remove blank spaces
-        while '' in optimal_setting :
-            optimal_setting.remove('')
+        while "" in optimal_setting:
+            optimal_setting.remove("")
 
         self.optimal_encoder = optimal_setting[0]
         self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
@@ -723,7 +724,9 @@ class AutoTabularClassifier():
         self.optimal_scaling = optimal_setting[6]
         self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
         self.optimal_feature_selection = optimal_setting[8]
-        self.optimal_feature_selection_hyperparameters = ast.literal_eval(optimal_setting[9])
+        self.optimal_feature_selection_hyperparameters = ast.literal_eval(
+            optimal_setting[9]
+        )
         self.optimal_classifier = optimal_setting[10]
         self.optimal_classifier_hyperparameters = ast.literal_eval(optimal_setting[11])
 
@@ -768,7 +771,7 @@ class AutoTabularClassifier():
 
     def fit(self, X, y):
 
-        if self.ignore_warning : # ignore all warnings to generate clearer outputs
+        if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
 
         _X = X.copy()
@@ -784,9 +787,9 @@ class AutoTabularClassifier():
         ) = self.get_hyperparameter_space(_X, _y)
 
         # if the model is already trained, read the setting
-        if os.path.exists(self.model_name) :
-            
-            print('Stored model found, load previous model.')
+        if os.path.exists(self.model_name):
+
+            print("Stored model found, load previous model.")
             self.load_model(_X, _y)
 
             return self
@@ -805,7 +808,9 @@ class AutoTabularClassifier():
             )
             f.write("Response of the dataset: {}\n".format(list(_y.columns)))
             f.write(
-                "Shape of the response vector: {} * {}\n".format(_y.shape[0], _y.shape[1])
+                "Shape of the response vector: {} * {}\n".format(
+                    _y.shape[0], _y.shape[1]
+                )
             )
             f.write("Type of the task: Classification.\n")
 
@@ -870,7 +875,7 @@ class AutoTabularClassifier():
             _balancing = _balancing_hyper["balancing"]
             del _balancing_hyper["balancing"]
             blc = balancing[_balancing](**_balancing_hyper)
-            
+
             # select scaling and set hyperparameters
             # must have scaling, since no_preprocessing is included
             _scaling_hyper = params["scaling"]
@@ -938,7 +943,7 @@ class AutoTabularClassifier():
                 )
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Balancing finished, in scaling process.")
-       
+
                 # make sure the classes are integers (belongs to certain classes)
                 _y_train_obj = _y_train_obj.astype(int)
                 _y_test_obj = _y_test_obj.astype(int)
@@ -954,38 +959,42 @@ class AutoTabularClassifier():
                 _X_test_obj = fts.transform(_X_test_obj)
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Feature selection finished, in classification model.")
-                if scipy.sparse.issparse(_X_train_obj) : # check if returns sparse matrix
+                if scipy.sparse.issparse(
+                    _X_train_obj
+                ):  # check if returns sparse matrix
                     _X_train_obj = _X_train_obj.toarray()
-                if scipy.sparse.issparse(_X_test_obj) :
+                if scipy.sparse.issparse(_X_test_obj):
                     _X_test_obj = _X_test_obj.toarray()
                 # classification
 
                 # store preprocessed train/test datasets
-                if isinstance(_X_train_obj, np.ndarray) : # in case numpy array is returned
-                    pd.concat([pd.DataFrame(_X_train_obj), _y_train_obj], axis=1, ignore_index=True).to_csv(
-                        obj_tmp_directory + "/train_preprocessed.csv", index=False
-                    )
-                elif isinstance(_X_train_obj, pd.DataFrame) :
+                if isinstance(
+                    _X_train_obj, np.ndarray
+                ):  # in case numpy array is returned
+                    pd.concat(
+                        [pd.DataFrame(_X_train_obj), _y_train_obj],
+                        axis=1,
+                        ignore_index=True,
+                    ).to_csv(obj_tmp_directory + "/train_preprocessed.csv", index=False)
+                elif isinstance(_X_train_obj, pd.DataFrame):
                     pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
                         obj_tmp_directory + "/train_preprocessed.csv", index=False
                     )
-                else :
-                    raise TypeError(
-                        "Only accept numpy array or pandas dataframe!"
-                    )
-                
-                if isinstance(_X_test_obj, np.ndarray) :
-                    pd.concat([pd.DataFrame(_X_test_obj), _y_test_obj], axis=1, ignore_index=True).to_csv(
-                        obj_tmp_directory + "/test_preprocessed.csv", index=False
-                    )
-                elif isinstance(_X_test_obj, pd.DataFrame) :
+                else:
+                    raise TypeError("Only accept numpy array or pandas dataframe!")
+
+                if isinstance(_X_test_obj, np.ndarray):
+                    pd.concat(
+                        [pd.DataFrame(_X_test_obj), _y_test_obj],
+                        axis=1,
+                        ignore_index=True,
+                    ).to_csv(obj_tmp_directory + "/test_preprocessed.csv", index=False)
+                elif isinstance(_X_test_obj, pd.DataFrame):
                     pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
                         obj_tmp_directory + "/test_preprocessed.csv", index=False
                     )
-                else :
-                    raise TypeError(
-                        "Only accept numpy array or pandas dataframe!"
-                    )
+                else:
+                    raise TypeError("Only accept numpy array or pandas dataframe!")
 
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
@@ -1055,7 +1064,7 @@ class AutoTabularClassifier():
 
         # Storage for evaluation points
         if self.spark_trials:
-            trials = SparkTrials(parallelism = 8)
+            trials = SparkTrials(parallelism=8)
         else:
             trials = Trials()
 
@@ -1137,7 +1146,7 @@ Regressors/Hyperparameters from sklearn:
 """
 
 
-class AutoTabularRegressor():
+class AutoTabularRegressor:
 
     """
     Perform model selection and hyperparameter optimization for regression tasks
@@ -1146,17 +1155,17 @@ class AutoTabularRegressor():
     Parameters
     ----------
     timeout: Total time limit for the job in seconds, default = 360
-    
+
     max_evals: Maximum number of function evaluations allowed, default = 32
-    
+
     temp_directory: folder path to store temporary model, default = 'tmp'
-    
+
     delete_temp_after_terminate: whether to delete temporary information, default = False
-    
+
     save: whether to save model after training, default = True
-    
+
     model_name: saved model name, default = 'model'
-    
+
     ignore_warning: whether to ignore warning, default = True
 
     encoder: Encoders selected for the job, default = 'auto'
@@ -1170,24 +1179,24 @@ class AutoTabularRegressor():
 
     balancing: Balancings selected for the job, default = 'auto'
     support ('no_processing', 'SimpleRandomOverSampling', 'SimpleRandomUnderSampling',
-    'TomekLink', 'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection', 
+    'TomekLink', 'EditedNearestNeighbor', 'CondensedNearestNeighbor', 'OneSidedSelection',
     'CNN_TomekLink', 'Smote', 'Smote_TomekLink', 'Smote_ENN')
     'auto' will select all default balancings, or use a list to select
-    
+
     scaling: Scalings selected for the job, default = 'auto'
     support ('no_processing', 'MinMaxScale', 'Standardize', 'Normalize', 'RobustScale',
     'PowerTransformer', 'QuantileTransformer', 'Winsorization')
     'auto' will select all default scalings, or use a list to select
 
     feature_selection: Feature selections selected for the job, default = 'auto'
-    support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler', 
+    support ('no_processing', 'LDASelection', 'PCA_FeatureSelection', 'RBFSampler',
     'FeatureFilter', 'ASFFS', 'GeneticAlgorithm', 'extra_trees_preproc_for_regression',
-    'fast_ica', 'feature_agglomeration', 'kernel_pca', 'kitchen_sinks', 
-    'liblinear_svc_preprocessor', 'nystroem_sampler', 'pca', 'polynomial', 
-    'random_trees_embedding', 'select_percentile_regression','select_rates_regression', 
+    'fast_ica', 'feature_agglomeration', 'kernel_pca', 'kitchen_sinks',
+    'liblinear_svc_preprocessor', 'nystroem_sampler', 'pca', 'polynomial',
+    'random_trees_embedding', 'select_percentile_regression','select_rates_regression',
     'truncatedSVD')
     'auto' will select all default feature selections, or use a list to select
-    
+
     models: Models selected for the job, default = 'auto'
     support ("AdaboostRegressor", "ARDRegression", "DecisionTree", "ExtraTreesRegressor",
     "GaussianProcess", "GradientBoosting", "KNearestNeighborsRegressor", "LibLinear_SVR",
@@ -1195,22 +1204,22 @@ class AutoTabularRegressor():
     'auto' will select all default models, or use a list to select
 
     validation: Whether to use train_test_split to test performance on test set, default = True
-    
+
     valid_size: Test percentage used to evaluate the performance, default = 0.15
     only effective when validation = True
 
     objective: Objective function to test performance, default = 'MSE'
     support ("MSE", "MAE", "MSLE", "R2", "MAX")
-    
+
     method: Model selection/hyperparameter optimization methods, default = 'Bayesian'
-    
+
     algo: Search algorithm, default = 'tpe'
     support (rand, tpe, atpe)
-    
+
     spark_trials: Whether to use SparkTrials, default = False
 
     progressbar: Whether to show progress bar, default = False
-    
+
     seed: Random seed, default = 1
     """
 
@@ -1220,9 +1229,9 @@ class AutoTabularRegressor():
         max_evals=64,
         temp_directory="tmp",
         delete_temp_after_terminate=False,
-        save = True,
-        model_name = 'model',
-        ignore_warning = True,
+        save=True,
+        model_name="model",
+        ignore_warning=True,
         encoder="auto",
         imputer="auto",
         balancing="auto",
@@ -1325,7 +1334,7 @@ class AutoTabularRegressor():
         _balancing_hyperparameter = hp.choice(
             "regression_balancing", _balancing_hyperparameter
         )
-        
+
         # scaling space
         _scaling_hyperparameter = []
         for _scaling in [*scaling]:
@@ -1362,9 +1371,7 @@ class AutoTabularRegressor():
                 if item["model"] == _model:
                     _model_hyperparameter.append(item)
 
-        _model_hyperparameter = hp.choice(
-            "regression_models", _model_hyperparameter
-        )
+        _model_hyperparameter = hp.choice("regression_models", _model_hyperparameter)
 
         # the pipeline search space
         return pyll.as_apply(
@@ -1379,7 +1386,7 @@ class AutoTabularRegressor():
         )
 
     # initialize and get hyperparameter search space
-    def get_hyperparameter_space(self, X, y = None):
+    def get_hyperparameter_space(self, X, y=None):
 
         # initialize default search options
         # use copy to allows multiple manipulation
@@ -1403,10 +1410,10 @@ class AutoTabularRegressor():
 
         # all hyperparameters for balancing methods
         self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
-        
+
         # all hyperparameters for scalings
         self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
-        
+
         # all feature selections available
         self._all_feature_selection = My_AutoML.feature_selection.copy()
         # special treatment, remove some feature selection for classification
@@ -1414,18 +1421,20 @@ class AutoTabularRegressor():
         del self._all_feature_selection["select_percentile_classification"]
         del self._all_feature_selection["select_rates_classification"]
         # remove SVM feature selection since it's time-consuming for large datasets
-        if X.shape[0] * X.shape[1] > 10000 :
+        if X.shape[0] * X.shape[1] > 10000:
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = feature_selection_hyperparameter.copy()
+        self._all_feature_selection_hyperparameters = (
+            feature_selection_hyperparameter.copy()
+        )
 
         # all regression models available
         self._all_models = regressors.copy()
         # special treatment, remove SVM methods when observations are large
-        # SVM suffers from the complexity o(n_samples^2 * n_features), 
+        # SVM suffers from the complexity o(n_samples^2 * n_features),
         # which is time-consuming for large datasets
-        if X.shape[0] * X.shape[1] > 10000 :
+        if X.shape[0] * X.shape[1] > 10000:
             del self._all_models["LibLinear_SVR"]
             del self._all_models["LibSVM_SVR"]
 
@@ -1489,7 +1498,7 @@ class AutoTabularRegressor():
                         )
                     )
                 balancing[_balancing] = self._all_balancings[_balancing]
-        
+
         # Scaling
         # get scaling space
         if self.scaling == "auto":
@@ -1610,7 +1619,7 @@ class AutoTabularRegressor():
             "model"
         ]  # optimal hyperparameter settings selected
         del self.optimal_regressor_hyperparameters["model"]
-        
+
         # record optimal settings
         with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
             f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
@@ -1632,9 +1641,7 @@ class AutoTabularRegressor():
             )
             f.write("Optimal feature selection hyperparameters:")
             print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
-            f.write(
-                "Optimal regression model is: {}\n".format(self.optimal_regressor)
-            )
+            f.write("Optimal regression model is: {}\n".format(self.optimal_regressor))
             f.write("Optimal regression hyperparameters:")
             print(self.optimal_regressor_hyperparameters, file=f, end="\n\n")
 
@@ -1676,7 +1683,7 @@ class AutoTabularRegressor():
         self._fit_regressor.fit(_X, _y.values.ravel())
 
         # save the model
-        if self.save :
+        if self.save:
             save_model(
                 self.optimal_encoder,
                 self.optimal_encoder_hyperparameters,
@@ -1690,21 +1697,21 @@ class AutoTabularRegressor():
                 self.optimal_feature_selection_hyperparameters,
                 self.optimal_regressor,
                 self.optimal_regressor_hyperparameters,
-                self.model_name
+                self.model_name,
             )
 
         return self
 
-    def load_model(self, _X, _y) :
+    def load_model(self, _X, _y):
 
         with open(self.model_name) as f:
             optimal_setting = f.readlines()
-        
+
         # remove change line signs
-        optimal_setting = [item.replace('\n','') for item in optimal_setting]
+        optimal_setting = [item.replace("\n", "") for item in optimal_setting]
         # remove blank spaces
-        while '' in optimal_setting :
-            optimal_setting.remove('')
+        while "" in optimal_setting:
+            optimal_setting.remove("")
 
         self.optimal_encoder = optimal_setting[0]
         self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
@@ -1715,7 +1722,9 @@ class AutoTabularRegressor():
         self.optimal_scaling = optimal_setting[6]
         self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
         self.optimal_feature_selection = optimal_setting[8]
-        self.optimal_feature_selection_hyperparameters = ast.literal_eval(optimal_setting[9])
+        self.optimal_feature_selection_hyperparameters = ast.literal_eval(
+            optimal_setting[9]
+        )
         self.optimal_regressor = optimal_setting[10]
         self.optimal_regressor_hyperparameters = ast.literal_eval(optimal_setting[11])
 
@@ -1760,7 +1769,7 @@ class AutoTabularRegressor():
 
     def fit(self, X, y):
 
-        if self.ignore_warning : # ignore all warnings to generate clearer outputs
+        if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
 
         _X = X.copy()
@@ -1775,13 +1784,13 @@ class AutoTabularRegressor():
             models,
         ) = self.get_hyperparameter_space(_X, _y)
 
-        if os.path.exists(self.model_name) :
-            
-            print('Stored model found, load previous model.')
+        if os.path.exists(self.model_name):
+
+            print("Stored model found, load previous model.")
             self.load_model(_X, _y)
 
             return self
-    
+
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(self.temp_directory):
@@ -1796,7 +1805,9 @@ class AutoTabularRegressor():
             )
             f.write("Response of the dataset: {}\n".format(list(_y.columns)))
             f.write(
-                "Shape of the response vector: {} * {}\n".format(_y.shape[0], _y.shape[1])
+                "Shape of the response vector: {} * {}\n".format(
+                    _y.shape[0], _y.shape[1]
+                )
             )
             f.write("Type of the task: Regression.\n")
 
@@ -1831,7 +1842,9 @@ class AutoTabularRegressor():
 
                 _obj = r2_score
             elif self.objective == "MAX":
-                from sklearn.metrics import max_error # focus on reducing extreme losses
+                from sklearn.metrics import (
+                    max_error,
+                )  # focus on reducing extreme losses
 
                 _obj = max_error
             else:
@@ -1861,7 +1874,7 @@ class AutoTabularRegressor():
             _balancing = _balancing_hyper["balancing"]
             del _balancing_hyper["balancing"]
             blc = balancing[_balancing](**_balancing_hyper)
-            
+
             # select scaling and set hyperparameters
             # must have scaling, since no_preprocessing is included
             _scaling_hyper = params["scaling"]
@@ -1945,46 +1958,50 @@ class AutoTabularRegressor():
                 _X_test_obj = fts.transform(_X_test_obj)
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Feature selection finished, in regression model.")
-                if scipy.sparse.issparse(_X_train_obj) : # check if returns sparse matrix
+                if scipy.sparse.issparse(
+                    _X_train_obj
+                ):  # check if returns sparse matrix
                     _X_train_obj = _X_train_obj.toarray()
-                if scipy.sparse.issparse(_X_test_obj) :
+                if scipy.sparse.issparse(_X_test_obj):
                     _X_test_obj = _X_test_obj.toarray()
                 # regression
 
                 # store the preprocessed train/test datasets
-                if isinstance(_X_train_obj, np.ndarray) : # in case numpy array is returned
-                    pd.concat([pd.DataFrame(_X_train_obj), _y_train_obj], axis=1, ignore_index=True).to_csv(
-                        obj_tmp_directory + "/train_preprocessed.csv", index=False
-                    )
-                elif isinstance(_X_train_obj, pd.DataFrame) :
+                if isinstance(
+                    _X_train_obj, np.ndarray
+                ):  # in case numpy array is returned
+                    pd.concat(
+                        [pd.DataFrame(_X_train_obj), _y_train_obj],
+                        axis=1,
+                        ignore_index=True,
+                    ).to_csv(obj_tmp_directory + "/train_preprocessed.csv", index=False)
+                elif isinstance(_X_train_obj, pd.DataFrame):
                     pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
                         obj_tmp_directory + "/train_preprocessed.csv", index=False
                     )
-                else :
-                    raise TypeError(
-                        "Only accept numpy array or pandas dataframe!"
-                    )
-                
-                if isinstance(_X_test_obj, np.ndarray) :
-                    pd.concat([pd.DataFrame(_X_test_obj), _y_test_obj], axis=1, ignore_index=True).to_csv(
-                        obj_tmp_directory + "/test_preprocessed.csv", index=False
-                    )
-                elif isinstance(_X_test_obj, pd.DataFrame) :
+                else:
+                    raise TypeError("Only accept numpy array or pandas dataframe!")
+
+                if isinstance(_X_test_obj, np.ndarray):
+                    pd.concat(
+                        [pd.DataFrame(_X_test_obj), _y_test_obj],
+                        axis=1,
+                        ignore_index=True,
+                    ).to_csv(obj_tmp_directory + "/test_preprocessed.csv", index=False)
+                elif isinstance(_X_test_obj, pd.DataFrame):
                     pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
                         obj_tmp_directory + "/test_preprocessed.csv", index=False
                     )
-                else :
-                    raise TypeError(
-                        "Only accept numpy array or pandas dataframe!"
-                    )
+                else:
+                    raise TypeError("Only accept numpy array or pandas dataframe!")
 
                 reg.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
 
                 y_pred = reg.predict(_X_test_obj)
-                if self.objective == 'R2' : #special treatment for r2_score
+                if self.objective == "R2":  # special treatment for r2_score
                     _loss = -_obj(y_pred, _y_test_obj.values)
-                else :
+                else:
                     _loss = _obj(y_pred, _y_test_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
@@ -2029,9 +2046,9 @@ class AutoTabularRegressor():
 
                 y_pred = reg.predict(_X_obj.values)
 
-                if self.objective == 'R2' : #special treatment for r2_score
+                if self.objective == "R2":  # special treatment for r2_score
                     _loss = -_obj(y_pred, _y_obj.values)
-                else :
+                else:
                     _loss = _obj(y_pred, _y_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
@@ -2053,7 +2070,7 @@ class AutoTabularRegressor():
 
         # Storage for evaluation points
         if self.spark_trials:
-            trials = SparkTrials(parallelism = 8)
+            trials = SparkTrials(parallelism=8)
         else:
             trials = Trials()
 
@@ -2080,7 +2097,7 @@ class AutoTabularRegressor():
         return self
 
     def predict(self, X):
-    
+
         _X = X.copy()
 
         # may need preprocessing for test data, the preprocessing should be the same as in fit part
@@ -2104,127 +2121,3 @@ class AutoTabularRegressor():
         _X = self._fit_feature_selection.transform(_X)
 
         return self._fit_regressor.predict(_X)
-
-class AutoTabular(AutoTabularClassifier, AutoTabularRegressor) :
-    
-    """
-    Automatically assign to AutoTabularClassifier or AutoTabularRegressor
-    """
-
-    def __init__(
-        self,
-        timeout=360,
-        max_evals=64,
-        temp_directory="tmp",
-        delete_temp_after_terminate=False,
-        save = True,
-        model_name = 'model',
-        ignore_warning = True,
-        encoder="auto",
-        imputer="auto",
-        balancing="auto",
-        scaling="auto",
-        feature_selection="auto",
-        models="auto",
-        validation=True,
-        valid_size=0.15,
-        objective=None,
-        method="Bayesian",
-        algo="tpe",
-        spark_trials=False,
-        progressbar=True,
-        seed=1,
-    ):
-        self.timeout = timeout
-        self.max_evals = max_evals
-        self.temp_directory = temp_directory
-        self.delete_temp_after_terminate = delete_temp_after_terminate
-        self.save = save
-        self.model_name = model_name
-        self.ignore_warning = ignore_warning
-        self.encoder = encoder
-        self.imputer = imputer
-        self.balancing = balancing
-        self.scaling = scaling
-        self.feature_selection = feature_selection
-        self.models = models
-        self.validation = validation
-        self.valid_size = valid_size
-        self.objective = objective
-        self.method = method
-        self.algo = algo
-        self.spark_trials = spark_trials
-        self.progressbar = progressbar
-        self.seed = seed
-
-    def fit(self, X, y = None) :
-        
-        if isinstance(y, pd.DataFrame) or isinstance(y, np.ndarray) :
-            self._type = type_of_task(y)
-        elif y == None :
-            self._type = 'Unsupervised'
-
-        if self._type in ['binary', 'multiclass'] : # assign classification tasks
-            self.model = AutoTabularClassifier(
-                timeout=self.timeout,
-                max_evals=self.max_evals,
-                temp_directory=self.temp_directory,
-                delete_temp_after_terminate=self.delete_temp_after_terminate,
-                save = self.save,
-                model_name = self.model_name,
-                ignore_warning = self.ignore_warning,
-                encoder=self.encoder,
-                imputer=self.imputer,
-                balancing=self.balancing,
-                scaling=self.scaling,
-                feature_selection=self.feature_selection,
-                models=self.models,
-                validation=self.validation,
-                valid_size=self.valid_size,
-                objective="accuracy" if not self.objective else self.objective,
-                method=self.method,
-                algo=self.algo,
-                spark_trials=self.spark_trials,
-                progressbar=self.progressbar,
-                seed=self.seed
-            )
-        elif self._type in ['integer', 'continuous'] : # assign regression tasks
-            self.model = AutoTabularRegressor(
-                timeout=self.timeout,
-                max_evals=self.max_evals,
-                temp_directory=self.temp_directory,
-                delete_temp_after_terminate=self.delete_temp_after_terminate,
-                save = self.save,
-                model_name = self.model_name,
-                ignore_warning = self.ignore_warning,
-                encoder=self.encoder,
-                imputer=self.imputer,
-                balancing=self.balancing,
-                scaling=self.scaling,
-                feature_selection=self.feature_selection,
-                models=self.models,
-                validation=self.validation,
-                valid_size=self.valid_size,
-                objective="MSE" if not self.objective else self.objective,
-                method=self.method,
-                algo=self.algo,
-                spark_trials=self.spark_trials,
-                progressbar=self.progressbar,
-                seed=self.seed
-            )
-        else :
-            raise ValueError(
-                'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
-                    self._type
-                )
-            )
-
-        self.model.fit(X, y)
-        return self
-
-    def predict(self, X) :
-
-        if self.model :
-            return self.model.predict(X)
-        else :
-            raise ValueError('No tasks found! Need to fit first.')

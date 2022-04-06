@@ -1,4 +1,4 @@
-'''
+"""
 File: main.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 5th March 2022 11:49:52 am
+Last Modified: Tuesday, 5th April 2022 10:47:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,7 +33,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
+"""
 
 import argparse
 from sqlite3 import DatabaseError
@@ -287,4 +287,3 @@ if __name__ == "__main__":
             args.test_eval, eval_metrics[args.test_eval](y_pred, test_y)
         )
     )
-

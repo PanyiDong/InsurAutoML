@@ -1,16 +1,16 @@
 """
-File: setup.py
+File: _encoder_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /setup.py
-File Created: Friday, 4th March 2022 11:33:55 pm
+Relative Path: /My_AutoML/_hyperparameters/_encoder_hyperparameter.py
+File Created: Tuesday, 5th April 2022 11:02:03 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 10:37:07 pm
+Last Modified: Tuesday, 5th April 2022 11:02:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -34,45 +34,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-import os
-from setuptools import setup, find_packages
 
-# from Cython.Build import cythonize
-
-# EXCLUDE_FILES = [
-#     "main.py",
-# ]
-
-
-def get_ext_path(root_dir, exclude_files):
-
-    """
-    Get file paths needed compilation
-    Exclude certain files
-    """
-
-    paths = []
-
-    for root, dirs, files in os.walk(root_dir):
-        for filename in files:
-            if os.path.splitext(filename)[1] != ".py":
-                continue
-
-            file_path = os.path.join(root, filename)
-            if file_path in exclude_files:
-                continue
-
-            paths.append(file_path)
-
-    return paths
-
-
-setup(
-    name="My_AutoML",
-    version="0.0.1",
-    packages=find_packages(),
-    # ext_modules = cythonize(
-    #     get_ext_path("My_AutoML", EXCLUDE_FILES),
-    #     compiler_directives = {'language_level': 3}
-    # )
-)
+# encoder
+encoder_hyperparameter = [{"encoder": "DataEncoding"}]
