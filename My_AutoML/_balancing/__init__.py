@@ -10,7 +10,7 @@ File Created: Wednesday, 6th April 2022 12:20:45 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 12:30:45 am
+Last Modified: Wednesday, 6th April 2022 10:55:25 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,3 +45,18 @@ from ._under_sampling import (
     CNN_TomekLink,
 )
 from ._mixed_sampling import Smote_TomekLink, Smote_ENN
+from My_AutoML._base import no_processing
+
+balancings = {
+    "no_processing": no_processing,
+    "SimpleRandomOverSampling": SimpleRandomOverSampling,
+    "SimpleRandomUnderSampling": SimpleRandomUnderSampling,
+    "TomekLink": TomekLink,
+    "EditedNearestNeighbor": EditedNearestNeighbor,
+    "CondensedNearestNeighbor": CondensedNearestNeighbor,
+    "OneSidedSelection": OneSidedSelection,
+    "CNN_TomekLink": CNN_TomekLink,
+    "Smote": Smote,
+    "Smote_TomekLink": Smote_TomekLink,
+    "Smote_ENN": Smote_ENN,
+}

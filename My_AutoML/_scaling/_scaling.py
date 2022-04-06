@@ -1,4 +1,4 @@
-'''
+"""
 File: _scaling.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 5th March 2022 11:46:34 am
+Last Modified: Wednesday, 6th April 2022 10:40:50 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -33,7 +33,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-'''
+"""
 
 
 import warnings
@@ -43,11 +43,11 @@ import scipy
 import scipy.stats
 from sklearn.preprocessing import PowerTransformer, QuantileTransformer
 
-from ._encoding import DataEncoding
+from My_AutoML._encoding import DataEncoding
 
 
 class NoScaling:
-    def fit(self, X, y =None):
+    def fit(self, X, y=None):
         return self
 
     def transform(self, X):
@@ -73,7 +73,7 @@ class Standardize:
         self.with_mean = with_mean
         self.with_std = with_std
 
-    def fit(self, X, y =None):
+    def fit(self, X, y=None):
 
         _X = X.copy(deep=True)
 
@@ -89,7 +89,7 @@ class Standardize:
             _x_sum = 0
             _x_2_sum = 0
             _x_sum += np.nansum(_data)
-            _x_2_sum += np.nansum(_data ** 2)
+            _x_2_sum += np.nansum(_data**2)
             if self.with_mean == True:
                 self._mean[i] = _x_sum / n_notnan
             if self.with_std == True:
@@ -130,11 +130,12 @@ class Normalize:
     """
 
     def __init__(
-        self, norm="max",
+        self,
+        norm="max",
     ):
         self.norm = norm
 
-    def fit(self, X, y =None):
+    def fit(self, X, y=None):
 
         if self.norm not in ["l1", "l2", "max"]:
             raise ValueError("Not recognizing norm method!")
@@ -150,7 +151,7 @@ class Normalize:
             elif self.norm == "l1":
                 self._scale[i] = np.abs(_data).sum()
             elif self.norm == "l2":
-                self._scale[i] = (_data ** 2).sum()
+                self._scale[i] = (_data**2).sum()
 
         return self
 
@@ -195,7 +196,7 @@ class RobustScale:
         self.quantile = quantile
         self.unit_variance = unit_variance
 
-    def fit(self, X, y =None):
+    def fit(self, X, y=None):
 
         q_min, q_max = self.quantile
         if q_min == None:  # in case no input
@@ -228,9 +229,13 @@ class RobustScale:
                     )
 
         # handle 0 in scale
-        constant_mask = self._scale < 10 * np.finfo(np.float64).eps # avoid extremely small values
-        for index in [i for i, value in enumerate(constant_mask) if value] :
-            self._scale[index] = 1.0 # change scale at True index of constant_mask to 1.0
+        constant_mask = (
+            self._scale < 10 * np.finfo(np.float64).eps
+        )  # avoid extremely small values
+        for index in [i for i, value in enumerate(constant_mask) if value]:
+            self._scale[
+                index
+            ] = 1.0  # change scale at True index of constant_mask to 1.0
 
         return self
 
@@ -268,7 +273,7 @@ class MinMaxScale:
     def __init__(self, feature_range=(0, 1)):
         self.feature_range = feature_range
 
-    def fit(self, X, y =None):
+    def fit(self, X, y=None):
 
         _X = X.copy(deep=True)
         n, p = _X.shape
@@ -340,8 +345,8 @@ class Winsorization:
             _above_quantile = y[X[_column] > quantile].mean()[0]
             _below_quantile = y[X[_column] <= quantile].mean()[0]
             # deal with the case where above quantile do not exists
-            if not _above_quantile :
-                _above_quantile = quantile 
+            if not _above_quantile:
+                _above_quantile = quantile
 
             if abs(_above_quantile / _below_quantile - 1) > self.threshold:
                 self._list.append(True)
@@ -365,16 +370,17 @@ class Winsorization:
 
         return _X
 
+
 ####################################################################################################
 # Special Case
 def Feature_Manipulation(
-    X, 
-    columns = [],
-    manipulation = [],
-    rename_columns = {},
-    replace = False,
-    deep_copy = False,
-    ):
+    X,
+    columns=[],
+    manipulation=[],
+    rename_columns={},
+    replace=False,
+    deep_copy=False,
+):
 
     """
     Available methods: +, -, *, /, //, %, ln, log2, log10, exp
@@ -382,9 +388,9 @@ def Feature_Manipulation(
     Parameters
     ----------
     columns: columns need manipulation, default = []
-    
+
     manipulation: list of manipulation, default = []
-    
+
     rename_columns: specific changing column names, default = {}
 
     replace: whether to replace the new columns, default = False
@@ -405,7 +411,7 @@ def Feature_Manipulation(
     4        12        13        14
 
     >> data = Feature_Manipulation(
-    >>     data, columns= ['column_1', 'column_2', 'column_3'], 
+    >>     data, columns= ['column_1', 'column_2', 'column_3'],
     >>     manipulation = ['* 100', 'ln', '+ 1'],
     >>     rename_columns= {'column_2': 'log_column_2'}
     >> )
@@ -420,57 +426,61 @@ def Feature_Manipulation(
     """
 
     # make sure input is dataframe
-    if not isinstance(X, pd.DataFrame) :
-        try :
+    if not isinstance(X, pd.DataFrame):
+        try:
             X = pd.DataFrame(X)
-        except :
-            raise ValueError('Expect a dataframe, get {}.'.format(type(X)))
+        except:
+            raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
-    _X = X.copy(deep = deep_copy)
-        
+    _X = X.copy(deep=deep_copy)
+
     # if no columns/manipulation specified, raise warning
-    if not columns or not manipulation :
-        warnings.warn('No manipulation executed.')
+    if not columns or not manipulation:
+        warnings.warn("No manipulation executed.")
         return _X
-        
+
     # expect one manipulation for one column
     # if not same size, raise Error
-    if len(columns) != len(manipulation) :
+    if len(columns) != len(manipulation):
         raise ValueError(
-            'Expect same length of columns and manipulation, get {} and {} respectively.'
-            .format(len(columns), len(manipulation))
+            "Expect same length of columns and manipulation, get {} and {} respectively.".format(
+                len(columns), len(manipulation)
+            )
         )
     manipulation = dict(zip(columns, manipulation))
 
-    for _column in columns :
+    for _column in columns:
 
         # if observed in rename dict, change column names
-        new_column_name = rename_columns[_column] if _column in rename_columns.keys() else _column
+        new_column_name = (
+            rename_columns[_column] if _column in rename_columns.keys() else _column
+        )
 
         # if not replace, and new column names coincide with old column names
         # new column names = old column names + manipulation
         # for distinguish
-        if not replace and new_column_name == _column :
-            new_column_name += '_' + manipulation[_column]
+        if not replace and new_column_name == _column:
+            new_column_name += "_" + manipulation[_column]
 
         # column manipulation
-        if manipulation[_column] == 'ln' :
+        if manipulation[_column] == "ln":
             _X[new_column_name] = np.log(_X[_column])
-        elif manipulation[_column] == 'log2' :
+        elif manipulation[_column] == "log2":
             _X[new_column_name] = np.log2(_X[_column])
-        elif manipulation[_column] == 'log10' :
+        elif manipulation[_column] == "log10":
             _X[new_column_name] = np.log10(_X[_column])
-        elif manipulation[_column] == 'exp' :
+        elif manipulation[_column] == "exp":
             _X[new_column_name] = np.exp(_X[_column])
-        else :
-            exec('_X[new_column_name] = _X[_column]' + manipulation[_column])
+        else:
+            exec("_X[new_column_name] = _X[_column]" + manipulation[_column])
 
     return _X
+
 
 ####################################################################################################
 # Feature Truncation
 class Feature_Truncation:
-    
+
     """
     Truncate feature to certain quantile (remove the effect of extreme values)
     No inverse transform available
@@ -488,67 +498,67 @@ class Feature_Truncation:
     >> )
     >> data = scaling.fit_transform(data)
 
-    (column_2 right truncated at 95 percentile, column_8 left truncated at 10 
+    (column_2 right truncated at 95 percentile, column_8 left truncated at 10
     percentile, etc.)
     """
 
-    def __init__(
-        self,
-        columns = [],
-        quantile=0.95, 
-        deep_copy = False
-    ):
+    def __init__(self, columns=[], quantile=0.95, deep_copy=False):
         self.columns = columns
         self.quantile = quantile
         self.deep_copy = deep_copy
 
-    def fit(self, X, y = None):
+    def fit(self, X, y=None):
 
         # make sure input is dataframe
-        if not isinstance(X, pd.DataFrame) :
-            try :
+        if not isinstance(X, pd.DataFrame):
+            try:
                 X = pd.DataFrame(X)
-            except :
-                raise ValueError('Expect a dataframe, get {}.'.format(type(X)))
+            except:
+                raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = X.copy(deep = self.deep_copy)
+        _X = X.copy(deep=self.deep_copy)
 
         self.columns = list(_X.columns) if not self.columns else self.columns
 
-        if isinstance(self.quantile, list) :
-            if len(self.columns) != len(self.quantile) :
+        if isinstance(self.quantile, list):
+            if len(self.columns) != len(self.quantile):
                 raise ValueError(
-                    'Expect same length of columns and quantile, get {} and {} respectively.'
-                    .format(len(self.columns), len(self.quantile))
+                    "Expect same length of columns and quantile, get {} and {} respectively.".format(
+                        len(self.columns), len(self.quantile)
+                    )
                 )
             self.quantile = dict(zip(self.columns, self.quantile))
 
         self.quantile_list = {}
 
         for _column in self.columns:
-            quantile = np.nanquantile(X[_column], self.quantile[_column], axis = 0)
+            quantile = np.nanquantile(X[_column], self.quantile[_column], axis=0)
             self.quantile_list[_column] = quantile
 
         return self
 
     def transform(self, X):
 
-        _X = X.copy(deep = self.deep_copy) 
+        _X = X.copy(deep=self.deep_copy)
 
         for _column in self.columns:
-            if self.quantile_list[_column] >= 0.5 :
-                _X.loc[_X[_column] > self.quantile_list[_column], _column] = self.quantile_list[_column]
-            else :
-                _X.loc[_X[_column] < self.quantile_list[_column], _column] = self.quantile_list[_column]
+            if self.quantile_list[_column] >= 0.5:
+                _X.loc[
+                    _X[_column] > self.quantile_list[_column], _column
+                ] = self.quantile_list[_column]
+            else:
+                _X.loc[
+                    _X[_column] < self.quantile_list[_column], _column
+                ] = self.quantile_list[_column]
 
         return _X
 
-    def fit_transform(self, X, y = None) :
+    def fit_transform(self, X, y=None):
 
-        _X = X.copy(deep = self.deep_copy)
+        _X = X.copy(deep=self.deep_copy)
 
         self.fit(X, y)
-        
+
         _X = self.transform(_X)
 
         return _X

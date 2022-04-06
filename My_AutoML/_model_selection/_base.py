@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 12:14:31 am
+Last Modified: Wednesday, 6th April 2022 10:56:33 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -59,8 +59,11 @@ from hyperopt import (
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
-import My_AutoML
-from My_AutoML._base import no_processing
+from My_AutoML import encoders
+from My_AutoML._imputation import imputers
+from My_AutoML._balancing import balancings
+from My_AutoML._scaling import scalings
+from My_AutoML._feature_selection import feature_selections
 from My_AutoML._model import (
     classifiers,
     regressors,
@@ -74,6 +77,8 @@ from My_AutoML._hyperparameters import (
     classifier_hyperparameter,
     regressor_hyperparameter,
 )
+
+from My_AutoML._base import no_processing
 
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
@@ -388,22 +393,22 @@ class AutoTabularClassifier:
         # initialize default search options
         # use copy to allows multiple manipulation
         # all encoders available
-        self._all_encoders = My_AutoML.encoders.copy()
+        self._all_encoders = encoders.copy()
 
         # all hyperparameters for encoders
         self._all_encoders_hyperparameters = encoder_hyperparameter.copy()
 
         # all imputers available
-        self._all_imputers = My_AutoML.imputers.copy()
+        self._all_imputers = imputers.copy()
 
         # all hyperparemeters for imputers
         self._all_imputers_hyperparameters = imputer_hyperparameter.copy()
 
         # all scalings available
-        self._all_scalings = My_AutoML.scalings.copy()
+        self._all_scalings = scalings.copy()
 
         # all balancings available
-        self._all_balancings = My_AutoML.balancing.copy()
+        self._all_balancings = balancings.copy()
 
         # all hyperparameters for balancing methods
         self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
@@ -412,7 +417,7 @@ class AutoTabularClassifier:
         self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
 
         # all feature selections available
-        self._all_feature_selection = My_AutoML.feature_selection.copy()
+        self._all_feature_selection = feature_selections.copy()
         # special treatment, remove some feature selection for regression
         del self._all_feature_selection["extra_trees_preproc_for_regression"]
         del self._all_feature_selection["select_percentile_regression"]
@@ -1387,22 +1392,22 @@ class AutoTabularRegressor:
         # initialize default search options
         # use copy to allows multiple manipulation
         # all encoders available
-        self._all_encoders = My_AutoML.encoders.copy()
+        self._all_encoders = encoders.copy()
 
         # all hyperparameters for encoders
         self._all_encoders_hyperparameters = encoder_hyperparameter.copy()
 
         # all imputers available
-        self._all_imputers = My_AutoML.imputers.copy()
+        self._all_imputers = imputers.copy()
 
         # all hyperparemeters for imputers
         self._all_imputers_hyperparameters = imputer_hyperparameter.copy()
 
         # all scalings available
-        self._all_scalings = My_AutoML.scalings.copy()
+        self._all_scalings = scalings.copy()
 
         # all balancings available
-        self._all_balancings = My_AutoML.balancing.copy()
+        self._all_balancings = balancings.copy()
 
         # all hyperparameters for balancing methods
         self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
@@ -1411,7 +1416,7 @@ class AutoTabularRegressor:
         self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
 
         # all feature selections available
-        self._all_feature_selection = My_AutoML.feature_selection.copy()
+        self._all_feature_selection = feature_selections.copy()
         # special treatment, remove some feature selection for classification
         del self._all_feature_selection["extra_trees_preproc_for_classification"]
         del self._all_feature_selection["select_percentile_classification"]

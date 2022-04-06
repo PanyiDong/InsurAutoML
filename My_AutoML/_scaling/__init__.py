@@ -5,12 +5,12 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /My_AutoML/_imputation/__init__.py
-File Created: Tuesday, 5th April 2022 11:49:07 pm
+Relative Path: /My_AutoML/_scaling/__init__.py
+File Created: Wednesday, 6th April 2022 10:40:25 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:35:43 am
+Last Modified: Wednesday, 6th April 2022 10:42:30 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,33 +35,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._base import SimpleImputer, DummyImputer, JointImputer
-from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
-from ._nn import GAIN
-from ._clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
+from ._scaling import (
+    MinMaxScale,
+    Standardize,
+    Normalize,
+    RobustScale,
+    PowerTransformer,
+    QuantileTransformer,
+    Winsorization,
+    Feature_Manipulation,
+    Feature_Truncation,
+)
+from My_AutoML._base import no_processing
 
-
-imputers = {
-    "SimpleImputer": SimpleImputer,
-    #    'DummyImputer' : DummyImputer,
-    "JointImputer": JointImputer,
-    "ExpectationMaximization": ExpectationMaximization,
-    "KNNImputer": KNNImputer,
-    "MissForestImputer": MissForestImputer,
-    "MICE": MICE,
-    "GAIN": GAIN,
-    # "AAI_kNN": AAI_kNN, # extremely slow (all below)
-    # "KMI": KMI, # not implemented
-    # "CMI": CMI,
-    # "k_Prototype_NN": k_Prototype_NN,
+scalings = {
+    "no_processing": no_processing,
+    "MinMaxScale": MinMaxScale,
+    "Standardize": Standardize,
+    "Normalize": Normalize,
+    "RobustScale": RobustScale,
+    "PowerTransformer": PowerTransformer,
+    "QuantileTransformer": QuantileTransformer,
+    "Winsorization": Winsorization,
+    # "Feature_Manipulation": Feature_Manipulation,
+    # "Feature_Truncation": Feature_Truncation,
 }
-# Markov Chain Monte Carlo (MCMC)
-
-
-# check if tensorflow exists in environment
-# if not exists, do not use GAIN method
-import importlib
-
-tensorflow_spec = importlib.util.find_spec("tensorflow")
-if tensorflow_spec is None:
-    del imputers["GAIN"]
