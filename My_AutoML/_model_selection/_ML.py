@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:00:53 pm
+Last Modified: Wednesday, 6th April 2022 12:17:21 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,11 +38,7 @@ SOFTWARE.
 import numpy as np
 import pandas as pd
 
-from My_AutoML import (
-    no_processing,  # base
-    type_of_task,  # utils
-    formatting,
-)
+from My_AutoML._utils import type_of_task
 from ._base import AutoTabularClassifier, AutoTabularRegressor
 
 

@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:00:22 pm
+Last Modified: Wednesday, 6th April 2022 12:14:31 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -60,11 +60,7 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 import My_AutoML
-from My_AutoML import (
-    no_processing,  # base
-    type_of_task,  # utils
-    formatting,
-)
+from My_AutoML._base import no_processing
 from My_AutoML._model import (
     classifiers,
     regressors,
