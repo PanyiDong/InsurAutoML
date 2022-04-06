@@ -47,7 +47,7 @@ model.predict(test_X)
 >
 > $*$ rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
 >
-> $**$ tesnsorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
+> $**$ tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
 
 Current Progress:
 
@@ -77,7 +77,7 @@ The pipeline of AutoML:
 >
 > 5. Feature Selection: remove redundant or insignificant features to improve the performance of the model. Can be selected as no_processing.
 >
-> 6. Regression/Classification: perform regression/classficaiton models to fit the datasets.
+> 6. Regression/Classification: perform regression/classification models to fit the datasets.
 
 Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time.
 
@@ -86,3 +86,7 @@ Other files in the repository:
 1. `report.pdf` provides an introduction to the AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
 
 2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
+
+## Future
+
+I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure AutoML for tabular tasks/NLP tasks. But no schedules for such progress can be made.
