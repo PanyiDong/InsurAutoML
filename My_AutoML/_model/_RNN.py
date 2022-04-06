@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:46:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:48:21 pm
+Last Modified: Wednesday, 6th April 2022 11:38:15 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -55,6 +56,32 @@ if pytorch_spec is not None:
 
 
 class RNN_Model(nn.Module):
+
+    """
+    Recurrent Neural Network (RNN) model structure
+
+    Parameters
+    ----------
+    vocab_size: number of unique words in the vocabulary build from dataset
+
+    embedding_size: dimension of the embedding layer projected into before hidden layers
+
+    hidden_size: dimension of the hidden layer
+
+    output_size: output size of the model, for classification tasks, this is the number of classes;
+    for regression tasks, this is 1
+
+    n_layers: number of hidden layers, default = 1
+
+    RNN_unit: RNN unit type, default = "RNN"
+    support type ["RNN", "LSTM", "GRU"]
+
+    activation: activation function, default = "Sigmoid"
+    support type ["ReLU", "Tanh", "Sigmoid"]
+
+    dropout: dropout rate in fully-connected layers, default = 0.2
+    """
+
     def __init__(
         self,
         vocab_size,
@@ -115,6 +142,43 @@ class RNN_Model(nn.Module):
 
 
 class RNN_Classifier(RNN_Model):
+
+    """
+    Recurrent Neural Network (RNN) models for classification tasks, training/evaluation
+
+    Parameters
+    ----------
+    embedding_size: dimension of the embedding layer projected into before hidden layers, default = 512
+
+    hidden_size: dimension of the hidden layer, default = 256
+
+    n_layers: number of hidden layers, default = 1
+
+    RNN_unit: RNN unit type, default = "RNN"
+    support type ["RNN", "LSTM", "GRU"]
+
+    activation: activation function, default = "Sigmoid"
+    support type ["ReLU", "Tanh", "Sigmoid"]
+
+    dropout: dropout rate in fully-connected layers, default = 0.2
+
+    learning_rate: learning rate for the optimizer, default = None
+
+    optimizer: optimizer for training, default = "Adam"
+    support type ["Adam", "SGD"]
+
+    criteria: loss function, default = "CrossEntropy"
+    support type ["CrossEntropy"]
+
+    batch_size: batch size for training, default = 32
+
+    num_epochs: number of epochs for training, default = 20
+
+    is_cuda: whether to use GPU for training, default = True
+
+    seed: random seed, default = 1
+    """
+
     def __init__(
         self,
         embedding_size=512,
@@ -158,6 +222,10 @@ class RNN_Classifier(RNN_Model):
         self.device = torch.device(
             "cuda" if torch.cuda.is_available() and self.is_cuda else "cpu"
         )
+
+        # if try cuda and no cuda available, raise warning
+        if self.is_cuda and str(self.device) == "cpu":
+            warnings.warn("No GPU detected, use CPU for training.")
 
         # make sure RNN unit is supported
         if self.RNN_unit not in ["RNN", "LSTM", "GRU"]:
@@ -225,7 +293,7 @@ class RNN_Classifier(RNN_Model):
 
         return self
 
-    def transform(self, X, y=None):
+    def predict(self, X):
 
         # load data to DataLoader
         if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):

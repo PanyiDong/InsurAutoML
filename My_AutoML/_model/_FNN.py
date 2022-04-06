@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:46:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:47:38 pm
+Last Modified: Wednesday, 6th April 2022 11:38:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,6 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -196,6 +197,10 @@ class MLP_Base:
             "cuda" if torch.cuda.is_available() and self.is_cuda else "cpu"
         )
 
+        # if try cuda and no cuda available, raise warning
+        if self.is_cuda and str(self.device) == "cpu":
+            warnings.warn("No GPU detected, use CPU for training.")
+
         # load model
         self.model = MLP_Model(
             input_size=self.input_size,
@@ -253,7 +258,7 @@ class MLP_Base:
 
         return self
 
-    def transform(self, X, y=None):
+    def predict(self, X):
 
         # load test dataset to DataLoader
         if isinstance(X, pd.DataFrame):
@@ -352,9 +357,9 @@ class MLP_Classifier(MLP_Base):
 
         return super().fit(X, y)
 
-    def transform(self, X, y=None):
+    def predict(self, X):
 
-        return super().transform(X, y)
+        return super().predict(X)
 
 
 # Multi-Layer Perceptron regressor
@@ -437,6 +442,6 @@ class MLP_Regressor(MLP_Base):
 
         return super().fit(X, y)
 
-    def transform(self, X, y=None):
+    def predict(self, X):
 
-        return super().transform(X, y)
+        return super().predict(X)
