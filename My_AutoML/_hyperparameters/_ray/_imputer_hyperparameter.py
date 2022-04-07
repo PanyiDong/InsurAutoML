@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:02:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:19:44 pm
+Last Modified: Thursday, 7th April 2022 11:20:43 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,30 +38,28 @@ SOFTWARE.
 from ray import tune
 
 # imputer
-imputer_hyperparameter = tune.choice(
-    [
-        {
-            "imputer": "SimpleImputer",
-            "method": tune.choice(["mean", "zero", "median", "most frequent"]),
-        },
-        {"imputer": "DummyImputer"},
-        {"imputer": "JointImputer"},
-        {
-            "imputer": "ExpectationMaximization",
-            "iterations": tune.quniform(10, 100, 1),
-            "threshold": tune.uniform(1e-5, 1),
-        },
-        {
-            "imputer": "KNNImputer",
-            "n_neighbors": tune.qrandint(1, 15, 1),
-            "fold": tune.qrandint(5, 15, 1),
-        },
-        {"imputer": "MissForestImputer"},
-        {"imputer": "MICE", "cycle": tune.qrandint(5, 20, 1)},
-        {"imputer": "GAIN"},
-        # {"imputer": "AAI_kNN"},
-        # {"imputer": "KMI"},
-        # {"imputer": "CMI"},
-        # {"imputer": "k_Prototype_NN"},
-    ]
-)
+imputer_hyperparameter = [
+    {
+        "imputer": "SimpleImputer",
+        "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+    },
+    {"imputer": "DummyImputer"},
+    {"imputer": "JointImputer"},
+    {
+        "imputer": "ExpectationMaximization",
+        "iterations": tune.quniform(10, 100, 1),
+        "threshold": tune.uniform(1e-5, 1),
+    },
+    {
+        "imputer": "KNNImputer",
+        "n_neighbors": tune.qrandint(1, 15, 1),
+        "fold": tune.qrandint(5, 15, 1),
+    },
+    {"imputer": "MissForestImputer"},
+    {"imputer": "MICE", "cycle": tune.qrandint(5, 20, 1)},
+    {"imputer": "GAIN"},
+    # {"imputer": "AAI_kNN"},
+    # {"imputer": "KMI"},
+    # {"imputer": "CMI"},
+    # {"imputer": "k_Prototype_NN"},
+]

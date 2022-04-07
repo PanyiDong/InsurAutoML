@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 10:47:58 pm
+Last Modified: Thursday, 7th April 2022 3:16:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,6 +42,11 @@ import sklearn
 import My_AutoML
 from My_AutoML import load_data, train_test_split, type_of_task
 from My_AutoML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
+from My_AutoML._model_selection._experiment import (
+    AutoTabular,
+    AutoTabularClassifier,
+    AutoTabularRegressor,
+)
 
 model_dict = {
     "auto": AutoTabular,

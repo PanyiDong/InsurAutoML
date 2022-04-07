@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:45:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:48:27 pm
+Last Modified: Thursday, 7th April 2022 3:35:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,7 +63,7 @@ classifiers = {
     "RandomForest": autosklearn.pipeline.components.classification.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.classification.sgd.SGD,
     # self-defined models
-    "MLP_Classifier": MLP_Classifier,
+    # "MLP_Classifier": MLP_Classifier,
 }
 
 # regressors
@@ -82,7 +82,7 @@ regressors = {
     "RandomForest": autosklearn.pipeline.components.regression.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
     # self-defined models
-    "MLP_Regressor": MLP_Regressor,
+    # "MLP_Regressor": MLP_Regressor,
 }  # LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform of StandardScaler while having 1D array
 # https://github.com/automl/auto-sklearn/issues/1297
 # problem solved

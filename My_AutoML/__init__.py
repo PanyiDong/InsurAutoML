@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:59:53 am
+Last Modified: Thursday, 7th April 2022 3:15:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,6 +63,8 @@ from ._utils import (
     # get_missing_matrix,
 )
 
+# from ._encoding import DataEncoding
+
 # from ._imputation import (
 #     SimpleImputer,
 #     DummyImputer,
@@ -77,19 +79,6 @@ from ._utils import (
 #     CMI,
 #     k_Prototype_NN,
 # )
-from ._encoding import DataEncoding
-
-# from ._scaling import (
-#     MinMaxScale,
-#     Standardize,
-#     Normalize,
-#     RobustScale,
-#     PowerTransformer,
-#     QuantileTransformer,
-#     Winsorization,
-#     Feature_Manipulation,
-#     Feature_Truncation,
-# )
 
 # from ._balancing import (
 #     SimpleRandomOverSampling,
@@ -102,6 +91,18 @@ from ._encoding import DataEncoding
 #     Smote,
 #     Smote_TomekLink,
 #     Smote_ENN,
+# )
+
+# from ._scaling import (
+#     MinMaxScale,
+#     Standardize,
+#     Normalize,
+#     RobustScale,
+#     PowerTransformer,
+#     QuantileTransformer,
+#     Winsorization,
+#     Feature_Manipulation,
+#     Feature_Truncation,
 # )
 
 # from ._feature_selection import (
@@ -147,7 +148,7 @@ from ._model_selection import (
 
 # base = {"load_data": load_data}
 
-encoders = {"DataEncoding": DataEncoding}
+# encoders = {"DataEncoding": DataEncoding}
 
 # model_selection = {
 #     "AutoTabular": AutoTabular,

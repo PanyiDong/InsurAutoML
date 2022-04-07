@@ -1,16 +1,16 @@
 """
-File: _scaling_hyperparameter.py
+File: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /My_AutoML/_hyperparameters/_scaling_hyperparameter.py
-File Created: Tuesday, 5th April 2022 11:03:34 pm
+Relative Path: /My_AutoML/_legacy/__init__.py
+File Created: Thursday, 7th April 2022 3:59:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:21:08 am
+Last Modified: Thursday, 7th April 2022 4:02:38 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,16 +35,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ray import tune
-
-# scaling
-scaling_hyperparameter = [
-    {"scaling": "NoScaling"},
-    {"scaling": "Standardize"},
-    {"scaling": "Normalize"},
-    {"scaling": "RobustScale"},
-    {"scaling": "MinMaxScale"},
-    {"scaling": "Winsorization"},
-    {"scaling": "Feature_Manipulation"},
-    {"scaling": "Feature_Truncation"},
-]
+from My_AutoML._model_selection._legacy import (
+    AutoTabular,
+    AutoTabularClassifier,
+    AutoTabularRegressor,
+)

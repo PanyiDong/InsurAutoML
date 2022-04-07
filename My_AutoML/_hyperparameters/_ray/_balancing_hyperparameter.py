@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:04:29 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:04:46 pm
+Last Modified: Thursday, 7th April 2022 11:19:36 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,9 +35,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import numpy as np
-from hyperopt import hp
-from hyperopt.pyll import scope
+from ray import tune
 
 # balancing
 # if the imbalance threshold small, TomekLink will take too long
@@ -45,58 +43,46 @@ balancing_hyperparameter = [
     {"balancing": "no_processing"},
     {
         "balancing": "SimpleRandomOverSampling",
-        "imbalance_threshold": hp.uniform(
-            "SimpleRandomOverSampling_imbalance_threshold", 0.8, 1
-        ),
+        "imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
         "balancing": "SimpleRandomUnderSampling",
-        "imbalance_threshold": hp.uniform(
-            "SimpleRandomUnderSampling_imbalance_threshold", 0.8, 1
-        ),
+        "imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
         "balancing": "TomekLink",
-        "imbalance_threshold": hp.uniform("TomekLink_imbalance_threshold", 0.8, 1),
+        "imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
         "balancing": "EditedNearestNeighbor",
-        "imbalance_threshold": hp.uniform(
-            "EditedNearestNeighbor_imbalance_threshold", 0.8, 1
-        ),
-        "k": scope.int(hp.quniform("EditedNearestNeighbor_k", 1, 7, 1)),
+        "imbalance_threshold": tune.uniform(0.8, 1),
+        "k": tune.qrandint(1, 7, 1),
     },
     {
         "balancing": "CondensedNearestNeighbor",
-        "imbalance_threshold": hp.uniform(
-            "CondensedNearestNeighbor_imbalance_threshold", 0.8, 1
-        ),
+        "imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
         "balancing": "OneSidedSelection",
-        "imbalance_threshold": hp.uniform(
-            "OneSidedSelection_imbalance_threshold", 0.8, 1
-        ),
+        "imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
         "balancing": "CNN_TomekLink",
-        "imbalance_threshold": hp.uniform("CNN_TomekLink_imbalance_threshold", 0.8, 1),
+        "imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
         "balancing": "Smote",
-        "imbalance_threshold": hp.uniform("Smote_imbalance_threshold", 0.8, 1),
-        "k": scope.int(hp.quniform("Smote_k", 1, 10, 1)),
+        "imbalance_threshold": tune.uniform(0.8, 1),
+        "k": tune.qrandint(1, 10, 1),
     },
     {
         "balancing": "Smote_TomekLink",
-        "imbalance_threshold": hp.uniform(
-            "Smote_TomekLink_imbalance_threshold", 0.8, 1
-        ),
-        "k": scope.int(hp.quniform("Smote_TomekLink_k", 1, 10, 1)),
+        "imbalance_threshold": tune.uniform(0.8, 1),
+        "k": tune.qrandint(1, 10, 1),
     },
     {
         "balancing": "Smote_ENN",
-        "imbalance_threshold": hp.uniform("Smote_ENN_imbalance_threshold", 0.8, 1),
-        "k": scope.int(hp.quniform("Smote_ENN_k", 1, 10, 1)),
+        "imbalance_threshold": tune.uniform(0.8, 1),
+        "k": tune.qrandint(1, 10, 1),
     },
 ]

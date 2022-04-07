@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:02:03 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:18:28 pm
+Last Modified: Thursday, 7th April 2022 11:20:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,4 +38,4 @@ SOFTWARE.
 from ray import tune
 
 # encoder
-encoder_hyperparameter = tune.choice([{"encoder": "DataEncoding"}])
+encoder_hyperparameter = [{"encoder": "DataEncoding"}]

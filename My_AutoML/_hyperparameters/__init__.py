@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:01:43 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:05:24 pm
+Last Modified: Thursday, 7th April 2022 3:33:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,12 +35,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._hyperopt._encoder_hyperparameter import encoder_hyperparameter
-from ._hyperopt._imputer_hyperparameter import imputer_hyperparameter
-from ._hyperopt._scaling_hyperparameter import scaling_hyperparameter
-from ._hyperopt._balancing_hyperparameter import balancing_hyperparameter
-from ._hyperopt._feature_selection_hyperparameter import (
+from ._ray._encoder_hyperparameter import encoder_hyperparameter
+from ._ray._imputer_hyperparameter import imputer_hyperparameter
+from ._ray._scaling_hyperparameter import scaling_hyperparameter
+from ._ray._balancing_hyperparameter import balancing_hyperparameter
+from ._ray._feature_selection_hyperparameter import (
     feature_selection_hyperparameter,
 )
-from ._hyperopt._classifier_hyperparameter import classifier_hyperparameter
-from ._hyperopt._regressor_hyperparameter import regressor_hyperparameter
+from ._ray._classifier_hyperparameter import classifier_hyperparameter
+from ._ray._regressor_hyperparameter import regressor_hyperparameter
