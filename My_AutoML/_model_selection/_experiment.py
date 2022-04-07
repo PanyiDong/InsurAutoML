@@ -10,7 +10,7 @@ File Created: Wednesday, 6th April 2022 3:46:21 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:17:59 pm
+Last Modified: Thursday, 7th April 2022 9:13:10 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -36,6 +36,38 @@ SOFTWARE.
 """
 
 from ray import tune
+
+import os
+import warnings
+from sklearn.utils._testing import ignore_warnings
+from sklearn.exceptions import ConvergenceWarning
+
+from My_AutoML import encoders
+from My_AutoML._imputation import imputers
+from My_AutoML._balancing import balancings
+from My_AutoML._scaling import scalings
+from My_AutoML._feature_selection import feature_selections
+from My_AutoML._model import (
+    classifiers,
+    regressors,
+)
+from My_AutoML._hyperparameters import (
+    encoder_hyperparameter,
+    imputer_hyperparameter,
+    scaling_hyperparameter,
+    balancing_hyperparameter,
+    feature_selection_hyperparameter,
+    classifier_hyperparameter,
+    regressor_hyperparameter,
+)
+
+from My_AutoML._base import no_processing
+from My_AutoML._utils._file import save_model
+
+# filter certain warnings
+warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
+warnings.filterwarnings("ignore", message="Variables are collinear")
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 class AutoTabularBase:
@@ -87,7 +119,91 @@ class AutoTabularBase:
 
         self._iter = 0  # record iteration number
 
+    def get_hyperparameter_space(self, X, y):
+
+        # initialize default search options
+        # use copy to allows multiple manipulation
+        # all encoders available
+        self._all_encoders = encoders.copy()
+
+        # all hyperparameters for encoders
+        self._all_encoders_hyperparameters = encoder_hyperparameter.copy()
+
+        # all imputers available
+        self._all_imputers = imputers.copy()
+
+        # all hyperparemeters for imputers
+        self._all_imputers_hyperparameters = imputer_hyperparameter.copy()
+
+        # all scalings available
+        self._all_scalings = scalings.copy()
+
+        # all balancings available
+        self._all_balancings = balancings.copy()
+
+        # all hyperparameters for balancing methods
+        self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
+
+        # all hyperparameters for scalings
+        self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
+
+        # all feature selections available
+        self._all_feature_selection = feature_selections.copy()
+        # special treatment, remove some feature selection for regression
+        del self._all_feature_selection["extra_trees_preproc_for_regression"]
+        del self._all_feature_selection["select_percentile_regression"]
+        del self._all_feature_selection["select_rates_regression"]
+        if X.shape[0] * X.shape[1] > 10000:
+            del self._all_feature_selection["liblinear_svc_preprocessor"]
+
+        # all hyperparameters for feature selections
+        self._all_feature_selection_hyperparameters = (
+            feature_selection_hyperparameter.copy()
+        )
+
+        # all classification models available
+        self._all_models = classifiers.copy()
+        # special treatment, remove SVM methods when observations are large
+        # SVM suffers from the complexity o(n_samples^2 * n_features),
+        # which is time-consuming for large datasets
+        if X.shape[0] * X.shape[1] > 10000:
+            del self._all_models["LibLinear_SVC"]
+            del self._all_models["LibSVM_SVC"]
+
+        # all hyperparameters for the classification models
+        self._all_models_hyperparameters = classifier_hyperparameter.copy()
+
+        # initialize default search space
+        self.hyperparameter_space = None
+
+        # select from setttings
+
+        return encoder, imputer, balancing, scaling, feature_selection, models
+
     def fit(self, X, y):
+
+        if self.ignore_warning:  # ignore all warnings to generate clearer outputs
+            warnings.filterwarnings("ignore")
+
+        _X = X.copy()
+        _y = y.copy()
+
+        (
+            encoder,
+            imputer,
+            balancing,
+            scaling,
+            feature_selection,
+            models,
+        ) = self.get_hyperparameter_space(_X, _y)
+
+        # if the model is already trained, read the setting
+        if os.path.exists(self.model_name):
+
+            print("Stored model found, load previous model.")
+            self.load_model(_X, _y)
+
+            return self
 
         raise NotImplementedError("This method is not implemented in the base class.")
 
