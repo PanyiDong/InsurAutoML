@@ -1,16 +1,16 @@
 """
-File: __init__.py
+File: _scaling_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /My_AutoML/_hyperparameters/__init__.py
-File Created: Tuesday, 5th April 2022 11:01:43 pm
+Relative Path: /My_AutoML/_hyperparameters/_scaling_hyperparameter.py
+File Created: Tuesday, 5th April 2022 11:03:34 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:05:24 pm
+Last Modified: Wednesday, 6th April 2022 10:14:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,12 +35,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._hyperopt._encoder_hyperparameter import encoder_hyperparameter
-from ._hyperopt._imputer_hyperparameter import imputer_hyperparameter
-from ._hyperopt._scaling_hyperparameter import scaling_hyperparameter
-from ._hyperopt._balancing_hyperparameter import balancing_hyperparameter
-from ._hyperopt._feature_selection_hyperparameter import (
-    feature_selection_hyperparameter,
-)
-from ._hyperopt._classifier_hyperparameter import classifier_hyperparameter
-from ._hyperopt._regressor_hyperparameter import regressor_hyperparameter
+from ray import tune
+
+# scaling
+scaling_hyperparameter = tune.choice([
+    {"scaling": "NoScaling"},
+    {"scaling": "Standardize"},
+    {"scaling": "Normalize"},
+    {"scaling": "RobustScale"},
+    {"scaling": "MinMaxScale"},
+    {"scaling": "Winsorization"},
+    {"scaling": "Feature_Manipulation"},
+    {"scaling": "Feature_Truncation"},
+])

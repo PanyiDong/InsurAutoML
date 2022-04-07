@@ -1,16 +1,16 @@
 """
-File: __init__.py
+File: _imputer_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /My_AutoML/_hyperparameters/__init__.py
-File Created: Tuesday, 5th April 2022 11:01:43 pm
+Relative Path: /My_AutoML/_hyperparameters/_imputer_hyperparameter.py
+File Created: Tuesday, 5th April 2022 11:02:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:05:24 pm
+Last Modified: Wednesday, 6th April 2022 10:19:44 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,12 +35,33 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._hyperopt._encoder_hyperparameter import encoder_hyperparameter
-from ._hyperopt._imputer_hyperparameter import imputer_hyperparameter
-from ._hyperopt._scaling_hyperparameter import scaling_hyperparameter
-from ._hyperopt._balancing_hyperparameter import balancing_hyperparameter
-from ._hyperopt._feature_selection_hyperparameter import (
-    feature_selection_hyperparameter,
+from ray import tune
+
+# imputer
+imputer_hyperparameter = tune.choice(
+    [
+        {
+            "imputer": "SimpleImputer",
+            "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+        },
+        {"imputer": "DummyImputer"},
+        {"imputer": "JointImputer"},
+        {
+            "imputer": "ExpectationMaximization",
+            "iterations": tune.quniform(10, 100, 1),
+            "threshold": tune.uniform(1e-5, 1),
+        },
+        {
+            "imputer": "KNNImputer",
+            "n_neighbors": tune.qrandint(1, 15, 1),
+            "fold": tune.qrandint(5, 15, 1),
+        },
+        {"imputer": "MissForestImputer"},
+        {"imputer": "MICE", "cycle": tune.qrandint(5, 20, 1)},
+        {"imputer": "GAIN"},
+        # {"imputer": "AAI_kNN"},
+        # {"imputer": "KMI"},
+        # {"imputer": "CMI"},
+        # {"imputer": "k_Prototype_NN"},
+    ]
 )
-from ._hyperopt._classifier_hyperparameter import classifier_hyperparameter
-from ._hyperopt._regressor_hyperparameter import regressor_hyperparameter

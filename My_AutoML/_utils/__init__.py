@@ -10,7 +10,7 @@ File Created: Wednesday, 6th April 2022 12:00:12 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 12:11:02 am
+Last Modified: Wednesday, 6th April 2022 6:26:13 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,6 +55,7 @@ from ._data import (
     remove_index_columns,
     get_missing_matrix,
 )
+from ._file import save_model
 from ._stat import (
     nan_cov,
     class_means,

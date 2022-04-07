@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:56:33 am
+Last Modified: Wednesday, 6th April 2022 6:25:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -79,41 +79,12 @@ from My_AutoML._hyperparameters import (
 )
 
 from My_AutoML._base import no_processing
+from My_AutoML._utils._file import save_model
 
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
 warnings.filterwarnings("ignore", category=UserWarning)
-
-# save model
-def save_model(
-    encoder,
-    encoder_hyperparameters,
-    imputer,
-    imputer_hyperparameters,
-    balancing,
-    balancing_hyperparameters,
-    scaling,
-    scaling_hyperparameters,
-    feature_selection,
-    feature_selection_hyperparameters,
-    model,
-    model_hyperparameters,
-    model_name,
-):
-    with open(model_name, "w") as f:
-        f.write("{}\n".format(encoder))
-        print(encoder_hyperparameters, file=f, end="\n")
-        f.write("{}\n".format(imputer))
-        print(imputer_hyperparameters, file=f, end="\n")
-        f.write("{}\n".format(balancing))
-        print(balancing_hyperparameters, file=f, end="\n")
-        f.write("{}\n".format(scaling))
-        print(scaling_hyperparameters, file=f, end="\n")
-        f.write("{}\n".format(feature_selection))
-        print(feature_selection_hyperparameters, file=f, end="\n")
-        f.write("{}\n".format(model))
-        print(model_hyperparameters, file=f, end="\n")
 
 
 """

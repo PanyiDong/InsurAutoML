@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:46:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 11:38:15 am
+Last Modified: Wednesday, 6th April 2022 3:53:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -296,7 +296,7 @@ class RNN_Classifier(RNN_Model):
     def predict(self, X):
 
         # load data to DataLoader
-        if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
+        if isinstance(X, pd.DataFrame):
             test_tensor = TensorDataset(
                 torch.as_tensor(X.values, dtype=torch.float32),
             )

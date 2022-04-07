@@ -1,16 +1,16 @@
 """
-File: __init__.py
+File: _file.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Relative Path: /My_AutoML/_hyperparameters/__init__.py
-File Created: Tuesday, 5th April 2022 11:01:43 pm
+Relative Path: /My_AutoML/_utils/_file.py
+File Created: Wednesday, 6th April 2022 6:25:09 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th April 2022 10:05:24 pm
+Last Modified: Wednesday, 6th April 2022 6:25:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -35,12 +35,32 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._hyperopt._encoder_hyperparameter import encoder_hyperparameter
-from ._hyperopt._imputer_hyperparameter import imputer_hyperparameter
-from ._hyperopt._scaling_hyperparameter import scaling_hyperparameter
-from ._hyperopt._balancing_hyperparameter import balancing_hyperparameter
-from ._hyperopt._feature_selection_hyperparameter import (
-    feature_selection_hyperparameter,
-)
-from ._hyperopt._classifier_hyperparameter import classifier_hyperparameter
-from ._hyperopt._regressor_hyperparameter import regressor_hyperparameter
+# save model
+def save_model(
+    encoder,
+    encoder_hyperparameters,
+    imputer,
+    imputer_hyperparameters,
+    balancing,
+    balancing_hyperparameters,
+    scaling,
+    scaling_hyperparameters,
+    feature_selection,
+    feature_selection_hyperparameters,
+    model,
+    model_hyperparameters,
+    model_name,
+):
+    with open(model_name, "w") as f:
+        f.write("{}\n".format(encoder))
+        print(encoder_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(imputer))
+        print(imputer_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(balancing))
+        print(balancing_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(scaling))
+        print(scaling_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(feature_selection))
+        print(feature_selection_hyperparameters, file=f, end="\n")
+        f.write("{}\n".format(model))
+        print(model_hyperparameters, file=f, end="\n")
