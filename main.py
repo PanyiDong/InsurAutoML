@@ -5,12 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
+Latest Version: 0.0.2
 Relative Path: /main.py
 File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:56:35 pm
+Last Modified: Friday, 8th April 2022 10:11:38 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

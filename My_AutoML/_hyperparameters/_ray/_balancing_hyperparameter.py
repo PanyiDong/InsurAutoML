@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:04:29 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:19:36 am
+Last Modified: Friday, 8th April 2022 11:39:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -78,7 +78,7 @@ balancing_hyperparameter = [
     {
         "balancing": "Smote_TomekLink",
         "imbalance_threshold": tune.uniform(0.8, 1),
-        "k": tune.qrandint(1, 10, 1),
+        "Sk": tune.qrandint(1, 10, 1),
     },
     {
         "balancing": "Smote_ENN",

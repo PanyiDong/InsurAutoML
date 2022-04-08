@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:01:43 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:25:03 pm
+Last Modified: Friday, 8th April 2022 11:35:22 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,6 +44,13 @@ from ._ray._feature_selection_hyperparameter import (
 )
 from ._ray._classifier_hyperparameter import classifier_hyperparameter
 from ._ray._regressor_hyperparameter import regressor_hyperparameter
+
+"""
+Notice for designing hyperparameters space:
+1. tune.qrandint (ray) allows inclusive lower/upper bound, when interact
+with scope.int(hp.quniform) (hyperopt), which is exclusive upper bound,
+be careful to use at least two step size in hyerparameter space.
+"""
 
 """
 Classifiers/Hyperparameters from autosklearn:

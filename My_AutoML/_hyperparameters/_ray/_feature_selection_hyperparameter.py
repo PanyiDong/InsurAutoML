@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:04:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:20:29 am
+Last Modified: Friday, 8th April 2022 11:32:46 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -135,7 +135,7 @@ feature_selection_hyperparameter = [
     },
     {
         "feature_selection": "polynomial",
-        "degree": tune.qrandint(2, 3, 1),
+        "degree": tune.qrandint(2, 4, 1),
         "interaction_only": tune.choice([True, False]),
         "include_bias": tune.choice([True, False]),
     },

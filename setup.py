@@ -5,12 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
+Latest Version: 0.0.2
 Relative Path: /setup.py
 File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 10:37:07 pm
+Last Modified: Friday, 8th April 2022 10:12:11 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -34,6 +35,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 import os
 from setuptools import setup, find_packages
 
@@ -69,7 +71,7 @@ def get_ext_path(root_dir, exclude_files):
 
 setup(
     name="My_AutoML",
-    version="0.0.1",
+    version="0.0.2",
     packages=find_packages(),
     # ext_modules = cythonize(
     #     get_ext_path("My_AutoML", EXCLUDE_FILES),

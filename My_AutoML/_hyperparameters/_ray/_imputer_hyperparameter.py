@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:02:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:20:43 am
+Last Modified: Friday, 8th April 2022 11:02:28 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,7 +47,7 @@ imputer_hyperparameter = [
     {"imputer": "JointImputer"},
     {
         "imputer": "ExpectationMaximization",
-        "iterations": tune.quniform(10, 100, 1),
+        "iterations": tune.qrandint(10, 100, 1),
         "threshold": tune.uniform(1e-5, 1),
     },
     {
