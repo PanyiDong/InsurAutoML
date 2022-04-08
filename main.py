@@ -10,7 +10,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 3:16:31 pm
+Last Modified: Thursday, 7th April 2022 11:56:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,11 +42,6 @@ import sklearn
 import My_AutoML
 from My_AutoML import load_data, train_test_split, type_of_task
 from My_AutoML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
-from My_AutoML._model_selection._experiment import (
-    AutoTabular,
-    AutoTabularClassifier,
-    AutoTabularRegressor,
-)
 
 model_dict = {
     "auto": AutoTabular,
@@ -154,25 +149,28 @@ parser.add_argument(
     help="evaluation metrics for tasks performance",
 )
 parser.add_argument(
-    "--method",
-    default="Bayesian",
+    "--search_algo",
+    default="GridSearch",
     type=str,
-    help="model selection/hyperparameter optimization methods",
+    help="model selection/hyperparameter optimization search algorithm",
 )
 parser.add_argument(
-    "--algo",
-    default="tpe",
+    "--search_scheduler",
+    default="FIFOScheduler",
     type=str,
-    help='search algorithm, select from ["rand", "tpe", "atpe"]',
+    help="search scheduler",
 )
 parser.add_argument(
-    "--spark_trials", default=False, type=bool, help="whether to use SparkTrials"
+    "--progress_reporter",
+    default="CLIReporter",
+    type=str,
+    help="progress reporting manager",
 )
 parser.add_argument(
-    "--progressbar",
-    default=True,
+    "--full_status",
+    default=False,
     type=bool,
-    help="whether to display training progressbar",
+    help="whether to print full status of the job",
 )
 parser.add_argument("--seed", default=1, type=int, help="random seed")
 args = parser.parse_args()
@@ -195,10 +193,10 @@ MODELS = args.models
 VALIDATION = args.validation
 VALID_SIZE = args.valid_size
 OBJECTIVE = args.objective
-METHOD = args.method
-ALGO = args.algo
-SPARK_TRIALS = args.spark_trials
-PROGRESSBAR = args.progressbar
+SEARCH_ALGO = args.search_algo
+SEARCH_SCHEDULER = args.search_scheduler
+PROGRESS_REPORTER = args.progress_reporter
+FULL_STATUS = args.full_status
 SEED = args.seed
 
 if __name__ == "__main__":
@@ -252,10 +250,10 @@ if __name__ == "__main__":
         validation=VALIDATION,
         valid_size=VALID_SIZE,
         objective=OBJECTIVE,
-        method=METHOD,
-        algo=ALGO,
-        spark_trials=SPARK_TRIALS,
-        progressbar=PROGRESSBAR,
+        search_algo=SEARCH_ALGO,
+        search_scheduler=SEARCH_SCHEDULER,
+        progress_reporter=PROGRESS_REPORTER,
+        full_status=FULL_STATUS,
         seed=SEED,
     )
 

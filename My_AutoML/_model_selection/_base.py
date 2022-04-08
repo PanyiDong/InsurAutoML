@@ -5,12 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
+Latest Version: 0.0.2
 Relative Path: /My_AutoML/_model_selection/_base.py
 File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:29:02 pm
+Last Modified: Friday, 8th April 2022 12:36:20 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -74,6 +75,10 @@ from My_AutoML._utils._file import save_model
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
+warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
+warnings.filterwarnings(
+    "ignore", message="The TensorboardX logger cannot be instantiated"
+)
 warnings.filterwarnings("ignore", category=UserWarning)
 from typing import Callable
 
@@ -868,14 +873,19 @@ class AutoTabularBase:
             from ray.tune.progress_reporter import CLIReporter
 
             progress_reporter = CLIReporter(
-                metric_columns={
-                    "model": "fitted_model",
-                    "training_staus": "fitted",
-                    "loss": "loss",
-                },
+                # metric_columns=[
+                #     "fitted_model",
+                #     "training_status",
+                #     "total time (s)",
+                #     "iter",
+                #     "loss",
+                # ],
                 parameter_columns=["task_type"],
                 max_progress_rows=self.max_evals,
                 max_error_rows=self.max_error,
+                metric="loss",
+                mode="min",
+                sort_by_metric=True,
             )
         elif self.progress_reporter == "JupyterNotebookReporter":
 
@@ -883,15 +893,25 @@ class AutoTabularBase:
 
             progress_reporter = JupyterNotebookReporter(
                 overwrite=True,
-                metric_columns={
-                    "model": "fitted_model",
-                    "training_staus": "fitted",
-                    "loss": "loss",
-                },
+                # metric_columns=[
+                #     "fitted_model",
+                #     "training_status",
+                #     "total time (s)",
+                #     "iter",
+                #     "loss",
+                # ],
                 parameter_columns=["task_type"],
                 max_progress_rows=self.max_evals,
                 max_error_rows=self.max_error,
+                metric="loss",
+                mode="min",
+                sort_by_metric=True,
             )
+
+        # add metrics for visualization
+        progress_reporter.add_metric_column("fitted_model")
+        progress_reporter.add_metric_column("training_status")
+        progress_reporter.add_metric_column("loss")
 
         return progress_reporter
 
@@ -1396,8 +1416,6 @@ class AutoTabularBase:
                 # since we tries to minimize the objective function, take negative accuracy here
                 if self.full_status:
                     tune.report(
-                        training_status="fitted",
-                        loss=_loss,
                         encoder=_encoder,
                         encoder_hyperparameter=_encoder_hyper,
                         imputer=_imputer,
@@ -1410,10 +1428,13 @@ class AutoTabularBase:
                         feature_selection_hyperparameter=_feature_selection_hyper,
                         model=_model,
                         model_hyperparameter=_model_hyper,
+                        fitted_model=_model,
+                        training_status="fitted",
+                        loss=_loss,
                     )
                 else:
                     tune.report(
-                        model=_model,
+                        fitted_model=_model,
                         training_status="fitted",
                         loss=_loss,
                     )
@@ -1473,9 +1494,6 @@ class AutoTabularBase:
 
                 if self.full_status:
                     tune.report(
-                        job_id=params.trial_id,
-                        training_status="fitted",
-                        loss=_loss,
                         encoder=_encoder,
                         encoder_hyperparameter=_encoder_hyper,
                         imputer=_imputer,
@@ -1488,11 +1506,13 @@ class AutoTabularBase:
                         feature_selection_hyperparameter=_feature_selection_hyper,
                         model=_model,
                         model_hyperparameter=_model_hyper,
+                        fitted_model=_model,
+                        training_status="fitted",
+                        loss=_loss,
                     )
                 else:
                     tune.report(
-                        job_id=params.trial_id,
-                        model=_model,
+                        fitted_model=_model,
                         training_status="fitted",
                         loss=_loss,
                     )
@@ -1524,10 +1544,10 @@ class AutoTabularBase:
             _objective,
             config=self.hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
-            mode="min",  # always call a minimization process
+            # mode="min",  # always call a minimization process
             search_alg=algo(**self.search_algo_setttings),
             scheduler=scheduler(**self.search_scheduler_settings),
-            metric="loss",
+            # metric="loss",
             num_samples=self.max_evals,
             max_failures=self.max_error,
             time_budget_s=self.timeout,

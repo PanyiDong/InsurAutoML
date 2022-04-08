@@ -4,7 +4,7 @@
         "name": "Panyi Dong",
         "email": "panyid2@illinois.edu"
     },
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "A Auto Machine Learning package",
     "repository": {
         "type": "git",
@@ -17,6 +17,7 @@
         "pandas": "*",
         "scipy": "*",
         "tqdm": "^4.62.3",
+        "ray": "*",
         "mlflow": "^1.21.0",
         "hyperopt": "^0.2.5",
         "scikit-learn": "^1.0.2",
