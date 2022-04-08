@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 10:49:08 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th April 2022 11:00:11 pm
+Last Modified: Thursday, 7th April 2022 11:29:44 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -34,6 +34,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-from ._base import AutoTabularClassifier, AutoTabularRegressor
-from ._ML import AutoTabular
+from ._base import AutoTabularBase
+from ._ML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
 from ._DL import AutoTextClassifier, AutoNextWordPrediction
