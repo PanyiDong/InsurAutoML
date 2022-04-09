@@ -17,8 +17,3 @@ jobs:
           pip install coverage
           pip install -r requirements.txt
           python main.py --data_folder example/example_data --train_data heart --response HeartDisease
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          flags: unittests
-          fail_ci_if_error: true
