@@ -1,17 +1,17 @@
 """
-File: setup.py
+File: basic.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Latest Version: 0.0.2
-Relative Path: /setup.py
-File Created: Friday, 4th March 2022 11:33:55 pm
+Latest Version: 0.2.0
+Relative Path: /tests/basic.py
+File Created: Saturday, 9th April 2022 11:25:27 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:41:20 am
+Last Modified: Saturday, 9th April 2022 11:51:42 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -25,8 +25,10 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -36,45 +38,34 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
-from setuptools import setup, find_packages
+import unittest
+import numpy as np
+import pandas as pd
 
-# from Cython.Build import cythonize
+from My_AutoML._utils import get_missing_matrix
 
-# EXCLUDE_FILES = [
-#     "main.py",
-# ]
-
-
-def get_ext_path(root_dir, exclude_files):
-
-    """
-    Get file paths needed compilation
-    Exclude certain files
-    """
-
-    paths = []
-
-    for root, dirs, files in os.walk(root_dir):
-        for filename in files:
-            if os.path.splitext(filename)[1] != ".py":
-                continue
-
-            file_path = os.path.join(root, filename)
-            if file_path in exclude_files:
-                continue
-
-            paths.append(file_path)
-
-    return paths
-
-
-setup(
-    name="My_AutoML",
-    version="0.2.0",
-    packages=find_packages(),
-    # ext_modules = cythonize(
-    #     get_ext_path("My_AutoML", EXCLUDE_FILES),
-    #     compiler_directives = {'language_level': 3}
-    # )
+data = pd.DataFrame(
+    {
+        "col_1": [1, 2, np.nan, 4],
+        "col_2": [np.nan, 3, np.nan, 5],
+    }
 )
+
+expected_result = pd.DataFrame(
+    {
+        "col_1": [0, 0, 1, 0],
+        "col_2": [1, 0, 1, 0],
+    }
+)
+
+
+class TestGetMissingMatrix(unittest.TestCase):
+    def setUp(self):
+        self.die = get_missing_matrix
+
+    def test_upper(self):
+        self.assertEqual(
+            (self.die(data) == expected_result.values).all(),
+            True,
+            "Should be {}, get {}.".format(expected_result.values, self.die(data)),
+        )

@@ -1,0 +1,8 @@
+venv/
+.vscode/
+__pycache__/
+*.py[cod]
+.DS_Store
+notes.md
+.coverage
+htmlcov/*
