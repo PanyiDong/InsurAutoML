@@ -10,7 +10,7 @@ File Created: Thursday, 7th April 2022 4:00:35 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 4:02:23 pm
+Last Modified: Friday, 8th April 2022 9:22:44 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -60,12 +60,12 @@ from hyperopt import (
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
-from My_AutoML._encoding import encoders
-from My_AutoML._imputation import imputers
-from My_AutoML._balancing import balancings
-from My_AutoML._scaling import scalings
-from My_AutoML._feature_selection import feature_selections
-from My_AutoML._model import (
+from My_AutoML._encoding._legacy import encoders
+from My_AutoML._imputation._legacy import imputers
+from My_AutoML._balancing._legacy import balancings
+from My_AutoML._scaling._legacy import scalings
+from My_AutoML._feature_selection._legacy import feature_selections
+from My_AutoML._model._legacy import (
     classifiers,
     regressors,
 )
