@@ -6,12 +6,12 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model_selection/_base.py
+Relative Path: /My_AutoML/_hpo/_base.py
 File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 7:27:48 pm
+Last Modified: Friday, 8th April 2022 10:21:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
