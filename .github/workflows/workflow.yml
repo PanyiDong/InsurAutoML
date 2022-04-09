@@ -1,4 +1,4 @@
-name: CodeCov_test
+name: CodeCov
 on: [push, pull_request]
 jobs:
   run:
@@ -7,17 +7,6 @@ jobs:
       OS: ubuntu-latest
       PYTHON: "3.9"
     steps:
-      - uses: actions/checkout@master
-
-      - uses: codecov/codecov-action@v2
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
-          files: ./.coverage.xml # optional
-          flags: unittests # optional
-          name: codecov-umbrella # optional
-          fail_ci_if_error: true # optional (default = false)
-          verbose: true # optional (default = false)
-
       - uses: checkout@v2
         with:
           fetch-depth: ‘2’
