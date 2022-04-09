@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:06:33 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 5:49:26 pm
+Last Modified: Friday, 8th April 2022 8:55:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -193,6 +193,49 @@ regressor_hyperparameter = [
         "SGD_epsilon": tune.loguniform(1e-5, 1e-1),
         "SGD_power_t": tune.uniform(1e-5, 1),
         "SGD_average": tune.choice([True, False]),
+    },
+    {
+        "model_13": "LinearRegression",
+    },
+    {
+        "model_14": "Lasso",
+        "Lasso_alpha": tune.loguniform(1e-7, 1e3),
+        "Lasso_tol": tune.loguniform(1e-5, 1e-1),
+    },
+    {
+        "model_15": "RidgeRegression",
+        "RidgeRegression_alpha": tune.loguniform(1e-7, 1e3),
+        "RidgeRegression_tol": tune.loguniform(1e-5, 1e-1),
+        "RidgeRegression_solver": tune.choice(
+            ["auto", "svd", "cholesky", "lsqr", "sparse_cg", "sag", "saga"]
+        ),
+    },
+    {
+        "model_16": "ElasticNet",
+        "ElasticNet_alpha": tune.loguniform(1e-7, 1e3),
+        "ElasticNet_l1_ratio": tune.uniform(0, 1.0),
+        "ElasticNet_tol": tune.loguniform(1e-5, 1e-1),
+        "ElasticNet_selection": tune.choice(["cyclic", "random"]),
+    },
+    {
+        "model_17": "BayesianRidge",
+        "BayesianRidge_tol": tune.loguniform(1e-5, 1e-1),
+        "BayesianRidge_alpha_1": tune.loguniform(1e-7, 1e-1),
+        "BayesianRidge_alpha_2": tune.loguniform(1e-7, 1e-1),
+        "BayesianRidge_lambda_1": tune.loguniform(1e-7, 1e-1),
+        "BayesianRidge_lambda_2": tune.loguniform(1e-7, 1e-1),
+    },
+    {
+        "model_18": "HistGradientBoostingRegressor",
+        "HistGradientBoostingRegressor_loss": tune.choice(
+            ["squared_error", "absolute_error", "poisson"]
+        ),
+        "HistGradientBoostingRegressor_learning_rate": tune.loguniform(1e-7, 1e-1),
+        "HistGradientBoostingRegressor_max_leaf_nodes": tune.choice([None]),
+        "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
+        "HistGradientBoostingRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
+        "HistGradientBoostingRegressor_l2_regularization": tune.uniform(0, 1),
+        "HistGradientBoostingRegressor_tol": tune.loguniform(1e-5, 1e-1),
     },
     # self-defined models
     {
