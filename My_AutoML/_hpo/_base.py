@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:21:42 pm
+Last Modified: Saturday, 9th April 2022 12:20:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,6 +46,7 @@ import shutil
 import importlib
 import warnings
 import ast
+import random
 import numpy as np
 import pandas as pd
 import scipy
@@ -73,6 +74,12 @@ from My_AutoML._hyperparameters import (
 
 from My_AutoML._base import no_processing
 from My_AutoML._utils._file import save_model
+from My_AutoML._utils._optimize import (
+    _get_hyperparameter_space,
+    get_algo,
+    get_scheduler,
+    get_progress_reporter,
+)
 
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
@@ -82,7 +89,6 @@ warnings.filterwarnings(
     "ignore", message="The TensorboardX logger cannot be instantiated"
 )
 warnings.filterwarnings("ignore", category=UserWarning)
-from typing import Callable
 
 # check whether gpu device available
 import importlib
@@ -270,156 +276,7 @@ class AutoTabularBase:
 
         self._iter = 0  # record iteration number
 
-    # create hyperparameter space using ray.tune.choice
-    # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
-    # only chosen ones will be added to hyperparameter space
-    def _get_hyperparameter_space(
-        self,
-        X,
-        encoders_hyperparameters,
-        encoder,
-        imputers_hyperparameters,
-        imputer,
-        balancings_hyperparameters,
-        balancing,
-        scalings_hyperparameters,
-        scaling,
-        feature_selection_hyperparameters,
-        feature_selection,
-        models_hyperparameters,
-        models,
-    ):
-
-        # encoding space
-        _encoding_hyperparameter = []
-        for _encoder in [*encoder]:
-            for (
-                item
-            ) in encoders_hyperparameters:  # search the encoders' hyperparameters
-                # find encoder key
-                for _key in item.keys():
-                    if "encoder_" in _key:
-                        _encoder_key = _key
-                        break
-                if item[_encoder_key] == _encoder:
-                    # convert string to tune.choice
-                    item[_encoder_key] = tune.choice([item[_encoder_key]])
-                    _encoding_hyperparameter.append(item)
-        _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
-
-        # imputation space
-        _imputer_hyperparameter = []
-        if not X.isnull().values.any():  # if no missing, no need for imputation
-            _imputer_hyperparameter = tune.choice(
-                [{"imputer_0": tune.choice(["no_processing"])}]
-            )
-        else:
-            for _imputer in [*imputer]:
-                for (
-                    item
-                ) in imputers_hyperparameters:  # search the imputer' hyperparameters
-                    # find imputer key
-                    for _key in item.keys():
-                        if "imputer_" in _key:
-                            _imputer_key = _key
-                            break
-                    if item[_imputer_key] == _imputer:
-                        # convert string to tune.choice
-                        item[_imputer_key] = tune.choice([item[_imputer_key]])
-                        _imputer_hyperparameter.append(item)
-
-            _imputer_hyperparameter = tune.choice(_imputer_hyperparameter)
-
-        # balancing space
-        _balancing_hyperparameter = []
-        for _balancing in [*balancing]:
-            for (
-                item
-            ) in balancings_hyperparameters:  # search the balancings' hyperparameters
-                # find balancing key
-                for _key in item.keys():
-                    if "balancing_" in _key:
-                        _balancing_key = _key
-                        break
-                if item[_balancing_key] == _balancing:
-                    # convert string to tune.choice
-                    item[_balancing_key] = tune.choice([item[_balancing_key]])
-                    _balancing_hyperparameter.append(item)
-
-        _balancing_hyperparameter = tune.choice(_balancing_hyperparameter)
-
-        # scaling space
-        _scaling_hyperparameter = []
-        for _scaling in [*scaling]:
-            for (
-                item
-            ) in scalings_hyperparameters:  # search the scalings' hyperparameters
-                # find scaling key
-                for _key in item.keys():
-                    if "scaling_" in _key:
-                        _scaling_key = _key
-                        break
-                if item[_scaling_key] == _scaling:
-                    # convert string to tune.choice
-                    item[_scaling_key] = tune.choice([item[_scaling_key]])
-                    _scaling_hyperparameter.append(item)
-
-        _scaling_hyperparameter = tune.choice(_scaling_hyperparameter)
-
-        # feature selection space
-        _feature_selection_hyperparameter = []
-        for _feature_selection in [*feature_selection]:
-            for (
-                item
-            ) in (
-                feature_selection_hyperparameters
-            ):  # search the feature selections' hyperparameters
-                # find feature_selection key
-                for _key in item.keys():
-                    if "feature_selection_" in _key:
-                        _feature_selection_key = _key
-                        break
-                if item[_feature_selection_key] == _feature_selection:
-                    # convert string to tune.choice
-                    item[_feature_selection_key] = tune.choice(
-                        [item[_feature_selection_key]]
-                    )
-                    _feature_selection_hyperparameter.append(item)
-
-        _feature_selection_hyperparameter = tune.choice(
-            _feature_selection_hyperparameter
-        )
-
-        # model selection and hyperparameter optimization space
-        _model_hyperparameter = []
-        for _model in [*models]:
-            # checked before at models that all models are in default space
-            for item in models_hyperparameters:  # search the models' hyperparameters
-                # find model key
-                for _key in item.keys():
-                    if "model_" in _key:
-                        _model_key = _key
-                        break
-                if item[_model_key] == _model:
-                    # convert string to tune.choice
-                    item[_model_key] = tune.choice([item[_model_key]])
-                    _model_hyperparameter.append(item)
-
-        _model_hyperparameter = tune.choice(_model_hyperparameter)
-
-        # the pipeline search space
-        # select one of the method/hyperparameter setting from each part
-        return {
-            "task_type": "tabular_" + self.task_mode,
-            "encoder": _encoding_hyperparameter,
-            "imputer": _imputer_hyperparameter,
-            "balancing": _balancing_hyperparameter,
-            "scaling": _scaling_hyperparameter,
-            "feature_selection": _feature_selection_hyperparameter,
-            "model": _model_hyperparameter,
-        }
-
-    def get_hyperparameter_space(self, X, y):
+    def get_hyperparameter_space(self, X, y=None):
 
         # initialize default search options
         # and select the search options based on the input restrictions
@@ -626,7 +483,7 @@ class AutoTabularBase:
 
         # generate the hyperparameter space
         if self.hyperparameter_space is None:
-            self.hyperparameter_space = self._get_hyperparameter_space(
+            self.hyperparameter_space = _get_hyperparameter_space(
                 X,
                 _all_encoders_hyperparameters,
                 encoder,
@@ -640,334 +497,11 @@ class AutoTabularBase:
                 feature_selection,
                 _all_models_hyperparameters,
                 models,
+                self.task_mode,
             )  # _X to choose whether include imputer
             # others are the combinations of default hyperparameter space & methods selected
 
         return encoder, imputer, balancing, scaling, feature_selection, models
-
-    # get the hyperparameter optimization algorithm
-    def get_algo(self):
-
-        if self.search_algo == "RandomSearch" or self.search_algo == "GridSearch":
-
-            # Random Search and Grid Search
-            from ray.tune.suggest.basic_variant import BasicVariantGenerator
-
-            algo = BasicVariantGenerator
-        elif self.search_algo == "BayesOptSearch":
-
-            # check whether bayes_opt is installed
-            bayes_opt_spec = importlib.util.find_spec("bayes_opt")
-            if bayes_opt_spec is None:
-                raise ImportError(
-                    "BayesOpt is not installed. Please install it first to use BayesOptSearch. \
-                    Command to install: pip install bayesian-optimization"
-                )
-
-            # Bayesian Search
-            from ray.tune.suggest.bayesopt import BayesOptSearch
-
-            algo = BayesOptSearch
-        elif self.search_algo == "AxSearch":
-
-            # check whether Ax and sqlalchemy are installed
-            Ax_spec = importlib.util.find_spec("ax")
-            sqlalchemy_spec = importlib.util.find_spec("sqlalchemy")
-            if Ax_spec is None or sqlalchemy_spec is None:
-                raise ImportError(
-                    "Ax or sqlalchemy not installed. Please install these packages to use AxSearch. \
-                    Command to install: pip install ax-platform sqlalchemy"
-                )
-
-            # Ax Search
-            from ray.tune.suggest.ax import AxSearch
-
-            algo = AxSearch
-        elif self.search_algo == "BOHB":
-
-            # check whether HpBandSter and ConfigSpace are installed
-            hpbandster_spec = importlib.util.find_spec("hpbandster")
-            ConfigSpace_spec = importlib.util.find_spec("ConfigSpace")
-            if hpbandster_spec is None or ConfigSpace_spec is None:
-                raise ImportError(
-                    "HpBandSter or ConfigSpace not installed. Please install these packages to use BOHB. \
-                    Command to install: pip install hpbandster ConfigSpace"
-                )
-
-            # Bayesian Optimization HyperBand/BOHB
-            from ray.tune.suggest.bohb import TuneBOHB
-
-            algo = TuneBOHB
-        elif self.search_algo == "BlendSearch":
-
-            # check whether flaml is installed
-            flaml_spec = importlib.util.find_spec("flaml")
-            if flaml_spec is None:
-                raise ImportError(
-                    "flaml not installed. Please install it first to use BlendSearch. \
-                    Command to install: pip install 'flaml[blendsearch]'"
-                )
-
-            # Blend Search
-            from ray.tune.suggest.flaml import BlendSearch
-
-            algo = BlendSearch
-        elif self.search_algo == "CFO":
-
-            # check whether flaml is installed
-            flaml_spec = importlib.util.find_spec("flaml")
-            if flaml_spec is None:
-                raise ImportError(
-                    "flaml not installed. Please install it first to use BlendSearch. \
-                    Command to install: pip install 'flaml[blendsearch]'"
-                )
-
-            # Blend Search
-            from ray.tune.suggest.flaml import CFO
-
-            algo = CFO
-        elif self.search_algo == "DragonflySearch":
-
-            # check whether dragonfly-opt is installed
-            dragonfly_spec = importlib.util.find_spec("dragonfly")
-            if dragonfly_spec is None:
-                raise ImportError(
-                    "dragonfly-opt not installed. Please install it first to use DragonflySearch. \
-                    Command to install: pip install dragonfly-opt"
-                )
-
-            # Dragonfly Search
-            from ray.tune.suggest.dragonfly import DragonflySearch
-
-            algo = DragonflySearch
-        elif self.search_algo == "HEBO":
-
-            # Heteroscedastic Evolutionary Bayesian Optimization/HEBO
-            from ray.tune.suggest.hebo import HEBOSearch
-
-            algo = HEBOSearch
-        elif self.search_algo == "HyperOpt":
-
-            # check whether hyperopt is installed
-            hyperopt_spec = importlib.util.find_spec("hyperopt")
-            if hyperopt_spec is None:
-                raise ImportError(
-                    "hyperopt not installed. Please install it first to use HyperOpt. \
-                    Command to install: pip install -U hyperopt"
-                )
-
-            # HyperOpt Search
-            from ray.tune.suggest.hyperopt import HyperOptSearch
-
-            algo = HyperOptSearch
-        elif self.search_algo == "Nevergrad":
-
-            # check whether nevergrad is installed
-            nevergrad_spec = importlib.util.find_spec("nevergrad")
-            if nevergrad_spec is None:
-                raise ImportError(
-                    "nevergrad not installed. Please install it first to use Nevergrad. \
-                    Command to install: pip install nevergrad"
-                )
-
-            # Nevergrad Search
-            from ray.tune.suggest.nevergrad import NevergradSearch
-
-            algo = NevergradSearch
-        elif self.search_algo == "Optuna":
-
-            # check whether optuna is installed
-            optuna_spec = importlib.util.find_spec("optuna")
-            if optuna_spec is None:
-                raise ImportError(
-                    "optuna not installed. Please install it first to use Optuna. \
-                    Command to install: pip install optuna"
-                )
-
-            # Optuna Search
-            from ray.tune.suggest.optuna import OptunaSearch
-
-            algo = OptunaSearch
-        elif self.search_algo == "SigOpt":
-
-            # check whether sigopt is installed
-            sigopt_spec = importlib.util.find_spec("sigopt")
-            if sigopt_spec is None:
-                raise ImportError(
-                    "sigopt not installed. Please install it first to use SigOpt. \
-                    Command to install: pip install sigopt \
-                    Set SigOpt API: export SIGOPT_KEY= ..."
-                )
-
-            # SigOpt Search
-            from ray.tune.suggest.sigopt import SigOptSearch
-
-            algo = SigOptSearch
-        elif self.search_algo == "Scikit-Optimize":
-
-            # check whether scikit-optimize is installed
-            skopt_spec = importlib.util.find_spec("skopt")
-            if skopt_spec is None:
-                raise ImportError(
-                    "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
-                    Command to install: pip install scikit-optimize"
-                )
-
-            # Scikit-Optimize Search
-            from ray.tune.suggest.skopt import SkOptSearch
-
-            algo = SkOptSearch
-        elif self.search_algo == "ZOOpt":
-
-            # check whether zoopt is installed
-            zoopt_spec = importlib.util.find_spec("zoopt")
-            if zoopt_spec is None:
-                raise ImportError(
-                    "zoopt not installed. Please install it first to use ZOOpt. \
-                    Command to install: pip install zoopt"
-                )
-
-            # ZOOpt Search
-            from ray.tune.suggest.zoopt import ZOOptSearch
-
-            algo = ZOOptSearch
-        elif self.search_algo == "Repeater":
-
-            # Repeated Evaluations
-            from ray.tune.suggest import Repeater
-
-            algo = Repeater
-        elif self.search_algo == "ConcurrencyLimiter":
-
-            # ConcurrencyLimiter
-            from ray.tune.suggest import ConcurrencyLimiter
-
-            algo = ConcurrencyLimiter
-        else:
-
-            # if none above, assume is a callable custom algorithm
-            if isinstance(self.search_algo, Callable):
-                algo = self.search_algo
-            # if not callable, raise error
-            else:
-                raise TypeError(
-                    "Algorithm {} is not supported. Please use one of the supported algorithms.".format(
-                        self.search_algo
-                    )
-                )
-
-        return algo
-
-    # get search scheduler
-    def get_scheduler(self):
-
-        if self.search_scheduler == "FIFOScheduler":
-
-            from ray.tune.schedulers import FIFOScheduler
-
-            scheduler = FIFOScheduler
-        elif self.search_scheduler == "ASHAScheduler":
-
-            from ray.tune.schedulers import ASHAScheduler
-
-            scheduler = ASHAScheduler
-        elif self.search_scheduler == "HyperBandScheduler":
-
-            from ray.tune.schedulers import HyperBandScheduler
-
-            scheduler = HyperBandScheduler
-        elif self.search_scheduler == "MedianStoppingRule":
-
-            from ray.tune.schedulers import MedianStoppingRule
-
-            scheduler = MedianStoppingRule
-        elif self.search_scheduler == "PopulationBasedTraining":
-
-            from ray.tune.schedulers import PopulationBasedTraining
-
-            scheduler = PopulationBasedTraining
-        elif self.search_scheduler == "PopulationBasedTrainingReplay":
-
-            from ray.tune.schedulers import PopulationBasedTrainingReplay
-
-            scheduler = PopulationBasedTrainingReplay
-        elif self.search_scheduler == "PB2":
-
-            # check whether GPy2 is installed
-            Gpy_spec = importlib.util.find_spec("GPy")
-            if Gpy_spec is None:
-                raise ImportError(
-                    "GPy2 not installed. Please install it first to use PB2. \
-                    Command to install: pip install GPy"
-                )
-
-            from ray.tune.schedulers.pb2 import PB2
-
-            scheduler = PB2
-        elif self.search_scheduler == "HyperBandForBOHB":
-
-            from ray.tune.schedulers import HyperBandForBOHB
-
-            scheduler = HyperBandForBOHB
-        else:
-
-            # if callable, use it as scheduler
-            if isinstance(self.search_scheduler, Callable):
-                scheduler = self.search_scheduler
-            else:
-                raise TypeError(
-                    "Scheduler {} is not supported. Please use one of the supported schedulers.".format(
-                        self.search_scheduler
-                    )
-                )
-
-        return scheduler
-
-    # get progress reporter
-    def get_progress_reporter(self):
-
-        if self.progress_reporter == "CLIReporter":
-
-            from ray.tune.progress_reporter import CLIReporter
-
-            progress_reporter = CLIReporter(
-                # metric_columns=[
-                #     "fitted_model",
-                #     "training_status",
-                #     "total time (s)",
-                #     "iter",
-                #     "loss",
-                # ],
-                parameter_columns=["task_type"],
-                max_progress_rows=self.max_evals,
-                max_error_rows=self.max_error,
-                sort_by_metric=True,
-            )
-        elif self.progress_reporter == "JupyterNotebookReporter":
-
-            from ray.tune.progress_reporter import JupyterNotebookReporter
-
-            progress_reporter = JupyterNotebookReporter(
-                overwrite=True,
-                # metric_columns=[
-                #     "fitted_model",
-                #     "training_status",
-                #     "total time (s)",
-                #     "iter",
-                #     "loss",
-                # ],
-                parameter_columns=["task_type"],
-                max_progress_rows=self.max_evals,
-                max_error_rows=self.max_error,
-                sort_by_metric=True,
-            )
-
-        # add metrics for visualization
-        progress_reporter.add_metric_column("fitted_model")
-        progress_reporter.add_metric_column("training_status")
-        progress_reporter.add_metric_column("loss")
-
-        return progress_reporter
 
     # load hyperparameter settings and train on the data
     def load_model(self, _X, _y):
@@ -1295,6 +829,7 @@ class AutoTabularBase:
 
         # set random seed
         np.random.seed(self.seed)
+        random.seed(self.seed)
 
         # get maximum allowed errors
         self.max_error = int(self.max_evals * self.allow_error_prop)
@@ -1720,13 +1255,17 @@ class AutoTabularBase:
 
         # use ray for Model Selection and Hyperparameter Selection
         # get search algorithm
-        algo = self.get_algo()
+        algo = get_algo(self.search_algo)
 
         # get search scheduler
-        scheduler = self.get_scheduler()
+        scheduler = get_scheduler(self.search_scheduler)
 
         # get progress reporter
-        progress_reporter = self.get_progress_reporter()
+        progress_reporter = get_progress_reporter(
+            self.progress_reporter,
+            self.max_evals,
+            self.max_error,
+        )
 
         # initialize ray
         ray.init(
