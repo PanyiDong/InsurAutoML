@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:45:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 3:35:31 pm
+Last Modified: Friday, 8th April 2022 8:53:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,14 @@ SOFTWARE.
 
 import autosklearn.pipeline.components.classification
 import autosklearn.pipeline.components.regression
+from sklearn.linear_model import (
+    LinearRegression, Lasso, Ridge, ElasticNet,
+    BayesianRidge, LogisticRegression
+)
+from sklearn.naive_bayes import ComplementNB
+from sklearn.ensemble import (
+    HistGradientBoostingClassifier, HistGradientBoostingRegressor
+)
 
 from ._FNN import MLP_Classifier, MLP_Regressor
 from ._RNN import RNN_Classifier
@@ -62,6 +70,10 @@ classifiers = {
     "QDA": autosklearn.pipeline.components.classification.qda.QDA,
     "RandomForest": autosklearn.pipeline.components.classification.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.classification.sgd.SGD,
+    # classification models from sklearn
+    "LogisticRegression": LogisticRegression,
+    "ComplementNB": ComplementNB,
+    "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
     # self-defined models
     # "MLP_Classifier": MLP_Classifier,
 }
@@ -81,8 +93,22 @@ regressors = {
     "MLPRegressor": autosklearn.pipeline.components.regression.mlp.MLPRegressor,
     "RandomForest": autosklearn.pipeline.components.regression.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
+    # regression models from sklearn
+    "LinearRegression": LinearRegression,
+    "Lasso": Lasso,
+    "RidgeRegression": Ridge,
+    "ElasticNet": ElasticNet,
+    "BayesianRidge": BayesianRidge,
+    "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
     # self-defined models
     # "MLP_Regressor": MLP_Regressor,
-}  # LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform of StandardScaler while having 1D array
-# https://github.com/automl/auto-sklearn/issues/1297
-# problem solved
+}  
+
+
+"""
+LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform 
+of StandardScaler while having 1D array
+https://github.com/automl/auto-sklearn/issues/1297
+problem solved
+"""
+

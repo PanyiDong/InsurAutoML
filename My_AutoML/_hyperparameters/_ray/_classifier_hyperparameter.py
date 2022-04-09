@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:05:31 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 5:40:11 pm
+Last Modified: Friday, 8th April 2022 8:53:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ from ray import tune
 
 # classifier hyperparameters
 classifier_hyperparameter = [
-    # extract from autosklearn
+    # classification models from autosklearn
     {
         "model_1": "AdaboostClassifier",
         "AdaboostClassifier_n_estimators": tune.qrandint(10, 500, 1),
@@ -196,9 +196,32 @@ classifier_hyperparameter = [
         "SGD_power_t": tune.uniform(1e-5, 1),
         "SGD_average": tune.choice([True, False]),
     },
+    # classification models from sklearn
+    {
+        "model_17": "LogisticRegression",
+        "LogisticRegression_penalty": tune.choice(["l1", "l2"]),
+        "LogisticRegression_tol": tune.loguniform(1e-5, 1e-1),
+        "LogisticRegression_C": tune.loguniform(1e-5, 10),
+    },
+    {
+        "model_18": "ComplementNB",
+        "ComplementNB_alpha": tune.uniform(0, 1),
+        "ComplementNB_fit_prior": tune.choice([True, False]),
+        "ComplementNB_norm": tune.choice([True, False]),
+    },
+    {
+        "model_19": "HistGradientBoostingClassifier",
+        "HistGradientBoostingClassifier_loss": tune.choice(["auto"]),
+        "HistGradientBoostingClassifier_learning_rate": tune.uniform(1e-7, 1),
+        "HistGradientBoostingClassifier_max_leaf_nodes": tune.choice([None]),
+        "HistGradientBoostingClassifier_max_depth": tune.choice([None]),
+        "HistGradientBoostingClassifier_min_samples_leaf": tune.qrandint(1, 20, 1),
+        "HistGradientBoostingClassifier_l2_regularization": tune.uniform(0, 1),
+        "HistGradientBoostingClassifier_tol": tune.loguniform(1e-5, 1e-1),
+    },
     # self-defined models
     {
-        "model_17": "MLP_Classifier",
+        "model_20": "MLP_Classifier",
         "MLP_Classifier_hidden_layer": tune.qrandint(1, 5, 1),
         "MLP_Classifier_hidden_size": tune.qrandint(1, 20, 1),
         "MLP_Classifier_activation": tune.choice(["ReLU", "Tanh", "Sigmoid"]),
