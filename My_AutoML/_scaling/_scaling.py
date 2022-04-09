@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:26:44 pm
+Last Modified: Friday, 8th April 2022 11:13:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -71,13 +71,14 @@ class Standardize:
     with_std: whether to standardize with standard variance, default = True
     """
 
-    def __init__(self, with_mean=True, with_std=True):
+    def __init__(self, with_mean=True, with_std=True, deep_copy=True):
         self.with_mean = with_mean
         self.with_std = with_std
+        self.deep_copy = deep_copy
 
     def fit(self, X, y=None):
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
 
         n, p = _X.shape
         if self.with_mean == True:
@@ -103,11 +104,21 @@ class Standardize:
 
     def transform(self, X):
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         if self.with_mean:
             _X -= self._mean
         if self.with_std:
             _X /= self._std
+
+        return _X
+
+    def fit_transform(self, X, y=None):
+
+        _X = X.copy(deep=self.deep_copy)
+
+        self.fit(_X, y)
+
+        _X = self.transform(_X)
 
         return _X
 
@@ -134,15 +145,17 @@ class Normalize:
     def __init__(
         self,
         norm="max",
+        deep_copy=True,
     ):
         self.norm = norm
+        self.deep_copy = deep_copy
 
     def fit(self, X, y=None):
 
         if self.norm not in ["l1", "l2", "max"]:
             raise ValueError("Not recognizing norm method!")
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         n, p = _X.shape
         self._scale = [0 for _ in range(p)]
 
@@ -159,8 +172,18 @@ class Normalize:
 
     def transform(self, X):
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         _X /= self._scale
+
+        return _X
+
+    def fit_transform(self, X, y=None):
+
+        _X = X.copy(deep=self.deep_copy)
+
+        self.fit(_X, y)
+
+        _X = self.transform(_X)
 
         return _X
 
@@ -192,11 +215,13 @@ class RobustScale:
         with_scale=True,
         quantile=(25.0, 75.0),
         unit_variance=False,
+        deep_copy=True,
     ):
         self.with_centering = with_centering
         self.with_scale = with_scale
         self.quantile = quantile
         self.unit_variance = unit_variance
+        self.deep_copy = deep_copy
 
     def fit(self, X, y=None):
 
@@ -210,7 +235,7 @@ class RobustScale:
                 "Quantile not in range, get {0:.1f} and {1:.1f}!".format(q_min, q_max)
             )
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         n, p = _X.shape
         if self.with_centering == True:
             self._median = [0 for _ in range(p)]
@@ -243,12 +268,22 @@ class RobustScale:
 
     def transform(self, X):
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
 
         if self.with_centering == True:
             _X -= self._median
         if self.with_scale == True:
             _X /= self._scale
+
+        return _X
+
+    def fit_transform(self, X, y=None):
+
+        _X = X.copy(deep=self.deep_copy)
+
+        self.fit(_X, y)
+
+        _X = self.transform(_X)
 
         return _X
 
@@ -272,12 +307,17 @@ class MinMaxScale:
     feature_range: (feature_min, feature_max) to scale the feature, default = (0, 1)
     """
 
-    def __init__(self, feature_range=(0, 1)):
+    def __init__(
+        self,
+        feature_range=(0, 1),
+        deep_copy=True,
+    ):
         self.feature_range = feature_range
+        self.deep_copy = deep_copy
 
     def fit(self, X, y=None):
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         n, p = _X.shape
 
         self._min = [0 for _ in range(p)]
@@ -296,9 +336,19 @@ class MinMaxScale:
         if not f_min < f_max:
             raise ValueError("Minimum of feature range must be smaller than maximum!")
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         _X = (_X - self._min) / (np.array(self._max) - np.array(self._min))
         _X = _X * (f_max - f_min) + f_min
+
+        return _X
+
+    def fit_transform(self, X, y=None):
+
+        _X = X.copy(deep=self.deep_copy)
+
+        self.fit(_X, y)
+
+        _X = self.transform(_X)
 
         return _X
 
@@ -331,21 +381,29 @@ class Winsorization:
     threshold: threshold to decide whether to cap feature, default = 0.1
     """
 
-    def __init__(self, quantile=0.95, threshold=0.1):
+    def __init__(
+        self,
+        quantile=0.95,
+        threshold=0.1,
+        deep_copy=True,
+    ):
         self.quantile = quantile
         self.threshold = threshold
+        self.deep_copy = deep_copy
 
     def fit(self, X, y):
 
-        features = list(X.columns)
+        _X = X.copy(deep=self.deep_copy)
+
+        features = list(_X.columns)
         self._quantile_list = []
         self._list = []
 
         for _column in features:
-            quantile = np.nanquantile(X[_column], self.quantile, axis=0)
+            quantile = np.nanquantile(_X[_column], self.quantile, axis=0)
             self._quantile_list.append(quantile)
-            _above_quantile = y[X[_column] > quantile].mean()[0]
-            _below_quantile = y[X[_column] <= quantile].mean()[0]
+            _above_quantile = y[_X[_column] > quantile].mean()[0]
+            _below_quantile = y[_X[_column] <= quantile].mean()[0]
             # deal with the case where above quantile do not exists
             if not _above_quantile:
                 _above_quantile = quantile
@@ -357,9 +415,19 @@ class Winsorization:
 
         return self
 
+    def fit_transform(self, X, y=None):
+
+        _X = X.copy(deep=self.deep_copy)
+
+        self.fit(_X, y)
+
+        _X = self.transform(_X)
+
+        return _X
+
     def transform(self, X):
 
-        _X = X.copy(deep=True)
+        _X = X.copy(deep=self.deep_copy)
         features = list(_X.columns)
         i = 0
 
