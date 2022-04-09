@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:44:01 am
+Last Modified: Saturday, 9th April 2022 1:48:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,9 +57,6 @@ from sklearn.ensemble import (
     HistGradientBoostingRegressor,
 )
 
-from ._FNN import MLP_Classifier, MLP_Regressor
-from ._RNN import RNN_Classifier
-
 ####################################################################################################
 # classifiers
 
@@ -86,7 +83,6 @@ classifiers = {
     "ComplementNB": ComplementNB,
     "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
     # self-defined models
-    # "MLP_Classifier": MLP_Classifier,
 }
 
 # regressors
@@ -112,7 +108,6 @@ regressors = {
     "BayesianRidge": BayesianRidge,
     "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
     # self-defined models
-    # "MLP_Regressor": MLP_Regressor,
 }
 
 
@@ -122,3 +117,15 @@ of StandardScaler while having 1D array
 https://github.com/automl/auto-sklearn/issues/1297
 problem solved
 """
+
+import importlib
+
+torch_spec = importlib.util.find_spec("torch")
+if torch_spec is not None:
+    from ._FNN import MLP_Classifier, MLP_Regressor
+    from ._RNN import RNN_Classifier
+
+    classifiers["MLP_Classifier"] = MLP_Classifier
+    classifiers["RNN_Classifier"] = RNN_Classifier
+
+    regressors["MLP_Regressor"] = MLP_Regressor

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:49:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:24:52 pm
+Last Modified: Saturday, 9th April 2022 1:45:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,9 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from ._base import SimpleImputer, DummyImputer, JointImputer
 from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
-from ._nn import GAIN
+
 from ._clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
 
 
@@ -52,7 +53,6 @@ imputers = {
     "KNNImputer": KNNImputer,
     "MissForestImputer": MissForestImputer,
     "MICE": MICE,
-    "GAIN": GAIN,
     # "AAI_kNN": AAI_kNN, # extremely slow (all below)
     # "KMI": KMI, # not implemented
     # "CMI": CMI,
@@ -60,11 +60,13 @@ imputers = {
 }
 # Markov Chain Monte Carlo (MCMC)
 
-
-# check if tensorflow exists in environment
-# if not exists, do not use GAIN method
 import importlib
 
+# check tensorflow/pytorch installed only import nn-based methods
+# when tensorflow/pytorch is installed
 tensorflow_spec = importlib.util.find_spec("tensorflow")
-if tensorflow_spec is None:
-    del imputers["GAIN"]
+torch_spec = importlib.util.find_spec("torch")
+if tensorflow_spec is not None or torch_spec is not None:
+    from ._nn import GAIN
+
+    imputers["GAIN"] = GAIN
