@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:04:29 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 11:39:12 am
+Last Modified: Friday, 8th April 2022 5:38:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -26,7 +26,7 @@ copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+THE SOFTWARE IS PROVIDED "AS IS"]), WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
 AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
@@ -40,49 +40,49 @@ from ray import tune
 # balancing
 # if the imbalance threshold small, TomekLink will take too long
 balancing_hyperparameter = [
-    {"balancing": "no_processing"},
+    {"balancing_1": "no_processing"},
     {
-        "balancing": "SimpleRandomOverSampling",
-        "imbalance_threshold": tune.uniform(0.8, 1),
+        "balancing_2": "SimpleRandomOverSampling",
+        "SimpleRandomOverSampling_imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
-        "balancing": "SimpleRandomUnderSampling",
-        "imbalance_threshold": tune.uniform(0.8, 1),
+        "balancing_3": "SimpleRandomUnderSampling",
+        "SimpleRandomUnderSampling_imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
-        "balancing": "TomekLink",
-        "imbalance_threshold": tune.uniform(0.8, 1),
+        "balancing_4": "TomekLink",
+        "TomekLink_imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
-        "balancing": "EditedNearestNeighbor",
-        "imbalance_threshold": tune.uniform(0.8, 1),
-        "k": tune.qrandint(1, 7, 1),
+        "balancing_5": "EditedNearestNeighbor",
+        "EditedNearestNeighbor_imbalance_threshold": tune.uniform(0.8, 1),
+        "EditedNearestNeighbor_k": tune.qrandint(1, 7, 1),
     },
     {
-        "balancing": "CondensedNearestNeighbor",
-        "imbalance_threshold": tune.uniform(0.8, 1),
+        "balancing_6": "CondensedNearestNeighbor",
+        "CondensedNearestNeighbor_imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
-        "balancing": "OneSidedSelection",
-        "imbalance_threshold": tune.uniform(0.8, 1),
+        "balancing_7": "OneSidedSelection",
+        "OneSidedSelection_imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
-        "balancing": "CNN_TomekLink",
-        "imbalance_threshold": tune.uniform(0.8, 1),
+        "balancing_8": "CNN_TomekLink",
+        "CNN_TomekLink_imbalance_threshold": tune.uniform(0.8, 1),
     },
     {
-        "balancing": "Smote",
-        "imbalance_threshold": tune.uniform(0.8, 1),
-        "k": tune.qrandint(1, 10, 1),
+        "balancing_9": "Smote",
+        "Smote_imbalance_threshold": tune.uniform(0.8, 1),
+        "Smote_k": tune.qrandint(1, 10, 1),
     },
     {
-        "balancing": "Smote_TomekLink",
-        "imbalance_threshold": tune.uniform(0.8, 1),
-        "Sk": tune.qrandint(1, 10, 1),
+        "balancing_10": "Smote_TomekLink",
+        "Smote_TomekLink_imbalance_threshold": tune.uniform(0.8, 1),
+        "Smote_TomekLink_k": tune.qrandint(1, 10, 1),
     },
     {
-        "balancing": "Smote_ENN",
-        "imbalance_threshold": tune.uniform(0.8, 1),
-        "k": tune.qrandint(1, 10, 1),
+        "balancing_11": "Smote_ENN",
+        "Smote_ENN_imbalance_threshold": tune.uniform(0.8, 1),
+        "Smote_ENN_k": tune.qrandint(1, 10, 1),
     },
 ]

@@ -5,12 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
+Latest Version: 0.2.0
 Relative Path: /My_AutoML/_hyperparameters/__init__.py
 File Created: Tuesday, 5th April 2022 11:01:43 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 11:35:22 am
+Last Modified: Friday, 8th April 2022 8:03:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -24,8 +25,10 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -50,6 +53,23 @@ Notice for designing hyperparameters space:
 1. tune.qrandint (ray) allows inclusive lower/upper bound, when interact
 with scope.int(hp.quniform) (hyperopt), which is exclusive upper bound,
 be careful to use at least two step size in hyerparameter space.
+
+2. When designing hyperparameters space, make sure all hyperparameters 
+are wrapped in tune methods (even it's not a choice, like a method name), 
+unless, ray.tune can ignore those hyperparameters and causes further error.
+However, since we need to determine whether to contain the hyperparameters 
+space for the method in search space, which is determined by string comparison,
+the method names are stored as string and after comparison in code, it will
+be converted in to a tune.choice (with only one choice).
+
+3. As discussed in issue 1, https://github.com/PanyiDong/My_AutoML/issues/1
+HyperOpt search algorithm option will convert the ray.tune space into a hyperopt
+space, which can be problematic when same hyperparameter names are used in those 
+methods. So, the default hyperparameter space is designed as: the method namess 
+contain a order indication (suffix "_1", "_2", ...) and hyperparameter names 
+contain a method name prefix ("KNNClassifier_", "MLPClassifier_", ...). When 
+reading in, those suffixes/prefixes are removed in a processing step and becomes
+method readable strings.
 """
 
 """

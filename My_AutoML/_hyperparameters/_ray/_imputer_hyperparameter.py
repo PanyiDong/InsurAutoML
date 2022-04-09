@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:02:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 11:02:28 am
+Last Modified: Friday, 8th April 2022 5:42:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,26 +40,28 @@ from ray import tune
 # imputer
 imputer_hyperparameter = [
     {
-        "imputer": "SimpleImputer",
-        "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+        "imputer_1": "SimpleImputer",
+        "SimpleImputer_method": tune.choice(
+            ["mean", "zero", "median", "most frequent"]
+        ),
     },
-    {"imputer": "DummyImputer"},
-    {"imputer": "JointImputer"},
+    {"imputer_2": "DummyImputer"},
+    {"imputer_3": "JointImputer"},
     {
-        "imputer": "ExpectationMaximization",
-        "iterations": tune.qrandint(10, 100, 1),
-        "threshold": tune.uniform(1e-5, 1),
+        "imputer_4": "ExpectationMaximization",
+        "ExpectationMaximization_iterations": tune.qrandint(10, 100, 1),
+        "ExpectationMaximization_threshold": tune.uniform(1e-5, 1),
     },
     {
-        "imputer": "KNNImputer",
-        "n_neighbors": tune.qrandint(1, 15, 1),
-        "fold": tune.qrandint(5, 15, 1),
+        "imputer_5": "KNNImputer",
+        "KNNImputer_n_neighbors": tune.qrandint(1, 15, 1),
+        "KNNImputer_fold": tune.qrandint(5, 15, 1),
     },
-    {"imputer": "MissForestImputer"},
-    {"imputer": "MICE", "cycle": tune.qrandint(5, 20, 1)},
-    {"imputer": "GAIN"},
-    # {"imputer": "AAI_kNN"},
-    # {"imputer": "KMI"},
-    # {"imputer": "CMI"},
-    # {"imputer": "k_Prototype_NN"},
+    {"imputer_6": "MissForestImputer"},
+    {"imputer_7": "MICE", "MICE_cycle": tune.qrandint(5, 20, 1)},
+    {"imputer_8": "GAIN"},
+    # {"imputer_9": "AAI_kNN"},
+    # {"imputer_10": "KMI"},
+    # {"imputer_11": "CMI"},
+    # {"imputer_12": "k_Prototype_NN"},
 ]

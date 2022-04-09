@@ -10,7 +10,7 @@ File Created: Tuesday, 5th April 2022 11:03:34 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 7th April 2022 11:21:08 am
+Last Modified: Friday, 8th April 2022 5:49:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,12 +39,12 @@ from ray import tune
 
 # scaling
 scaling_hyperparameter = [
-    {"scaling": "NoScaling"},
-    {"scaling": "Standardize"},
-    {"scaling": "Normalize"},
-    {"scaling": "RobustScale"},
-    {"scaling": "MinMaxScale"},
-    {"scaling": "Winsorization"},
-    {"scaling": "Feature_Manipulation"},
-    {"scaling": "Feature_Truncation"},
+    {"scaling_1": "NoScaling"},
+    {"scaling_2": "Standardize"},
+    {"scaling_3": "Normalize"},
+    {"scaling_4": "RobustScale"},
+    {"scaling_5": "MinMaxScale"},
+    {"scaling_6": "Winsorization"},
+    {"scaling_7": "Feature_Manipulation"},
+    {"scaling_8": "Feature_Truncation"},
 ]

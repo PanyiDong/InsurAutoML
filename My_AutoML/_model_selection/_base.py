@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Latest Version: 0.0.2
+Latest Version: 0.2.0
 Relative Path: /My_AutoML/_model_selection/_base.py
 File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:37:31 am
+Last Modified: Friday, 8th April 2022 7:27:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -25,8 +25,10 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -294,21 +296,36 @@ class AutoTabularBase:
             for (
                 item
             ) in encoders_hyperparameters:  # search the encoders' hyperparameters
-                if item["encoder"] == _encoder:
+                # find encoder key
+                for _key in item.keys():
+                    if "encoder_" in _key:
+                        _encoder_key = _key
+                        break
+                if item[_encoder_key] == _encoder:
+                    # convert string to tune.choice
+                    item[_encoder_key] = tune.choice([item[_encoder_key]])
                     _encoding_hyperparameter.append(item)
-
         _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
 
         # imputation space
         _imputer_hyperparameter = []
         if not X.isnull().values.any():  # if no missing, no need for imputation
-            _imputer_hyperparameter = tune.choice([{"imputer": "no_processing"}])
+            _imputer_hyperparameter = tune.choice(
+                [{"imputer_0": tune.choice(["no_processing"])}]
+            )
         else:
             for _imputer in [*imputer]:
                 for (
                     item
                 ) in imputers_hyperparameters:  # search the imputer' hyperparameters
-                    if item["imputer"] == _imputer:
+                    # find imputer key
+                    for _key in item.keys():
+                        if "imputer_" in _key:
+                            _imputer_key = _key
+                            break
+                    if item[_imputer_key] == _imputer:
+                        # convert string to tune.choice
+                        item[_imputer_key] = tune.choice([item[_imputer_key]])
                         _imputer_hyperparameter.append(item)
 
             _imputer_hyperparameter = tune.choice(_imputer_hyperparameter)
@@ -319,7 +336,14 @@ class AutoTabularBase:
             for (
                 item
             ) in balancings_hyperparameters:  # search the balancings' hyperparameters
-                if item["balancing"] == _balancing:
+                # find balancing key
+                for _key in item.keys():
+                    if "balancing_" in _key:
+                        _balancing_key = _key
+                        break
+                if item[_balancing_key] == _balancing:
+                    # convert string to tune.choice
+                    item[_balancing_key] = tune.choice([item[_balancing_key]])
                     _balancing_hyperparameter.append(item)
 
         _balancing_hyperparameter = tune.choice(_balancing_hyperparameter)
@@ -330,7 +354,14 @@ class AutoTabularBase:
             for (
                 item
             ) in scalings_hyperparameters:  # search the scalings' hyperparameters
-                if item["scaling"] == _scaling:
+                # find scaling key
+                for _key in item.keys():
+                    if "scaling_" in _key:
+                        _scaling_key = _key
+                        break
+                if item[_scaling_key] == _scaling:
+                    # convert string to tune.choice
+                    item[_scaling_key] = tune.choice([item[_scaling_key]])
                     _scaling_hyperparameter.append(item)
 
         _scaling_hyperparameter = tune.choice(_scaling_hyperparameter)
@@ -343,7 +374,16 @@ class AutoTabularBase:
             ) in (
                 feature_selection_hyperparameters
             ):  # search the feature selections' hyperparameters
-                if item["feature_selection"] == _feature_selection:
+                # find feature_selection key
+                for _key in item.keys():
+                    if "feature_selection_" in _key:
+                        _feature_selection_key = _key
+                        break
+                if item[_feature_selection_key] == _feature_selection:
+                    # convert string to tune.choice
+                    item[_feature_selection_key] = tune.choice(
+                        [item[_feature_selection_key]]
+                    )
                     _feature_selection_hyperparameter.append(item)
 
         _feature_selection_hyperparameter = tune.choice(
@@ -355,7 +395,14 @@ class AutoTabularBase:
         for _model in [*models]:
             # checked before at models that all models are in default space
             for item in models_hyperparameters:  # search the models' hyperparameters
-                if item["model"] == _model:
+                # find model key
+                for _key in item.keys():
+                    if "model_" in _key:
+                        _model_key = _key
+                        break
+                if item[_model_key] == _model:
+                    # convert string to tune.choice
+                    item[_model_key] = tune.choice([item[_model_key]])
                     _model_hyperparameter.append(item)
 
         _model_hyperparameter = tune.choice(_model_hyperparameter)
@@ -485,10 +532,19 @@ class AutoTabularBase:
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
         self._all_feature_selection = feature_selections.copy()
-        # special treatment, remove some feature selection for regression
-        del self._all_feature_selection["extra_trees_preproc_for_regression"]
-        del self._all_feature_selection["select_percentile_regression"]
-        del self._all_feature_selection["select_rates_regression"]
+        if self.task_mode == "classification":
+            # special treatment, if classification
+            # remove some feature selection for regression
+            del self._all_feature_selection["extra_trees_preproc_for_regression"]
+            del self._all_feature_selection["select_percentile_regression"]
+            del self._all_feature_selection["select_rates_regression"]
+        elif self.task_mode == "regression":
+            # special treatment, if regression
+            # remove some feature selection for classification
+            del self._all_feature_selection["extra_trees_preproc_for_classification"]
+            del self._all_feature_selection["select_percentile_classification"]
+            del self._all_feature_selection["select_rates_classification"]
+
         if X.shape[0] * X.shape[1] > 10000:
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
@@ -535,10 +591,12 @@ class AutoTabularBase:
         # which is time-consuming for large datasets
         if X.shape[0] * X.shape[1] > 10000:
             # in case the methods are not included, will check before delete
-            if "LibLinear_SVC" in self._all_models.keys():
+            if self.task_mode == "classification":
                 del self._all_models["LibLinear_SVC"]
-            if "LibSVM_SVC" in self._all_models.keys():
                 del self._all_models["LibSVM_SVC"]
+            elif self.task_mode == "regression":
+                del self._all_models["LibLinear_SVR"]
+                del self._all_models["LibSVM_SVR"]
 
         # model space, only select chosen models to space
         if self.models == "auto":  # if auto, model pool will be all default models
@@ -883,8 +941,6 @@ class AutoTabularBase:
                 parameter_columns=["task_type"],
                 max_progress_rows=self.max_evals,
                 max_error_rows=self.max_error,
-                metric="loss",
-                mode="min",
                 sort_by_metric=True,
             )
         elif self.progress_reporter == "JupyterNotebookReporter":
@@ -903,8 +959,6 @@ class AutoTabularBase:
                 parameter_columns=["task_type"],
                 max_progress_rows=self.max_evals,
                 max_error_rows=self.max_error,
-                metric="loss",
-                mode="min",
                 sort_by_metric=True,
             )
 
@@ -990,36 +1044,113 @@ class AutoTabularBase:
 
         # optimal encoder
         self.optimal_encoder_hyperparameters = optimal_point["encoder"]
-        self.optimal_encoder = self.optimal_encoder_hyperparameters["encoder"]
-        del self.optimal_encoder_hyperparameters["encoder"]
+        # find optimal encoder key
+        for _key in self.optimal_encoder_hyperparameters.keys():
+            if "encoder_" in _key:
+                _encoder_key = _key
+                break
+        self.optimal_encoder = self.optimal_encoder_hyperparameters[_encoder_key]
+        del self.optimal_encoder_hyperparameters[_encoder_key]
+        # remvoe indcations
+        self.optimal_encoder_hyperparameters = {
+            k.replace(
+                self.optimal_encoder + "_", ""
+            ): self.optimal_encoder_hyperparameters[k]
+            for k in self.optimal_encoder_hyperparameters
+        }
+
         # optimal imputer
         self.optimal_imputer_hyperparameters = optimal_point["imputer"]
-        self.optimal_imputer = self.optimal_imputer_hyperparameters["imputer"]
-        del self.optimal_imputer_hyperparameters["imputer"]
+        # find optimal imputer key
+        for _key in self.optimal_imputer_hyperparameters.keys():
+            if "imputer_" in _key:
+                _imputer_key = _key
+                break
+        self.optimal_imputer = self.optimal_imputer_hyperparameters[_imputer_key]
+        del self.optimal_imputer_hyperparameters[_imputer_key]
+        # remvoe indcations
+        self.optimal_imputer_hyperparameters = {
+            k.replace(
+                self.optimal_imputer + "_", ""
+            ): self.optimal_imputer_hyperparameters[k]
+            for k in self.optimal_imputer_hyperparameters
+        }
+
         # optimal balancing
         self.optimal_balancing_hyperparameters = optimal_point["balancing"]
-        self.optimal_balancing = self.optimal_balancing_hyperparameters["balancing"]
-        del self.optimal_balancing_hyperparameters["balancing"]
+        # find optimal balancing key
+        for _key in self.optimal_balancing_hyperparameters.keys():
+            if "balancing_" in _key:
+                _balancing_key = _key
+                break
+        self.optimal_balancing = self.optimal_balancing_hyperparameters[_balancing_key]
+        del self.optimal_balancing_hyperparameters[_balancing_key]
+        # remvoe indcations
+        self.optimal_balancing_hyperparameters = {
+            k.replace(
+                self.optimal_balancing + "_", ""
+            ): self.optimal_balancing_hyperparameters[k]
+            for k in self.optimal_balancing_hyperparameters
+        }
+
         # optimal scaling
         self.optimal_scaling_hyperparameters = optimal_point["scaling"]
-        self.optimal_scaling = self.optimal_scaling_hyperparameters["scaling"]
-        del self.optimal_scaling_hyperparameters["scaling"]
+        # find optimal scaling key
+        for _key in self.optimal_scaling_hyperparameters.keys():
+            if "scaling_" in _key:
+                _scaling_key = _key
+                break
+        self.optimal_scaling = self.optimal_scaling_hyperparameters[_scaling_key]
+        del self.optimal_scaling_hyperparameters[_scaling_key]
+        # remvoe indcations
+        self.optimal_scaling_hyperparameters = {
+            k.replace(
+                self.optimal_scaling + "_", ""
+            ): self.optimal_scaling_hyperparameters[k]
+            for k in self.optimal_scaling_hyperparameters
+        }
+
         # optimal feature selection
         self.optimal_feature_selection_hyperparameters = optimal_point[
             "feature_selection"
         ]
+        # find optimal feature_selection key
+        for _key in self.optimal_feature_selection_hyperparameters.keys():
+            if "feature_selection_" in _key:
+                _feature_selection_key = _key
+                break
         self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters[
-            "feature_selection"
+            _feature_selection_key
         ]
-        del self.optimal_feature_selection_hyperparameters["feature_selection"]
+        del self.optimal_feature_selection_hyperparameters[_feature_selection_key]
+        # remvoe indcations
+        self.optimal_feature_selection_hyperparameters = {
+            k.replace(
+                self.optimal_feature_selection + "_", ""
+            ): self.optimal_feature_selection_hyperparameters[k]
+            for k in self.optimal_feature_selection_hyperparameters
+        }
+
         # optimal classifier
         self.optimal_model_hyperparameters = optimal_point[
             "model"
         ]  # optimal model selected
+        # find optimal model key
+        for _key in self.optimal_model_hyperparameters.keys():
+            if "model_" in _key:
+                _model_key = _key
+                break
         self.optimal_model = self.optimal_model_hyperparameters[
-            "model"
+            _model_key
         ]  # optimal hyperparameter settings selected
-        del self.optimal_model_hyperparameters["model"]
+        del self.optimal_model_hyperparameters[_model_key]
+        # remvoe indcations
+        self.optimal_model_hyperparameters = {
+            k.replace(self.optimal_model + "_", ""): self.optimal_model_hyperparameters[
+                k
+            ]
+            for k in self.optimal_model_hyperparameters
+        }
 
         # record optimal settings
         with open(
@@ -1244,44 +1375,108 @@ class AutoTabularBase:
 
             # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
             # select encoder and set hyperparameters
+
+            # issue 1: https://github.com/PanyiDong/My_AutoML/issues/1
+            # HyperOpt hyperparameter space conflicts with ray.tune
+
+            # while setting hyperparameters space,
+            # the method name is injected into the hyperparameter space
+            # so, before fitting, these indications are removed
+
             # must have encoder
             _encoder_hyper = params["encoder"]
-            _encoder = _encoder_hyper["encoder"]
-            del _encoder_hyper["encoder"]
+            # find corresponding encoder key
+            for key in _encoder_hyper.keys():
+                if "encoder_" in key:
+                    _encoder_key = key
+                    break
+            _encoder = _encoder_hyper[_encoder_key]
+            del _encoder_hyper[_encoder_key]
+            # remvoe indcations
+            _encoder_hyper = {
+                k.replace(_encoder + "_", ""): _encoder_hyper[k] for k in _encoder_hyper
+            }
             enc = encoder[_encoder](**_encoder_hyper)
 
             # select imputer and set hyperparameters
             _imputer_hyper = params["imputer"]
-            _imputer = _imputer_hyper["imputer"]
-            del _imputer_hyper["imputer"]
+            # find corresponding imputer key
+            for key in _imputer_hyper.keys():
+                if "imputer_" in key:
+                    _imputer_key = key
+                    break
+            _imputer = _imputer_hyper[_imputer_key]
+            del _imputer_hyper[_imputer_key]
+            # remvoe indcations
+            _imputer_hyper = {
+                k.replace(_imputer + "_", ""): _imputer_hyper[k] for k in _imputer_hyper
+            }
             imp = imputer[_imputer](**_imputer_hyper)
 
             # select balancing and set hyperparameters
             # must have balancing, since no_preprocessing is included
             _balancing_hyper = params["balancing"]
-            _balancing = _balancing_hyper["balancing"]
-            del _balancing_hyper["balancing"]
+            # find corresponding balancing key
+            for key in _balancing_hyper.keys():
+                if "balancing_" in key:
+                    _balancing_key = key
+                    break
+            _balancing = _balancing_hyper[_balancing_key]
+            del _balancing_hyper[_balancing_key]
+            # remvoe indcations
+            _balancing_hyper = {
+                k.replace(_balancing + "_", ""): _balancing_hyper[k]
+                for k in _balancing_hyper
+            }
             blc = balancing[_balancing](**_balancing_hyper)
 
             # select scaling and set hyperparameters
             # must have scaling, since no_preprocessing is included
             _scaling_hyper = params["scaling"]
-            _scaling = _scaling_hyper["scaling"]
-            del _scaling_hyper["scaling"]
+            # find corresponding scaling key
+            for key in _scaling_hyper.keys():
+                if "scaling_" in key:
+                    _scaling_key = key
+                    break
+            _scaling = _scaling_hyper[_scaling_key]
+            del _scaling_hyper[_scaling_key]
+            # remvoe indcations
+            _scaling_hyper = {
+                k.replace(_scaling + "_", ""): _scaling_hyper[k] for k in _scaling_hyper
+            }
             scl = scaling[_scaling](**_scaling_hyper)
 
             # select feature selection and set hyperparameters
             # must have feature selection, since no_preprocessing is included
             _feature_selection_hyper = params["feature_selection"]
-            _feature_selection = _feature_selection_hyper["feature_selection"]
-            del _feature_selection_hyper["feature_selection"]
+            # find corresponding feature_selection key
+            for key in _feature_selection_hyper.keys():
+                if "feature_selection_" in key:
+                    _feature_selection_key = key
+                    break
+            _feature_selection = _feature_selection_hyper[_feature_selection_key]
+            del _feature_selection_hyper[_feature_selection_key]
+            # remvoe indcations
+            _feature_selection_hyper = {
+                k.replace(_feature_selection + "_", ""): _feature_selection_hyper[k]
+                for k in _feature_selection_hyper
+            }
             fts = feature_selection[_feature_selection](**_feature_selection_hyper)
 
             # select model model and set hyperparameters
             # must have a model
             _model_hyper = params["model"]
-            _model = _model_hyper["model"]
-            del _model_hyper["model"]
+            # find corresponding model key
+            for key in _model_hyper.keys():
+                if "model_" in key:
+                    _model_key = key
+                    break
+            _model = _model_hyper[_model_key]
+            del _model_hyper[_model_key]
+            # remvoe indcations
+            _model_hyper = {
+                k.replace(_model + "_", ""): _model_hyper[k] for k in _model_hyper
+            }
             mol = models[_model](
                 **_model_hyper
             )  # call the model using passed parameters
@@ -1541,7 +1736,7 @@ class AutoTabularBase:
 
         # trial directory name
         def trial_str_creator(trial):
-            trialname = "iter_{}".format(self._iter + 1)
+            trialname = "iter_{}_id_{}".format(self._iter + 1, trial.trial_id)
             self._iter += 1
             return trialname
 
@@ -1550,10 +1745,10 @@ class AutoTabularBase:
             _objective,
             config=self.hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
-            # mode="min",  # always call a minimization process
+            mode="min",  # always call a minimization process
             search_alg=algo(**self.search_algo_setttings),
             scheduler=scheduler(**self.search_scheduler_settings),
-            # metric="loss",
+            metric="loss",
             num_samples=self.max_evals,
             max_failures=self.max_error,
             time_budget_s=self.timeout,
