@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 8:10:19 pm
+Last Modified: Friday, 8th April 2022 10:17:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -139,7 +139,7 @@ from ._utils import (
 #     TruncatedSVD,
 # )
 
-from ._model_selection import (
+from ._hpo import (
     AutoTabular,
     AutoTabularClassifier,
     AutoTabularRegressor,
