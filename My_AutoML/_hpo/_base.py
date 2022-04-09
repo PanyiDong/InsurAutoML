@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 12:20:03 am
+Last Modified: Saturday, 9th April 2022 1:51:44 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -94,7 +94,7 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import importlib
 
 torch_spec = importlib.util.find_spec("torch")
-if torch_spec is None:
+if torch_spec is not None:
     import torch
 
     device_count = torch.cuda.device_count()
