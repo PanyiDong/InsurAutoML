@@ -1,0 +1,24 @@
+name: build
+on: [push, pull_request]
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    env:
+      OS: ubuntu-latest
+      PYTHON: "3.9"
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.7
+      - name: "generate report"
+        run: |
+          pip install coverage
+          pip install -r requirements.txt
+          python main.py --data_folder example/example_data --train_data heart --response HeartDisease
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          flags: unittests
+          fail_ci_if_error: true
