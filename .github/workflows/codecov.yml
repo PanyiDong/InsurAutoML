@@ -15,8 +15,7 @@ jobs:
       - name: "generate report"
         run: |
           pip install coverage
-          cd My_AutoML
-          pip install -r requirement.txt
+          pip install -r requirements.txt
           coverage run -m unittest
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
