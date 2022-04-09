@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:11:38 am
+Last Modified: Friday, 8th April 2022 10:00:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -151,7 +151,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--search_algo",
-    default="GridSearch",
+    default="HyperOpt",
     type=str,
     help="model selection/hyperparameter optimization search algorithm",
 )

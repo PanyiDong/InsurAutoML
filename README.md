@@ -25,7 +25,7 @@ Example below runs a classification task on heart.csv file in example/example_da
 
 `train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
 
-Your can specify the data folder (or by default at current folder), test_data name (or evaluation set will be split from train_data), evaluation metrics and all model parameters by arguments. 
+Your can specify the data folder (or by default at current folder), test_data name (or evaluation set will be split from train_data), evaluation metrics and all model parameters by arguments.
 
 ```console
 python main.py --data_folder example/example_data --train_data heart --response HeartDisease
@@ -41,9 +41,21 @@ model.fit(train_X, train_y)
 model.predict(test_X)
 ```
 
+By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs.
+
+Moreover, in current version, model selection and hyperparameter optimization is achieved by `ray.tune`. However, if you still need previous `HyperOpt` version, you can call as:
+
+```python
+from My_AutoML._legacy import AutoTabular
+model = AutoTabular()
+model.fit(train_X, train_y)
+
+model.predict(test_X)
+```
+
 ## Summary
 
-> Required Packages: numpy, pandas, scipy, os, shutil, time, itertools, functools, importlib, cmath, tqdm, warnings, rpy2$^{*}$, tensorflow$^{**}$, mlflow, hyperopt, sklearn, autosklearn
+> Required Packages: numpy, pandas, scipy, os, shutil, time, itertools, functools, importlib, cmath, tqdm, warnings, rpy2$^{*}$, tensorflow$^{**}$, mlflow, ray, hyperopt, sklearn, autosklearn
 >
 > $*$ rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
 >
@@ -63,7 +75,7 @@ Current Progress:
 >
 > 6. feature selection: PCA, AFFS, etc. And some models from autosklearn will be applied.
 >
-> 7. apply hyperopt (Bayesian Optimization) to create a pipeline of AutoML workflow. Consider the methods as a hyperparameter, and create a hyperparameter space, where we can find the optimal ML workflow. Only supervised classification/regression models supported.
+> 7. apply `ray.tune` (with plentiful search algorithms and search schedulers) to create a pipeline of AutoML workflow. Consider the methods as a hyperparameter, and create a hyperparameter space, where we can find the optimal ML workflow. Only supervised classification/regression models supported.
 
 The pipeline of AutoML:
 
