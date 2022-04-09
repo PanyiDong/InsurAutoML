@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 1:48:20 pm
+Last Modified: Saturday, 9th April 2022 2:56:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -79,9 +79,9 @@ classifiers = {
     "RandomForest": autosklearn.pipeline.components.classification.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.classification.sgd.SGD,
     # classification models from sklearn
-    "LogisticRegression": LogisticRegression,
-    "ComplementNB": ComplementNB,
-    "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
+    # "LogisticRegression": LogisticRegression,
+    # "ComplementNB": ComplementNB,
+    # "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
     # self-defined models
 }
 
@@ -101,12 +101,12 @@ regressors = {
     "RandomForest": autosklearn.pipeline.components.regression.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
     # regression models from sklearn
-    "LinearRegression": LinearRegression,
-    "Lasso": Lasso,
-    "RidgeRegression": Ridge,
-    "ElasticNet": ElasticNet,
-    "BayesianRidge": BayesianRidge,
-    "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
+    # "LinearRegression": LinearRegression,
+    # "Lasso": Lasso,
+    # "RidgeRegression": Ridge,
+    # "ElasticNet": ElasticNet,
+    # "BayesianRidge": BayesianRidge,
+    # "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
     # self-defined models
 }
 
