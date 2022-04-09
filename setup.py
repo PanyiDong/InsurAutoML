@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:12:11 am
+Last Modified: Saturday, 9th April 2022 11:41:20 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -71,7 +71,7 @@ def get_ext_path(root_dir, exclude_files):
 
 setup(
     name="My_AutoML",
-    version="0.0.2",
+    version="0.2.0",
     packages=find_packages(),
     # ext_modules = cythonize(
     #     get_ext_path("My_AutoML", EXCLUDE_FILES),

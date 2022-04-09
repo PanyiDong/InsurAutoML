@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:25:54 pm
+Last Modified: Saturday, 9th April 2022 11:44:01 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,6 +49,9 @@ from sklearn.linear_model import (
     LogisticRegression,
 )
 from sklearn.naive_bayes import ComplementNB
+
+# need to enable hist gradient boosting features first
+from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import (
     HistGradientBoostingClassifier,
     HistGradientBoostingRegressor,
