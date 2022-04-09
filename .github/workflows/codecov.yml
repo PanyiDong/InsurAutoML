@@ -18,6 +18,6 @@ jobs:
       - name: Generate Report
         run: |
           pip install coverage
-          coverage run -m unittest
+          coverage run -m unittest tests/basic.py
       - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v2
