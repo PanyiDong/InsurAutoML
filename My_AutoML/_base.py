@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 12:15:11 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:27:57 pm
+Last Modified: Saturday, 9th April 2022 1:33:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,6 @@ SOFTWARE.
 """
 
 import glob
-from dateutil.parser import parse
 import numpy as np
 import pandas as pd
 import warnings

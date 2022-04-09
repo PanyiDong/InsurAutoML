@@ -1,7 +1,8 @@
-# numpy # common packages
-# pandas
-# scipy
-# matplotlib
+# common packages
+numpy 
+pandas
+scipy
+matplotlib
 ray
 tqdm==4.62.3
 mlflow==1.21.0
