@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:21:04 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:20:02 pm
+Last Modified: Saturday, 9th April 2022 11:03:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -86,6 +86,8 @@ class SimpleRandomUnderSampling:
         self.max_iter = max_iter
         self.seed = seed
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -113,6 +115,8 @@ class SimpleRandomUnderSampling:
                     _data = self._fit_transform(_data)
             else:
                 _data = self._fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]
@@ -174,6 +178,8 @@ class TomekLink:
         self.max_iter = max_iter
         self.seed = seed
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -201,6 +207,8 @@ class TomekLink:
                     _data = self._fit_transform(_data)
             else:
                 _data = self._fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]
@@ -275,6 +283,8 @@ class EditedNearestNeighbor:
         self.seed = seed
         self.k = k
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -310,6 +320,8 @@ class EditedNearestNeighbor:
                     _data = self._fit_transform(_data)
             else:
                 _data = self._fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]
@@ -392,6 +404,8 @@ class CondensedNearestNeighbor:
         self.max_iter = max_iter
         self.seed = seed
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -419,6 +433,8 @@ class CondensedNearestNeighbor:
                     _data = self._fit_transform(_data)
             else:
                 _data = self._fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]
@@ -498,6 +514,8 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         self.max_iter = max_iter
         self.seed = seed
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -537,6 +555,8 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
             )
             _data = super(TomekLink, self).fit_transform(_data)
 
+        self._fitted = True
+
         if not _empty:
             return _data[features], _data[response]
         else:
@@ -573,6 +593,8 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         self.all = all
         self.max_iter = max_iter
         self.seed = seed
+
+        self._fitted = False  # whether the model has been fitted
 
     def fit_transform(self, X, y=None):
 
@@ -612,6 +634,8 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
                 seed=self.seed,
             )
             _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]

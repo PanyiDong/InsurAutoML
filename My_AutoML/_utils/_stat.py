@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:27:41 pm
+Last Modified: Saturday, 9th April 2022 10:41:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,9 +48,11 @@ import copy
 # default calculate at columns (axis = 0), axis = 1 at rows
 def nan_cov(X, y=None, axis=0):
 
-    try:
-        _empty = (y == None).all().values[0]
-    except AttributeError:
+    if isinstance(y, pd.DataFrame):
+        _empty = y.isnull().all().all()
+    elif isinstance(y, np.ndarray):
+        _empty = np.all(np.isnan(y))
+    else:
         _empty = y == None
 
     if _empty:

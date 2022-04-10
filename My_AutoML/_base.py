@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 12:15:11 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 1:33:12 pm
+Last Modified: Saturday, 9th April 2022 8:44:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,16 +63,30 @@ class no_processing:
     No processing on data, asa comparison
     """
 
+    def __init__(self):
+
+        self._fitted = False  # record whether the method has been fitted
+
     def fit(self, X, y=None):
+
+        self._fitted = True
+
         return self
 
     def fill(self, X):
+
+        self._fitted = True
+
         return X
 
     def transform(self, X):
+
         return X
 
     def fit_transform(self, X, y=None):
+
+        self._fitted = True
+
         try:
             _empty = y.empty
         except AttributeError:

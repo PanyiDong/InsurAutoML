@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File: test_balancing.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Latest Version: 0.2.0
-Relative Path: /My_AutoML/_imputation/__init__.py
-File Created: Tuesday, 5th April 2022 11:49:07 pm
+Relative Path: /tests/test_balancing/test_balancing.py
+File Created: Saturday, 9th April 2022 11:03:41 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:48:24 pm
+Last Modified: Saturday, 9th April 2022 11:04:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,35 +38,42 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
+import numpy as np
+import pandas as pd
 
-from ._base import SimpleImputer, DummyImputer, JointImputer
-from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
+from My_AutoML._balancing import balancings
 
-from ._clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
+data_X = pd.DataFrame(
+    {
+        "col_1": [3, 8, 6, 7, 9, 9, 8, 8, 7, 5],
+        "col_2": [9, 7, 2, 1, 6, 8, 8, 9, 3, 6],
+    }
+)
+data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
 
 
-imputers = {
-    "SimpleImputer": SimpleImputer,
-    #    'DummyImputer' : DummyImputer,
-    "JointImputer": JointImputer,
-    "ExpectationMaximization": ExpectationMaximization,
-    "KNNImputer": KNNImputer,
-    "MissForestImputer": MissForestImputer,
-    "MICE": MICE,
-    # "AAI_kNN": AAI_kNN, # extremely slow (all below)
-    # "KMI": KMI, # not implemented
-    # "CMI": CMI,
-    # "k_Prototype_NN": k_Prototype_NN,
-}
-# Markov Chain Monte Carlo (MCMC)
+class TestStandardize(unittest.TestCase):
+    def setUp(self):
 
-import importlib
+        self.method_dict = balancings
+        self.method_names = list(self.method_dict.keys())
+        self.method_objects = list(self.method_dict.values())
 
-# check tensorflow/pytorch installed only import nn-based methods
-# when tensorflow/pytorch is installed
-tensorflow_spec = importlib.util.find_spec("tensorflow")
-torch_spec = importlib.util.find_spec("torch")
-if tensorflow_spec is not None or torch_spec is not None:
-    from ._nn import GAIN
+    def test_data(self):
 
-    imputers["GAIN"] = GAIN
+        for method_name, method_object in zip(self.method_names, self.method_objects):
+
+            mol = method_object()
+            mol.fit_transform(data_X, data_y)
+
+            # check whether the method is fitted
+            self.assertEqual(
+                mol._fitted,
+                True,
+                "The method {} is not correctly fitted.".format(method_name),
+            )
+
+            print(
+                "The method {} is correctly fitted.".format(method_name),
+            )

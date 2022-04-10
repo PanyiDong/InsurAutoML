@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 1:51:44 pm
+Last Modified: Saturday, 9th April 2022 10:06:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -88,6 +88,12 @@ warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
 warnings.filterwarnings(
     "ignore", message="The TensorboardX logger cannot be instantiated"
 )
+# I wish to use sklearn v1.0 for new features
+# but there's difference between autosklearn models and sklearn models
+# mae <-> absolute_error, mse <-> squared_error inconsistency
+warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
+warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
+warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available

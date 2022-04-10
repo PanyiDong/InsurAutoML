@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:03 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:25:21 pm
+Last Modified: Saturday, 9th April 2022 10:59:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -68,6 +68,8 @@ class ExpectationMaximization:
         self.threshold = threshold
         self.seed = seed
 
+        self._fitted = False  # whether the imputer has been fitted
+
     def fill(self, X):
 
         self.iterations = int(self.iterations)
@@ -78,6 +80,8 @@ class ExpectationMaximization:
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
+
+        self._fitted = True
 
         return _X
 
@@ -135,15 +139,30 @@ class KNNImputer:
     n_neighbors: list of k, default = None
     default will set to 1:10
 
+    method: method to initaillay impute missing values, default = "mean"
+
     fold: cross validation number of folds, default = 10
 
     uni_class: unique class to be considered as categorical columns, default = 31
+
+    seed: random seed, default = 1
     """
 
-    def __init__(self, n_neighbors=None, fold=10, uni_class=31):
+    def __init__(
+        self,
+        n_neighbors=None,
+        method="mean",
+        fold=10,
+        uni_class=31,
+        seed=1,
+    ):
         self.n_neighbors = n_neighbors
+        self.method = method
         self.fold = fold
         self.uni_class = uni_class
+        self.seed = seed
+
+        self._fitted = False  # whether the imputer has been fitted
 
     def fill(self, X):
 
@@ -157,6 +176,8 @@ class KNNImputer:
             _X = self._fill(_X)
         else:
             warnings.warn("No nan values found, no change.")
+
+        self._fitted = True
 
         return _X
 
@@ -217,7 +238,11 @@ class KNNImputer:
         if self.n_neighbors == None:
             n_neighbors = [i + 1 for i in range(10)]
         else:
-            n_neighbors = self.n_neighbors
+            n_neighbors = (
+                self.n_neighbors
+                if isinstance(self.n_neighbors, list)
+                else [self.n_neighbors]
+            )
 
         _test_mark = _test.copy(deep=True)
         _err = []
@@ -226,7 +251,7 @@ class KNNImputer:
             _test = _test_mark.copy(deep=True)
             for _feature in random_feautres:
                 _subfeatures = list(_train.columns)
-                _subfeatures.drop(_feature, inplace=True)
+                _subfeatures.remove(_feature)
 
                 fit_model = KNeighborsRegressor(n_neighbors=_k)
                 fit_model.fit(_train.loc[:, _subfeatures], _train.loc[:, _feature])
@@ -278,6 +303,8 @@ class MissForestImputer:
         self.threshold = threshold
         self.method = method
         self.uni_class = uni_class
+
+        self._fitted = False  # whether the imputer has been fitted
 
     def _RFImputer(self, X):
 
@@ -352,6 +379,8 @@ class MissForestImputer:
         else:
             warnings.warn("No nan values found, no change.")
 
+        self._fitted = True
+
         return _X
 
     def _fill(self, X):
@@ -359,7 +388,7 @@ class MissForestImputer:
         features = list(X.columns)
 
         for _column in features:
-            if (X[_column].dtype == np.object) or (str(X[_column].dtype) == "category"):
+            if (X[_column].dtype == object) or (str(X[_column].dtype) == "category"):
                 raise ValueError(
                     "MICE can only handle numerical filling, run encoding first!"
                 )
@@ -424,6 +453,8 @@ class MICE:
         self.cycle = cycle
         self.seed = seed
 
+        self._fitted = False  # whether the imputer has been fitted
+
     def fill(self, X):
 
         self.cycle = int(self.cycle)
@@ -434,6 +465,8 @@ class MICE:
             _X = self._fill(_X)
         else:
             warnings.warn("No nan values found, no change.")
+
+        self._fitted = True
 
         return _X
 

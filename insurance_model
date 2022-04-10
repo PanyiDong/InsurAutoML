@@ -1,0 +1,12 @@
+DataEncoding
+{}
+no_processing
+{}
+SimpleRandomOverSampling
+{'imbalance_threshold': 0.8542359042008287}
+MinMaxScale
+{}
+polynomial
+{'degree': 2, 'include_bias': True, 'interaction_only': False}
+LinearRegression
+{}

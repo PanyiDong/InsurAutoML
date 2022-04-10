@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:19 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:25:06 pm
+Last Modified: Saturday, 9th April 2022 10:17:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -109,7 +109,7 @@ class AAI_kNN(formatting, MinMaxScale):
         self.threads = threads
         self.deep_copy = deep_copy
 
-        self.fitted = False  # whether fitted on train set
+        self._fitted = False  # whether fitted on train set
         self.train = pd.DataFrame()  # store the imputed train set
 
     # calculate Pearson Correlation Coefficient/PCC
@@ -259,7 +259,7 @@ class AAI_kNN(formatting, MinMaxScale):
                 for _index in list(missing.index):
                     # if need AutAI, perform AutAI imputation first
                     # if fitted, no need for AutAI, directly run kNN imputation
-                    if self.AutAI and not self.fitted:
+                    if self.AutAI and not self._fitted:
                         if self.AutAI_tmp:
                             _X_tmp = self._AAI_impute(_X, _index, _column)
                             # get non-missing (determined by _column) rows
@@ -268,13 +268,13 @@ class AAI_kNN(formatting, MinMaxScale):
                             _X = self._AAI_impute(_X, _index, _column)
                             # get non-missing (determined by _column) rows
                             non_missing = _X.loc[~_X[_column].isnull()]
-                    elif not self.fitted:
+                    elif not self._fitted:
                         # get non-missing (determined by _column) rows
                         non_missing = _X.loc[~_X[_column].isnull()]
 
                     # use kNN imputation for (_index, _column)
                     # if fitted, use imputed dataset for imputation
-                    if not self.fitted:
+                    if not self._fitted:
                         k_values, _, _ = self._get_k_neighbors(
                             _X.loc[_index, :], non_missing, _column
                         )
@@ -342,8 +342,8 @@ class AAI_kNN(formatting, MinMaxScale):
         # concat the chunks of the datset
         _X = pd.concat(pool_data).sort_index()
 
-        # convert self.fitted and store self.train
-        self.fitted = True
+        # convert self._fitted and store self.train
+        self._fitted = True
         # only when empty need to store
         # stored train is imputed, formatted, scaled dataset
         self.train = _X.copy() if self.train.empty else self.train
@@ -452,7 +452,7 @@ class CMI(formatting, MinMaxScale):
 
         np.random.seed(seed=self.seed)
 
-        self.fitted = False  # whether fitted on train set
+        self._fitted = False  # whether fitted on train set
         self.train = pd.DataFrame()  # store the imputed train set
 
     # calculate distance between row and k group mean
@@ -508,7 +508,7 @@ class CMI(formatting, MinMaxScale):
 
         # if not fitted (on train dataset), run complete k Means clustering
         # else, use train k_means for clustering
-        if not self.fitted:
+        if not self._fitted:
 
             # get bandwidth for the kernel function
             self.bandwidth = np.sum(
@@ -595,7 +595,7 @@ class CMI(formatting, MinMaxScale):
 
         # find missing indexes belongs to _k group
         for _index in index_list:
-            if not self.fitted:
+            if not self._fitted:
                 # get the kernel values
                 kernel = np.array(
                     [
@@ -684,7 +684,7 @@ class CMI(formatting, MinMaxScale):
                 missing_index = list(
                     set(_X[_X[_column].isnull()].index) & set(group_index)
                 )
-                if not self.fitted:  # if not fitted, use _X
+                if not self._fitted:  # if not fitted, use _X
                     non_missing_index = list(
                         set(_X[~_X[_column].isnull()].index) & set(group_index)
                     )
@@ -706,8 +706,8 @@ class CMI(formatting, MinMaxScale):
                 imputation = pd.concat(imputation).sort_index()
                 _X.loc[missing_index, _column] = imputation
 
-        # convert self.fitted and store self.train
-        self.fitted = True
+        # convert self._fitted and store self.train
+        self._fitted = True
         # only when empty need to store
         # stored train is imputed, formatted, scaled dataset
         self.train = _X.copy() if self.train.empty else self.train
@@ -786,7 +786,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
         np.random.seed(self.seed)
 
-        self.fitted = False  # check whether fitted on train data
+        self._fitted = False  # check whether fitted on train data
         self.models = {}  # save fit models
 
     # calculate distance between row and k group mean
@@ -914,7 +914,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         # make sure self.k is smaller than n
         self.k = min(self.k, n)
 
-        if not self.fitted:
+        if not self._fitted:
             # create categorical count table
             # unique values descending according to number of observations
             self.categorical_table = {}
@@ -1087,7 +1087,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         pool.join()
 
         # set fitted to true
-        self.fitted = True
+        self._fitted = True
 
         # if scaling, scale back
         if self.scaling:
