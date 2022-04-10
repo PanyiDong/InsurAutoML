@@ -7,8 +7,8 @@ ray
 tqdm==4.62.3
 mlflow==1.21.0
 hyperopt==0.2.5
+auto-sklearn==0.14.6
 scikit-learn>=1.0.0
-auto-sklearn
 # optional packages
 # rpy2
 # tensorflow
