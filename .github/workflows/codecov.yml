@@ -15,8 +15,10 @@ jobs:
       - name: "generate report"
         run: |
           pip install coverage
-          pip install -U -r requirements.txt
+          pip install -r requirements.txt
           coverage run -m unittest
+          python main.py --data_folder example/example_data --train_data heart --response HeartDisease
+          python main.py --data_folder example/example_data --train_data insurance --response expenses
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
