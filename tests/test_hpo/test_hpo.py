@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 2:06:32 pm
+Last Modified: Sunday, 10th April 2022 5:05:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,40 +38,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# import pytest
-import pandas as pd
-
-from My_AutoML import AutoTabular
-
-# read regression data
-insurance_data = pd.read_csv("example/example_data/insurance.csv")
-
-insurance_features = list(insurance_data.columns)
-insurance_features.remove("expenses")
-insurance_response = ["expenses"]
-
-# read classification data
-heart_data = pd.read_csv("example/example_data/heart.csv")
-
-heart_features = list(heart_data.columns)
-heart_features.remove("HeartDisease")
-heart_response = ["HeartDisease"]
+import os
 
 
-def test_regression():
+def test_heart():
 
-    # mol1 = AutoTabular(
-    #     model_name="insurance",
-    # )
-
-    # mol1.fit(insurance_data[insurance_features], insurance_data[insurance_response])
-
-    # assert mol1._fitted == True, "Regression successfully fitted."
-
-    mol2 = AutoTabular(
-        model_name="heart",
+    os.system(
+        "python main.py --data_folder example/example_data --train_data heart --response HeartDisease"
     )
 
-    mol2.fit(heart_data[heart_features], heart_data[heart_response])
+    assert (
+        os.path.exists("tmp/heart_model/optimal_setting.txt") == True
+    ), "Classification for Heart data successfully fitted."
 
-    assert mol2._fitted == True, "Classification successfully fitted."
+
+def test_stroke():
+
+    os.system(
+        "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke"
+    )
+
+    assert (
+        os.path.exists("tmp/healthcare-dataset-stroke-data_model/optimal_setting.txt")
+        == True
+    ), "Classification for Stroke data successfully fitted."
+
+
+def test_insurance():
+
+    os.system(
+        "python main.py --data_folder example/example_data --train_data insurance --response expenses"
+    )
+
+    assert (
+        os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
+    ), "Regression for Insurance data successfully fitted."

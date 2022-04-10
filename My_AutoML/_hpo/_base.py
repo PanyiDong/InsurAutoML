@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 12:17:19 pm
+Last Modified: Sunday, 10th April 2022 4:55:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,16 +53,7 @@ import scipy
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
-from My_AutoML._encoding import encoders
-from My_AutoML._imputation import imputers
-from My_AutoML._balancing import balancings
-from My_AutoML._scaling import scalings
-from My_AutoML._feature_selection import feature_selections
-from My_AutoML._model import (
-    classifiers,
-    regressors,
-)
-
+from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._file import save_model
 from My_AutoML._utils._optimize import (
@@ -292,6 +283,8 @@ class AutoTabularBase:
 
         # Encoding: convert string types to numerical type
         # all encoders available
+        from My_AutoML._encoding import encoders
+
         self._all_encoders = encoders.copy()
 
         # get default encoder methods space
@@ -316,7 +309,16 @@ class AutoTabularBase:
 
         # Imputer: fill missing values
         # all imputers available
+        from My_AutoML._imputation import imputers
+
         self._all_imputers = imputers.copy()
+
+        # special case: kNN imputer can not handle categorical data
+        # remove kNN imputer from all imputers
+        for _column in list(X.columns):
+            if len(X[_column].unique()) <= min(0.1 * len(X), UNI_CLASS):
+                del self._all_imputers["KNNImputer"]
+                break
 
         # get default imputer methods space
         if self.imputer == "auto":
@@ -348,6 +350,8 @@ class AutoTabularBase:
 
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
+        from My_AutoML._balancing import balancings
+
         self._all_balancings = balancings.copy()
 
         # get default balancing methods space
@@ -372,6 +376,8 @@ class AutoTabularBase:
 
         # Scaling
         # all scalings available
+        from My_AutoML._scaling import scalings
+
         self._all_scalings = scalings.copy()
 
         # get default scaling methods space
@@ -396,6 +402,8 @@ class AutoTabularBase:
 
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
+        from My_AutoML._feature_selection import feature_selections
+
         self._all_feature_selection = feature_selections.copy()
         if self.task_mode == "classification":
             # special treatment, if classification
@@ -447,8 +455,12 @@ class AutoTabularBase:
         # if mode is classification, use classification models
         # if mode is regression, use regression models
         if self.task_mode == "classification":
+            from My_AutoML._model import classifiers
+
             self._all_models = classifiers.copy()
         elif self.task_mode == "regression":
+            from My_AutoML._model import regressors
+
             self._all_models = regressors.copy()
 
         # special treatment, remove SVM methods when observations are large
@@ -1299,6 +1311,10 @@ class AutoTabularBase:
             metric="loss",
             num_samples=self.max_evals,
             max_failures=self.max_error,
+            stop={
+                "training_iteration": 5,
+                # "max_failures": 3,
+            },
             time_budget_s=self.timeout,
             progress_reporter=progress_reporter,
             verbose=self.verbose,

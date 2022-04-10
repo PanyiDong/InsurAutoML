@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:29:43 pm
+Last Modified: Sunday, 10th April 2022 3:34:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -126,7 +126,7 @@ if torch_spec is not None:
     from ._FNN import MLP_Classifier, MLP_Regressor
     from ._RNN import RNN_Classifier
 
-    # classifiers["MLP_Classifier"] = MLP_Classifier
-    # classifiers["RNN_Classifier"] = RNN_Classifier
+    classifiers["MLP_Classifier"] = MLP_Classifier
+    classifiers["RNN_Classifier"] = RNN_Classifier
 
-    # regressors["MLP_Regressor"] = MLP_Regressor
+    regressors["MLP_Regressor"] = MLP_Regressor
