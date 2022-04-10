@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:06:59 pm
+Last Modified: Saturday, 9th April 2022 11:51:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -61,15 +61,6 @@ from My_AutoML._feature_selection import feature_selections
 from My_AutoML._model import (
     classifiers,
     regressors,
-)
-from My_AutoML._hyperparameters import (
-    encoder_hyperparameter,
-    imputer_hyperparameter,
-    scaling_hyperparameter,
-    balancing_hyperparameter,
-    feature_selection_hyperparameter,
-    classifier_hyperparameter,
-    regressor_hyperparameter,
 )
 
 from My_AutoML._base import no_processing
@@ -283,6 +274,16 @@ class AutoTabularBase:
         self._iter = 0  # record iteration number
 
     def get_hyperparameter_space(self, X, y=None):
+
+        from My_AutoML._hyperparameters import (
+            encoder_hyperparameter,
+            imputer_hyperparameter,
+            scaling_hyperparameter,
+            balancing_hyperparameter,
+            feature_selection_hyperparameter,
+            classifier_hyperparameter,
+            regressor_hyperparameter,
+        )
 
         # initialize default search options
         # and select the search options based on the input restrictions
