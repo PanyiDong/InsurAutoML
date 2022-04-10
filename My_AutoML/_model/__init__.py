@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 9:45:12 pm
+Last Modified: Saturday, 9th April 2022 11:29:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,7 +52,7 @@ from sklearn.naive_bayes import ComplementNB
 
 # need to enable hist gradient boosting features first
 # no need for sklearn version >= 1.0.0
-# from sklearn.experimental import enable_hist_gradient_boosting
+from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import (
     HistGradientBoostingClassifier,
     HistGradientBoostingRegressor,
@@ -107,7 +107,7 @@ regressors = {
     "RidgeRegression": Ridge,
     "ElasticNet": ElasticNet,
     "BayesianRidge": BayesianRidge,
-    "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
+    # "HistGradientBoostingRegressor": HistGradientBoostingRegressor, # not well-supported by package conflicts
     # self-defined models
 }
 
