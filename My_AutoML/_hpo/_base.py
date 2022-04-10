@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:51:54 pm
+Last Modified: Sunday, 10th April 2022 12:26:24 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -272,6 +272,7 @@ class AutoTabularBase:
         self.seed = seed
 
         self._iter = 0  # record iteration number
+        self._fitted = False  # record whether the model has been fitted
 
     def get_hyperparameter_space(self, X, y=None):
 
@@ -1314,6 +1315,8 @@ class AutoTabularBase:
         # whether to retain temp files
         if self.delete_temp_after_terminate:
             shutil.rmtree(self.temp_directory)
+
+        self._fitted = True
 
         return self
 
