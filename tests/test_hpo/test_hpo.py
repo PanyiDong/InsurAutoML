@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 1:43:09 pm
+Last Modified: Sunday, 10th April 2022 2:06:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import pytest
+# import pytest
 import pandas as pd
 
 from My_AutoML import AutoTabular
@@ -57,25 +57,21 @@ heart_features = list(heart_data.columns)
 heart_features.remove("HeartDisease")
 heart_response = ["HeartDisease"]
 
-data = [
-    (
-        "insurance",
-        insurance_data[insurance_features],
-        insurance_data[insurance_response],
-    ),
-    ("heart", heart_data[heart_features], heart_data[heart_response]),
-]
 
+def test_regression():
 
-@pytest.mark.parametrize(
-    "model_name, reg_X, reg_y", data, ids=["regression", "classification"]
-)
-def test_regression(model_name, reg_X, reg_y):
+    # mol1 = AutoTabular(
+    #     model_name="insurance",
+    # )
 
-    mol = AutoTabular(
-        model_name=model_name,
+    # mol1.fit(insurance_data[insurance_features], insurance_data[insurance_response])
+
+    # assert mol1._fitted == True, "Regression successfully fitted."
+
+    mol2 = AutoTabular(
+        model_name="heart",
     )
 
-    mol.fit(reg_X, reg_y)
+    mol2.fit(heart_data[heart_features], heart_data[heart_response])
 
-    assert mol._fitted == True, "Model successfully fitted."
+    assert mol2._fitted == True, "Classification successfully fitted."
