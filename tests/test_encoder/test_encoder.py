@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:09:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:12:34 pm
+Last Modified: Sunday, 10th April 2022 1:07:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -64,14 +64,12 @@ data_X = pd.DataFrame(
 data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
 
 
-class TestStandardize(unittest.TestCase):
-    def setUp(self):
+class TestEncoder(unittest.TestCase):
+    def test_Encoder(self):
 
         self.method_dict = encoders
         self.method_names = list(self.method_dict.keys())
         self.method_objects = list(self.method_dict.values())
-
-    def test_data(self):
 
         for method_name, method_object in zip(self.method_names, self.method_objects):
 

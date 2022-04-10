@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:31:45 pm
+Last Modified: Sunday, 10th April 2022 12:27:41 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -255,7 +255,7 @@ regressor_hyperparameter = [
     },
     # self-defined models
     {
-        "model_13": "MLP_Regressor",
+        "model_19": "MLP_Regressor",
         "MLP_Regressor_hidden_layer": tune.qrandint(1, 5, 1),
         "MLP_Regressor_hidden_size": tune.qrandint(1, 20, 1),
         "MLP_Regressor_activation": tune.choice(["ReLU", "Tanh", "Sigmoid"]),

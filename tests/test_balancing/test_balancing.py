@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 11:03:41 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:04:11 pm
+Last Modified: Sunday, 10th April 2022 1:06:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,14 +53,12 @@ data_X = pd.DataFrame(
 data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
 
 
-class TestStandardize(unittest.TestCase):
-    def setUp(self):
+class TestScaling(unittest.TestCase):
+    def test_Scaling(self):
 
         self.method_dict = balancings
         self.method_names = list(self.method_dict.keys())
         self.method_objects = list(self.method_dict.values())
-
-    def test_data(self):
 
         for method_name, method_object in zip(self.method_names, self.method_objects):
 

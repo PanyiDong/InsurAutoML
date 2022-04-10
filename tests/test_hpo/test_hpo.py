@@ -1,17 +1,17 @@
 """
-File: test_hpo.py
+File: test_regression.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Latest Version: 0.2.0
-Relative Path: /tests/test_hpo/test_hpo.py
-File Created: Sunday, 10th April 2022 12:26:37 am
+Relative Path: /tests/test_hpo/test_regression.py
+File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 12:34:11 am
+Last Modified: Sunday, 10th April 2022 1:43:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,45 +38,44 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import unittest
-import numpy as np
+import pytest
 import pandas as pd
 
 from My_AutoML import AutoTabular
 
-# read classification data
-heart_data = pd.DataFrame("example/example_data/heart.csv")
-
-features = list(heart_data.columns)
-features.remove("HeartDisease")
-response = ["HeartDisease"]
-
-class_X = heart_data[features]
-class_y = heart_data[response]
-
 # read regression data
-insurance_data = pd.DataFrame("example/example_data/insurance.csv")
+insurance_data = pd.read_csv("example/example_data/insurance.csv")
 
-features = list(insurance_data.columns)
-features.remove("expenses")
-response = ["expenses"]
+insurance_features = list(insurance_data.columns)
+insurance_features.remove("expenses")
+insurance_response = ["expenses"]
 
-reg_X = insurance_data[features]
-reg_y = insurance_data[response]
+# read classification data
+heart_data = pd.read_csv("example/example_data/heart.csv")
+
+heart_features = list(heart_data.columns)
+heart_features.remove("HeartDisease")
+heart_response = ["HeartDisease"]
+
+data = [
+    (
+        "insurance",
+        insurance_data[insurance_features],
+        insurance_data[insurance_response],
+    ),
+    ("heart", heart_data[heart_features], heart_data[heart_response]),
+]
 
 
-class TestHPO(unittest.TestCase):
-    def setUp(self):
-        self.mol = AutoTabular
+@pytest.mark.parametrize(
+    "model_name, reg_X, reg_y", data, ids=["regression", "classification"]
+)
+def test_regression(model_name, reg_X, reg_y):
 
-    def test_upper(self):
+    mol = AutoTabular(
+        model_name=model_name,
+    )
 
-        self.reg = self.mol()
-        self.reg.fit(class_X, class_y)
+    mol.fit(reg_X, reg_y)
 
-        self.assertEqual(self.reg._fitted, True, "Classification successfully fitted.")
-
-        self.clf = self.mol()
-        self.clf.fit(reg_X, reg_y)
-
-        self.assertEqual(self.clf._fitted, True, "Regression successfully fitted.")
+    assert mol._fitted == True, "Model successfully fitted."

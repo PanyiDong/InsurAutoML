@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 12:26:24 am
+Last Modified: Sunday, 10th April 2022 12:17:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -814,9 +814,10 @@ class AutoTabularBase:
 
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
-        if os.path.isdir(self.temp_directory):
-            shutil.rmtree(self.temp_directory)
-        os.makedirs(self.temp_directory)
+        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
+            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+        if not os.path.isdir(self.temp_directory):
+            os.makedirs(self.temp_directory)
         os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
         # write basic information to init.txt

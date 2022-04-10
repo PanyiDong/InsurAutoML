@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:22:12 pm
+Last Modified: Sunday, 10th April 2022 11:48:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 
 
+from re import S
 import numpy as np
 import pandas as pd
 
@@ -206,6 +207,8 @@ class AutoTabularRegressor(AutoTabularBase):
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
         self.seed = seed
+        
+        self._fitted = False # whether the model has been fitted
 
         super().__init__(
             task_mode="regression",
@@ -239,6 +242,8 @@ class AutoTabularRegressor(AutoTabularBase):
         )
 
     def fit(self, X, y):
+        
+        self._fitted = True
 
         return super().fit(X, y)
 
@@ -406,6 +411,8 @@ class AutoTabularClassifier(AutoTabularBase):
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
         self.seed = seed
+        
+        self._fitted = False # whether the model has been fitted
 
         super().__init__(
             task_mode="classification",
@@ -439,6 +446,8 @@ class AutoTabularClassifier(AutoTabularBase):
         )
 
     def fit(self, X, y):
+        
+        self._fitted = True
 
         return super().fit(X, y)
 
@@ -611,6 +620,8 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
         self.seed = seed
+        
+        self._fitted = False # whether the model has been fitted
 
     def fit(self, X, y=None):
 
@@ -687,6 +698,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             )
 
         self.model.fit(X, y)
+        
+        self._fitted = True
+        
         return self
 
     def predict(self, X):

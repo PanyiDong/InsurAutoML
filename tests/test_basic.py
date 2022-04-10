@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 11:25:27 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 2:04:29 pm
+Last Modified: Sunday, 10th April 2022 1:06:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -59,11 +59,11 @@ expected_result = pd.DataFrame(
 )
 
 
-class TestGetMissingMatrix(unittest.TestCase):
-    def setUp(self):
+class TestBasic(unittest.TestCase):
+    def test_Basic(self):
+
         self.get_missing_matrix = get_missing_matrix
 
-    def test_upper(self):
         self.assertEqual(
             (self.get_missing_matrix(data) == expected_result.values).all(),
             True,
