@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:24:22 pm
+Last Modified: Saturday, 9th April 2022 11:31:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -64,6 +64,9 @@ regressor_hyperparameter = [
     },
     {
         "model_3": "DecisionTree",
+        # "DecisionTree_criterion": tune.choice(
+        #     ["squared_error", "friedman_mse", "absolute_error", "poisson"]
+        # ),
         "DecisionTree_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
         "DecisionTree_max_features": tune.choice([1.0]),
         "DecisionTree_max_depth_factor": tune.uniform(0.0, 2.0),
@@ -75,6 +78,9 @@ regressor_hyperparameter = [
     },
     {
         "model_4": "ExtraTreesRegressor",
+        # "ExtraTreesRegressor_criterion": tune.choice(
+        #     ["squared_error", "friedman_mse", "absolute_error"]
+        # ),
         "ExtraTreesRegressor_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
         "ExtraTreesRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
         "ExtraTreesRegressor_min_samples_split": tune.qrandint(2, 20, 1),
@@ -95,6 +101,7 @@ regressor_hyperparameter = [
         "model_6": "GradientBoosting",
         # n_iter_no_change only selected for early_stop in ['valid', 'train']
         # validation_fraction only selected for early_stop = 'valid'
+        # "GradientBoosting_loss": tune.choice(["squared_error"]),
         "GradientBoosting_loss": tune.choice(["least_squares"]),
         "GradientBoosting_learning_rate": tune.loguniform(0.01, 1),
         "GradientBoosting_min_samples_leaf": tune.qlograndint(1, 200, 1),
@@ -163,6 +170,9 @@ regressor_hyperparameter = [
     },
     {
         "model_11": "RandomForest",
+        # "RandomForest_criterion": tune.choice(
+        #     ["squared_error", "absolute_error", "poisson"]
+        # ),
         "RandomForest_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
         "RandomForest_max_features": tune.uniform(0.1, 1.0),
         "RandomForest_max_depth": tune.choice([None]),
@@ -230,8 +240,11 @@ regressor_hyperparameter = [
     },
     {
         "model_18": "HistGradientBoostingRegressor",
+        # "HistGradientBoostingRegressor_loss": tune.choice(
+        #     ["squared_error", "absolute_error", "poisson"]
+        # ),
         "HistGradientBoostingRegressor_loss": tune.choice(
-            ["squared_error", "absolute_error", "poisson"]
+            ["least_squares", "least_absolute_deviation", "poisson"]
         ),
         "HistGradientBoostingRegressor_learning_rate": tune.loguniform(1e-7, 1e-1),
         "HistGradientBoostingRegressor_max_leaf_nodes": tune.choice([None]),

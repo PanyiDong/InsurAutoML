@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:20:19 pm
+Last Modified: Saturday, 9th April 2022 10:10:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,6 +69,8 @@ class DataEncoding(formatting):
     def __init__(self, dummy_coding=False, transform=False):
         self.dummy_coding = dummy_coding
         self.transform = transform
+
+        self._fitted = False  # record whether the method is fitted
 
     def fit(self, _df):
         df = _df.copy(deep=True)
@@ -142,6 +144,8 @@ class DataEncoding(formatting):
         # remove categorical variables
         if self.dummy_coding == True:
             df.drop(columns=list(self.category.columns), inplace=True)
+
+        self._fitted = True
 
         return df
 
@@ -230,6 +234,8 @@ class CategoryShift:
     def __init__(self, seed=1):
         self.seed = seed
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit(self, X):
 
         # Check data type
@@ -239,6 +245,8 @@ class CategoryShift:
                 raise ValueError("Cannot handle object type!")
             elif str(X[_column].dtype) == "category":
                 raise ValueError("Cannot handle categorical type!")
+
+        self._fitted = True
 
     def transform(self, X):
 

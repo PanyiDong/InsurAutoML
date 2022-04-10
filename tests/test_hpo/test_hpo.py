@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File: test_hpo.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Latest Version: 0.2.0
-Relative Path: /My_AutoML/_imputation/__init__.py
-File Created: Tuesday, 5th April 2022 11:49:07 pm
+Relative Path: /tests/test_hpo/test_hpo.py
+File Created: Sunday, 10th April 2022 12:26:37 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:48:24 pm
+Last Modified: Sunday, 10th April 2022 12:34:11 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,35 +38,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import unittest
+import numpy as np
+import pandas as pd
 
-from ._base import SimpleImputer, DummyImputer, JointImputer
-from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
+from My_AutoML import AutoTabular
 
-from ._clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
+# read classification data
+heart_data = pd.DataFrame("example/example_data/heart.csv")
+
+features = list(heart_data.columns)
+features.remove("HeartDisease")
+response = ["HeartDisease"]
+
+class_X = heart_data[features]
+class_y = heart_data[response]
+
+# read regression data
+insurance_data = pd.DataFrame("example/example_data/insurance.csv")
+
+features = list(insurance_data.columns)
+features.remove("expenses")
+response = ["expenses"]
+
+reg_X = insurance_data[features]
+reg_y = insurance_data[response]
 
 
-imputers = {
-    "SimpleImputer": SimpleImputer,
-    #    'DummyImputer' : DummyImputer,
-    "JointImputer": JointImputer,
-    "ExpectationMaximization": ExpectationMaximization,
-    "KNNImputer": KNNImputer,
-    "MissForestImputer": MissForestImputer,
-    "MICE": MICE,
-    # "AAI_kNN": AAI_kNN, # extremely slow (all below)
-    # "KMI": KMI, # not implemented
-    # "CMI": CMI,
-    # "k_Prototype_NN": k_Prototype_NN,
-}
-# Markov Chain Monte Carlo (MCMC)
+class TestHPO(unittest.TestCase):
+    def setUp(self):
+        self.mol = AutoTabular
 
-import importlib
+    def test_upper(self):
 
-# check tensorflow/pytorch installed only import nn-based methods
-# when tensorflow/pytorch is installed
-tensorflow_spec = importlib.util.find_spec("tensorflow")
-torch_spec = importlib.util.find_spec("torch")
-if tensorflow_spec is not None or torch_spec is not None:
-    from ._nn import GAIN
+        self.reg = self.mol()
+        self.reg.fit(class_X, class_y)
 
-    imputers["GAIN"] = GAIN
+        self.assertEqual(self.reg._fitted, True, "Classification successfully fitted.")
+
+        self.clf = self.mol()
+        self.clf.fit(reg_X, reg_y)
+
+        self.assertEqual(self.clf._fitted, True, "Regression successfully fitted.")

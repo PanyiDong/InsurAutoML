@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:49:51 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:24:59 pm
+Last Modified: Saturday, 9th April 2022 10:43:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -62,6 +62,8 @@ class SimpleImputer:
     def __init__(self, method="mean"):
         self.method = method
 
+        self._fitted = False  # whether the imputer has been fitted
+
     def fill(self, X):
 
         _X = X.copy(deep=True)
@@ -71,6 +73,8 @@ class SimpleImputer:
             for _column in features:
                 if X[_column].isnull().values.any():
                     _X[_column] = self._fill(_X[_column])
+
+        self._fitted = True
 
         return _X
 
@@ -120,12 +124,16 @@ class DummyImputer:
         self.threshold = threshold
         self.method = method
 
+        self._fitted = False  # whether the imputer has been fitted
+
     def fill(self, X, y):
 
         _X = X.copy(deep=True)
 
         if _X.isnull().values.any():
             _X = self._fill(_X, y)
+
+        self._fitted = True
 
         return _X
 
@@ -164,12 +172,16 @@ class JointImputer:
     def __init__(self, kernel="normal"):
         self.kernel = kernel
 
+        self._fitted = False  # whether the imputer has been fitted
+
     def fill(self, X):
 
         _X = X.copy(deep=True)
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
+
+        self._fitted = True
 
         return _X
 

@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:27:23 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:19:33 pm
+Last Modified: Saturday, 9th April 2022 11:01:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -80,6 +80,8 @@ class Smote_TomekLink(Smote, TomekLink):
         self.k = k
         self.generation = generation
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -121,6 +123,8 @@ class Smote_TomekLink(Smote, TomekLink):
                 seed=self.seed,
             )
             _data = super(Smote, self).fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]
@@ -152,6 +156,8 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         self.k = k
         self.generation = generation
 
+        self._fitted = False  # whether the model has been fitted
+
     def fit_transform(self, X, y=None):
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
@@ -194,6 +200,8 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
                 k=self.k,
             )
             _data = super(Smote, self).fit_transform(_data)
+
+        self._fitted = True
 
         if not _empty:
             return _data[features], _data[response]

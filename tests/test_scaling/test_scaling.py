@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 1:56:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 2:15:15 pm
+Last Modified: Saturday, 9th April 2022 9:00:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,74 +42,38 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from My_AutoML._scaling import (
-    Standardize,
-)
+from My_AutoML._scaling import scalings
 
-data = pd.DataFrame(
+data_X = pd.DataFrame(
     {
         "col_1": [3, 8, 6, 7, 9, 9, 8, 8, 7, 5],
         "col_2": [9, 7, 2, 1, 6, 8, 8, 9, 3, 6],
     }
 )
-
-expected_data = pd.DataFrame(
-    {
-        "col_1": [
-            -2.12132,
-            0.53033,
-            -0.53033,
-            0.00000,
-            1.06066,
-            1.06066,
-            0.53033,
-            0.53033,
-            0.00000,
-            -1.06066,
-        ],
-        "col_2": [
-            1.060522,
-            0.376314,
-            -1.334205,
-            -1.676309,
-            0.034210,
-            0.718418,
-            0.718418,
-            1.060522,
-            -0.992101,
-            0.034210,
-        ],
-    }
-)
-expected_mean = np.array([7.0, 5.9])
-expected_std = np.array([1.8856180831641267, 2.9230881691191666])
+data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
 
 
 class TestStandardize(unittest.TestCase):
     def setUp(self):
 
-        self.method = Standardize()
+        self.method_dict = scalings
+        self.method_names = list(self.method_dict.keys())
+        self.method_objects = list(self.method_dict.values())
 
     def test_data(self):
 
-        fit_data = self.method.fit_transform(data)
+        for method_name, method_object in zip(self.method_names, self.method_objects):
 
-        # check whether the mean and std are correct
-        self.assertEqual(
-            (self.method._mean - expected_mean < 1e-5).all(),
-            True,
-            "Mean should be {}, get {}.".format(self.method._mean, expected_mean),
-        )
+            mol = method_object()
+            mol.fit_transform(data_X, data_y)
 
-        self.assertEqual(
-            (self.method._std - expected_std < 1e-5).all(),
-            True,
-            "Mean should be {}, get {}.".format(self.method._std, expected_std),
-        )
+            # check whether the method is fitted
+            self.assertEqual(
+                mol._fitted,
+                True,
+                "The method {} is not correctly fitted.".format(method_name),
+            )
 
-        # check whether the data is transformed correctly
-        self.assertEqual(
-            (fit_data - expected_data < 1e-5).all().all(),
-            True,
-            "Transformed data should be {}, get {}.".format(expected_data, fit_data),
-        )
+            print(
+                "The method {} is correctly fitted.".format(method_name),
+            )

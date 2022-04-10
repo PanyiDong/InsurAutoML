@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 1:51:44 pm
+Last Modified: Sunday, 10th April 2022 12:26:24 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -62,15 +62,6 @@ from My_AutoML._model import (
     classifiers,
     regressors,
 )
-from My_AutoML._hyperparameters import (
-    encoder_hyperparameter,
-    imputer_hyperparameter,
-    scaling_hyperparameter,
-    balancing_hyperparameter,
-    feature_selection_hyperparameter,
-    classifier_hyperparameter,
-    regressor_hyperparameter,
-)
 
 from My_AutoML._base import no_processing
 from My_AutoML._utils._file import save_model
@@ -88,6 +79,12 @@ warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
 warnings.filterwarnings(
     "ignore", message="The TensorboardX logger cannot be instantiated"
 )
+# I wish to use sklearn v1.0 for new features
+# but there's difference between autosklearn models and sklearn models
+# mae <-> absolute_error, mse <-> squared_error inconsistency
+warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
+warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
+warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available
@@ -275,8 +272,19 @@ class AutoTabularBase:
         self.seed = seed
 
         self._iter = 0  # record iteration number
+        self._fitted = False  # record whether the model has been fitted
 
     def get_hyperparameter_space(self, X, y=None):
+
+        from My_AutoML._hyperparameters import (
+            encoder_hyperparameter,
+            imputer_hyperparameter,
+            scaling_hyperparameter,
+            balancing_hyperparameter,
+            feature_selection_hyperparameter,
+            classifier_hyperparameter,
+            regressor_hyperparameter,
+        )
 
         # initialize default search options
         # and select the search options based on the input restrictions
@@ -1307,6 +1315,8 @@ class AutoTabularBase:
         # whether to retain temp files
         if self.delete_temp_after_terminate:
             shutil.rmtree(self.temp_directory)
+
+        self._fitted = True
 
         return self
 

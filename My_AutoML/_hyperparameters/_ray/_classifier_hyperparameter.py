@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:23:48 pm
+Last Modified: Saturday, 9th April 2022 9:12:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -202,7 +202,7 @@ classifier_hyperparameter = [
     # classification models from sklearn
     {
         "model_17": "LogisticRegression",
-        "LogisticRegression_penalty": tune.choice(["l1", "l2"]),
+        "LogisticRegression_penalty": tune.choice(["l2", "none"]),
         "LogisticRegression_tol": tune.loguniform(1e-5, 1e-1),
         "LogisticRegression_C": tune.loguniform(1e-5, 10),
     },

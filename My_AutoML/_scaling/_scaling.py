@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 11:13:24 pm
+Last Modified: Saturday, 9th April 2022 9:08:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,12 +38,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from logging import warning
+from random import random
+from re import L
 import warnings
 import numpy as np
 import pandas as pd
 import scipy
 import scipy.stats
-from sklearn.preprocessing import PowerTransformer, QuantileTransformer
 
 from My_AutoML._encoding import DataEncoding
 
@@ -76,6 +78,8 @@ class Standardize:
         self.with_std = with_std
         self.deep_copy = deep_copy
 
+        self._fitted = False  # record whether the model has been fitted
+
     def fit(self, X, y=None):
 
         _X = X.copy(deep=self.deep_copy)
@@ -100,6 +104,8 @@ class Standardize:
                     (_x_2_sum - n_notnan * ((_x_sum / n_notnan) ** 2)) / (n_notnan - 1)
                 )
 
+        self._fitted = True
+
         return self
 
     def transform(self, X):
@@ -118,6 +124,8 @@ class Standardize:
 
         self.fit(_X, y)
 
+        self._fitted = True
+
         _X = self.transform(_X)
 
         return _X
@@ -128,6 +136,9 @@ class Standardize:
             X += self._mean
         if self.with_std:
             X *= self._std
+
+        self._fitted = False
+
         return X
 
 
@@ -150,6 +161,8 @@ class Normalize:
         self.norm = norm
         self.deep_copy = deep_copy
 
+        self._fitted = False  # record whether the model has been fitted
+
     def fit(self, X, y=None):
 
         if self.norm not in ["l1", "l2", "max"]:
@@ -168,6 +181,8 @@ class Normalize:
             elif self.norm == "l2":
                 self._scale[i] = (_data**2).sum()
 
+        self._fitted = True
+
         return self
 
     def transform(self, X):
@@ -183,6 +198,8 @@ class Normalize:
 
         self.fit(_X, y)
 
+        self._fitted = True
+
         _X = self.transform(_X)
 
         return _X
@@ -190,6 +207,9 @@ class Normalize:
     def inverse_transform(self, X):
 
         X *= self._scale
+
+        self._fitted = False
+
         return X
 
 
@@ -222,6 +242,8 @@ class RobustScale:
         self.quantile = quantile
         self.unit_variance = unit_variance
         self.deep_copy = deep_copy
+
+        self._fitted = False  # record whether the model has been fitted
 
     def fit(self, X, y=None):
 
@@ -264,6 +286,8 @@ class RobustScale:
                 index
             ] = 1.0  # change scale at True index of constant_mask to 1.0
 
+        self._fitted = True
+
         return self
 
     def transform(self, X):
@@ -283,6 +307,8 @@ class RobustScale:
 
         self.fit(_X, y)
 
+        self._fitted = True
+
         _X = self.transform(_X)
 
         return _X
@@ -293,6 +319,8 @@ class RobustScale:
             X += self._median
         if self.with_scale:
             X *= self._scale
+
+        self._fitted = False
 
         return X
 
@@ -315,6 +343,8 @@ class MinMaxScale:
         self.feature_range = feature_range
         self.deep_copy = deep_copy
 
+        self._fitted = False  # record whether the model has been fitted
+
     def fit(self, X, y=None):
 
         _X = X.copy(deep=self.deep_copy)
@@ -327,6 +357,8 @@ class MinMaxScale:
             _data = _X.iloc[:, i].values
             self._min[i] = np.nanmin(_data)
             self._max[i] = np.nanmax(_data)
+
+        self._fitted = True
 
         return self
 
@@ -348,6 +380,8 @@ class MinMaxScale:
 
         self.fit(_X, y)
 
+        self._fitted = True
+
         _X = self.transform(_X)
 
         return _X
@@ -361,6 +395,8 @@ class MinMaxScale:
         _X = X.copy(deep=True)
         _X = (_X - f_min) / (f_max - f_min)
         _X = _X * (np.array(self._max) - np.array(self._min)) + self._min
+
+        self._fitted = False
 
         return _X
 
@@ -391,7 +427,12 @@ class Winsorization:
         self.threshold = threshold
         self.deep_copy = deep_copy
 
+        self._fitted = False  # record whether the model has been fitted
+
     def fit(self, X, y):
+
+        if not isinstance(y, pd.DataFrame) and not isinstance(X, pd.Series):
+            warnings.warn("Method Winsorization requires response, but not getting it.")
 
         _X = X.copy(deep=self.deep_copy)
 
@@ -413,6 +454,8 @@ class Winsorization:
             else:
                 self._list.append(False)
 
+        self._fitted = True
+
         return self
 
     def fit_transform(self, X, y=None):
@@ -420,6 +463,8 @@ class Winsorization:
         _X = X.copy(deep=self.deep_copy)
 
         self.fit(_X, y)
+
+        self._fitted = True
 
         _X = self.transform(_X)
 
@@ -439,6 +484,155 @@ class Winsorization:
             i += 1
 
         return _X
+
+
+class PowerTransformer:
+
+    """
+    PowerTransformer, implemented by sklearn, is a transformer that applies
+    a power function to each feature.
+
+    [1] I.K. Yeo and R.A. Johnson, "A new family of power transformations to
+        improve normality or symmetry." Biometrika, 87(4), pp.954-959,
+        (2000).
+    [2] G.E.P. Box and D.R. Cox, "An Analysis of Transformations", Journal
+        of the Royal Statistical Society B, 26, 211-252 (1964).
+
+    Parameters
+    ----------
+    method: 'yeo-johnson' or 'box-cox', default = 'yeo-johnson'
+        'yeo-johnson' [1]_, works with positive and negative values
+        'box-cox' [2]_, only works with strictly positive values
+
+    standardize: boolean, default = True
+
+    deep_copy: whether to use deep copy, default = True
+    """
+
+    def __init__(
+        self,
+        method="yeo-johnson",
+        standardize=True,
+        deep_copy=True,
+    ):
+        self.method = method
+        self.standardize = standardize
+        self.deep_copy = deep_copy
+
+        self._fitted = False  # record whether the model has been fitted
+
+    def fit(self, X, y=None):
+
+        from sklearn.preprocessing import PowerTransformer
+
+        self.mol = PowerTransformer(
+            method=self.method,
+            standardize=self.standardize,
+            copy=self.deep_copy,
+        )
+
+        self.mol.fit(X, y)
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X, y=None):
+
+        return self.mol.transform(X)
+
+    def fit_transform(self, X, y=None):
+
+        self.fit(X, y)
+
+        self._fitted = True
+
+        return self.transform(X)
+
+    def inverse_transform(self, X):
+
+        self._fitted = False
+
+        return self.mol.inverse_transform(X)
+
+
+class QuantileTransformer:
+
+    """
+    QuantileTransformer, implemented by sklearn
+
+    Parameters
+    ----------
+    n_quantiles: Number of quantiles to be computed, default = 1000
+
+    output_distribution: 'normal' or 'uniform', default = 'normal'
+
+    ignore_implicit_zeros: Only applies to sparse matrices, default = False
+
+    subsample: Maximum number of samples used to estimate the quantiles, default = 100000
+
+    random_state: RandomState instance or None, default = None
+
+    deep_copy: whether to use deep copy, default = True
+    """
+
+    def __init__(
+        self,
+        n_quantiles=1000,
+        output_distribution="uniform",
+        ignore_implicit_zeros=False,
+        subsample=int(1e5),
+        random_state=None,
+        deep_copy=True,
+    ):
+        self.n_quantiles = n_quantiles
+        self.output_distribution = output_distribution
+        self.ignore_implicit_zeros = ignore_implicit_zeros
+        self.subsample = subsample
+        self.random_state = random_state
+        self.deep_copy = deep_copy
+
+        self._fitted = False  # record whether the model has been fitted
+
+    def fit(self, X, y=None):
+
+        # limit max number of quantiles to entries number
+        self.n_quantiles = min(self.n_quantiles, X.shape[0])
+
+        from sklearn.preprocessing import QuantileTransformer
+
+        self.mol = QuantileTransformer(
+            n_quantiles=self.n_quantiles,
+            output_distribution=self.output_distribution,
+            ignore_implicit_zeros=self.ignore_implicit_zeros,
+            subsample=self.subsample,
+            random_state=self.random_state,
+            copy=self.deep_copy,
+        )
+
+        self.mol.fit(X, y)
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X, y=None):
+
+        return self.mol.transform(X)
+
+    def fit_transform(self, X, y=None):
+
+        self.fit(X, y)
+
+        self._fitted = True
+
+        return self.transform(X)
+
+    def inverse_transform(self, X):
+
+        self._fitted = False
+
+        return self.mol.inverse_transform(X)
 
 
 ####################################################################################################

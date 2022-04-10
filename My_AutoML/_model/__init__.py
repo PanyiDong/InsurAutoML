@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 2:56:19 pm
+Last Modified: Saturday, 9th April 2022 11:29:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -51,6 +51,7 @@ from sklearn.linear_model import (
 from sklearn.naive_bayes import ComplementNB
 
 # need to enable hist gradient boosting features first
+# no need for sklearn version >= 1.0.0
 from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import (
     HistGradientBoostingClassifier,
@@ -79,9 +80,9 @@ classifiers = {
     "RandomForest": autosklearn.pipeline.components.classification.random_forest.RandomForest,
     "SGD": autosklearn.pipeline.components.classification.sgd.SGD,
     # classification models from sklearn
-    # "LogisticRegression": LogisticRegression,
+    "LogisticRegression": LogisticRegression,
     # "ComplementNB": ComplementNB,
-    # "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
+    "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
     # self-defined models
 }
 
@@ -96,17 +97,17 @@ regressors = {
     "GradientBoosting": autosklearn.pipeline.components.regression.gradient_boosting.GradientBoosting,
     "KNearestNeighborsRegressor": autosklearn.pipeline.components.regression.k_nearest_neighbors.KNearestNeighborsRegressor,
     "LibLinear_SVR": autosklearn.pipeline.components.regression.liblinear_svr.LibLinear_SVR,
-    "LibSVM_SVR": autosklearn.pipeline.components.regression.libsvm_svr.LibSVM_SVR,
-    "MLPRegressor": autosklearn.pipeline.components.regression.mlp.MLPRegressor,
+    # "LibSVM_SVR": autosklearn.pipeline.components.regression.libsvm_svr.LibSVM_SVR,
+    # "MLPRegressor": autosklearn.pipeline.components.regression.mlp.MLPRegressor,
     "RandomForest": autosklearn.pipeline.components.regression.random_forest.RandomForest,
-    "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
+    # "SGD": autosklearn.pipeline.components.regression.sgd.SGD,
     # regression models from sklearn
-    # "LinearRegression": LinearRegression,
-    # "Lasso": Lasso,
-    # "RidgeRegression": Ridge,
-    # "ElasticNet": ElasticNet,
-    # "BayesianRidge": BayesianRidge,
-    # "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
+    "LinearRegression": LinearRegression,
+    "Lasso": Lasso,
+    "RidgeRegression": Ridge,
+    "ElasticNet": ElasticNet,
+    "BayesianRidge": BayesianRidge,
+    # "HistGradientBoostingRegressor": HistGradientBoostingRegressor, # not well-supported by package conflicts
     # self-defined models
 }
 
@@ -125,7 +126,7 @@ if torch_spec is not None:
     from ._FNN import MLP_Classifier, MLP_Regressor
     from ._RNN import RNN_Classifier
 
-    classifiers["MLP_Classifier"] = MLP_Classifier
-    classifiers["RNN_Classifier"] = RNN_Classifier
+    # classifiers["MLP_Classifier"] = MLP_Classifier
+    # classifiers["RNN_Classifier"] = RNN_Classifier
 
-    regressors["MLP_Regressor"] = MLP_Regressor
+    # regressors["MLP_Regressor"] = MLP_Regressor

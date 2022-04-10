@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 11:51:12 pm
+Last Modified: Saturday, 9th April 2022 10:19:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -326,8 +326,8 @@ class GAIN_tf(formatting, MinMaxScale):
         # combine data with column names to dataframe
         _imputed_data = pd.DataFrame(_imputed_data, columns=_features)
 
-        # convert self.fitted and store self.train
-        self.fitted = True
+        # convert self._fitted and store self.train
+        self._fitted = True
 
         # if scaling, scale back
         if self.scaling:
@@ -416,7 +416,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
         np.random.seed(self.seed)
 
-        self.fitted = False  # whether fitted on train set
+        self._fitted = False  # whether fitted on train set
 
     # get random m integer number in range [0, n - 1]
     def random_index(self, n, m):
@@ -556,7 +556,7 @@ class GAIN_torch(formatting, MinMaxScale):
         _M = get_missing_matrix(_X, missing=0)
 
         # if not fitted, train the networks
-        if not self.fitted:
+        if not self._fitted:
             # initialize Generator/Discriminator variables
             self._initialization(p, h_dim)
             import torch.optim
@@ -670,8 +670,8 @@ class GAIN_torch(formatting, MinMaxScale):
         # convert back to dataframe
         _X = pd.DataFrame(_X, columns=_features)
 
-        # convert self.fitted and store self.train
-        self.fitted = True
+        # convert self._fitted and store self.train
+        self._fitted = True
 
         # if scaling, scale back
         if self.scaling:
@@ -752,7 +752,7 @@ class GAIN(GAIN_tf, GAIN_torch):
 
         np.random.seed(self.seed)
 
-        self.fitted = False  # whether fitted on train set
+        self._fitted = False  # whether fitted on train set
 
         if torch_spec is not None:
             self.model = GAIN_torch(
