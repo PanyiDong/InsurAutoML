@@ -1,8 +1,10 @@
-# This is project for Auto Machine Learning
+# Project for Auto Machine Learning (AutoML)
 
 [![codecov](https://codecov.io/gh/PanyiDong/My_AutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/My_AutoML) ![codecov](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml/badge.svg) ![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)
 
 IRisk Lab Project, UIUC, Fall 2021
+
+Now a personally-maintained project
 
 The project aims to create a AutoML package with special focus on insurance data (with some imbalance in nature).
 
