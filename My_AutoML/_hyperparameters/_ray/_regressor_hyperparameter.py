@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 12:27:41 pm
+Last Modified: Monday, 11th April 2022 10:21:20 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -258,7 +258,7 @@ regressor_hyperparameter = [
         "model_19": "MLP_Regressor",
         "MLP_Regressor_hidden_layer": tune.qrandint(1, 5, 1),
         "MLP_Regressor_hidden_size": tune.qrandint(1, 20, 1),
-        "MLP_Regressor_activation": tune.choice(["ReLU", "Tanh", "Sigmoid"]),
+        "MLP_Regressor_activation": tune.choice(["ReLU"]),
         "MLP_Regressor_learning_rate": tune.uniform(1e-5, 1),
         "MLP_Regressor_optimizer": tune.choice(["Adam", "SGD"]),
         "MLP_Regressor_criteria": tune.choice(["MSE", "MAE"]),

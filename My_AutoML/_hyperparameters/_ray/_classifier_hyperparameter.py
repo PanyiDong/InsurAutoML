@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 9:12:55 pm
+Last Modified: Monday, 11th April 2022 10:21:28 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -227,7 +227,7 @@ classifier_hyperparameter = [
         "model_20": "MLP_Classifier",
         "MLP_Classifier_hidden_layer": tune.qrandint(1, 5, 1),
         "MLP_Classifier_hidden_size": tune.qrandint(1, 20, 1),
-        "MLP_Classifier_activation": tune.choice(["ReLU", "Tanh", "Sigmoid"]),
+        "MLP_Classifier_activation": tune.choice(["Tanh", "Sigmoid"]),
         "MLP_Classifier_learning_rate": tune.uniform(1e-5, 1),
         "MLP_Classifier_optimizer": tune.choice(["Adam", "SGD"]),
         "MLP_Classifier_criteria": tune.choice(["CrossEntropy"]),
