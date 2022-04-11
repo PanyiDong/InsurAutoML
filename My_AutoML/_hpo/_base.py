@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 11:56:48 pm
+Last Modified: Monday, 11th April 2022 12:10:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,6 +55,7 @@ from sklearn.exceptions import ConvergenceWarning
 
 from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
+from My_AutoML._utils._base import type_of_script
 from My_AutoML._utils._file import save_model
 from My_AutoML._utils._data import str2list
 from My_AutoML._utils._optimize import (
@@ -187,7 +188,8 @@ class AutoTabularBase:
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
 
-    progress_reporter: progress reporter, default = "CLIReporter"
+    progress_reporter: progress reporter, default = None
+    automatically decide what progressbar to use
     support ("CLIReporter", "JupyterNotebookReporter")
 
     full_status: whether to print full status, default = False
@@ -232,7 +234,7 @@ class AutoTabularBase:
         search_algo_setttings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
-        progress_reporter="CLIReporter",
+        progress_reporter=None,
         full_status=False,
         verbose=1,
         cpu_threads=None,
@@ -823,6 +825,25 @@ class AutoTabularBase:
             os.cpu_count() if self.cpu_threads is None else self.cpu_threads
         )
         self.gpu_count = device_count if self.use_gpu else 0
+
+        # get progress report from environment
+        # if specified, use specified progress report
+        self.progress_reporter = (
+            (
+                "CLIReporter"
+                if type_of_script() == "terminal"
+                else "JupyterNotebookReporter"
+            )
+            if self.progress_reporter is None
+            else self.progress_reporter
+        )
+
+        if self.progress_reporter not in ["CLIReporter", "JupyterNotebookReporter"]:
+            raise TypeError(
+                "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
+                    self.progress_reporter
+                )
+            )
 
         _X = X.copy()
         _y = y.copy()

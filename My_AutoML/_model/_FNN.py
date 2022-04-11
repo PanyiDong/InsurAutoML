@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 11:55:56 pm
+Last Modified: Monday, 11th April 2022 12:19:13 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -248,17 +248,9 @@ class MLP_Base:
         else:
             raise ValueError("Not recognized criteria: {}.".format(self.criteria))
 
-        # load dataset to DataLoader
-        # convert to tensors
-        X = torch.as_tensor(
-            X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
-        )
-        y = torch.as_tensor(
-            y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
-        )
         # load dataset to TensorDataset
         train_tensor = TensorDataset(X, y)
-
+        # load dataset to DataLoader
         train_loader = DataLoader(
             train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
         )
@@ -379,6 +371,14 @@ class MLP_Classifier(MLP_Base):
             seed=self.seed,
         )
 
+        # convert to tensors
+        X = torch.as_tensor(
+            X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+        )
+        y = torch.as_tensor(
+            y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
+        )
+
         return super().fit(X, y)
 
     def predict(self, X):
@@ -468,6 +468,14 @@ class MLP_Regressor(MLP_Base):
             num_epochs=self.num_epochs,
             is_cuda=self.is_cuda,
             seed=self.seed,
+        )
+
+        # convert to tensors
+        X = torch.as_tensor(
+            X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+        )
+        y = torch.as_tensor(
+            y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.float
         )
 
         return super().fit(X, y)

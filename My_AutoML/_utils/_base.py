@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:20 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:27:07 pm
+Last Modified: Monday, 11th April 2022 12:06:19 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -203,3 +203,17 @@ class Timer:
 
     def cumsum(self):
         return np.array(self.times).cumsum().tolist()
+
+
+# determine whether using a python terminal environment or
+# a jupyter notebook environment
+def type_of_script():
+
+    try:
+        ipy_str = str(type(get_ipython()))
+        if "zmqshell" in ipy_str:
+            return "jupyter"
+        if "terminal" in ipy_str:
+            return "ipython"
+    except:
+        return "terminal"
