@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 8:39:44 pm
+Last Modified: Sunday, 10th April 2022 10:57:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -119,14 +119,14 @@ https://github.com/automl/auto-sklearn/issues/1297
 problem solved
 """
 
-# import importlib
+import importlib
 
-# torch_spec = importlib.util.find_spec("torch")
-# if torch_spec is not None:
-#     from ._FNN import MLP_Classifier, MLP_Regressor
-#     from ._RNN import RNN_Classifier
+torch_spec = importlib.util.find_spec("torch")
+if torch_spec is not None:
+    from ._FNN import MLP_Classifier, MLP_Regressor
+    from ._RNN import RNN_Classifier
 
-#     classifiers["MLP_Classifier"] = MLP_Classifier
-#     classifiers["RNN_Classifier"] = RNN_Classifier
+    classifiers["MLP_Classifier"] = MLP_Classifier
+    #     classifiers["RNN_Classifier"] = RNN_Classifier
 
-#     regressors["MLP_Regressor"] = MLP_Regressor
+    regressors["MLP_Regressor"] = MLP_Regressor

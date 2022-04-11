@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:26:02 pm
+Last Modified: Sunday, 10th April 2022 11:55:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,6 +41,8 @@ SOFTWARE.
 import warnings
 import numpy as np
 import pandas as pd
+
+from My_AutoML._utils._data import assign_classes
 
 # check if pytorch exists
 # if exists, import pytorch
@@ -78,6 +80,8 @@ class MLP_Model(nn.Module):
     output_size: output shape, for classification, output_size equals number of classes;
     for regression, output_size equals 1
 
+    softmax: if True, add softmax function (for classification), default is False
+
     activation: activation functions, default: "ReLU"
     support activation ["ReLU", "Tanh", "Sigmoid"]
     """
@@ -88,12 +92,14 @@ class MLP_Model(nn.Module):
         hidden_layer,
         hidden_size,
         output_size,
-        activation,
+        softmax=False,
+        activation="ReLU",
     ):
         super().__init__()
         self.input_size = input_size
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
+        self.softmax = softmax
         self.output_size = output_size
 
         # specify activation function
@@ -120,6 +126,10 @@ class MLP_Model(nn.Module):
         # no activation function
         self.forward_model.append(nn.Linear(self.hidden_size, self.output_size))
 
+        # if softmax is True, add softmax function
+        if self.softmax:
+            self.forward_model.append(nn.Softmax())
+
         self.forward_model = nn.Sequential(*self.forward_model)
 
     def forward(self, X):
@@ -143,6 +153,8 @@ class MLP_Base:
 
     output_size: output shape, for classification, output_size equals number of classes;
     for regression, output_size equals 1
+
+    softmax: if True, add softmax function (for classification), default is False
 
     activation: activation functions, default: "ReLU"
     support activation ["ReLU", "Tanh", "Sigmoid"]
@@ -168,6 +180,7 @@ class MLP_Base:
         hidden_layer,
         hidden_size,
         output_size,
+        softmax=False,
         activation="ReLU",
         learning_rate=None,
         optimizer="Adam",
@@ -181,6 +194,7 @@ class MLP_Base:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
         self.output_size = output_size
+        self.softmax = softmax
         self.activation = activation
         self.learning_rate = learning_rate
         self.optimizer = optimizer
@@ -210,6 +224,7 @@ class MLP_Base:
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
+            softmax=self.softmax,
             activation=self.activation,
         ).to(self.device)
 
@@ -224,24 +239,25 @@ class MLP_Base:
         # specify loss function
         if self.criteria == "MSE":
             criteria = nn.MSELoss()
-        elif self.criteria == "CrossEntropy":
-            criteria = nn.CrossEntropyLoss()
         elif self.criteria == "MAE":
             criteria = nn.L1Loss()
+        elif self.criteria == "CrossEntropy":
+            criteria = nn.CrossEntropyLoss()
+        elif self.criteria == "NegativeLogLikelihood":
+            criteria = nn.NLLLoss()
         else:
             raise ValueError("Not recognized criteria: {}.".format(self.criteria))
 
         # load dataset to DataLoader
-        if isinstance(X, pd.DataFrame):
-            train_tensor = TensorDataset(
-                torch.as_tensor(X.values, dtype=torch.float32),
-                torch.as_tensor(y.values, dtype=torch.float32),
-            )
-        else:
-            train_tensor = TensorDataset(
-                torch.as_tensor(X, dtype=torch.float32),
-                torch.as_tensor(y, dtype=torch.float32),
-            )
+        # convert to tensors
+        X = torch.as_tensor(
+            X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+        )
+        y = torch.as_tensor(
+            y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
+        )
+        # load dataset to TensorDataset
+        train_tensor = TensorDataset(X, y)
 
         train_loader = DataLoader(
             train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
@@ -292,6 +308,8 @@ class MLP_Classifier(MLP_Base):
 
     hidden_size: number of neurons in each hidden layer
 
+    softmax: if True, add softmax function (for classification), default is True
+
     activation: activation functions, default: "ReLU"
     support activation ["ReLU", "Tanh", "Sigmoid"]
 
@@ -314,6 +332,7 @@ class MLP_Classifier(MLP_Base):
         self,
         hidden_layer,
         hidden_size,
+        softmax=True,
         activation="ReLU",
         learning_rate=None,
         optimizer="Adam",
@@ -325,6 +344,7 @@ class MLP_Classifier(MLP_Base):
     ):
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
+        self.softmax = softmax
         self.activation = activation
         self.learning_rate = learning_rate
         self.optimizer = optimizer
@@ -340,7 +360,7 @@ class MLP_Classifier(MLP_Base):
         self.output_size = len(pd.unique(y))  # unique classes as output size
 
         # make sure losses are classification type
-        if self.criteria not in ["CrossEntropy"]:
+        if self.criteria not in ["CrossEntropy", "NegativeLogLikelihood"]:
             raise ValueError("Loss must be CrossEntropy!")
 
         super().__init__(
@@ -348,6 +368,7 @@ class MLP_Classifier(MLP_Base):
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
+            softmax=self.softmax,
             activation=self.activation,
             learning_rate=self.learning_rate,
             optimizer=self.optimizer,
@@ -362,7 +383,8 @@ class MLP_Classifier(MLP_Base):
 
     def predict(self, X):
 
-        return super().predict(X)
+        # need to wrap predict function to convert output format
+        return assign_classes(super().predict(X))
 
 
 # Multi-Layer Perceptron regressor
@@ -376,6 +398,8 @@ class MLP_Regressor(MLP_Base):
     hidden_layer: number of hidden layers
 
     hidden_size: number of neurons in each hidden layer
+
+    softmax: if True, add softmax function (for classification), default is False
 
     activation: activation functions, default: "ReLU"
     support activation ["ReLU", "Tanh", "Sigmoid"]
@@ -399,6 +423,7 @@ class MLP_Regressor(MLP_Base):
         self,
         hidden_layer,
         hidden_size,
+        softmax=False,
         activation="ReLU",
         learning_rate=None,
         optimizer="Adam",
@@ -410,6 +435,7 @@ class MLP_Regressor(MLP_Base):
     ):
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
+        self.softmax = softmax
         self.activation = activation
         self.learning_rate = learning_rate
         self.optimizer = optimizer
@@ -432,6 +458,7 @@ class MLP_Regressor(MLP_Base):
             input_size=self.input_size,
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
+            softmax=self.softmax,
             output_size=self.output_size,
             activation=self.activation,
             learning_rate=self.learning_rate,

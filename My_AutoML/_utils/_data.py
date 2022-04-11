@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 7:45:28 pm
+Last Modified: Sunday, 10th April 2022 11:50:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -609,3 +609,12 @@ class ExtremeClass:
                     _X.remove(labels=_column, inplace=True)
                     break
         return _X
+
+
+# convert a (n_samples, n_classes) array to a (n_samples, 1) array
+# assign the class with the largest probability to the sample
+# common use of this function is to convert the prediction of the class 
+# from neural network to actual predictions
+def assign_classes(list) :
+    
+    return np.array([np.argmax(item) for item in list])
