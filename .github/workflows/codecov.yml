@@ -3,6 +3,9 @@ on: [push, pull_request]
 jobs:
   run:
     runs-on: self-hosted
+    env:
+      OS: ubuntu-latest
+      PYTHON: "3.9"
     steps:
       - uses: actions/checkout@master
       - name: Setup Python
@@ -11,7 +14,8 @@ jobs:
           python-version: 3.7
       - name: "generate report"
         run: |
-          conda activate pytorch
+          pip install coverage pytest
+          pip install -r requirements.txt
           coverage run -m pytest
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

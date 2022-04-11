@@ -14,6 +14,7 @@ jobs:
           python-version: 3.7
       - name: "generate report"
         run: |
-          conda activate pytorch
+          pip install coverage pytest
+          pip install -r requirements.txt
           python main.py --data_folder example/example_data --train_data heart --response HeartDisease
           python main.py --data_folder example/example_data --train_data insurance --response expenses
