@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:19:19 pm
+Last Modified: Sunday, 10th April 2022 7:48:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -51,7 +51,6 @@ import importlib
 tensorflow_spec = importlib.util.find_spec("tensorflow")
 if tensorflow_spec is not None:
     import tensorflow as tf
-    from tensorflow.python.types.core import Value
 
     tf.compat.v1.disable_eager_execution()
     # tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
@@ -59,6 +58,7 @@ if tensorflow_spec is not None:
 torch_spec = importlib.util.find_spec("torch")
 if torch_spec is not None:
     import torch
+    import torch.optim
     from torch import nn
     import torch.nn.functional as F
 
@@ -116,7 +116,7 @@ class GAIN_tf(formatting, MinMaxScale):
         max_iter=100,
         delta=1e-8,
         scaling=True,
-        progressbar=True,
+        progressbar=False,
         deep_copy=False,
         seed=1,
     ):
@@ -388,7 +388,7 @@ class GAIN_torch(formatting, MinMaxScale):
         max_iter=100,
         delta=1e-8,
         scaling=True,
-        progressbar=True,
+        progressbar=False,
         deep_copy=False,
         seed=1,
     ):
@@ -559,7 +559,6 @@ class GAIN_torch(formatting, MinMaxScale):
         if not self._fitted:
             # initialize Generator/Discriminator variables
             self._initialization(p, h_dim)
-            import torch.optim
 
             # network optimizer
             if self.optim == "Adam":
@@ -733,7 +732,7 @@ class GAIN(GAIN_tf, GAIN_torch):
         max_iter=100,
         delta=1e-8,
         scaling=True,
-        progressbar=True,
+        progressbar=False,
         deep_copy=False,
         seed=1,
     ):

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 11:48:52 am
+Last Modified: Sunday, 10th April 2022 8:50:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 
 
+from cgitb import reset
 from re import S
 import numpy as np
 import pandas as pd
@@ -146,6 +147,11 @@ class AutoTabularRegressor(AutoTabularBase):
     if None, get all available cpu threads
 
     use_gpu: whether to use gpu, default = False
+    
+    reset_index: whether to reset index during traning, default = True
+    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    if you wish to use these methods and set reset_index = False, please make sure 
+    all input index are ordered and starting from 0
 
     seed: random seed, default = 1
     """
@@ -178,6 +184,7 @@ class AutoTabularRegressor(AutoTabularBase):
         verbose=1,
         cpu_threads=None,
         use_gpu=False,
+        reset_index=True,
         seed=1,
     ):
         self.timeout = timeout
@@ -206,6 +213,7 @@ class AutoTabularRegressor(AutoTabularBase):
         self.verbose = verbose
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
+        self.reset_index = reset_index
         self.seed = seed
         
         self._fitted = False # whether the model has been fitted
@@ -238,6 +246,7 @@ class AutoTabularRegressor(AutoTabularBase):
             verbose=self.verbose,
             cpu_threads=self.cpu_threads,
             use_gpu=self.use_gpu,
+            reset_index=self.reset_index,
             seed=self.seed,
         )
 
@@ -350,6 +359,11 @@ class AutoTabularClassifier(AutoTabularBase):
     if None, get all available cpu threads
 
     use_gpu: whether to use gpu, default = False
+    
+    reset_index: whether to reset index during traning, default = True
+    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    if you wish to use these methods and set reset_index = False, please make sure 
+    all input index are ordered and starting from 0
 
     seed: random seed, default = 1
     """
@@ -382,6 +396,7 @@ class AutoTabularClassifier(AutoTabularBase):
         verbose=1,
         cpu_threads=None,
         use_gpu=False,
+        reset_index=True,
         seed=1,
     ):
         self.timeout = timeout
@@ -410,6 +425,7 @@ class AutoTabularClassifier(AutoTabularBase):
         self.verbose = verbose
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
+        self.reset_index = reset_index
         self.seed = seed
         
         self._fitted = False # whether the model has been fitted
@@ -442,6 +458,7 @@ class AutoTabularClassifier(AutoTabularBase):
             verbose=self.verbose,
             cpu_threads=self.cpu_threads,
             use_gpu=self.use_gpu,
+            reset_index=self.reset_index,
             seed=self.seed,
         )
 
@@ -559,6 +576,11 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     if None, get all available cpu threads
 
     use_gpu: whether to use gpu, default = False
+    
+    reset_index: whether to reset index during traning, default = True
+    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    if you wish to use these methods and set reset_index = False, please make sure 
+    all input index are ordered and starting from 0
 
     seed: random seed, default = 1
     """
@@ -591,6 +613,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         verbose=1,
         cpu_threads=None,
         use_gpu=False,
+        reset_index=True,
         seed=1,
     ):
         self.timeout = timeout
@@ -619,6 +642,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self.verbose = verbose
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
+        self.reset_index = reset_index
         self.seed = seed
         
         self._fitted = False # whether the model has been fitted
@@ -658,6 +682,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 verbose=self.verbose,
                 cpu_threads=self.cpu_threads,
                 use_gpu=self.use_gpu,
+                reset_index=self.reset_index,
                 seed=self.seed,
             )
         elif self._type in ["integer", "continuous"]:  # assign regression tasks
@@ -688,6 +713,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 verbose=self.verbose,
                 cpu_threads=self.cpu_threads,
                 use_gpu=self.use_gpu,
+                reset_index=self.reset_index,
                 seed=self.seed,
             )
         else:

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 4:55:00 pm
+Last Modified: Sunday, 10th April 2022 8:48:14 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -56,6 +56,7 @@ from sklearn.exceptions import ConvergenceWarning
 from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._file import save_model
+from My_AutoML._utils._data import str2list
 from My_AutoML._utils._optimize import (
     _get_hyperparameter_space,
     get_algo,
@@ -199,6 +200,11 @@ class AutoTabularBase:
 
     use_gpu: whether to use gpu, default = False
 
+    reset_index: whether to reset index during traning, default = True
+    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    if you wish to use these methods and set reset_index = False, please make sure
+    all input index are ordered and starting from 0
+
     seed: random seed, default = 1
     """
 
@@ -231,6 +237,7 @@ class AutoTabularBase:
         verbose=1,
         cpu_threads=None,
         use_gpu=False,
+        reset_index=True,
         seed=1,
     ):
         self.task_mode = task_mode
@@ -260,6 +267,7 @@ class AutoTabularBase:
         self.verbose = verbose
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
+        self.reset_index = reset_index
         self.seed = seed
 
         self._iter = 0  # record iteration number
@@ -291,6 +299,7 @@ class AutoTabularBase:
         if self.encoder == "auto":
             encoder = self._all_encoders.copy()
         else:
+            self.encoder = str2list(self.encoder)  # string list to list
             encoder = {}  # if specified, check if encoders in default encoders
             for _encoder in self.encoder:
                 if _encoder not in [*self._all_encoders]:
@@ -328,6 +337,7 @@ class AutoTabularBase:
             else:
                 imputer = self._all_imputers.copy()
         else:
+            self.imputer = str2list(self.imputer)  # string list to list
             if not X.isnull().values.any():  # if no missing values
                 imputer = {"no_processing": no_processing}
                 self._all_imputers = imputer
@@ -358,6 +368,7 @@ class AutoTabularBase:
         if self.balancing == "auto":
             balancing = self._all_balancings.copy()
         else:
+            self.balancing = str2list(self.balancing)  # string list to list
             balancing = {}  # if specified, check if balancings in default balancings
             for _balancing in self.balancing:
                 if _balancing not in [*self._all_balancings]:
@@ -384,6 +395,7 @@ class AutoTabularBase:
         if self.scaling == "auto":
             scaling = self._all_scalings.copy()
         else:
+            self.scaling = str2list(self.scaling)  # string list to list
             scaling = {}  # if specified, check if scalings in default scalings
             for _scaling in self.scaling:
                 if _scaling not in [*self._all_scalings]:
@@ -425,6 +437,9 @@ class AutoTabularBase:
         if self.feature_selection == "auto":
             feature_selection = self._all_feature_selection.copy()
         else:
+            self.feature_selection = str2list(
+                self.feature_selection
+            )  # string list to list
             feature_selection = (
                 {}
             )  # if specified, check if balancings in default balancings
@@ -479,6 +494,7 @@ class AutoTabularBase:
         if self.models == "auto":  # if auto, model pool will be all default models
             models = self._all_models.copy()
         else:
+            self.models = str2list(self.models)  # string list to list
             models = {}  # if specified, check if models in default models
             for _model in self.models:
                 if _model not in [*self._all_models]:
@@ -741,33 +757,37 @@ class AutoTabularBase:
             **self.optimal_encoder_hyperparameters
         )
         _X = self._fit_encoder.fit(_X)
+
         # imputer
         self._fit_imputer = self._all_imputers[self.optimal_imputer](
             **self.optimal_imputer_hyperparameters
         )
         _X = self._fit_imputer.fill(_X)
+
         # balancing
         self._fit_balancing = self._all_balancings[self.optimal_balancing](
             **self.optimal_balancing_hyperparameters
         )
         _X, _y = self._fit_balancing.fit_transform(_X, _y)
-
         # make sure the classes are integers (belongs to certain classes)
         _y = _y.astype(int)
         _y = _y.astype(int)
+
         # scaling
         self._fit_scaling = self._all_scalings[self.optimal_scaling](
             **self.optimal_scaling_hyperparameters
         )
         self._fit_scaling.fit(_X, _y)
         _X = self._fit_scaling.transform(_X)
+
         # feature selection
         self._fit_feature_selection = self._all_feature_selection[
             self.optimal_feature_selection
         ](**self.optimal_feature_selection_hyperparameters)
         self._fit_feature_selection.fit(_X, _y)
         _X = self._fit_feature_selection.transform(_X)
-        # classification
+
+        # model fitting
         self._fit_model = self._all_models[self.optimal_model](
             **self.optimal_model_hyperparameters
         )
@@ -806,6 +826,11 @@ class AutoTabularBase:
 
         _X = X.copy()
         _y = y.copy()
+
+        if self.reset_index:
+            # reset index to avoid indexing error
+            _X.reset_index(drop=True, inplace=True)
+            _y.reset_index(drop=True, inplace=True)
 
         (
             encoder,
@@ -863,6 +888,13 @@ class AutoTabularBase:
             X_train, X_test, y_train, y_test = train_test_split(
                 _X, _y, test_size=self.valid_size, random_state=self.seed
             )
+
+            if self.reset_index:
+                # reset index to avoid indexing order error
+                X_train.reset_index(drop=True, inplace=True)
+                X_test.reset_index(drop=True, inplace=True)
+                y_train.reset_index(drop=True, inplace=True)
+                y_test.reset_index(drop=True, inplace=True)
 
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
@@ -1072,12 +1104,14 @@ class AutoTabularBase:
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Encoding finished, in imputation process.")
+
                 # imputer
                 _X_train_obj = imp.fill(_X_train_obj)
                 _X_test_obj = imp.fill(_X_test_obj)
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Imputation finished, in scaling process.")
+
                 # balancing
                 _X_train_obj, _y_train_obj = blc.fit_transform(
                     _X_train_obj, _y_train_obj
@@ -1085,10 +1119,10 @@ class AutoTabularBase:
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Balancing finished, in scaling process.")
-
                 # make sure the classes are integers (belongs to certain classes)
                 _y_train_obj = _y_train_obj.astype(int)
                 _y_test_obj = _y_test_obj.astype(int)
+
                 # scaling
                 scl.fit(_X_train_obj, _y_train_obj)
                 _X_train_obj = scl.transform(_X_train_obj)
@@ -1096,6 +1130,7 @@ class AutoTabularBase:
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Scaling finished, in feature selection process.")
+
                 # feature selection
                 fts.fit(_X_train_obj, _y_train_obj)
                 _X_train_obj = fts.transform(_X_train_obj)
@@ -1202,22 +1237,26 @@ class AutoTabularBase:
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Encoding finished, in imputation process.")
+
                 # imputer
                 _X_obj = imp.fill(_X_obj)
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Imputation finished, in scaling process.")
+
                 # balancing
                 _X_obj = blc.fit_transform(_X_obj)
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Balancing finished, in feature selection process.")
+
                 # scaling
                 scl.fit(_X_obj, _y_obj)
                 _X_obj = scl.transform(_X_obj)
                 # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                 with open("objective_process.txt", "w") as f:
                     f.write("Scaling finished, in balancing process.")
+
                 # feature selection
                 fts.fit(_X_obj, _y_obj)
                 _X_obj = fts.transform(_X_obj)
@@ -1338,6 +1377,10 @@ class AutoTabularBase:
         return self
 
     def predict(self, X):
+
+        if self.reset_index:
+            # reset index to avoid indexing error
+            X.reset_index(drop=True, inplace=True)
 
         _X = X.copy()
 

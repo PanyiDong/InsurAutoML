@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 5:05:19 pm
+Last Modified: Sunday, 10th April 2022 5:16:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,13 @@ SOFTWARE.
 """
 
 import os
+
+
+# use command line interaction to run the model
+# apparently, same class object called in one test case will not be able
+# to run the model correctly after the first time
+# detect whether optimal setting exists as method of determining whether
+# the model is fitted correctly
 
 
 def test_heart():

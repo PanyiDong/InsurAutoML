@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:27:17 pm
+Last Modified: Sunday, 10th April 2022 7:45:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,10 +38,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import ast
+import json
 import numpy as np
 import pandas as pd
 
 from ._base import random_index
+
+# string list to list
+def str2list(item):
+
+    try:
+        return ast.literal_eval(item)
+    except:
+        return item
+
+
+# string dict to dict
+def str2dict(item):
+
+    try:
+        return json.loads(item)
+    except:
+        return item
+
 
 # Train test split using test set percentage
 def train_test_split(X, y, test_perc=0.15, seed=1):
