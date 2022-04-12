@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 12:11:14 am
+Last Modified: Tuesday, 12th April 2022 9:13:09 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -90,7 +90,7 @@ class RNN_Net(nn.Module):
 
     def __init__(
         self,
-        embedding_size,
+        input_size,
         hidden_size,
         output_size,
         n_layers=1,
@@ -110,11 +110,11 @@ class RNN_Net(nn.Module):
 
         # select RNN unit from ["RNN", "LSTM", "GRU"]
         if RNN_unit == "RNN":
-            self.rnn = nn.RNN(embedding_size, hidden_size, n_layers, batch_first=True)
+            self.rnn = nn.RNN(input_size, hidden_size, n_layers, batch_first=True)
         elif RNN_unit == "LSTM":
-            self.rnn = nn.LSTM(embedding_size, hidden_size, n_layers, batch_first=True)
+            self.rnn = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True)
         elif RNN_unit == "GRU":
-            self.rnn = nn.GRU(embedding_size, hidden_size, n_layers, batch_first=True)
+            self.rnn = nn.GRU(input_size, hidden_size, n_layers, batch_first=True)
 
         # linear connection after RNN layers
         self.hidden2tag = nn.Linear(hidden_size, output_size)
@@ -187,7 +187,7 @@ class RNN_Base(RNN_Net):
 
     def __init__(
         self,
-        embedding_size=512,
+        input_size=1,
         hidden_size=256,
         output_size=1,
         n_layers=1,
@@ -203,7 +203,7 @@ class RNN_Base(RNN_Net):
         seed=1,
     ):
         # model parameters
-        self.embedding_size = embedding_size
+        self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.n_layers = n_layers
@@ -243,7 +243,7 @@ class RNN_Base(RNN_Net):
 
         # load model
         self.model = RNN_Net(
-            embedding_size=self.embedding_size,
+            input_size=self.input_size,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
             n_layers=self.n_layers,
@@ -330,7 +330,7 @@ class RNN_Base(RNN_Net):
 class RNN_Classifier(RNN_Base):
     def __init__(
         self,
-        embedding_size=512,
+        input_size=1,
         hidden_size=256,
         output_size=1,
         n_layers=1,
@@ -346,7 +346,7 @@ class RNN_Classifier(RNN_Base):
         seed=1,
     ):
         # model parameters
-        self.embedding_size = embedding_size
+        self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.n_layers = n_layers
@@ -384,7 +384,7 @@ class RNN_Classifier(RNN_Base):
             raise ValueError("Loss must be CrossEntropy!")
 
         super().__init__(
-            embedding_size=self.embedding_size,
+            input_size=self.input_size,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
             n_layers=self.n_layers,
