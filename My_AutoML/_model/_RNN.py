@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:26:16 pm
+Last Modified: Tuesday, 12th April 2022 12:11:14 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,6 +42,9 @@ import warnings
 import numpy as np
 import pandas as pd
 
+from My_AutoML._utils._data import assign_classes
+from My_AutoML._utils._tensor import repackage_hidden
+
 # check if pytorch exists
 # if exists, import pytorch
 import importlib
@@ -58,7 +61,7 @@ if pytorch_spec is not None:
 # RNN/LSTM/GRU models supported
 
 
-class RNN_Model(nn.Module):
+class RNN_Net(nn.Module):
 
     """
     Recurrent Neural Network (RNN) model structure
@@ -87,7 +90,6 @@ class RNN_Model(nn.Module):
 
     def __init__(
         self,
-        vocab_size,
         embedding_size,
         hidden_size,
         output_size,
@@ -103,7 +105,8 @@ class RNN_Model(nn.Module):
         self.n_layers = n_layers
 
         # embedding layer
-        self.embedding = nn.Embedding(vocab_size, embedding_size)
+        # for tabular, no need for embedding layer
+        # self.embedding = nn.Embedding(vocab_size, embedding_size)
 
         # select RNN unit from ["RNN", "LSTM", "GRU"]
         if RNN_unit == "RNN":
@@ -125,15 +128,15 @@ class RNN_Model(nn.Module):
             self.activation = nn.Sigmoid()
 
         self.dropout = nn.Dropout(p=dropout)  # dropout layer
-        self.softmax = nn.LogSoftmax(dim=1)  # softmax layer
+        self.softmax_layer = nn.LogSoftmax(dim=1)  # softmax layer
 
     def forward(self, input, hidden):
 
-        embeds = self.embedding(input)
-        rnn_out, (rnn_hiddne, rnn_cell) = self.rnn(embeds, hidden)
+        # embeds = self.embedding(input)
+        rnn_out, (rnn_hiddne, rnn_cell) = self.rnn(input, hidden)
         tag_space = self.hidden2tag(rnn_out)
         tag_space = self.dropout(self.activation(tag_space))
-        tag_scores = self.softmax(tag_space)[:, -1, :]
+        tag_scores = self.softmax_layer(tag_space)  # [:, -1, :] keep full output here
 
         return tag_scores, (rnn_hiddne, rnn_cell)
 
@@ -144,7 +147,7 @@ class RNN_Model(nn.Module):
         return (h0, c0)
 
 
-class RNN_Classifier(RNN_Model):
+class RNN_Base(RNN_Net):
 
     """
     Recurrent Neural Network (RNN) models for classification tasks, training/evaluation
@@ -186,6 +189,7 @@ class RNN_Classifier(RNN_Model):
         self,
         embedding_size=512,
         hidden_size=256,
+        output_size=1,
         n_layers=1,
         RNN_unit="RNN",
         activation="Sigmoid",
@@ -201,6 +205,7 @@ class RNN_Classifier(RNN_Model):
         # model parameters
         self.embedding_size = embedding_size
         self.hidden_size = hidden_size
+        self.output_size = output_size
         self.n_layers = n_layers
         self.RNN_unit = RNN_unit
         self.activation = activation
@@ -234,11 +239,10 @@ class RNN_Classifier(RNN_Model):
         if self.RNN_unit not in ["RNN", "LSTM", "GRU"]:
             raise ValueError("RNN unit must be RNN, LSTM or GRU!")
 
-        self.output_size = len(pd.unique(y))  # unique classes as output size
+        # self.output_size = len(pd.unique(y))  # unique classes as output size
 
         # load model
-        self.model = RNN_Model(
-            vocab_size=len(X.vocab),
+        self.model = RNN_Net(
             embedding_size=self.embedding_size,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
@@ -259,20 +263,17 @@ class RNN_Classifier(RNN_Model):
         # specify loss function
         if self.criteria == "CrossEntropy":
             criteria = nn.CrossEntropyLoss()
+        elif self.criteria == "MSE":
+            criteria = nn.MSELoss()
+        elif self.criteria == "MAE":
+            criteria = nn.L1Loss()
+        elif self.criteria == "NegativeLogLikelihood":
+            criteria = nn.NLLLoss()
         else:
             raise ValueError("Not recognized criteria: {}.".format(self.criteria))
 
         # load data to DataLoader
-        if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
-            train_tensor = TensorDataset(
-                torch.as_tensor(X.values, dtype=torch.float32),
-                torch.as_tensor(y.values, dtype=torch.float32),
-            )
-        else:
-            train_tensor = TensorDataset(
-                torch.as_tensor(X, dtype=torch.float32),
-                torch.as_tensor(y, dtype=torch.float32),
-            )
+        train_tensor = TensorDataset(X, y)
 
         train_loader = DataLoader(
             train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
@@ -288,9 +289,13 @@ class RNN_Classifier(RNN_Model):
                 data = data.to(self.device)
                 target = target.to(self.device)
 
+                # only get the values, no need for gradient
+                h = repackage_hidden(h)
+
                 self.model.zero_grad()
                 output, h = self.model(data, h)  # forward step
-                loss = criteria(output, target)  # calculate loss
+                # only use last output for classification (at last time T)
+                loss = criteria(output[:, -1, :], target)  # calculate loss
                 loss.backward()  # backpropagation
                 optimizer.step()  # update parameters
 
@@ -320,3 +325,84 @@ class RNN_Classifier(RNN_Model):
                 results = self.model(data.to(self.device))
 
         return results.cpu().numpy()  # return prediction to cpu
+
+
+class RNN_Classifier(RNN_Base):
+    def __init__(
+        self,
+        embedding_size=512,
+        hidden_size=256,
+        output_size=1,
+        n_layers=1,
+        RNN_unit="RNN",
+        activation="Sigmoid",
+        dropout=0.2,
+        learning_rate=None,
+        optimizer="Adam",
+        criteria="CrossEntropy",
+        batch_size=32,
+        num_epochs=20,
+        is_cuda=True,
+        seed=1,
+    ):
+        # model parameters
+        self.embedding_size = embedding_size
+        self.hidden_size = hidden_size
+        self.output_size = output_size
+        self.n_layers = n_layers
+        self.RNN_unit = RNN_unit
+        self.activation = activation
+        self.dropout = dropout
+
+        # training parameters
+        self.learning_rate = learning_rate
+        self.optimizer = optimizer
+        self.criteria = criteria
+        self.batch_size = batch_size
+        self.num_epochs = num_epochs
+
+        self.is_cuda = is_cuda
+        self.seed = seed
+
+    def fit(self, X, y):
+
+        # get unique classes
+        self.output_size = len(pd.unique(y))
+
+        # convert data to tensor
+        if not isinstance(X, torch.Tensor):
+            X = torch.as_tensor(
+                X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+            )
+        if not isinstance(y, torch.Tensor):
+            y = torch.as_tensor(
+                y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
+            )
+
+        # make sure losses are classification type
+        if self.criteria not in ["CrossEntropy", "NegativeLogLikelihood"]:
+            raise ValueError("Loss must be CrossEntropy!")
+
+        super().__init__(
+            embedding_size=self.embedding_size,
+            hidden_size=self.hidden_size,
+            output_size=self.output_size,
+            n_layers=self.n_layers,
+            RNN_unit=self.RNN_unit,
+            activation=self.activation,
+            dropout=self.dropout,
+            learning_rate=self.learning_rate,
+            optimizer=self.optimizer,
+            criteria=self.criteria,
+            batch_size=self.batch_size,
+            num_epochs=self.num_epochs,
+            is_cuda=self.is_cuda,
+            seed=self.seed,
+        )
+
+        return super().fit(X, y)
+
+    def predict(self, X):
+
+        # need to assign prediction to classes
+        return assign_classes(super().predict(X))
