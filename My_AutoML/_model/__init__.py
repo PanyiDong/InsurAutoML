@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 5:39:50 pm
+Last Modified: Wednesday, 13th April 2022 12:18:04 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -121,6 +121,18 @@ problem solved
 
 import importlib
 
+# check whether lightgbm installed
+# if installed, add lightgbm depended classifiers/regressors
+lightgbm_spec = importlib.util.find_spec("lightgbm")
+if lightgbm_spec is not None :
+    from ._ML import LightGBM_Classifier, LightGBM_Regressor
+    
+    classifiers["LightGBM_Classifier"] = LightGBM_Classifier
+    
+    regressors["LightGBM_Regressor"] = LightGBM_Regressor
+
+# check whether torch installed
+# if installed, add torch depended classifiers/regressors
 torch_spec = importlib.util.find_spec("torch")
 if torch_spec is not None:
     from ._FNN import MLP_Classifier, MLP_Regressor
