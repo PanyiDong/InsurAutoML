@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th April 2022 11:42:22 am
+Last Modified: Tuesday, 12th April 2022 5:35:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -264,5 +264,18 @@ regressor_hyperparameter = [
         "MLP_Regressor_criteria": tune.choice(["MSE", "MAE"]),
         "MLP_Regressor_batch_size": tune.choice([16, 32, 64]),
         "MLP_Regressor_num_epochs": tune.qrandint(5, 30, 1),
+    },
+    {
+        "model_20": "RNN_Regressor",
+        "RNN_Regressor_hidden_size": tune.choice([16, 32, 64, 128, 256]),
+        "RNN_Regressor_n_layers": tune.qrandint(1, 5, 1),
+        "RNN_Regressor_RNN_unit": tune.choice(["RNN", "LSTM", "GRU"]),
+        "RNN_Regressor_activation": tune.choice(["ReLU"]),
+        "RNN_Regressor_dropout": tune.loguniform(1e-7, 0.8),
+        "RNN_Regressor_learning_rate": tune.loguniform(1e-7, 1),
+        "RNN_Regressor_optimizer": tune.choice(["Adam", "SGD"]),
+        "RNN_Regressor_criteria": tune.choice(["MSE", "MAE"]),
+        "RNN_Regressor_batch_size": tune.choice([16, 32, 64]),
+        "RNN_Regressor_num_epochs": tune.qrandint(5, 30, 1),
     },
 ]

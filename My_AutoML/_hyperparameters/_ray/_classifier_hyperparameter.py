@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 9:13:08 am
+Last Modified: Tuesday, 12th April 2022 5:09:14 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -239,7 +239,7 @@ classifier_hyperparameter = [
         "RNN_Classifier_hidden_size": tune.choice([16, 32, 64, 128, 256]),
         "RNN_Classifier_n_layers": tune.qrandint(1, 5, 1),
         "RNN_Classifier_RNN_unit": tune.choice(["RNN", "LSTM", "GRU"]),
-        "RNN_Classifier_activation": tune.choice(["RelU", "Tanh", "Sigmoid"]),
+        "RNN_Classifier_activation": tune.choice(["ReLU", "Tanh", "Sigmoid"]),
         "RNN_Classifier_dropout": tune.loguniform(1e-7, 0.8),
         "RNN_Classifier_learning_rate": tune.loguniform(1e-7, 1),
         "RNN_Classifier_optimizer": tune.choice(["Adam", "SGD"]),
