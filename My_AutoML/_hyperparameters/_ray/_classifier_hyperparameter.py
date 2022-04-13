@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th April 2022 11:42:10 am
+Last Modified: Tuesday, 12th April 2022 5:09:14 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -230,8 +230,21 @@ classifier_hyperparameter = [
         "MLP_Classifier_activation": tune.choice(["Tanh", "Sigmoid"]),
         "MLP_Classifier_learning_rate": tune.uniform(1e-5, 1),
         "MLP_Classifier_optimizer": tune.choice(["Adam", "SGD"]),
-        "MLP_Classifier_criteria": tune.choice(["CrossEntropy"]),
+        "MLP_Classifier_criteria": tune.choice(["CrossEntropy", "NegativeLogLikelihood"]),
         "MLP_Classifier_batch_size": tune.choice([16, 32, 64]),
         "MLP_Classifier_num_epochs": tune.qrandint(5, 30, 1),
     },
+    {
+        "model_21": "RNN_Classifier",
+        "RNN_Classifier_hidden_size": tune.choice([16, 32, 64, 128, 256]),
+        "RNN_Classifier_n_layers": tune.qrandint(1, 5, 1),
+        "RNN_Classifier_RNN_unit": tune.choice(["RNN", "LSTM", "GRU"]),
+        "RNN_Classifier_activation": tune.choice(["ReLU", "Tanh", "Sigmoid"]),
+        "RNN_Classifier_dropout": tune.loguniform(1e-7, 0.8),
+        "RNN_Classifier_learning_rate": tune.loguniform(1e-7, 1),
+        "RNN_Classifier_optimizer": tune.choice(["Adam", "SGD"]),
+        "RNN_Classifier_criteria": tune.choice(["CrossEntropy", "NegativeLogLikelihood"]),
+        "RNN_Classifier_batch_size": tune.choice([16, 32, 64]),
+        "RNN_Classifier_num_epochs": tune.qrandint(5, 30, 1),
+    }
 ]
