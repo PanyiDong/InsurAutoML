@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 4:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 11:37:59 pm
+Last Modified: Wednesday, 13th April 2022 10:33:16 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,7 @@ UNI_CLASS = 31
 
 # LightGBM default object (metric/loss)
 # binary classification
-LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross-entropy"]
+LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross_entropy"]
 # multiclass classification
 LIGHTGBM_MULTICLASS_CLASSIFICATION = ["multiclass", "multiclassova", "num_class"]
 # regression
@@ -53,7 +53,8 @@ LIGHTGBM_REGRESSION = ["regression", "regression_l1", "huber", "fair", "poisson"
     "quantile", "mape", "gamma", "tweedie"]
 
 # LightGBM boosting methods
-LIGHTGBM_BOOSTING = ["gbdt", "rf", "dart", "goss"]
+LIGHTGBM_BOOSTING = ["gbdt", "dart", "goss"] # suppress "rf"
+
 
 # LightGBM tree learner
 LIGHTGBM_TREE_LEARNER = ["serial", "feature", "data", "voting"]
