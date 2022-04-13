@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 7:14:46 pm
+Last Modified: Wednesday, 13th April 2022 9:49:44 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -275,7 +275,7 @@ class AutoTabularBase:
         self._iter = 0  # record iteration number
         self._fitted = False  # record whether the model has been fitted
 
-    def get_hyperparameter_space(self, X, y=None):
+    def get_hyperparameter_space(self, X, y):
 
         from My_AutoML._hyperparameters import (
             encoder_hyperparameter,
@@ -512,6 +512,24 @@ class AutoTabularBase:
             self._all_models_hyperparameters = classifier_hyperparameter.copy()
         elif self.task_mode == "regression":
             self._all_models_hyperparameters = regressor_hyperparameter.copy()
+            
+        # special treatment, for LightGBM_Classifier
+        # if binary classification, use LIGHTGBM_BINARY_CLASSIFICATION
+        # if multiclass, use LIGHTGBM_MULTICLASS_CLASSIFICATION
+        if self.task_mode == "classification" :
+            # get LightGBM_Regressor key
+            for item in self._all_models_hyperparameters :
+                for key in item.keys() :
+                    if key == "LightGBM_Classifier_objective" :
+                        # flatten to 1d
+                        if len(pd.unique(y.to_numpy().flatten())) == 2 :
+                            from My_AutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
+                            
+                            item[key] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
+                        else :
+                            from My_AutoML._constant import LIGHTGBM_MULTICLASS_CLASSIFICATION
+                            
+                            item[key] = tune.choice(LIGHTGBM_MULTICLASS_CLASSIFICATION)
 
         # initialize model hyperparameter space
         _all_models_hyperparameters = self._all_models_hyperparameters.copy()

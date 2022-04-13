@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 5:35:03 pm
+Last Modified: Wednesday, 13th April 2022 12:04:40 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,12 @@ SOFTWARE.
 """
 
 from ray import tune
+
+from My_AutoML._constant import (
+    LIGHTGBM_REGRESSION,
+    LIGHTGBM_BOOSTING, 
+    LIGHTGBM_TREE_LEARNER
+)
 
 # regressor hyperparameters
 regressor_hyperparameter = [
@@ -277,5 +283,18 @@ regressor_hyperparameter = [
         "RNN_Regressor_criteria": tune.choice(["MSE", "MAE"]),
         "RNN_Regressor_batch_size": tune.choice([16, 32, 64]),
         "RNN_Regressor_num_epochs": tune.qrandint(5, 30, 1),
+    },
+    {
+        "model_21": "LightGBM_Regressor",
+        "LightGBM_Regressor_objective": tune.choice(LIGHTGBM_REGRESSION),
+        "LightGBM_Regressor_boosting": tune.choice(LIGHTGBM_BOOSTING),
+        "LightGBM_Regressor_n_estimators": tune.qlograndint(50, 500, 1),
+        # max_depth == -1 for no limit
+        "LightGBM_Regressor_max_depth": tune.randint(-1, 31), 
+        "LightGBM_Regressor_num_leaves": tune.qlograndint(3, 2047, 1),
+        "LightGBM_Regressor_min_data_in_leaf": tune.qrandint(1, 20, 1),
+        "LightGBM_Regressor_learning_rate": tune.loguniform(1e-7, 1),
+        "LightGBM_Regressor_tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
+        "LightGBM_Regressor_num_iterations": tune.qlograndint(50, 500, 1),
     },
 ]
