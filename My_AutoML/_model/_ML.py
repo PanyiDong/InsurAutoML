@@ -11,7 +11,7 @@ File Created: Wednesday, 13th April 2022 12:08:45 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 9:52:27 am
+Last Modified: Wednesday, 13th April 2022 10:04:15 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,6 +55,33 @@ class LightGBM_Base :
     
     """
     LightGBM Classification/Regression Wrapper
+    
+    Parameters
+    ----------
+    task_type: task type, one of classification or regression, default = "classification"
+    
+    objective: objective function (metric/loss) to evaluate model, default = "regression"
+        
+    boosting: boosting method, default = "gbdt"
+    support ["gbdt", "rf", "dart", "goss"]
+        
+    n_estimators: number of estimators to build, default = 100
+    
+    max_depth: max depth of trees built, default = -1
+    -1 stands for no limitation
+    
+    num_leaves: number of leaf nodes to build, default = 31
+    
+    min_data_in_leaf: minimum number of data to generate a leaf node, default = 20
+    
+    learning_rate: learning rate of the building process, default = 0.1
+    
+    tree_learner: tree learner algorithm, default = "serial"
+    support ["serial", "feature", "data", "voting"]
+    
+    num_iterations: number of iterations for the algorithm, default = 100
+    
+    seed: random seed, default = 1
     """
     
     def __init__(
@@ -167,6 +194,31 @@ class LightGBM_Classifier(LightGBM_Base) :
     
     """
     LightGBM Classification Wrapper
+    
+    Parameters
+    ----------
+    objective: objective function (metric/loss) to evaluate model, default = "multiclass"
+        
+    boosting: boosting method, default = "gbdt"
+    support ["gbdt", "rf", "dart", "goss"]
+        
+    n_estimators: number of estimators to build, default = 100
+    
+    max_depth: max depth of trees built, default = -1
+    -1 stands for no limitation
+    
+    num_leaves: number of leaf nodes to build, default = 31
+    
+    min_data_in_leaf: minimum number of data to generate a leaf node, default = 20
+    
+    learning_rate: learning rate of the building process, default = 0.1
+    
+    tree_learner: tree learner algorithm, default = "serial"
+    support ["serial", "feature", "data", "voting"]
+    
+    num_iterations: number of iterations for the algorithm, default = 100
+    
+    seed: random seed, default = 1
     """
     
     def __init__(
@@ -219,11 +271,36 @@ class LightGBM_Regressor(LightGBM_Base) :
     
     """
     LightGBM Regression Wrapper
+    
+    Parameters
+    ----------
+    objective: objective function (metric/loss) to evaluate model, default = "regression"
+        
+    boosting: boosting method, default = "gbdt"
+    support ["gbdt", "rf", "dart", "goss"]
+        
+    n_estimators: number of estimators to build, default = 100
+    
+    max_depth: max depth of trees built, default = -1
+    -1 stands for no limitation
+    
+    num_leaves: number of leaf nodes to build, default = 31
+    
+    min_data_in_leaf: minimum number of data to generate a leaf node, default = 20
+    
+    learning_rate: learning rate of the building process, default = 0.1
+    
+    tree_learner: tree learner algorithm, default = "serial"
+    support ["serial", "feature", "data", "voting"]
+    
+    num_iterations: number of iterations for the algorithm, default = 100
+    
+    seed: random seed, default = 1
     """
     
     def __init__(
         self,
-        objective = "multiclass",
+        objective = "regression",
         boosting = "gbdt",
         n_estimators = 100,
         max_depth = -1,
