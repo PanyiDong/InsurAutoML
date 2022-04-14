@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 9:49:44 am
+Last Modified: Thursday, 14th April 2022 11:09:11 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -512,23 +512,27 @@ class AutoTabularBase:
             self._all_models_hyperparameters = classifier_hyperparameter.copy()
         elif self.task_mode == "regression":
             self._all_models_hyperparameters = regressor_hyperparameter.copy()
-            
+
         # special treatment, for LightGBM_Classifier
         # if binary classification, use LIGHTGBM_BINARY_CLASSIFICATION
         # if multiclass, use LIGHTGBM_MULTICLASS_CLASSIFICATION
-        if self.task_mode == "classification" :
+        if self.task_mode == "classification":
             # get LightGBM_Regressor key
-            for item in self._all_models_hyperparameters :
-                for key in item.keys() :
-                    if key == "LightGBM_Classifier_objective" :
+            for item in self._all_models_hyperparameters:
+                for key in item.keys():
+                    if key == "LightGBM_Classifier_objective":
                         # flatten to 1d
-                        if len(pd.unique(y.to_numpy().flatten())) == 2 :
-                            from My_AutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
-                            
+                        if len(pd.unique(y.to_numpy().flatten())) == 2:
+                            from My_AutoML._constant import (
+                                LIGHTGBM_BINARY_CLASSIFICATION,
+                            )
+
                             item[key] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
-                        else :
-                            from My_AutoML._constant import LIGHTGBM_MULTICLASS_CLASSIFICATION
-                            
+                        else:
+                            from My_AutoML._constant import (
+                                LIGHTGBM_MULTICLASS_CLASSIFICATION,
+                            )
+
                             item[key] = tune.choice(LIGHTGBM_MULTICLASS_CLASSIFICATION)
 
         # initialize model hyperparameter space
@@ -1371,6 +1375,8 @@ class AutoTabularBase:
             num_cpus=self.cpu_threads,
             num_gpus=self.gpu_count,
         )
+        # check if ray is initialized
+        assert ray.is_initialized() == True, "Ray is not initialized."
 
         # trial directory name
         def trial_str_creator(trial):
@@ -1403,6 +1409,8 @@ class AutoTabularBase:
 
         # shut down ray
         ray.shutdown()
+        # check if ray is shutdown
+        assert ray.is_initialized() == False, "Ray is not shutdown."
 
         # select optimal settings and fit optimal pipeline
         self._fit_optimal(fit_analysis.best_config, _X, _y)

@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 9:08:56 am
+Last Modified: Thursday, 14th April 2022 11:14:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,18 +48,16 @@ import pandas as pd
 
 
 def test_heart():
-    
+
     from My_AutoML import AutoTabular
-    
+
     data = pd.read_csv("example/example_data/heart.csv")
     response = "HeartDisease"
     features = list(data.columns)
     features.remove(response)
     response = [response]
-    
-    mol_heart = AutoTabular(
-        model_name = "heart"
-    )
+
+    mol_heart = AutoTabular(model_name="heart")
     mol_heart.fit(data[features], data[response])
 
     assert (
@@ -69,17 +67,15 @@ def test_heart():
 
 def test_stroke():
 
-    from My_AutoML import AutoTabular
-    
+    from My_AutoML import AutoTabularClassifier
+
     data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
     response = "stroke"
     features = list(data.columns)
     features.remove(response)
     response = [response]
-    
-    mol_stroke = AutoTabular(
-        model_name = "healthcare-dataset-stroke-data"
-    )
+
+    mol_stroke = AutoTabularClassifier(model_name="healthcare-dataset-stroke-data")
     mol_stroke.fit(data[features], data[response])
 
     assert (
@@ -89,17 +85,15 @@ def test_stroke():
 
 def test_insurance():
 
-    from My_AutoML import AutoTabular
-    
+    from My_AutoML import AutoTabularRegressor
+
     data = pd.read_csv("example/example_data/insurance.csv")
     response = "expenses"
     features = list(data.columns)
     features.remove(response)
     response = [response]
-    
-    mol_insurance = AutoTabular(
-        model_name = "insurance"
-    )
+
+    mol_insurance = AutoTabularRegressor(model_name="insurance")
     mol_insurance.fit(data[features], data[response])
 
     assert (
