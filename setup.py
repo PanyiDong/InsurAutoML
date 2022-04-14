@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:41:20 am
+Last Modified: Thursday, 14th April 2022 12:15:39 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,7 +72,11 @@ def get_ext_path(root_dir, exclude_files):
 setup(
     name="My_AutoML",
     version="0.2.0",
-    packages=find_packages(),
+    author='Panyi Dong',
+    author_email='panyid2@illinois.edu',
+    description='Automated Machine Learning/ AutoML pipeline.',
+    packages=find_packages(exclude=["tests", "example", "archive", "Appendix"]),
+    platforms=['Linux'],
     # ext_modules = cythonize(
     #     get_ext_path("My_AutoML", EXCLUDE_FILES),
     #     compiler_directives = {'language_level': 3}
