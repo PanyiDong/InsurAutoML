@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:48:13 am
+Last Modified: Thursday, 14th April 2022 2:56:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -942,7 +942,7 @@ class AutoTabularBase:
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
         @ignore_warnings(category=ConvergenceWarning)
-        def _objective(params):
+        def _objective(params, checkpoint_dir=None):
 
             # different evaluation metrics for classification and regression
             if self.task_mode == "regression":
@@ -1371,10 +1371,13 @@ class AutoTabularBase:
         )
 
         # initialize ray
-        ray.init(
-            num_cpus=self.cpu_threads,
-            num_gpus=self.gpu_count,
-        )
+        # if already initialized, do nothing
+        if not ray.is_initialized():
+            ray.init(
+                local_mode=True,
+                num_cpus=self.cpu_threads,
+                num_gpus=self.gpu_count,
+            )
         # check if ray is initialized
         assert ray.is_initialized() == True, "Ray is not initialized."
 
@@ -1389,8 +1392,9 @@ class AutoTabularBase:
             _objective,
             config=self.hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
-            checkpoint_freq=1,
-            checkpoint_at_end=True,
+            resume="AUTO",
+            # checkpoint_freq=1,
+            # checkpoint_at_end=True,
             keep_checkpoints_num=self.max_evals,
             checkpoint_score_attr="loss",
             mode="min",  # always call a minimization process

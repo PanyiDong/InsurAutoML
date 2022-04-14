@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:14:03 am
+Last Modified: Thursday, 14th April 2022 3:04:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
 import pandas as pd
+
+import My_AutoML
 
 # use command line interaction to run the model
 # apparently, same class object called in one test case will not be able
@@ -46,46 +49,28 @@ import pandas as pd
 # detect whether optimal setting exists as method of determining whether
 # the model is fitted correctly
 
+# def test_stroke():
 
-def test_heart():
+#     from My_AutoML import AutoTabularClassifier
 
-    from My_AutoML import AutoTabular
+#     data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+#     response = "stroke"
+#     features = list(data.columns)
+#     features.remove(response)
+#     response = [response]
 
-    data = pd.read_csv("example/example_data/heart.csv")
-    response = "HeartDisease"
-    features = list(data.columns)
-    features.remove(response)
-    response = [response]
+#     mol_stroke = AutoTabularClassifier(
+#         model_name="healthcare-dataset-stroke-data",
+#         seed = 2,
+#     )
+#     mol_stroke.fit(data[features], data[response])
 
-    mol_heart = AutoTabular(model_name="heart")
-    mol_heart.fit(data[features], data[response])
-
-    assert (
-        mol_heart._fitted == True
-    ), "Classification for Heart data successfully fitted."
-
-
-def test_stroke():
-
-    from My_AutoML import AutoTabularClassifier
-
-    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
-    response = "stroke"
-    features = list(data.columns)
-    features.remove(response)
-    response = [response]
-
-    mol_stroke = AutoTabularClassifier(model_name="healthcare-dataset-stroke-data")
-    mol_stroke.fit(data[features], data[response])
-
-    assert (
-        mol_stroke._fitted == True
-    ), "Classification for Stroke data successfully fitted."
+#     assert (
+#         mol_stroke._fitted == True
+#     ), "Classification for Stroke data successfully fitted."
 
 
 def test_insurance():
-
-    from My_AutoML import AutoTabularRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
     response = "expenses"
@@ -93,9 +78,43 @@ def test_insurance():
     features.remove(response)
     response = [response]
 
-    mol_insurance = AutoTabularRegressor(model_name="insurance")
+    mol_insurance = My_AutoML.AutoTabular(
+        model_name="insurance", search_algo="GridSearch"
+    )
     mol_insurance.fit(data[features], data[response])
 
     assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data successfully initiated."
+    assert (
         mol_insurance._fitted == True
     ), "Regression for Insurance data successfully fitted."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data successfully find optimal setting."
+
+    del data, response, features, mol_insurance
+
+
+def test_heart():
+
+    data = pd.read_csv("example/example_data/heart.csv")
+    response = "HeartDisease"
+    features = list(data.columns)
+    features.remove(response)
+    response = [response]
+
+    mol_heart = My_AutoML.AutoTabular(model_name="heart")
+    mol_heart.fit(data[features], data[response])
+
+    assert (
+        os.path.exists("tmp/heart/init.txt") == True
+    ), "Classification for Heart data successfully initiated."
+    assert (
+        mol_heart._fitted == True
+    ), "Classification for Heart data successfully fitted."
+    assert (
+        os.path.exists("tmp/heart/optimal_setting.txt") == True
+    ), "Classification for Heart data successfully find optimal setting."
+
+    del data, response, features, mol_heart
