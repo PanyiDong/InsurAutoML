@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:29:56 am
+Last Modified: Thursday, 14th April 2022 11:34:00 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1384,7 +1384,7 @@ class AutoTabularBase:
             self._iter += 1
             return trialname
 
-        from ray.tune.logger import TBXLoggerCallback
+        from ray.tune.integration.mlflow import MLflowLoggerCallback
 
         # optimization process
         fit_analysis = tune.run(
@@ -1404,7 +1404,7 @@ class AutoTabularBase:
             },
             time_budget_s=self.timeout,
             progress_reporter=progress_reporter,
-            callbacks=[TBXLoggerCallback()],
+            callbacks=[MLflowLoggerCallback()],
             verbose=self.verbose,
             trial_dirname_creator=trial_str_creator,
             local_dir=self.temp_directory,
