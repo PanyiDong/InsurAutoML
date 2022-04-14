@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 8:50:08 pm
+Last Modified: Thursday, 14th April 2022 3:57:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,10 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
-
-from cgitb import reset
-from re import S
 import numpy as np
 import pandas as pd
 
@@ -252,9 +248,11 @@ class AutoTabularRegressor(AutoTabularBase):
 
     def fit(self, X, y):
         
+        super().fit(X, y)
+        
         self._fitted = True
 
-        return super().fit(X, y)
+        return self
 
     def predict(self, X):
 
@@ -464,9 +462,11 @@ class AutoTabularClassifier(AutoTabularBase):
 
     def fit(self, X, y):
         
+        super().fit(X, y)
+        
         self._fitted = True
 
-        return super().fit(X, y)
+        return self
 
     def predict(self, X):
 

@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 3:04:58 pm
+Last Modified: Thursday, 14th April 2022 4:23:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,72 +49,55 @@ import My_AutoML
 # detect whether optimal setting exists as method of determining whether
 # the model is fitted correctly
 
-# def test_stroke():
 
-#     from My_AutoML import AutoTabularClassifier
+def test_stroke():
 
-#     data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
-#     response = "stroke"
-#     features = list(data.columns)
-#     features.remove(response)
-#     response = [response]
-
-#     mol_stroke = AutoTabularClassifier(
-#         model_name="healthcare-dataset-stroke-data",
-#         seed = 2,
-#     )
-#     mol_stroke.fit(data[features], data[response])
-
-#     assert (
-#         mol_stroke._fitted == True
-#     ), "Classification for Stroke data successfully fitted."
-
-
-def test_insurance():
-
-    data = pd.read_csv("example/example_data/insurance.csv")
-    response = "expenses"
-    features = list(data.columns)
-    features.remove(response)
-    response = [response]
-
-    mol_insurance = My_AutoML.AutoTabular(
-        model_name="insurance", search_algo="GridSearch"
+    os.system(
+        "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke \
+        --search_algo GridSearch"
     )
-    mol_insurance.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
-    ), "Regression for Insurance data successfully initiated."
+        os.path.exists("tmp/healthcare-dataset-stroke-data_model/init.txt") == True
+    ), "Classification for Stroke data successfully initiated."
+    # assert (
+    #     mol_heart._fitted == True
+    # ), "Classification for Heart data successfully fitted."
     assert (
-        mol_insurance._fitted == True
-    ), "Regression for Insurance data successfully fitted."
-    assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
-    ), "Regression for Insurance data successfully find optimal setting."
-
-    del data, response, features, mol_insurance
+        os.path.exists("tmp/healthcare-dataset-stroke-data_model/optimal_setting.txt")
+        == True
+    ), "Classification for Stroke data successfully find optimal setting."
 
 
 def test_heart():
 
-    data = pd.read_csv("example/example_data/heart.csv")
-    response = "HeartDisease"
-    features = list(data.columns)
-    features.remove(response)
-    response = [response]
-
-    mol_heart = My_AutoML.AutoTabular(model_name="heart")
-    mol_heart.fit(data[features], data[response])
+    os.system(
+        "python main.py --data_folder example/example_data --train_data heart --response HeartDisease"
+    )
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_model/init.txt") == True
     ), "Classification for Heart data successfully initiated."
+    # assert (
+    #     mol_heart._fitted == True
+    # ), "Classification for Heart data successfully fitted."
     assert (
-        mol_heart._fitted == True
-    ), "Classification for Heart data successfully fitted."
-    assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_model/optimal_setting.txt") == True
     ), "Classification for Heart data successfully find optimal setting."
 
-    del data, response, features, mol_heart
+
+def test_insurance():
+
+    os.system(
+        "python main.py --data_folder example/example_data --train_data insurance --response expenses"
+    )
+
+    assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data successfully initiated."
+    # assert (
+    #     mol_insurance._fitted == True
+    # ), "Regression for Insurance data successfully fitted."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data successfully find optimal setting."
