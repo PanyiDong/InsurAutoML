@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:42:59 am
+Last Modified: Thursday, 14th April 2022 11:45:22 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1391,7 +1391,6 @@ class AutoTabularBase:
             _objective,
             config=self.hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
-            resume="AUTO",
             checkpoint_freq=1,
             checkpoint_at_end=True,
             keep_checkpoints_num=self.max_evals,
