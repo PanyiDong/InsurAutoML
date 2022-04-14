@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 5:16:39 pm
+Last Modified: Thursday, 14th April 2022 9:08:56 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,8 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
-
+import pandas as pd
 
 # use command line interaction to run the model
 # apparently, same class object called in one test case will not be able
@@ -49,34 +48,60 @@ import os
 
 
 def test_heart():
-
-    os.system(
-        "python main.py --data_folder example/example_data --train_data heart --response HeartDisease"
+    
+    from My_AutoML import AutoTabular
+    
+    data = pd.read_csv("example/example_data/heart.csv")
+    response = "HeartDisease"
+    features = list(data.columns)
+    features.remove(response)
+    response = [response]
+    
+    mol_heart = AutoTabular(
+        model_name = "heart"
     )
+    mol_heart.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/heart_model/optimal_setting.txt") == True
+        mol_heart._fitted == True
     ), "Classification for Heart data successfully fitted."
 
 
 def test_stroke():
 
-    os.system(
-        "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke"
+    from My_AutoML import AutoTabular
+    
+    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+    response = "stroke"
+    features = list(data.columns)
+    features.remove(response)
+    response = [response]
+    
+    mol_stroke = AutoTabular(
+        model_name = "healthcare-dataset-stroke-data"
     )
+    mol_stroke.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/healthcare-dataset-stroke-data_model/optimal_setting.txt")
-        == True
+        mol_stroke._fitted == True
     ), "Classification for Stroke data successfully fitted."
 
 
 def test_insurance():
 
-    os.system(
-        "python main.py --data_folder example/example_data --train_data insurance --response expenses"
+    from My_AutoML import AutoTabular
+    
+    data = pd.read_csv("example/example_data/insurance.csv")
+    response = "expenses"
+    features = list(data.columns)
+    features.remove(response)
+    response = [response]
+    
+    mol_insurance = AutoTabular(
+        model_name = "insurance"
     )
+    mol_insurance.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
+        mol_insurance._fitted == True
     ), "Regression for Insurance data successfully fitted."
