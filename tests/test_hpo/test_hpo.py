@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 8:02:32 pm
+Last Modified: Thursday, 14th April 2022 8:49:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,21 +63,20 @@ def test_stroke_import_version():
     mol.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/import_test/init.txt") == True
+        os.path.exists("tmp/stroke/init.txt") == True
     ), "Classification for Stroke data (import_version) successfully initiated."
     assert (
         mol._fitted == True
     ), "Classification for Stroke data (import_version) successfully fitted."
     assert (
-        os.path.exists("tmp/import_test/optimal_setting.txt") == True
+        os.path.exists("tmp/stroke/optimal_setting.txt") == True
     ), "Classification for Stroke data (import_version) successfully find optimal setting."
 
 
 def test_stroke():
 
     os.system(
-        "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke \
-        --search_algo GridSearch"
+        "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke"
     )
 
     assert (
@@ -95,7 +94,8 @@ def test_stroke():
 def test_heart():
 
     os.system(
-        "python main.py --data_folder example/example_data --train_data heart --response HeartDisease"
+        "python main.py --data_folder example/example_data --train_data heart --response HeartDisease \
+            --search_algo GridSearch"
     )
 
     assert (
