@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:41:48 pm
+Last Modified: Friday, 15th April 2022 12:21:00 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -127,7 +127,7 @@ import importlib
 # if installed, add lightgbm depended classifiers/regressors
 lightgbm_spec = importlib.util.find_spec("lightgbm")
 if lightgbm_spec is not None :
-    from ._ML import LightGBM_Classifier, LightGBM_Regressor
+    from ._lightgbm import LightGBM_Classifier, LightGBM_Regressor
     
     classifiers["LightGBM_Classifier"] = LightGBM_Classifier
     
@@ -136,7 +136,7 @@ if lightgbm_spec is not None :
 # check weather xgboost installed
 xgboost_spec = importlib.util.find_spec("xgboost")
 if xgboost_spec is not None :
-    from ._ML import XGBoost_Classifier, XGBoost_Regressor
+    from ._xgboost import XGBoost_Classifier, XGBoost_Regressor
     
     classifiers["XGBoost_Classifier"] = XGBoost_Classifier
     
