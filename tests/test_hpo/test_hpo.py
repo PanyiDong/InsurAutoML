@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 4:23:52 pm
+Last Modified: Thursday, 14th April 2022 8:02:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,6 +48,29 @@ import My_AutoML
 # to run the model correctly after the first time
 # detect whether optimal setting exists as method of determining whether
 # the model is fitted correctly
+
+
+def test_stroke_import_version():
+
+    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+    features = list(data.columns)
+    features.remove("stroke")
+    response = ["stroke"]
+
+    mol = My_AutoML.AutoTabular(
+        model_name="stroke",
+    )
+    mol.fit(data[features], data[response])
+
+    assert (
+        os.path.exists("tmp/import_test/init.txt") == True
+    ), "Classification for Stroke data (import_version) successfully initiated."
+    assert (
+        mol._fitted == True
+    ), "Classification for Stroke data (import_version) successfully fitted."
+    assert (
+        os.path.exists("tmp/import_test/optimal_setting.txt") == True
+    ), "Classification for Stroke data (import_version) successfully find optimal setting."
 
 
 def test_stroke():
