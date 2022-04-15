@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 10:39:13 pm
+Last Modified: Friday, 15th April 2022 12:09:06 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -105,38 +105,38 @@ parser.add_argument(
 )
 parser.add_argument(
     "--encoder",
-    default="auto",
-    type=str,
+    default="auto", nargs="+", 
+    type=str or list,
     help="encoders for the tasks, auto or a list of encoders",
 )
 parser.add_argument(
     "--imputer",
-    default="auto",
-    type=str,
+    default="auto", nargs="+", 
+    type=str or list,
     help="imputers for the tasks, auto or a list of imputers",
 )
 parser.add_argument(
     "--balancing",
-    default="auto",
-    type=str,
+    default="auto", nargs="+", 
+    type=str or list,
     help="balancings for the tasks, auto or a list of balancings",
 )
 parser.add_argument(
     "--scaling",
-    default="auto",
-    type=str,
+    default="auto", nargs="+", 
+    type=str or list,
     help="scalings for the tasks, auto or a list of scalings",
 )
 parser.add_argument(
     "--feature_selection",
-    default="auto",
-    type=str,
+    default="auto", nargs="+", 
+    type=str or list,
     help="feature_selections for the tasks, auto or a list of feature_selections",
 )
 parser.add_argument(
     "--models",
-    default="auto",
-    type=str,
+    default="auto", nargs="+", 
+    type=str or list,
     help="models for the tasks, auto or a list of models",
 )
 parser.add_argument(
@@ -159,8 +159,8 @@ parser.add_argument(
 )
 parser.add_argument(
     "--search_algo_settings",
-    default = '{}',
-    type=str,
+    default = {},
+    type=dict,
     help="model selection/hyperparameter optimization search algorithm",
 )
 parser.add_argument(

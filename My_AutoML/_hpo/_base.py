@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:00:46 pm
+Last Modified: Friday, 15th April 2022 12:15:27 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,12 +69,12 @@ from My_AutoML._utils._optimize import (
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
-warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
-warnings.filterwarnings(
-    "ignore", message="The TensorboardX logger cannot be instantiated"
-)
+# warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
+# warnings.filterwarnings(
+#     "ignore", message="The TensorboardX logger cannot be instantiated"
+# )
 # I wish to use sklearn v1.0 for new features
-# but there's difference between autosklearn models and sklearn models
+# but there's conflicts between autosklearn models and sklearn models
 # mae <-> absolute_error, mse <-> squared_error inconsistency
 warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
 warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
@@ -189,7 +189,7 @@ class AutoTabularBase:
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
     
-    logger: callback logger, default = ["TBX"]
+    logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
@@ -238,7 +238,7 @@ class AutoTabularBase:
         search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
-        logger = ["TBX"],
+        logger = ["Logger"],
         progress_reporter=None,
         full_status=False,
         verbose=1,
@@ -1399,7 +1399,7 @@ class AutoTabularBase:
         # if already initialized, do nothing
         if not ray.is_initialized():
             ray.init(
-                local_mode=True,
+                # local_mode=True,
                 num_cpus=self.cpu_threads,
                 num_gpus=self.gpu_count,
             )

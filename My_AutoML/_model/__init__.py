@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 12:18:04 am
+Last Modified: Friday, 15th April 2022 12:21:00 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,6 +52,8 @@ from sklearn.naive_bayes import ComplementNB
 
 # need to enable hist gradient boosting features first
 # no need for sklearn version >= 1.0.0
+# since conflict between sklearn >=1.0.0 and autosklearn, 
+# still use 0.24.2 sklearn here
 from sklearn.experimental import enable_hist_gradient_boosting
 from sklearn.ensemble import (
     HistGradientBoostingClassifier,
@@ -125,11 +127,20 @@ import importlib
 # if installed, add lightgbm depended classifiers/regressors
 lightgbm_spec = importlib.util.find_spec("lightgbm")
 if lightgbm_spec is not None :
-    from ._ML import LightGBM_Classifier, LightGBM_Regressor
+    from ._lightgbm import LightGBM_Classifier, LightGBM_Regressor
     
     classifiers["LightGBM_Classifier"] = LightGBM_Classifier
     
     regressors["LightGBM_Regressor"] = LightGBM_Regressor
+    
+# check weather xgboost installed
+xgboost_spec = importlib.util.find_spec("xgboost")
+if xgboost_spec is not None :
+    from ._xgboost import XGBoost_Classifier, XGBoost_Regressor
+    
+    classifiers["XGBoost_Classifier"] = XGBoost_Classifier
+    
+    regressors["XGBoost_Regressor"] = XGBoost_Regressor
 
 # check whether torch installed
 # if installed, add torch depended classifiers/regressors

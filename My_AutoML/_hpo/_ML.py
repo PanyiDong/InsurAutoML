@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 10:54:35 pm
+Last Modified: Friday, 15th April 2022 12:06:29 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -131,7 +131,7 @@ class AutoTabularRegressor(AutoTabularBase):
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
     
-    logger: callback logger, default = ["TBX"]
+    logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = "CLIReporter"
@@ -178,7 +178,7 @@ class AutoTabularRegressor(AutoTabularBase):
         search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
-        logger=["TBX"],
+        logger=["Logger"],
         progress_reporter="CLIReporter",
         full_status=False,
         verbose=1,
@@ -351,7 +351,7 @@ class AutoTabularClassifier(AutoTabularBase):
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
     
-    logger: callback logger, default = ["TBX"]
+    logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = "CLIReporter"
@@ -398,7 +398,7 @@ class AutoTabularClassifier(AutoTabularBase):
         search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
-        logger=["TBX"],
+        logger=["Logger"],
         progress_reporter="CLIReporter",
         full_status=False,
         verbose=1,
@@ -576,7 +576,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
     
-    logger: callback logger, default = ["TBX"]
+    logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = "CLIReporter"
@@ -623,7 +623,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
-        logger = ["TBX"],
+        logger = ["Logger"],
         progress_reporter="CLIReporter",
         full_status=False,
         verbose=1,
