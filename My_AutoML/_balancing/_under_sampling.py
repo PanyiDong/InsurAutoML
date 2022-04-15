@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:21:04 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 11:03:29 pm
+Last Modified: Friday, 15th April 2022 11:10:10 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -232,12 +232,16 @@ class TomekLink:
                 n=max(int(len(_minority_class) / 100), 1), random_state=_seed
             )
             _link_table = LinkTable(_minority_sample, X, self.norm)
+            drop_index = []
             for _link_item in _link_table:
                 _nearest = _link_item.index(
                     sorted(_link_item)[1]
                 )  # since the closest will always be the sample itself
-                if X.iloc[_nearest, :][_imbalanced_feature] == _majority:
-                    X = X.drop(X.index[_nearest]).reset_index(drop=True)
+                # if nearest is the majority class, add to drop_index
+                if X.loc[_nearest, _imbalanced_feature] == _majority:
+                    drop_index.append(_nearest)
+                drop_index = list(set(drop_index))  # get unique drop indexes
+            X = X.drop(index=drop_index, axis=0).reset_index(drop=True)
             _seed += 1
             _iter += 1
 

@@ -7,3 +7,5 @@ notes.md
 tmp/
 .coverage
 htmlcov/*
+.ipynb_checkpoints/
+.pytest_cache/

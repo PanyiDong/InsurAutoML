@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 11:08:27 pm
+Last Modified: Friday, 15th April 2022 11:17:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -58,14 +58,14 @@ def test_stroke():
 
     assert (
         os.path.exists("tmp/healthcare-dataset-stroke-data_model/init.txt") == True
-    ), "Classification for Stroke data successfully initiated."
+    ), "Classification for Stroke data failed to initiated."
     # assert (
     #     mol_heart._fitted == True
-    # ), "Classification for Heart data successfully fitted."
+    # ), "Classification for Heart data failed to fit."
     assert (
         os.path.exists("tmp/healthcare-dataset-stroke-data_model/optimal_setting.txt")
         == True
-    ), "Classification for Stroke data successfully find optimal setting."
+    ), "Classification for Stroke data failed to find optimal setting."
 
 
 def test_heart():
@@ -77,13 +77,13 @@ def test_heart():
 
     assert (
         os.path.exists("tmp/heart_model/init.txt") == True
-    ), "Classification for Heart data successfully initiated."
+    ), "Classification for Heart data failed to initiated."
     # assert (
     #     mol_heart._fitted == True
-    # ), "Classification for Heart data successfully fitted."
+    # ), "Classification for Heart data failed to fit."
     assert (
         os.path.exists("tmp/heart_model/optimal_setting.txt") == True
-    ), "Classification for Heart data successfully find optimal setting."
+    ), "Classification for Heart data failed to find optimal setting."
 
 
 def test_insurance():
@@ -93,14 +93,14 @@ def test_insurance():
     )
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
-    ), "Regression for Insurance data successfully initiated."
+        os.path.exists("tmp/insurance_model/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
     # assert (
     #     mol_insurance._fitted == True
-    # ), "Regression for Insurance data successfully fitted."
+    # ), "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
-    ), "Regression for Insurance data successfully find optimal setting."
+        os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
 
 def test_stroke_import_version():
     
@@ -116,10 +116,10 @@ def test_stroke_import_version():
 
     assert (
         os.path.exists("tmp/stroke/init.txt") == True
-    ), "Classification for Stroke data (import_version) successfully initiated."
+    ), "Classification for Stroke data (import_version) failed to initiated."
     assert (
         mol._fitted == True
-    ), "Classification for Stroke data (import_version) successfully fitted."
+    ), "Classification for Stroke data (import_version) failed to fit."
     assert (
         os.path.exists("tmp/stroke/optimal_setting.txt") == True
-    ), "Classification for Stroke data (import_version) successfully find optimal setting."
+    ), "Classification for Stroke data (import_version) failed to find optimal setting."
