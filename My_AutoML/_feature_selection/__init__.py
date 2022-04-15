@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:32:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 4:40:39 pm
+Last Modified: Friday, 15th April 2022 5:50:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,17 @@ SOFTWARE.
 """
 
 from ._base import PCA_FeatureSelection, LDASelection, RBFSampler
-
+from ._autosklearn import (
+    extra_trees_preproc_for_classification,
+    extra_trees_preproc_for_regression,
+    liblinear_svc_preprocessor,
+    polynomial,
+    select_percentile_classification,
+    select_percentile_regression,
+    select_rates_classification,
+    select_rates_regression,
+    truncatedSVD,
+)
 # from ._imported import (
 #     Densifier,
 #     ExtraTreesPreprocessorClassification,
@@ -62,9 +72,6 @@ from ._base import PCA_FeatureSelection, LDASelection, RBFSampler
 from ._advance import FeatureFilter, ASFFS, GeneticAlgorithm
 from My_AutoML._base import no_processing
 
-import autosklearn
-import autosklearn.pipeline.components.feature_preprocessing
-
 feature_selections = {
     "no_processing": no_processing,
     # "LDASelection": LDASelection,
@@ -73,22 +80,14 @@ feature_selections = {
     "FeatureFilter": FeatureFilter,
     "ASFFS": ASFFS,
     "GeneticAlgorithm": GeneticAlgorithm,
-    # 'densifier' : autosklearn.pipeline.components.feature_preprocessing.densifier.Densifier,  # from autosklearn
-    "extra_trees_preproc_for_classification": autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification.ExtraTreesPreprocessorClassification,
-    "extra_trees_preproc_for_regression": autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression.ExtraTreesPreprocessorRegression,
-    # "fast_ica": autosklearn.pipeline.components.feature_preprocessing.fast_ica.FastICA,
-    # "feature_agglomeration": autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration.FeatureAgglomeration,
-    # "kernel_pca": autosklearn.pipeline.components.feature_preprocessing.kernel_pca.KernelPCA,
-    # "kitchen_sinks": autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks.RandomKitchenSinks,
-    "liblinear_svc_preprocessor": autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor.LibLinear_Preprocessor,
-    # "nystroem_sampler": autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler.Nystroem,
-    # "pca": autosklearn.pipeline.components.feature_preprocessing.pca.PCA,
-    "polynomial": autosklearn.pipeline.components.feature_preprocessing.polynomial.PolynomialFeatures,
-    # "random_trees_embedding": autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding.RandomTreesEmbedding,
-    # 'select_percentile' : autosklearn.pipeline.components.feature_preprocessing.select_percentile.SelectPercentileBase,
-    "select_percentile_classification": autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification.SelectPercentileClassification,
-    "select_percentile_regression": autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression.SelectPercentileRegression,
-    "select_rates_classification": autosklearn.pipeline.components.feature_preprocessing.select_rates_classification.SelectClassificationRates,
-    "select_rates_regression": autosklearn.pipeline.components.feature_preprocessing.select_rates_regression.SelectRegressionRates,
-    "truncatedSVD": autosklearn.pipeline.components.feature_preprocessing.truncatedSVD.TruncatedSVD,
+    # from autosklearn
+    "extra_trees_preproc_for_classification": extra_trees_preproc_for_classification,
+    "extra_trees_preproc_for_regression": extra_trees_preproc_for_regression,
+    "liblinear_svc_preprocessor": liblinear_svc_preprocessor,
+    "polynomial": polynomial,
+    "select_percentile_classification": select_percentile_classification,
+    "select_percentile_regression": select_percentile_regression,
+    "select_rates_classification": select_rates_classification,
+    "select_rates_regression": select_rates_regression,
+    "truncatedSVD": truncatedSVD,
 }

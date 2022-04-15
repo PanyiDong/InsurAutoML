@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 12:15:11 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 8:44:34 pm
+Last Modified: Friday, 15th April 2022 5:52:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -87,9 +87,13 @@ class no_processing:
 
         self._fitted = True
 
-        try:
-            _empty = y.empty
-        except AttributeError:
+        if isinstance(y, pd.DataFrame):
+            _empty = y.isnull().all().all()
+        elif isinstance(y, pd.Series):
+            _empty = y.isnull().all()
+        elif isinstance(y, np.ndarray):
+            _empty = np.all(np.isnan(y))
+        else:
             _empty = y == None
 
         if _empty:
