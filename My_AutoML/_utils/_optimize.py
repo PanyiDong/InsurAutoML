@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 12:15:57 am
+Last Modified: Thursday, 14th April 2022 10:27:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,9 +65,7 @@ def _get_hyperparameter_space(
     # encoding space
     _encoding_hyperparameter = []
     for _encoder in [*encoder]:
-        for (
-            item
-        ) in encoders_hyperparameters:  # search the encoders' hyperparameters
+        for item in encoders_hyperparameters:  # search the encoders' hyperparameters
             # find encoder key
             for _key in item.keys():
                 if "encoder_" in _key:
@@ -87,9 +85,7 @@ def _get_hyperparameter_space(
         )
     else:
         for _imputer in [*imputer]:
-            for (
-                item
-            ) in imputers_hyperparameters:  # search the imputer' hyperparameters
+            for item in imputers_hyperparameters:  # search the imputer' hyperparameters
                 # find imputer key
                 for _key in item.keys():
                     if "imputer_" in _key:
@@ -123,9 +119,7 @@ def _get_hyperparameter_space(
     # scaling space
     _scaling_hyperparameter = []
     for _scaling in [*scaling]:
-        for (
-            item
-        ) in scalings_hyperparameters:  # search the scalings' hyperparameters
+        for item in scalings_hyperparameters:  # search the scalings' hyperparameters
             # find scaling key
             for _key in item.keys():
                 if "scaling_" in _key:
@@ -158,9 +152,7 @@ def _get_hyperparameter_space(
                 )
                 _feature_selection_hyperparameter.append(item)
 
-    _feature_selection_hyperparameter = tune.choice(
-        _feature_selection_hyperparameter
-    )
+    _feature_selection_hyperparameter = tune.choice(_feature_selection_hyperparameter)
 
     # model selection and hyperparameter optimization space
     _model_hyperparameter = []
@@ -201,20 +193,20 @@ def get_algo(search_algo):
         from ray.tune.suggest.basic_variant import BasicVariantGenerator
 
         algo = BasicVariantGenerator
-    elif search_algo == "BayesOptSearch":
+    # elif search_algo == "BayesOptSearch":
 
-        # check whether bayes_opt is installed
-        bayes_opt_spec = importlib.util.find_spec("bayes_opt")
-        if bayes_opt_spec is None:
-            raise ImportError(
-                "BayesOpt is not installed. Please install it first to use BayesOptSearch. \
-                    Command to install: pip install bayesian-optimization"
-            )
+    #     # check whether bayes_opt is installed
+    #     bayes_opt_spec = importlib.util.find_spec("bayes_opt")
+    #     if bayes_opt_spec is None:
+    #         raise ImportError(
+    #             "BayesOpt is not installed. Please install it first to use BayesOptSearch. \
+    #                 Command to install: pip install bayesian-optimization"
+    #         )
 
-        # Bayesian Search
-        from ray.tune.suggest.bayesopt import BayesOptSearch
+    #     # Bayesian Search
+    #     from ray.tune.suggest.bayesopt import BayesOptSearch
 
-        algo = BayesOptSearch
+    #     algo = BayesOptSearch
     elif search_algo == "AxSearch":
 
         # check whether Ax and sqlalchemy are installed
@@ -230,21 +222,21 @@ def get_algo(search_algo):
         from ray.tune.suggest.ax import AxSearch
 
         algo = AxSearch
-    elif search_algo == "BOHB":
+    # elif search_algo == "BOHB":
 
-        # check whether HpBandSter and ConfigSpace are installed
-        hpbandster_spec = importlib.util.find_spec("hpbandster")
-        ConfigSpace_spec = importlib.util.find_spec("ConfigSpace")
-        if hpbandster_spec is None or ConfigSpace_spec is None:
-            raise ImportError(
-                "HpBandSter or ConfigSpace not installed. Please install these packages to use BOHB. \
-                Command to install: pip install hpbandster ConfigSpace"
-            )
+    #     # check whether HpBandSter and ConfigSpace are installed
+    #     hpbandster_spec = importlib.util.find_spec("hpbandster")
+    #     ConfigSpace_spec = importlib.util.find_spec("ConfigSpace")
+    #     if hpbandster_spec is None or ConfigSpace_spec is None:
+    #         raise ImportError(
+    #             "HpBandSter or ConfigSpace not installed. Please install these packages to use BOHB. \
+    #             Command to install: pip install hpbandster ConfigSpace"
+    #         )
 
-        # Bayesian Optimization HyperBand/BOHB
-        from ray.tune.suggest.bohb import TuneBOHB
+    #     # Bayesian Optimization HyperBand/BOHB
+    #     from ray.tune.suggest.bohb import TuneBOHB
 
-        algo = TuneBOHB
+    #     algo = TuneBOHB
     elif search_algo == "BlendSearch":
 
         # check whether flaml is installed
@@ -273,21 +265,29 @@ def get_algo(search_algo):
         from ray.tune.suggest.flaml import CFO
 
         algo = CFO
-    elif search_algo == "DragonflySearch":
+    # elif search_algo == "DragonflySearch":
 
-        # check whether dragonfly-opt is installed
-        dragonfly_spec = importlib.util.find_spec("dragonfly")
-        if dragonfly_spec is None:
-            raise ImportError(
-                "dragonfly-opt not installed. Please install it first to use DragonflySearch. \
-                Command to install: pip install dragonfly-opt"
-            )
+    #     # check whether dragonfly-opt is installed
+    #     dragonfly_spec = importlib.util.find_spec("dragonfly")
+    #     if dragonfly_spec is None:
+    #         raise ImportError(
+    #             "dragonfly-opt not installed. Please install it first to use DragonflySearch. \
+    #             Command to install: pip install dragonfly-opt"
+    #         )
 
-        # Dragonfly Search
-        from ray.tune.suggest.dragonfly import DragonflySearch
+    #     # Dragonfly Search
+    #     from ray.tune.suggest.dragonfly import DragonflySearch
 
-        algo = DragonflySearch
+    #     algo = DragonflySearch
     elif search_algo == "HEBO":
+
+        # check whether HEBO is installed
+        HEBO_spec = importlib.util.find_spec("HEBO")
+        if HEBO_spec is None:
+            raise ImportError(
+                "HEBO not installed. Please install it first to use HEBO. \
+                Command to install: pip install 'HEBO>=0.2.0'"
+            )
 
         # Heteroscedastic Evolutionary Bayesian Optimization/HEBO
         from ray.tune.suggest.hebo import HEBOSearch
@@ -321,63 +321,63 @@ def get_algo(search_algo):
         from ray.tune.suggest.nevergrad import NevergradSearch
 
         algo = NevergradSearch
-    elif search_algo == "Optuna":
+    # elif search_algo == "Optuna":
 
-        # check whether optuna is installed
-        optuna_spec = importlib.util.find_spec("optuna")
-        if optuna_spec is None:
-            raise ImportError(
-                "optuna not installed. Please install it first to use Optuna. \
-                Command to install: pip install optuna"
-            )
+    #     # check whether optuna is installed
+    #     optuna_spec = importlib.util.find_spec("optuna")
+    #     if optuna_spec is None:
+    #         raise ImportError(
+    #             "optuna not installed. Please install it first to use Optuna. \
+    #             Command to install: pip install optuna"
+    #         )
 
-        # Optuna Search
-        from ray.tune.suggest.optuna import OptunaSearch
+    #     # Optuna Search
+    #     from ray.tune.suggest.optuna import OptunaSearch
 
-        algo = OptunaSearch
-    elif search_algo == "SigOpt":
+    #     algo = OptunaSearch
+    # elif search_algo == "SigOpt":
 
-        # check whether sigopt is installed
-        sigopt_spec = importlib.util.find_spec("sigopt")
-        if sigopt_spec is None:
-            raise ImportError(
-                "sigopt not installed. Please install it first to use SigOpt. \
-                Command to install: pip install sigopt \
-                Set SigOpt API: export SIGOPT_KEY= ..."
-            )
+    #     # check whether sigopt is installed
+    #     sigopt_spec = importlib.util.find_spec("sigopt")
+    #     if sigopt_spec is None:
+    #         raise ImportError(
+    #             "sigopt not installed. Please install it first to use SigOpt. \
+    #             Command to install: pip install sigopt \
+    #             Set SigOpt API: export SIGOPT_KEY= ..."
+    #         )
 
-        # SigOpt Search
-        from ray.tune.suggest.sigopt import SigOptSearch
+    #     # SigOpt Search
+    #     from ray.tune.suggest.sigopt import SigOptSearch
 
-        algo = SigOptSearch
-    elif search_algo == "Scikit-Optimize":
+    #     algo = SigOptSearch
+    # elif search_algo == "Scikit-Optimize":
 
-        # check whether scikit-optimize is installed
-        skopt_spec = importlib.util.find_spec("skopt")
-        if skopt_spec is None:
-            raise ImportError(
-                "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
-                Command to install: pip install scikit-optimize"
-            )
+    #     # check whether scikit-optimize is installed
+    #     skopt_spec = importlib.util.find_spec("skopt")
+    #     if skopt_spec is None:
+    #         raise ImportError(
+    #             "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
+    #             Command to install: pip install scikit-optimize"
+    #         )
 
-        # Scikit-Optimize Search
-        from ray.tune.suggest.skopt import SkOptSearch
+    #     # Scikit-Optimize Search
+    #     from ray.tune.suggest.skopt import SkOptSearch
 
-        algo = SkOptSearch
-    elif search_algo == "ZOOpt":
+    #     algo = SkOptSearch
+    # elif search_algo == "ZOOpt":
 
-        # check whether zoopt is installed
-        zoopt_spec = importlib.util.find_spec("zoopt")
-        if zoopt_spec is None:
-            raise ImportError(
-                "zoopt not installed. Please install it first to use ZOOpt. \
-                Command to install: pip install zoopt"
-            )
+    #     # check whether zoopt is installed
+    #     zoopt_spec = importlib.util.find_spec("zoopt")
+    #     if zoopt_spec is None:
+    #         raise ImportError(
+    #             "zoopt not installed. Please install it first to use ZOOpt. \
+    #             Command to install: pip install zoopt"
+    #         )
 
-        # ZOOpt Search
-        from ray.tune.suggest.zoopt import ZOOptSearch
+    #     # ZOOpt Search
+    #     from ray.tune.suggest.zoopt import ZOOptSearch
 
-        algo = ZOOptSearch
+    #     algo = ZOOptSearch
     elif search_algo == "Repeater":
 
         # Repeated Evaluations
@@ -404,6 +404,7 @@ def get_algo(search_algo):
             )
 
     return algo
+
 
 # get search scheduler based on string input
 def get_scheduler(search_scheduler):
@@ -470,6 +471,7 @@ def get_scheduler(search_scheduler):
 
     return scheduler
 
+
 # get progress reporter based on string input
 def get_progress_reporter(
     progress_reporter,
@@ -519,3 +521,73 @@ def get_progress_reporter(
     progress_reporter.add_metric_column("loss")
 
     return progress_reporter
+
+def get_logger(logger) :
+    
+    if not isinstance(logger, list) and logger is not None :
+        raise TypeError(
+            "Expect a list of string or None, get {}.".format(logger)
+        )
+    
+    loggers = []
+    
+    if logger is None :
+        
+        from ray.tune.logger import LoggerCallback
+        
+        return [LoggerCallback()]
+    elif "Logger" in logger :
+        from ray.tune.logger import LoggerCallback
+        
+        loggers.append(LoggerCallback())
+    elif "TBX" in logger :
+        
+        # check whether TensorBoardX is installed
+        TensorBoardX_spec = importlib.util.find_spec("tensorboardX")
+        if TensorBoardX_spec is None:
+            raise ImportError(
+                "TensorBoardX not installed. Please install it first to use TensorBoardX. \
+                Command to install: pip install tensorboardX"
+            )
+        
+        from ray.tune.logger import TBXLoggerCallback
+        
+        loggers.append(TBXLoggerCallback())
+    elif "JSON" in logger :
+        
+        from ray.tune.logger import JsonLoggerCallback
+        
+        loggers.append(JsonLoggerCallback())
+    elif "CSV" in logger :
+        
+        from ray.tune.logger import CSVLogger
+        
+        loggers.append(CSVLogger())
+    elif "MLflow" in logger :
+        
+        # checkwhether mlflow is installed
+        mlflow_spec = importlib.util.find_spec("mlflow")
+        if mlflow_spec is None:
+            raise ImportError(
+                "mlflow not installed. Please install it first to use mlflow. \
+                Command to install: pip install mlflow"
+            )
+        
+        from ray.tune.integration.mlflow import MLflowLoggerCallback
+        
+        loggers.append(MLflowLoggerCallback())
+    elif "Wandb" in logger :
+        
+        # check whether wandb is installed
+        wandb_spec = importlib.util.find_spec("wandb")
+        if wandb_spec is None:
+            raise ImportError(
+                "wandb not installed. Please install it first to use wandb. \
+                Command to install: pip install wandb"
+            )
+            
+        from ray.tune.integration.wandb import WandbLoggerCallback
+        
+        loggers.append(WandbLoggerCallback())
+        
+    return loggers

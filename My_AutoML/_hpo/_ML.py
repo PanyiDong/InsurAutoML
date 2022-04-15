@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 3:57:43 pm
+Last Modified: Thursday, 14th April 2022 10:54:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -120,7 +120,7 @@ class AutoTabularRegressor(AutoTabularBase):
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
             "ConcurrencyLimiter", callable)
 
-    search_algo_setttings: search algorithm settings, default = {}
+    search_algo_settings: search algorithm settings, default = {}
     need manual configuration for each search algorithm
 
     search_scheduler: search scheduler used, default = "FIFOScheduler"
@@ -130,6 +130,9 @@ class AutoTabularRegressor(AutoTabularBase):
 
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
+    
+    logger: callback logger, default = ["TBX"]
+    list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = "CLIReporter"
     support ("CLIReporter", "JupyterNotebookReporter")
@@ -172,9 +175,10 @@ class AutoTabularRegressor(AutoTabularBase):
         valid_size=0.15,
         objective="MSE",
         search_algo="HyperOpt",
-        search_algo_setttings={},
+        search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
+        logger=["TBX"],
         progress_reporter="CLIReporter",
         full_status=False,
         verbose=1,
@@ -201,9 +205,10 @@ class AutoTabularRegressor(AutoTabularBase):
         self.valid_size = valid_size
         self.objective = objective
         self.search_algo = search_algo
-        self.search_algo_setttings = search_algo_setttings
+        self.search_algo_settings = search_algo_settings
         self.search_scheduler = search_scheduler
         self.search_scheduler_settings = search_scheduler_settings
+        self.logger = logger
         self.progress_reporter = progress_reporter
         self.full_status = full_status
         self.verbose = verbose
@@ -234,9 +239,10 @@ class AutoTabularRegressor(AutoTabularBase):
             valid_size=self.valid_size,
             objective=self.objective,
             search_algo=self.search_algo,
-            search_algo_setttings=self.search_algo_setttings,
+            search_algo_settings=self.search_algo_settings,
             search_scheduler=self.search_scheduler,
             search_scheduler_settings=self.search_scheduler_settings,
+            logger = self.logger,
             progress_reporter=self.progress_reporter,
             full_status=self.full_status,
             verbose=self.verbose,
@@ -334,7 +340,7 @@ class AutoTabularClassifier(AutoTabularBase):
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
             "ConcurrencyLimiter", callable)
 
-    search_algo_setttings: search algorithm settings, default = {}
+    search_algo_settings: search algorithm settings, default = {}
     need manual configuration for each search algorithm
 
     search_scheduler: search scheduler used, default = "FIFOScheduler"
@@ -344,6 +350,9 @@ class AutoTabularClassifier(AutoTabularBase):
 
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
+    
+    logger: callback logger, default = ["TBX"]
+    list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = "CLIReporter"
     support ("CLIReporter", "JupyterNotebookReporter")
@@ -386,9 +395,10 @@ class AutoTabularClassifier(AutoTabularBase):
         valid_size=0.15,
         objective="accuracy",
         search_algo="HyperOpt",
-        search_algo_setttings={},
+        search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
+        logger=["TBX"],
         progress_reporter="CLIReporter",
         full_status=False,
         verbose=1,
@@ -415,9 +425,10 @@ class AutoTabularClassifier(AutoTabularBase):
         self.valid_size = valid_size
         self.objective = objective
         self.search_algo = search_algo
-        self.search_algo_setttings = search_algo_setttings
+        self.search_algo_settings = search_algo_settings
         self.search_scheduler = search_scheduler
         self.search_scheduler_settings = search_scheduler_settings
+        self.logger = logger
         self.progress_reporter = progress_reporter
         self.full_status = full_status
         self.verbose = verbose
@@ -448,9 +459,10 @@ class AutoTabularClassifier(AutoTabularBase):
             valid_size=self.valid_size,
             objective=self.objective,
             search_algo=self.search_algo,
-            search_algo_setttings=self.search_algo_setttings,
+            search_algo_settings=self.search_algo_settings,
             search_scheduler=self.search_scheduler,
             search_scheduler_settings=self.search_scheduler_settings,
+            logger = self.logger,
             progress_reporter=self.progress_reporter,
             full_status=self.full_status,
             verbose=self.verbose,
@@ -553,7 +565,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
             "ConcurrencyLimiter", callable)
 
-    search_algo_setttings: search algorithm settings, default = {}
+    search_algo_settings: search algorithm settings, default = {}
     need manual configuration for each search algorithm
 
     search_scheduler: search scheduler used, default = "FIFOScheduler"
@@ -563,6 +575,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
+    
+    logger: callback logger, default = ["TBX"]
+    list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = "CLIReporter"
     support ("CLIReporter", "JupyterNotebookReporter")
@@ -605,9 +620,10 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         valid_size=0.15,
         objective=None,
         search_algo="HyperOpt",
-        search_algo_setttings={},
+        search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
+        logger = ["TBX"],
         progress_reporter="CLIReporter",
         full_status=False,
         verbose=1,
@@ -634,9 +650,10 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self.valid_size = valid_size
         self.objective = objective
         self.search_algo = search_algo
-        self.search_algo_setttings = search_algo_setttings
+        self.search_algo_settings = search_algo_settings
         self.search_scheduler = search_scheduler
         self.search_scheduler_settings = search_scheduler_settings
+        self.logger = logger
         self.progress_reporter = progress_reporter
         self.full_status = full_status
         self.verbose = verbose
@@ -674,9 +691,10 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 valid_size=self.valid_size,
                 objective="accuracy" if not self.objective else self.objective,
                 search_algo=self.search_algo,
-                search_algo_setttings=self.search_algo_setttings,
+                search_algo_settings=self.search_algo_settings,
                 search_scheduler=self.search_scheduler,
                 search_scheduler_settings=self.search_scheduler_settings,
+                logger = self.logger,
                 progress_reporter=self.progress_reporter,
                 full_status=self.full_status,
                 verbose=self.verbose,
@@ -705,7 +723,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 valid_size=self.valid_size,
                 objective="MSE" if not self.objective else self.objective,
                 search_algo=self.search_algo,
-                search_algo_setttings=self.search_algo_setttings,
+                search_algo_settings=self.search_algo_settings,
                 search_scheduler=self.search_scheduler,
                 search_scheduler_settings=self.search_scheduler_settings,
                 progress_reporter=self.progress_reporter,

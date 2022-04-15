@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:28:12 pm
+Last Modified: Thursday, 14th April 2022 10:39:13 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -158,6 +158,12 @@ parser.add_argument(
     help="model selection/hyperparameter optimization search algorithm",
 )
 parser.add_argument(
+    "--search_algo_settings",
+    default = '{}',
+    type=str,
+    help="model selection/hyperparameter optimization search algorithm",
+)
+parser.add_argument(
     "--search_scheduler",
     default="FIFOScheduler",
     type=str,
@@ -197,6 +203,7 @@ VALIDATION = args.validation
 VALID_SIZE = args.valid_size
 OBJECTIVE = args.objective
 SEARCH_ALGO = args.search_algo
+SEARCH_ALGO_SETTINGS = args.search_algo_settings
 SEARCH_SCHEDULER = args.search_scheduler
 PROGRESS_REPORTER = args.progress_reporter
 FULL_STATUS = args.full_status
@@ -254,6 +261,7 @@ if __name__ == "__main__":
         valid_size=VALID_SIZE,
         objective=OBJECTIVE,
         search_algo=SEARCH_ALGO,
+        search_algo_settings = SEARCH_ALGO_SETTINGS,
         search_scheduler=SEARCH_SCHEDULER,
         progress_reporter=PROGRESS_REPORTER,
         full_status=FULL_STATUS,

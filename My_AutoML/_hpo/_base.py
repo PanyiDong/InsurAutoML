@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 2:56:50 pm
+Last Modified: Thursday, 14th April 2022 11:00:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,11 +57,12 @@ from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._base import type_of_script
 from My_AutoML._utils._file import save_model
-from My_AutoML._utils._data import str2list
+from My_AutoML._utils._data import str2list, str2dict
 from My_AutoML._utils._optimize import (
     _get_hyperparameter_space,
     get_algo,
     get_scheduler,
+    get_logger,
     get_progress_reporter,
 )
 
@@ -177,7 +178,7 @@ class AutoTabularBase:
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
             "ConcurrencyLimiter", callable)
 
-    search_algo_setttings: search algorithm settings, default = {}
+    search_algo_settings: search algorithm settings, default = {}
     need manual configuration for each search algorithm
 
     search_scheduler: search scheduler used, default = "FIFOScheduler"
@@ -187,6 +188,9 @@ class AutoTabularBase:
 
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
+    
+    logger: callback logger, default = ["TBX"]
+    list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
     automatically decide what progressbar to use
@@ -231,9 +235,10 @@ class AutoTabularBase:
         valid_size=0.15,
         objective="accuracy",
         search_algo="HyperOpt",
-        search_algo_setttings={},
+        search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
+        logger = ["TBX"],
         progress_reporter=None,
         full_status=False,
         verbose=1,
@@ -261,9 +266,10 @@ class AutoTabularBase:
         self.valid_size = valid_size
         self.objective = objective
         self.search_algo = search_algo
-        self.search_algo_setttings = search_algo_setttings
+        self.search_algo_settings = search_algo_settings
         self.search_scheduler = search_scheduler
         self.search_scheduler_settings = search_scheduler_settings
+        self.logger = logger
         self.progress_reporter = progress_reporter
         self.full_status = full_status
         self.verbose = verbose
@@ -942,7 +948,7 @@ class AutoTabularBase:
         # the objective function of Bayesian Optimization tries to minimize
         # use accuracy score
         @ignore_warnings(category=ConvergenceWarning)
-        def _objective(params, checkpoint_dir=None):
+        def _objective(params):
 
             # different evaluation metrics for classification and regression
             if self.task_mode == "regression":
@@ -1355,13 +1361,32 @@ class AutoTabularBase:
                         training_status="fitted",
                         loss=_loss,
                     )
-
+        
+        # load dict settings for search_algo and search_scheduler
+        self.search_algo_settings = str2dict(self.search_algo_settings)
+        self.search_scheduler_settings = str2dict(self.search_scheduler_settings)
+        
         # use ray for Model Selection and Hyperparameter Selection
         # get search algorithm
         algo = get_algo(self.search_algo)
+        
+        # special requirement for Nevergrad, need a algorithm setting
+        if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
+            warnings.warn("No algorithm setting for Nevergrad find, use NGOpt.")
+            import nevergrad as ng
+            self.search_algo_settings = {
+                "optimizer": ng.optimizers.NGOpt
+            }
+            # raise AttributeError(
+            #     "Search algorithm Nevergrad requires Nevergrad optimizer. \
+            #     Example: self.search_algo_settings = {'optimizer': nevergrad.optimizers.NGOpt}."
+            # )
 
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
+        
+        # get callback logger
+        logger = get_logger(self.logger)
 
         # get progress reporter
         progress_reporter = get_progress_reporter(
@@ -1369,7 +1394,7 @@ class AutoTabularBase:
             self.max_evals,
             self.max_error,
         )
-
+        
         # initialize ray
         # if already initialized, do nothing
         if not ray.is_initialized():
@@ -1393,12 +1418,12 @@ class AutoTabularBase:
             config=self.hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             resume="AUTO",
-            # checkpoint_freq=1,
-            # checkpoint_at_end=True,
+            checkpoint_freq=1,
+            checkpoint_at_end=True,
             keep_checkpoints_num=self.max_evals,
             checkpoint_score_attr="loss",
             mode="min",  # always call a minimization process
-            search_alg=algo(**self.search_algo_setttings),
+            search_alg=algo(**self.search_algo_settings),
             scheduler=scheduler(**self.search_scheduler_settings),
             metric="loss",
             num_samples=self.max_evals,
@@ -1407,6 +1432,7 @@ class AutoTabularBase:
                 "training_iteration": 5,
                 # "max_failures": 3,
             },
+            callbacks=logger,
             time_budget_s=self.timeout,
             progress_reporter=progress_reporter,
             verbose=self.verbose,
