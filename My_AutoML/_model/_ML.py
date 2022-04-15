@@ -11,7 +11,7 @@ File Created: Wednesday, 13th April 2022 12:08:45 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 10:04:15 am
+Last Modified: Thursday, 14th April 2022 11:40:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,8 @@ SOFTWARE.
 
 import pandas as pd
 from lightgbm import LGBMClassifier, LGBMRegressor
+import xgboost as xgb
+from xgboost import XGBClassifier, XGBRegressor
 
 from My_AutoML._constant import (
     LIGHTGBM_BINARY_CLASSIFICATION,
@@ -49,6 +51,8 @@ from My_AutoML._constant import (
     LIGHTGBM_TREE_LEARNER,
 )
 
+#####################################################################################################################
+# LightGBM support
 # https://lightgbm.readthedocs.io/en/latest/Parameters-Tuning.html
 
 class LightGBM_Base :
@@ -109,6 +113,8 @@ class LightGBM_Base :
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
         self.seed = seed
+        
+        self._fitted = False
     
     def fit(self, X, y) :
         
@@ -184,6 +190,8 @@ class LightGBM_Base :
             
         self.model.fit(X, y)
         
+        self._fitted = True
+        
         return self
     
     def predict(self, X) :
@@ -245,6 +253,8 @@ class LightGBM_Classifier(LightGBM_Base) :
         self.num_iterations = num_iterations
         self.seed = seed
         
+        self._fitted = False
+        
         super().__init__(
             task_type = "classification",
             objective = self.objective,
@@ -261,7 +271,11 @@ class LightGBM_Classifier(LightGBM_Base) :
         
     def fit(self, X, y) :
         
-        return super().fit(X, y)
+        super().fit(X, y)
+        
+        self._fitted = True
+        
+        return self
     
     def predict(self, X):
         
@@ -322,6 +336,8 @@ class LightGBM_Regressor(LightGBM_Base) :
         self.num_iterations = num_iterations
         self.seed = seed
         
+        self._fitted = False
+        
         super().__init__(
             task_type = "regression",
             objective = self.objective,
@@ -338,8 +354,163 @@ class LightGBM_Regressor(LightGBM_Base) :
         
     def fit(self, X, y) :
         
-        return super().fit(X, y)
+        super().fit(X, y)
+        
+        self._fitted = True
+        
+        return self
     
     def predict(self, X):
+        
+        return super().predict(X)
+    
+#####################################################################################################################
+# XGBoost support
+
+class XGBoost_Base :
+    
+    def __init__(
+        self,
+        task_type = "classification",
+        eta = 0.3,
+        gamma = 0,
+        max_depth = 6,
+        min_child_weight = 1,
+        max_delta_step = 0,
+        reg_lambda = 1,
+        reg_alpha = 0,
+    ) :
+        self.task_type = task_type
+        self.eta = eta
+        self.gamma = gamma
+        self.max_depth = max_depth
+        self.min_child_weight = min_child_weight
+        self.max_delta_step = max_delta_step
+        self.reg_lambda = reg_lambda
+        self.reg_alpha = reg_alpha
+    
+        self._fitted = False
+    
+    def fit(self, X, y) :
+        
+        if self.task_type == "classification" :
+            self.model = XGBClassifier(
+                eta = self.eta,
+                gamma = self.gamma,
+                max_depth = self.max_depth,
+                min_child_weight = self.min_child_weight,
+                max_delta_step = self.max_delta_step,
+                reg_lambda = self.reg_lambda,
+                reg_alpha = self.reg_alpha,
+            )
+        elif self.task_type == "regression" :
+            self.model = XGBRegressor(
+                eta = self.eta,
+                gamma = self.gamma,
+                max_depth = self.max_depth,
+                min_child_weight = self.min_child_weight,
+                max_delta_step = self.max_delta_step,
+                reg_lambda = self.reg_lambda,
+                reg_alpha = self.reg_alpha,
+            )
+            
+        self.model.fit(X, y)
+        
+        self._fitted = True
+        
+        return self
+    
+    def predict(self, X) :
+        
+        return self.model.predict(X)
+        
+        
+class XGBoost_Classifier(XGBoost_Base) :
+    
+    def __init__(
+        self,
+        eta = 0.3,
+        gamma = 0,
+        max_depth = 6,
+        min_child_weight = 1,
+        max_delta_step = 0,
+        reg_lambda = 1,
+        reg_alpha = 0,
+    ) :
+        self.eta = eta
+        self.gamma = gamma
+        self.max_depth = max_depth
+        self.min_child_weight = min_child_weight
+        self.max_delta_step = max_delta_step
+        self.reg_lambda = reg_lambda
+        self.reg_alpha = reg_alpha
+    
+        self._fitted = False
+        
+        super().__init__(
+            task_type="classification",
+            eta = self.eta,
+            gamma = self.gamma,
+            max_depth = self.max_depth,
+            min_child_weight = self.min_child_weight,
+            max_delta_step = self.max_delta_step,
+            reg_lambda = self.reg_lambda,
+            reg_alpha = self.reg_alpha,
+        )
+            
+    def fit(self, X, y) :
+        
+        super().fit(X, y)
+        
+        self._fitted = True
+        
+        return self
+    
+    def predict(self, X) :
+        
+        return super().predict(X)
+    
+class XGBoost_Regressor(XGBoost_Base) :
+    
+    def __init__(
+        self,
+        eta = 0.3,
+        gamma = 0,
+        max_depth = 6,
+        min_child_weight = 1,
+        max_delta_step = 0,
+        reg_lambda = 1,
+        reg_alpha = 0,
+    ) :
+        self.eta = eta
+        self.gamma = gamma
+        self.max_depth = max_depth
+        self.min_child_weight = min_child_weight
+        self.max_delta_step = max_delta_step
+        self.reg_lambda = reg_lambda
+        self.reg_alpha = reg_alpha
+    
+        self._fitted = False
+        
+        super().__init__(
+            task_type="regression",
+            eta = self.eta,
+            gamma = self.gamma,
+            max_depth = self.max_depth,
+            min_child_weight = self.min_child_weight,
+            max_delta_step = self.max_delta_step,
+            reg_lambda = self.reg_lambda,
+            reg_alpha = self.reg_alpha,
+        )
+            
+    def fit(self, X, y) :
+        
+        super().fit(X, y)
+        
+        self._fitted = True
+        
+        return self
+    
+    def predict(self, X) :
         
         return super().predict(X)

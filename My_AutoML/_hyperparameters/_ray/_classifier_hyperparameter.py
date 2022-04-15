@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 12:03:28 am
+Last Modified: Friday, 15th April 2022 12:03:21 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -262,5 +262,15 @@ classifier_hyperparameter = [
         "LightGBM_Classifier_tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
         "LightGBM_Classifier_num_iterations": tune.qlograndint(50, 500, 1),
     },
+    {
+        "model_23": "XGBoost_Classifier",
+        "XGBoost_Classifier_eta": tune.uniform(0, 1),
+        "XGBoost_Classifier_gamma": tune.loguniform(1e-10, 1e3),
+        "XGBoost_Classifier_max_depth": tune.randint(1, 31),
+        "XGBoost_Classifier_min_child_weight": tune.loguniform(1e-10, 1e3),
+        "XGBoost_Classifier_max_delta_step": tune.loguniform(1e-7, 1e1),
+        "XGBoost_Classifier_reg_lambda": tune.uniform(0, 1),
+        "XGBoost_Classifier_reg_alpha": tune.uniform(0, 1),
+    }
 ]
 

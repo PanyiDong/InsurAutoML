@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 12:04:40 am
+Last Modified: Friday, 15th April 2022 12:03:45 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -296,5 +296,15 @@ regressor_hyperparameter = [
         "LightGBM_Regressor_learning_rate": tune.loguniform(1e-7, 1),
         "LightGBM_Regressor_tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
         "LightGBM_Regressor_num_iterations": tune.qlograndint(50, 500, 1),
+    },
+    {
+        "model_22": "XGBoost_Regressor",
+        "XGBoost_Regressor_eta": tune.uniform(0, 1),
+        "XGBoost_Regressor_gamma": tune.loguniform(1e-10, 1e3),
+        "XGBoost_Regressor_max_depth": tune.randint(1, 31),
+        "XGBoost_Regressor_min_child_weight": tune.loguniform(1e-10, 1e3),
+        "XGBoost_Regressor_max_delta_step": tune.loguniform(1e-7, 1e1),
+        "XGBoost_Regressor_reg_lambda": tune.uniform(0, 1),
+        "XGBoost_Regressor_reg_alpha": tune.uniform(0, 1),
     },
 ]
