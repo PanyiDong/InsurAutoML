@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:20:49 pm
+Last Modified: Friday, 15th April 2022 12:53:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -76,10 +76,16 @@ class FeatureFilter:
 
     def fit(self, X, y=None):
 
-        try:
-            _empty = (y == None).all().values[0]
-        except AttributeError:
+        # check whether y is empty
+        if isinstance(y, pd.DataFrame):
+            _empty = y.isnull().all().all()
+        elif isinstance(y, pd.Series):
+            _empty = y.isnull().all()
+        elif isinstance(y, np.ndarray):
+            _empty = np.all(np.isnan(y))
+        else:
             _empty = y == None
+
         if _empty:
             raise ValueError("Must have response!")
 
