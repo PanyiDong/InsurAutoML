@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:53:37 pm
+Last Modified: Saturday, 16th April 2022 6:25:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -79,17 +79,17 @@ def test_heart():
     response = ["HeartDisease"]
 
     mol = My_AutoML.AutoTabular(
-        model_name = "heart",
+        model_name="heart",
         search_algo="GridSearch",
     )
     mol.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/heart_model/init.txt") == True
+        os.path.exists("tmp/heart/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart_model/optimal_setting.txt") == True
+        os.path.exists("tmp/heart/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
 
 
