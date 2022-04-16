@@ -1,5 +1,6 @@
 name: build_nn
 on:
+  - push
   - pull_request
 jobs:
   run:
