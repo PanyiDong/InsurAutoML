@@ -6,6 +6,8 @@ pandas
 scipy
 matplotlib
 ray
+ray[tune]
+ray[rllib]
 # tqdm==4.62.3
 # mlflow==1.21.0
 tensorboardX
