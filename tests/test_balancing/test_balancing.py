@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 11:03:41 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 1:06:49 pm
+Last Modified: Saturday, 16th April 2022 12:11:15 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,12 +45,12 @@ import pandas as pd
 from My_AutoML._balancing import balancings
 
 data_X = pd.DataFrame(
-    {
-        "col_1": [3, 8, 6, 7, 9, 9, 8, 8, 7, 5],
-        "col_2": [9, 7, 2, 1, 6, 8, 8, 9, 3, 6],
-    }
+    np.random.normal(0, 10, (100, 10)),
+    columns=["col_" + str(i) for i in range(10)],
 )
-data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
+data_y = pd.DataFrame(
+    [1 for _ in range(90)] + [0 for _ in range(10)], columns=["col_y"]
+)
 
 
 class TestScaling(unittest.TestCase):
@@ -62,16 +62,14 @@ class TestScaling(unittest.TestCase):
 
         for method_name, method_object in zip(self.method_names, self.method_objects):
 
-            mol = method_object()
-            mol.fit_transform(data_X, data_y)
+            if method_name != "no_processing":
 
-            # check whether the method is fitted
-            self.assertEqual(
-                mol._fitted,
-                True,
-                "The method {} is not correctly fitted.".format(method_name),
-            )
+                mol = method_object(imbalance_threshold=0.8)
+                mol.fit_transform(data_X, data_y)
 
-            print(
-                "The method {} is correctly fitted.".format(method_name),
-            )
+                # check whether the method is fitted
+                self.assertEqual(
+                    mol._fitted,
+                    True,
+                    "The method {} is not correctly fitted.".format(method_name),
+                )
