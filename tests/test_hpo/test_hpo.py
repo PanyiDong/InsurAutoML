@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 7:25:09 pm
+Last Modified: Saturday, 16th April 2022 2:32:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -51,57 +51,57 @@ from My_AutoML import load_data
 # the model is fitted correctly
 
 
-def test_stroke():
+# def test_stroke():
 
-    os.system(
-        "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke"
-    )
+#     os.system(
+#         "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke"
+#     )
 
-    assert (
-        os.path.exists("tmp/healthcare-dataset-stroke-data_model/init.txt") == True
-    ), "Classification for Stroke data failed to initiated."
-    # assert (
-    #     mol_heart._fitted == True
-    # ), "Classification for Heart data failed to fit."
-    assert (
-        os.path.exists("tmp/healthcare-dataset-stroke-data_model/optimal_setting.txt")
-        == True
-    ), "Classification for Stroke data failed to find optimal setting."
-
-
-def test_heart():
-
-    os.system(
-        "python main.py --data_folder example/example_data --train_data heart --response HeartDisease \
-            --search_algo GridSearch"
-    )
-
-    assert (
-        os.path.exists("tmp/heart_model/init.txt") == True
-    ), "Classification for Heart data failed to initiated."
-    # assert (
-    #     mol_heart._fitted == True
-    # ), "Classification for Heart data failed to fit."
-    assert (
-        os.path.exists("tmp/heart_model/optimal_setting.txt") == True
-    ), "Classification for Heart data failed to find optimal setting."
+#     assert (
+#         os.path.exists("tmp/healthcare-dataset-stroke-data_model/init.txt") == True
+#     ), "Classification for Stroke data failed to initiated."
+#     # assert (
+#     #     mol_heart._fitted == True
+#     # ), "Classification for Heart data failed to fit."
+#     assert (
+#         os.path.exists("tmp/healthcare-dataset-stroke-data_model/optimal_setting.txt")
+#         == True
+#     ), "Classification for Stroke data failed to find optimal setting."
 
 
-def test_insurance():
+# def test_heart():
 
-    os.system(
-        "python main.py --data_folder example/example_data --train_data insurance --response expenses"
-    )
+#     os.system(
+#         "python main.py --data_folder example/example_data --train_data heart --response HeartDisease \
+#             --search_algo GridSearch"
+#     )
 
-    assert (
-        os.path.exists("tmp/insurance_model/init.txt") == True
-    ), "Regression for Insurance data failed to initiated."
-    # assert (
-    #     mol_insurance._fitted == True
-    # ), "Regression for Insurance data failed to fit."
-    assert (
-        os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
-    ), "Regression for Insurance data failed to find optimal setting."
+#     assert (
+#         os.path.exists("tmp/heart_model/init.txt") == True
+#     ), "Classification for Heart data failed to initiated."
+#     # assert (
+#     #     mol_heart._fitted == True
+#     # ), "Classification for Heart data failed to fit."
+#     assert (
+#         os.path.exists("tmp/heart_model/optimal_setting.txt") == True
+#     ), "Classification for Heart data failed to find optimal setting."
+
+
+# def test_insurance():
+
+#     os.system(
+#         "python main.py --data_folder example/example_data --train_data insurance --response expenses"
+#     )
+
+#     assert (
+#         os.path.exists("tmp/insurance_model/init.txt") == True
+#     ), "Regression for Insurance data failed to initiated."
+#     # assert (
+#     #     mol_insurance._fitted == True
+#     # ), "Regression for Insurance data failed to fit."
+#     assert (
+#         os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
+#     ), "Regression for Insurance data failed to find optimal setting."
 
 
 def test_stroke_import_version():
@@ -128,3 +128,47 @@ def test_stroke_import_version():
     assert (
         os.path.exists("tmp/stroke/optimal_setting.txt") == True
     ), "Classification for Stroke data (import_version) failed to find optimal setting."
+
+
+def test_stroke_loading():
+
+    # test load_data here
+    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = data["healthcare-dataset-stroke-data"]
+
+    features = list(data.columns)
+    features.remove("stroke")
+    response = ["stroke"]
+
+    mol = My_AutoML.AutoTabular(
+        model_name="stroke",
+    )
+    mol.fit(data[features], data[response])
+
+    assert mol._fitted == True, "AutoTabular with loading failed to fit."
+
+
+def test_stroke_with_limit():
+
+    # test load_data here
+    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = data["healthcare-dataset-stroke-data"]
+
+    features = list(data.columns)
+    features.remove("stroke")
+    response = ["stroke"]
+
+    mol = My_AutoML.AutoTabular(
+        model_name="no_valid",
+        encoder=["DataEncoding"],
+        imputer=["SimpleImputer"],
+        balancing=["no_processing"],
+        scaling=["no_processing"],
+        feature_selection=["no_processing"],
+        models=["DecisionTree"],
+        validation=False,
+        search_algo="GridSearch",
+    )
+    mol.fit(data[features], data[response])
+
+    assert mol._fitted == True, "AutoTabular with limited space failed to fit."

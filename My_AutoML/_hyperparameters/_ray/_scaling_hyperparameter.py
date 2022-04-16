@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 10:06:01 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:24:29 pm
+Last Modified: Saturday, 16th April 2022 2:24:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ from ray import tune
 
 # scaling
 scaling_hyperparameter = [
-    {"scaling_1": "NoScaling"},
+    {"scaling_1": "no_processing"},
     {"scaling_2": "Standardize"},
     {"scaling_3": "Normalize"},
     {"scaling_4": "RobustScale"},

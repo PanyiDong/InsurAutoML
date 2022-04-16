@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 10:27:55 pm
+Last Modified: Saturday, 16th April 2022 2:21:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import copy
 from ray import tune
 import importlib
 from typing import Callable
@@ -72,9 +73,18 @@ def _get_hyperparameter_space(
                     _encoder_key = _key
                     break
             if item[_encoder_key] == _encoder:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
                 # convert string to tune.choice
-                item[_encoder_key] = tune.choice([item[_encoder_key]])
-                _encoding_hyperparameter.append(item)
+                _item[_encoder_key] = tune.choice([_item[_encoder_key]])
+                _encoding_hyperparameter.append(_item)
+
+    # raise error if no encoding hyperparameters are found
+    if len(_encoding_hyperparameter) == 0:
+        raise ValueError(
+            "No encoding hyperparameters are found. Please check your encoders."
+        )
+
     _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
 
     # imputation space
@@ -92,9 +102,17 @@ def _get_hyperparameter_space(
                         _imputer_key = _key
                         break
                 if item[_imputer_key] == _imputer:
+                    # create a copy of hyperparameters, avoid changes on original
+                    _item = copy.deepcopy(item)
                     # convert string to tune.choice
-                    item[_imputer_key] = tune.choice([item[_imputer_key]])
-                    _imputer_hyperparameter.append(item)
+                    _item[_imputer_key] = tune.choice([_item[_imputer_key]])
+                    _imputer_hyperparameter.append(_item)
+
+        # raise error if no imputation hyperparameters are found
+        if len(_imputer_hyperparameter) == 0:
+            raise ValueError(
+                "No imputation hyperparameters are found. Please check your imputers."
+            )
 
         _imputer_hyperparameter = tune.choice(_imputer_hyperparameter)
 
@@ -110,9 +128,17 @@ def _get_hyperparameter_space(
                     _balancing_key = _key
                     break
             if item[_balancing_key] == _balancing:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
                 # convert string to tune.choice
-                item[_balancing_key] = tune.choice([item[_balancing_key]])
-                _balancing_hyperparameter.append(item)
+                _item[_balancing_key] = tune.choice([_item[_balancing_key]])
+                _balancing_hyperparameter.append(_item)
+
+    # raise error if no balancing hyperparameters are found
+    if len(_balancing_hyperparameter) == 0:
+        raise ValueError(
+            "No balancing hyperparameters are found. Please check your balancings."
+        )
 
     _balancing_hyperparameter = tune.choice(_balancing_hyperparameter)
 
@@ -126,9 +152,17 @@ def _get_hyperparameter_space(
                     _scaling_key = _key
                     break
             if item[_scaling_key] == _scaling:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
                 # convert string to tune.choice
-                item[_scaling_key] = tune.choice([item[_scaling_key]])
-                _scaling_hyperparameter.append(item)
+                _item[_scaling_key] = tune.choice([_item[_scaling_key]])
+                _scaling_hyperparameter.append(_item)
+
+    # raise error if no scaling hyperparameters are found
+    if len(_scaling_hyperparameter) == 0:
+        raise ValueError(
+            "No scaling hyperparameters are found. Please check your scalings."
+        )
 
     _scaling_hyperparameter = tune.choice(_scaling_hyperparameter)
 
@@ -146,11 +180,19 @@ def _get_hyperparameter_space(
                     _feature_selection_key = _key
                     break
             if item[_feature_selection_key] == _feature_selection:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
                 # convert string to tune.choice
-                item[_feature_selection_key] = tune.choice(
-                    [item[_feature_selection_key]]
+                _item[_feature_selection_key] = tune.choice(
+                    [_item[_feature_selection_key]]
                 )
-                _feature_selection_hyperparameter.append(item)
+                _feature_selection_hyperparameter.append(_item)
+
+    # raise error if no feature selection hyperparameters are found
+    if len(_feature_selection_hyperparameter) == 0:
+        raise ValueError(
+            "No feature selection hyperparameters are found. Please check your feature selections."
+        )
 
     _feature_selection_hyperparameter = tune.choice(_feature_selection_hyperparameter)
 
@@ -165,9 +207,17 @@ def _get_hyperparameter_space(
                     _model_key = _key
                     break
             if item[_model_key] == _model:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
                 # convert string to tune.choice
-                item[_model_key] = tune.choice([item[_model_key]])
-                _model_hyperparameter.append(item)
+                _item[_model_key] = tune.choice([_item[_model_key]])
+                _model_hyperparameter.append(_item)
+
+    # raise error if no model hyperparameters are found
+    if len(_model_hyperparameter) == 0:
+        raise ValueError(
+            "No model hyperparameters are found. Please check your models."
+        )
 
     _model_hyperparameter = tune.choice(_model_hyperparameter)
 
@@ -522,26 +572,25 @@ def get_progress_reporter(
 
     return progress_reporter
 
-def get_logger(logger) :
-    
-    if not isinstance(logger, list) and logger is not None :
-        raise TypeError(
-            "Expect a list of string or None, get {}.".format(logger)
-        )
-    
+
+def get_logger(logger):
+
+    if not isinstance(logger, list) and logger is not None:
+        raise TypeError("Expect a list of string or None, get {}.".format(logger))
+
     loggers = []
-    
-    if logger is None :
-        
+
+    if logger is None:
+
         from ray.tune.logger import LoggerCallback
-        
+
         return [LoggerCallback()]
-    elif "Logger" in logger :
+    elif "Logger" in logger:
         from ray.tune.logger import LoggerCallback
-        
+
         loggers.append(LoggerCallback())
-    elif "TBX" in logger :
-        
+    elif "TBX" in logger:
+
         # check whether TensorBoardX is installed
         TensorBoardX_spec = importlib.util.find_spec("tensorboardX")
         if TensorBoardX_spec is None:
@@ -549,22 +598,22 @@ def get_logger(logger) :
                 "TensorBoardX not installed. Please install it first to use TensorBoardX. \
                 Command to install: pip install tensorboardX"
             )
-        
+
         from ray.tune.logger import TBXLoggerCallback
-        
+
         loggers.append(TBXLoggerCallback())
-    elif "JSON" in logger :
-        
+    elif "JSON" in logger:
+
         from ray.tune.logger import JsonLoggerCallback
-        
+
         loggers.append(JsonLoggerCallback())
-    elif "CSV" in logger :
-        
+    elif "CSV" in logger:
+
         from ray.tune.logger import CSVLogger
-        
+
         loggers.append(CSVLogger())
-    elif "MLflow" in logger :
-        
+    elif "MLflow" in logger:
+
         # checkwhether mlflow is installed
         mlflow_spec = importlib.util.find_spec("mlflow")
         if mlflow_spec is None:
@@ -572,12 +621,12 @@ def get_logger(logger) :
                 "mlflow not installed. Please install it first to use mlflow. \
                 Command to install: pip install mlflow"
             )
-        
+
         from ray.tune.integration.mlflow import MLflowLoggerCallback
-        
+
         loggers.append(MLflowLoggerCallback())
-    elif "Wandb" in logger :
-        
+    elif "Wandb" in logger:
+
         # check whether wandb is installed
         wandb_spec = importlib.util.find_spec("wandb")
         if wandb_spec is None:
@@ -585,9 +634,9 @@ def get_logger(logger) :
                 "wandb not installed. Please install it first to use wandb. \
                 Command to install: pip install wandb"
             )
-            
+
         from ray.tune.integration.wandb import WandbLoggerCallback
-        
+
         loggers.append(WandbLoggerCallback())
-        
+
     return loggers

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:19 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:17:03 pm
+Last Modified: Saturday, 16th April 2022 2:55:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,9 +65,6 @@ class AAI_kNN(formatting, MinMaxScale):
 
     Parameters
     ----------
-    columns: columns need imputation, default = []
-    default will take all columns
-
     k: k nearest neighbors selected, default = 3
     Odd k preferred
 
@@ -91,7 +88,6 @@ class AAI_kNN(formatting, MinMaxScale):
 
     def __init__(
         self,
-        columns=[],
         k=3,
         scaling=True,
         similarity="PCC",
@@ -100,7 +96,6 @@ class AAI_kNN(formatting, MinMaxScale):
         threads=-1,
         deep_copy=False,
     ):
-        self.columns = columns
         self.k = k
         self.scaling = scaling
         self.similarity = similarity
@@ -300,7 +295,7 @@ class AAI_kNN(formatting, MinMaxScale):
         _X = X.copy(deep=self.deep_copy)
 
         # initialize columns
-        self.columns = list(_X.columns) if not self.columns else self.columns
+        self.columns = list(_X.columns)
 
         # initialize number of working threads
         self.threads = (
@@ -324,7 +319,7 @@ class AAI_kNN(formatting, MinMaxScale):
 
         # if scaling, use MinMaxScale to scale the features
         if self.scaling:
-            scaling = MinMaxScale(columns=self.columns)
+            scaling = MinMaxScale()
             _X = scaling.fit_transform(_X)
 
         # kNN imputation
@@ -406,9 +401,6 @@ class CMI(formatting, MinMaxScale):
 
     Parameters
     ----------
-    columns: columns need imputation, default = []
-    default will take all columns
-
     k: number of cluster groups, default = 10
 
     distance: metrics of calculating the distance between two rows, default = 'l2'
@@ -432,7 +424,6 @@ class CMI(formatting, MinMaxScale):
 
     def __init__(
         self,
-        columns=[],
         k=10,
         distance="l2",
         delta=0,
@@ -441,7 +432,6 @@ class CMI(formatting, MinMaxScale):
         threads=-1,
         deep_copy=False,
     ):
-        self.columns = columns
         self.k = k
         self.distance = distance
         self.delta = delta
@@ -641,7 +631,7 @@ class CMI(formatting, MinMaxScale):
         _X = X.copy(deep=self.deep_copy)
 
         # initialize columns
-        self.columns = list(_X.columns) if not self.columns else self.columns
+        self.columns = list(_X.columns)
 
         # initialize number of working threads
         self.threads = (
@@ -665,7 +655,7 @@ class CMI(formatting, MinMaxScale):
 
         # if scaling, use MinMaxScale to scale the features
         if self.scaling:
-            scaling = MinMaxScale(columns=self.columns)
+            scaling = MinMaxScale()
             _X = scaling.fit_transform(_X)
 
         # imputation on formatted, scaled datasets
@@ -730,9 +720,6 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
     Parameters
     ----------
-    columns: columns need imputation, default = []
-    default will take all columns
-
     k: number of cluster groups, default = 10
 
     distance: metrics of calculating the distance between two rows, default = 'l2'
@@ -764,7 +751,6 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
     def __init__(
         self,
-        columns=[],
         k=10,
         distance="l2",
         dissimilarity="weighted",
@@ -774,7 +760,6 @@ class k_Prototype_NN(formatting, MinMaxScale):
         deep_copy=False,
         seed=1,
     ):
-        self.columns = columns
         self.k = k
         self.distance = distance
         self.dissimilarity = dissimilarity
@@ -1036,7 +1021,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         _X = X.copy(deep=self.deep_copy)
 
         # initialize columns
-        self.columns = list(_X.columns) if not self.columns else self.columns
+        self.columns = list(_X.columns)
 
         # initialize number of working threads
         self.threads = (
@@ -1069,7 +1054,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
         # if scaling, scaling the numerical columns
         if self.scaling:
-            scaling = MinMaxScale(columns=numeric_columns)
+            scaling = MinMaxScale()
             _X = scaling.fit_transform(_X)
 
         # imputation procedure

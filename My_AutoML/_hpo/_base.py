@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:15:27 am
+Last Modified: Saturday, 16th April 2022 2:48:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,6 +42,7 @@ import ray
 from ray import tune
 
 import os
+import copy
 import shutil
 import importlib
 import warnings
@@ -57,9 +58,12 @@ from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._base import type_of_script
 from My_AutoML._utils._file import save_model
-from My_AutoML._utils._data import str2list, str2dict
+from My_AutoML._utils._data import (
+    str2list,
+    str2dict,
+    train_test_split,
+)
 from My_AutoML._utils._optimize import (
-    _get_hyperparameter_space,
     get_algo,
     get_scheduler,
     get_logger,
@@ -188,7 +192,7 @@ class AutoTabularBase:
 
     search_scheduler_settings: search scheduler settings, default = {}
     need manual configuration for each search scheduler
-    
+
     logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
@@ -238,7 +242,7 @@ class AutoTabularBase:
         search_algo_settings={},
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
-        logger = ["Logger"],
+        logger=["Logger"],
         progress_reporter=None,
         full_status=False,
         verbose=1,
@@ -283,16 +287,6 @@ class AutoTabularBase:
 
     def get_hyperparameter_space(self, X, y):
 
-        from My_AutoML._hyperparameters import (
-            encoder_hyperparameter,
-            imputer_hyperparameter,
-            scaling_hyperparameter,
-            balancing_hyperparameter,
-            feature_selection_hyperparameter,
-            classifier_hyperparameter,
-            regressor_hyperparameter,
-        )
-
         # initialize default search options
         # and select the search options based on the input restrictions
         # use copy to allows multiple manipulation
@@ -301,11 +295,11 @@ class AutoTabularBase:
         # all encoders available
         from My_AutoML._encoding import encoders
 
-        self._all_encoders = encoders.copy()
+        self._all_encoders = copy.deepcopy(encoders)
 
         # get default encoder methods space
         if self.encoder == "auto":
-            encoder = self._all_encoders.copy()
+            encoder = copy.deepcopy(self._all_encoders)
         else:
             self.encoder = str2list(self.encoder)  # string list to list
             encoder = {}  # if specified, check if encoders in default encoders
@@ -318,17 +312,11 @@ class AutoTabularBase:
                     )
                 encoder[_encoder] = self._all_encoders[_encoder]
 
-        # all hyperparameters for encoders
-        self._all_encoders_hyperparameters = encoder_hyperparameter.copy()
-
-        # initialize encoders hyperparameter space
-        _all_encoders_hyperparameters = self._all_encoders_hyperparameters.copy()
-
         # Imputer: fill missing values
         # all imputers available
         from My_AutoML._imputation import imputers
 
-        self._all_imputers = imputers.copy()
+        self._all_imputers = copy.deepcopy(imputers)
 
         # special case: kNN imputer can not handle categorical data
         # remove kNN imputer from all imputers
@@ -343,7 +331,7 @@ class AutoTabularBase:
                 imputer = {"no_processing": no_processing}
                 self._all_imputers = imputer  # limit default imputer space
             else:
-                imputer = self._all_imputers.copy()
+                imputer = copy.deepcopy(self._all_imputers)
         else:
             self.imputer = str2list(self.imputer)  # string list to list
             if not X.isnull().values.any():  # if no missing values
@@ -360,21 +348,15 @@ class AutoTabularBase:
                         )
                     imputer[_imputer] = self._all_imputers[_imputer]
 
-        # all hyperparemeters for imputers
-        self._all_imputers_hyperparameters = imputer_hyperparameter.copy()
-
-        # initialize imputers hyperparameter space
-        _all_imputers_hyperparameters = self._all_imputers_hyperparameters.copy()
-
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
         from My_AutoML._balancing import balancings
 
-        self._all_balancings = balancings.copy()
+        self._all_balancings = copy.deepcopy(balancings)
 
         # get default balancing methods space
         if self.balancing == "auto":
-            balancing = self._all_balancings.copy()
+            balancing = copy.deepcopy(self._all_balancings)
         else:
             self.balancing = str2list(self.balancing)  # string list to list
             balancing = {}  # if specified, check if balancings in default balancings
@@ -387,21 +369,15 @@ class AutoTabularBase:
                     )
                 balancing[_balancing] = self._all_balancings[_balancing]
 
-        # all hyperparameters for balancing methods
-        self._all_balancings_hyperparameters = balancing_hyperparameter.copy()
-
-        # initialize balancing hyperparameter space
-        _all_balancings_hyperparameters = self._all_balancings_hyperparameters.copy()
-
         # Scaling
         # all scalings available
         from My_AutoML._scaling import scalings
 
-        self._all_scalings = scalings.copy()
+        self._all_scalings = copy.deepcopy(scalings)
 
         # get default scaling methods space
         if self.scaling == "auto":
-            scaling = self._all_scalings.copy()
+            scaling = copy.deepcopy(self._all_scalings)
         else:
             self.scaling = str2list(self.scaling)  # string list to list
             scaling = {}  # if specified, check if scalings in default scalings
@@ -414,17 +390,11 @@ class AutoTabularBase:
                     )
                 scaling[_scaling] = self._all_scalings[_scaling]
 
-        # all hyperparameters for scalings
-        self._all_scalings_hyperparameters = scaling_hyperparameter.copy()
-
-        # initialize scaling hyperparameter space
-        _all_scalings_hyperparameters = self._all_scalings_hyperparameters.copy()
-
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
         from My_AutoML._feature_selection import feature_selections
 
-        self._all_feature_selection = feature_selections.copy()
+        self._all_feature_selection = copy.deepcopy(feature_selections)
         if self.task_mode == "classification":
             # special treatment, if classification
             # remove some feature selection for regression
@@ -443,7 +413,7 @@ class AutoTabularBase:
 
         # get default feature selection methods space
         if self.feature_selection == "auto":
-            feature_selection = self._all_feature_selection.copy()
+            feature_selection = copy.deepcopy(self._all_feature_selection)
         else:
             self.feature_selection = str2list(
                 self.feature_selection
@@ -462,16 +432,6 @@ class AutoTabularBase:
                     _feature_selection
                 ]
 
-        # all hyperparameters for feature selections
-        self._all_feature_selection_hyperparameters = (
-            feature_selection_hyperparameter.copy()
-        )
-
-        # initialize feature selection hyperparameter space
-        _all_feature_selection_hyperparameters = (
-            self._all_feature_selection_hyperparameters.copy()
-        )
-
         # Model selection/Hyperparameter optimization
         # using Bayesian Optimization
         # all models available
@@ -480,11 +440,11 @@ class AutoTabularBase:
         if self.task_mode == "classification":
             from My_AutoML._model import classifiers
 
-            self._all_models = classifiers.copy()
+            self._all_models = copy.deepcopy(classifiers)
         elif self.task_mode == "regression":
             from My_AutoML._model import regressors
 
-            self._all_models = regressors.copy()
+            self._all_models = copy.deepcopy(regressors)
 
         # special treatment, remove SVM methods when observations are large
         # SVM suffers from the complexity o(n_samples^2 * n_features),
@@ -500,7 +460,7 @@ class AutoTabularBase:
 
         # model space, only select chosen models to space
         if self.models == "auto":  # if auto, model pool will be all default models
-            models = self._all_models.copy()
+            models = copy.deepcopy(self._all_models)
         else:
             self.models = str2list(self.models)  # string list to list
             models = {}  # if specified, check if models in default models
@@ -513,18 +473,70 @@ class AutoTabularBase:
                     )
                 models[_model] = self._all_models[_model]
 
+        # # initialize model hyperparameter space
+        # _all_models_hyperparameters = copy.deepcopy(self._all_models_hyperparameters)
+
+        # initialize default search space
+        from My_AutoML._utils._optimize import _get_hyperparameter_space
+
+        from My_AutoML._hyperparameters import (
+            encoder_hyperparameter,
+            imputer_hyperparameter,
+            scaling_hyperparameter,
+            balancing_hyperparameter,
+            feature_selection_hyperparameter,
+            classifier_hyperparameter,
+            regressor_hyperparameter,
+        )
+
+        # if needed, modify default hyperparameter space
+        # like model hyperparameter space below
+        # all hyperparameters for encoders
+        # _all_encoders_hyperparameters = copy.deepcopy(encoder_hyperparameter)
+
+        # # initialize encoders hyperparameter space
+        # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
+
+        # all hyperparemeters for imputers
+        # _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
+
+        # # initialize imputers hyperparameter space
+        # _all_imputers_hyperparameters = copy.deepcopy(self._all_imputers_hyperparameters)
+
+        # all hyperparameters for balancing methods
+        # _all_balancings_hyperparameters = copy.deepcopy(balancing_hyperparameter)
+
+        # # initialize balancing hyperparameter space
+        # _all_balancings_hyperparameters = copy.deepcopy(self._all_balancings_hyperparameters)
+
+        # all hyperparameters for scalings
+        # _all_scalings_hyperparameters = copy.deepcopy(scaling_hyperparameter)
+
+        # # initialize scaling hyperparameter space
+        # _all_scalings_hyperparameters = copy.deepcopy(self._all_scalings_hyperparameters)
+
+        # all hyperparameters for feature selections
+        # _all_feature_selection_hyperparameters = copy.deepcopy(
+        #     feature_selection_hyperparameter
+        # )
+
+        # # initialize feature selection hyperparameter space
+        # _all_feature_selection_hyperparameters = copy.deepcopy(
+        #     self._all_feature_selection_hyperparameters
+        # )
+
         # all hyperparameters for the models by mode
         if self.task_mode == "classification":
-            self._all_models_hyperparameters = classifier_hyperparameter.copy()
+            _all_models_hyperparameters = copy.deepcopy(classifier_hyperparameter)
         elif self.task_mode == "regression":
-            self._all_models_hyperparameters = regressor_hyperparameter.copy()
+            _all_models_hyperparameters = copy.deepcopy(regressor_hyperparameter)
 
         # special treatment, for LightGBM_Classifier
         # if binary classification, use LIGHTGBM_BINARY_CLASSIFICATION
         # if multiclass, use LIGHTGBM_MULTICLASS_CLASSIFICATION
         if self.task_mode == "classification":
             # get LightGBM_Regressor key
-            for item in self._all_models_hyperparameters:
+            for item in _all_models_hyperparameters:
                 for key in item.keys():
                     if key == "LightGBM_Classifier_objective":
                         # flatten to 1d
@@ -541,33 +553,34 @@ class AutoTabularBase:
 
                             item[key] = tune.choice(LIGHTGBM_MULTICLASS_CLASSIFICATION)
 
-        # initialize model hyperparameter space
-        _all_models_hyperparameters = self._all_models_hyperparameters.copy()
-
-        # initialize default search space
-        self.hyperparameter_space = None
-
         # generate the hyperparameter space
-        if self.hyperparameter_space is None:
-            self.hyperparameter_space = _get_hyperparameter_space(
-                X,
-                _all_encoders_hyperparameters,
-                encoder,
-                _all_imputers_hyperparameters,
-                imputer,
-                _all_balancings_hyperparameters,
-                balancing,
-                _all_scalings_hyperparameters,
-                scaling,
-                _all_feature_selection_hyperparameters,
-                feature_selection,
-                _all_models_hyperparameters,
-                models,
-                self.task_mode,
-            )  # _X to choose whether include imputer
-            # others are the combinations of default hyperparameter space & methods selected
+        hyperparameter_space = _get_hyperparameter_space(
+            X,
+            encoder_hyperparameter,
+            encoder,
+            imputer_hyperparameter,
+            imputer,
+            balancing_hyperparameter,
+            balancing,
+            scaling_hyperparameter,
+            scaling,
+            feature_selection_hyperparameter,
+            feature_selection,
+            _all_models_hyperparameters,
+            models,
+            self.task_mode,
+        )  # _X to choose whether include imputer
+        # others are the combinations of default hyperparameter space & methods selected
 
-        return encoder, imputer, balancing, scaling, feature_selection, models
+        return (
+            encoder,
+            imputer,
+            balancing,
+            scaling,
+            feature_selection,
+            models,
+            hyperparameter_space,
+        )
 
     # load hyperparameter settings and train on the data
     def load_model(self, _X, _y):
@@ -888,7 +901,12 @@ class AutoTabularBase:
             scaling,
             feature_selection,
             models,
+            hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
+
+        print(hyperparameter_space)
+        print(hyperparameter_space["encoder"].categories)
+        # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
         # if the model is already trained, read the setting
         if os.path.exists(self.model_name):
@@ -932,10 +950,8 @@ class AutoTabularBase:
         if self.validation:  # only perform train_test_split when validation
             # train test split so the performance of model selection and
             # hyperparameter optimization can be evaluated
-            from sklearn.model_selection import train_test_split
-
             X_train, X_test, y_train, y_test = train_test_split(
-                _X, _y, test_size=self.valid_size, random_state=self.seed
+                _X, _y, test_perc=self.valid_size, seed=self.seed
             )
 
             if self.reset_index:
@@ -951,6 +967,8 @@ class AutoTabularBase:
         def _objective(params):
 
             # different evaluation metrics for classification and regression
+            # notice: if add metrics that is larger the better, need to add - sign
+            # at actual fitting process below (since try to minimize the loss)
             if self.task_mode == "regression":
                 # evaluation for predictions
                 if self.objective == "MSE":
@@ -1318,22 +1336,45 @@ class AutoTabularBase:
                     )
 
                 # fit model
-                mol.fit(_X_obj.values, _y_obj.values.ravel())
-                pd.concat([_X_obj, _y_obj], axis=1).to_csv(
-                    "data_preprocessed.csv", index=False
-                )
+                if scipy.sparse.issparse(_X_obj):  # check if returns sparse matrix
+                    _X_obj = _X_obj.toarray()
+
+                # store the preprocessed train/test datasets
+                if isinstance(_X_obj, np.ndarray):  # in case numpy array is returned
+                    pd.concat(
+                        [pd.DataFrame(_X_obj), _y_obj],
+                        axis=1,
+                        ignore_index=True,
+                    ).to_csv("train_preprocessed.csv", index=False)
+                elif isinstance(_X_obj, pd.DataFrame):
+                    pd.concat([_X_obj, _y_obj], axis=1).to_csv(
+                        "train_preprocessed.csv", index=False
+                    )
+                else:
+                    raise TypeError("Only accept numpy array or pandas dataframe!")
+
+                mol.fit(_X_obj, _y_obj.values.ravel())
                 os.remove("objective_process.txt")
 
-                y_pred = mol.predict(_X_obj.values)
+                y_pred = mol.predict(_X_obj)
 
-                if self.objective == "R2":  # special treatment for r2_score
+                if self.objective in [
+                    "R2",
+                    "accuracy",
+                    "precision",
+                    "auc",
+                    "hinge",
+                    "f1",
+                ]:
+                    # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
+                    # larger the better, since to minimize, add negative sign
                     _loss = -_obj(y_pred, _y_obj.values)
                 else:
                     _loss = _obj(y_pred, _y_obj.values)
 
                 # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                 with open("testing_objective.txt", "w") as f:
-                    f.write("Loss from objective function is: {.6f}\n".format(_loss))
+                    f.write("Loss from objective function is: {:.6f}\n".format(_loss))
                     f.write("Loss is calculate using {}.".format(self.objective))
                 self._iter += 1
 
@@ -1361,22 +1402,21 @@ class AutoTabularBase:
                         training_status="fitted",
                         loss=_loss,
                     )
-        
+
         # load dict settings for search_algo and search_scheduler
         self.search_algo_settings = str2dict(self.search_algo_settings)
         self.search_scheduler_settings = str2dict(self.search_scheduler_settings)
-        
+
         # use ray for Model Selection and Hyperparameter Selection
         # get search algorithm
         algo = get_algo(self.search_algo)
-        
+
         # special requirement for Nevergrad, need a algorithm setting
         if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
             warnings.warn("No algorithm setting for Nevergrad find, use NGOpt.")
             import nevergrad as ng
-            self.search_algo_settings = {
-                "optimizer": ng.optimizers.NGOpt
-            }
+
+            self.search_algo_settings = {"optimizer": ng.optimizers.NGOpt}
             # raise AttributeError(
             #     "Search algorithm Nevergrad requires Nevergrad optimizer. \
             #     Example: self.search_algo_settings = {'optimizer': nevergrad.optimizers.NGOpt}."
@@ -1384,7 +1424,7 @@ class AutoTabularBase:
 
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
-        
+
         # get callback logger
         logger = get_logger(self.logger)
 
@@ -1394,7 +1434,7 @@ class AutoTabularBase:
             self.max_evals,
             self.max_error,
         )
-        
+
         # initialize ray
         # if already initialized, do nothing
         if not ray.is_initialized():
@@ -1415,7 +1455,7 @@ class AutoTabularBase:
         # optimization process
         fit_analysis = tune.run(
             _objective,
-            config=self.hyperparameter_space,
+            config=hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             resume="AUTO",
             checkpoint_freq=1,

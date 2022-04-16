@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:13:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 12:16:53 am
+Last Modified: Saturday, 16th April 2022 3:03:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -105,3 +105,54 @@ def test_imputer():
             ), "The imputation method {} fail to impute all missings.".format(
                 method_name
             )
+
+
+def test_imputer_AAI_kNN():
+
+    from My_AutoML._imputation._clustering import AAI_kNN
+
+    # test AAI_kNN
+    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+    imputer = AAI_kNN()
+    fill_data = imputer.fill(data)
+
+    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+        "AAI_kNN"
+    )
+    assert (
+        fill_data.isnull().any().any() == False
+    ), "The imputation method {} fail to impute all missings.".format("AAI_kNN")
+
+
+def test_imputer_CMI():
+
+    from My_AutoML._imputation._clustering import CMI
+
+    # test CMI
+    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+    imputer = CMI()
+    fill_data = imputer.fill(data)
+
+    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+        "CMI"
+    )
+    assert (
+        fill_data.isnull().any().any() == False
+    ), "The imputation method {} fail to impute all missings.".format("CMI")
+
+
+def test_imputer_k_Prototype_NN():
+
+    from My_AutoML._imputation._clustering import k_Prototype_NN
+
+    # test k_Prototype_NN
+    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+    imputer = k_Prototype_NN()
+    fill_data = imputer.fill(data)
+
+    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+        "k_Prototype_NN"
+    )
+    assert (
+        fill_data.isnull().any().any() == False
+    ), "The imputation method {} fail to impute all missings.".format("k_Prototype_NN")
