@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 2:32:15 pm
+Last Modified: Saturday, 16th April 2022 4:11:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,6 @@ SOFTWARE.
 """
 
 import os
-import pandas as pd
 
 import My_AutoML
 from My_AutoML import load_data
@@ -69,39 +68,50 @@ from My_AutoML import load_data
 #     ), "Classification for Stroke data failed to find optimal setting."
 
 
-# def test_heart():
+def test_heart():
 
-#     os.system(
-#         "python main.py --data_folder example/example_data --train_data heart --response HeartDisease \
-#             --search_algo GridSearch"
-#     )
+    # test load_data here
+    data = load_data().load("example/example_data", "heart")
+    data = data["heart"]
 
-#     assert (
-#         os.path.exists("tmp/heart_model/init.txt") == True
-#     ), "Classification for Heart data failed to initiated."
-#     # assert (
-#     #     mol_heart._fitted == True
-#     # ), "Classification for Heart data failed to fit."
-#     assert (
-#         os.path.exists("tmp/heart_model/optimal_setting.txt") == True
-#     ), "Classification for Heart data failed to find optimal setting."
+    features = list(data.columns)
+    features.remove("HeartDisease")
+    response = ["HeartDisease"]
+
+    mol = My_AutoML.AutoTabular(
+        search_algo="GridSearch",
+    )
+    mol.fit(data[features], data[response])
+
+    assert (
+        os.path.exists("tmp/heart_model/init.txt") == True
+    ), "Classification for Heart data failed to initiated."
+    assert mol._fitted == True, "Classification for Heart data failed to fit."
+    assert (
+        os.path.exists("tmp/heart_model/optimal_setting.txt") == True
+    ), "Classification for Heart data failed to find optimal setting."
 
 
-# def test_insurance():
+def test_insurance():
 
-#     os.system(
-#         "python main.py --data_folder example/example_data --train_data insurance --response expenses"
-#     )
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
 
-#     assert (
-#         os.path.exists("tmp/insurance_model/init.txt") == True
-#     ), "Regression for Insurance data failed to initiated."
-#     # assert (
-#     #     mol_insurance._fitted == True
-#     # ), "Regression for Insurance data failed to fit."
-#     assert (
-#         os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
-#     ), "Regression for Insurance data failed to find optimal setting."
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
+
+    mol = My_AutoML.AutoTabular()
+    mol.fit(data[features], data[response])
+
+    assert (
+        os.path.exists("tmp/insurance_model/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
 
 
 def test_stroke_import_version():

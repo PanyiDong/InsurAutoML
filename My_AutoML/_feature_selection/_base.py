@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:33:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 5:54:54 pm
+Last Modified: Saturday, 16th April 2022 4:48:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,6 +41,7 @@ SOFTWARE.
 import time
 import numbers
 import numpy as np
+import pandas as pd
 import scipy
 import scipy.linalg
 from sklearn.utils.extmath import stable_cumsum, svd_flip
@@ -291,7 +292,10 @@ class LDASelection:
             _y_uni = np.unique(y)  # non-negative ints
             self.priors_ = []
             for _value in _y_uni:
-                self.priors_.append(y.loc[y.values == _value].count()[0] / len(y))
+                if isinstance(y, pd.DataFrame):
+                    self.priors_.append(y.loc[y.values == _value].count()[0] / len(y))
+                elif isinstance(y, pd.Series):
+                    self.priors_.append(y.loc[y.values == _value].count() / len(y))
             self.priors_ = np.asarray(self.priors_)
         else:
             self.priors_ = np.asarray(self.priors)

@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 12:31:47 am
+Last Modified: Saturday, 16th April 2022 5:12:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,23 @@ SOFTWARE.
 
 import numpy as np
 import pandas as pd
+
+
+def test_load_data():
+
+    from My_AutoML import load_data
+
+    data = load_data().load("Appendix", "credit")
+
+    assert isinstance(
+        data, dict
+    ), "load_data should return a dict database, get {}".format(type(data))
+
+    assert isinstance(
+        data["credit"], pd.DataFrame
+    ), "load_data should return a dict database containing dataframes, get {}".format(
+        type(data["credit"])
+    )
 
 
 def test_random_guess():
@@ -161,3 +178,59 @@ def test_unify_nan():
     ), "unify_nan should return target dataframe {}, get {}".format(
         target_data, unify_nan(data)
     )
+
+
+def test_remove_index_columns():
+
+    from My_AutoML._utils._data import remove_index_columns
+
+    data = pd.DataFrame(
+        {
+            "col_1": [1, 1, 1, 1, 1],
+            "col_2": [1, 2, 3, 4, 5],
+            "col_3": [1, 2, 3, 4, 5],
+            "col_4": [1, 2, 3, 4, 5],
+            "col_5": [1, 2, 3, 4, 5],
+        }
+    )
+
+    remove_data_0 = remove_index_columns(data, axis=0, threshold=0.8)
+    remove_data_1 = remove_index_columns(data, axis=1, threshold=0.8)
+
+    assert isinstance(
+        remove_data_0, pd.DataFrame
+    ), "remove_index_columns should return a pd.DataFrame, get {}".format(
+        type(remove_data_0)
+    )
+    assert isinstance(
+        remove_data_1, pd.DataFrame
+    ), "remove_index_columns should return a pd.DataFrame, get {}".format(
+        type(remove_data_1)
+    )
+
+
+def test_nan_cov():
+
+    from My_AutoML._utils._stat import nan_cov
+
+    assert (
+        nan_cov(pd.DataFrame([4, 5, 6, np.nan, 1, np.nan]))[0, 0] == 2.8
+    ), "nan_cov returns not as expected."
+
+
+def test_class_means():
+
+    from My_AutoML._utils._stat import class_means
+
+    X = pd.DataFrame(
+        {
+            "col_1": [1, 2, 3, 4, 5],
+            "col_2": [1, 2, 3, 4, 5],
+        }
+    )
+
+    y = pd.Series([1, 1, 1, 0, 0])
+
+    assert isinstance(
+        class_means(X, y), list
+    ), "class_means should return a list, get {}".format(type(class_means(X, y)))

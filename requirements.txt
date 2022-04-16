@@ -1,13 +1,13 @@
 # Git Repo
-git+https://github.com/PanyiDong/My_AutoML.git
+# git+https://github.com/PanyiDong/My_AutoML.git
 # common packages
 numpy 
 pandas
 scipy
 matplotlib
 ray
-tqdm==4.62.3
-mlflow==1.21.0
+# tqdm==4.62.3
+# mlflow==1.21.0
 tensorboardX
 hyperopt==0.2.5
 auto-sklearn==0.14.6
@@ -16,5 +16,5 @@ lightgbm
 xgboost
 pygam
 # optional packages
-# rpy2
+rpy2
 # tensorflow
