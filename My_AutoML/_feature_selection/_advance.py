@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:20:49 pm
+Last Modified: Friday, 15th April 2022 5:48:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -74,12 +74,20 @@ class FeatureFilter:
         self.criteria = criteria
         self.n_components = n_components
 
+        self._fitted = False
+
     def fit(self, X, y=None):
 
-        try:
-            _empty = (y == None).all().values[0]
-        except AttributeError:
+        # check whether y is empty
+        if isinstance(y, pd.DataFrame):
+            _empty = y.isnull().all().all()
+        elif isinstance(y, pd.Series):
+            _empty = y.isnull().all()
+        elif isinstance(y, np.ndarray):
+            _empty = np.all(np.isnan(y))
+        else:
             _empty = y == None
+
         if _empty:
             raise ValueError("Must have response!")
 
@@ -87,6 +95,10 @@ class FeatureFilter:
             self._score = Pearson_Corr(X, y)
         elif self.criteria == "MI":
             self._score = MI(X, y)
+
+        self._fitted = True
+
+        return self
 
     def transform(self, X):
 
@@ -157,6 +169,8 @@ class ASFFS:
         self.r_max = r_max
         self.model = model
         self.objective = objective
+
+        self._fitted = False
 
     def generalization_limit(self, k, d, b):
 
@@ -356,6 +370,9 @@ class ASFFS:
                         break
 
         self.selected_ = _selected
+
+        self._fitted = True
+
         return self
 
     def transform(self, X):
@@ -459,6 +476,8 @@ class GeneticAlgorithm:
             "t_statistics": self._t_statistics,
             "SVM_RFE": self._SVM_RFE,
         }
+
+        self._fitted = False
 
     def _random(self, X, y, n):
 
@@ -748,6 +767,8 @@ class GeneticAlgorithm:
                     )
 
         self._fit(X, y)
+
+        self._fitted = True
 
         return self
 

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:33:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:20:56 pm
+Last Modified: Friday, 15th April 2022 5:54:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -86,6 +86,8 @@ class PCA_FeatureSelection:
         self.n_iter = n_iter
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y=None):
 
         n, p = X.shape
@@ -122,6 +124,8 @@ class PCA_FeatureSelection:
             )
         else:
             raise ValueError("Not recognizing solver = {}!".format(self.fit_solver))
+
+        self._fitted = True
 
         return self
 
@@ -252,6 +256,8 @@ class LDASelection:
         self.priors = priors
         self.n_components = n_components
 
+        self._fitted = False
+
     def _eigen(self, X, y):
 
         self.means_ = class_means(X, y)
@@ -308,6 +314,10 @@ class LDASelection:
                 )
             self._max_components = self.n_components
 
+        self._fitted = True
+
+        return self
+
     def transform(self, X):
 
         X_new = np.dot(X, self.scalings_)
@@ -334,6 +344,8 @@ class RBFSampler:
         self.gamma = gamma
         self.n_components = n_components
         self.seed = seed
+
+        self._fitted = False
 
     def fit(self, X, y=None):
 
@@ -363,6 +375,8 @@ class RBFSampler:
         self._random_offset = np.random.uniform(
             0, 2 * np.pi, size=(1, self.n_components)
         )
+
+        self._fitted = True
 
         return self
 

@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:41:24 pm
+Last Modified: Friday, 15th April 2022 12:52:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -50,6 +50,8 @@ def nan_cov(X, y=None, axis=0):
 
     if isinstance(y, pd.DataFrame):
         _empty = y.isnull().all().all()
+    elif isinstance(y, pd.Series):
+        _empty = y.isnull().all()
     elif isinstance(y, np.ndarray):
         _empty = np.all(np.isnan(y))
     else:

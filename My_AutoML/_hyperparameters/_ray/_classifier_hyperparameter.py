@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:03:21 am
+Last Modified: Friday, 15th April 2022 8:41:38 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -232,7 +232,9 @@ classifier_hyperparameter = [
         "MLP_Classifier_activation": tune.choice(["Tanh", "Sigmoid"]),
         "MLP_Classifier_learning_rate": tune.uniform(1e-5, 1),
         "MLP_Classifier_optimizer": tune.choice(["Adam", "SGD"]),
-        "MLP_Classifier_criteria": tune.choice(["CrossEntropy", "NegativeLogLikelihood"]),
+        "MLP_Classifier_criteria": tune.choice(
+            ["CrossEntropy", "NegativeLogLikelihood"]
+        ),
         "MLP_Classifier_batch_size": tune.choice([16, 32, 64]),
         "MLP_Classifier_num_epochs": tune.qrandint(5, 30, 1),
     },
@@ -245,17 +247,21 @@ classifier_hyperparameter = [
         "RNN_Classifier_dropout": tune.loguniform(1e-7, 0.8),
         "RNN_Classifier_learning_rate": tune.loguniform(1e-7, 1),
         "RNN_Classifier_optimizer": tune.choice(["Adam", "SGD"]),
-        "RNN_Classifier_criteria": tune.choice(["CrossEntropy", "NegativeLogLikelihood"]),
+        "RNN_Classifier_criteria": tune.choice(
+            ["CrossEntropy", "NegativeLogLikelihood"]
+        ),
         "RNN_Classifier_batch_size": tune.choice([16, 32, 64]),
         "RNN_Classifier_num_epochs": tune.qrandint(5, 30, 1),
     },
     {
         "model_22": "LightGBM_Classifier",
-        "LightGBM_Classifier_objective": tune.choice(["Need to specify in HPO by response"]),
+        "LightGBM_Classifier_objective": tune.choice(
+            ["Need to specify in HPO by response"]
+        ),
         "LightGBM_Classifier_boosting": tune.choice(LIGHTGBM_BOOSTING),
         "LightGBM_Classifier_n_estimators": tune.qlograndint(50, 500, 1),
         # max_depth == -1 for no limit
-        "LightGBM_Classifier_max_depth": tune.randint(-1, 31), 
+        "LightGBM_Classifier_max_depth": tune.randint(-1, 31),
         "LightGBM_Classifier_num_leaves": tune.qlograndint(3, 2047, 1),
         "LightGBM_Classifier_min_data_in_leaf": tune.qrandint(1, 20, 1),
         "LightGBM_Classifier_learning_rate": tune.loguniform(1e-7, 1),
@@ -271,6 +277,10 @@ classifier_hyperparameter = [
         "XGBoost_Classifier_max_delta_step": tune.loguniform(1e-7, 1e1),
         "XGBoost_Classifier_reg_lambda": tune.uniform(0, 1),
         "XGBoost_Classifier_reg_alpha": tune.uniform(0, 1),
-    }
+    },
+    {
+        "model_24": "GAM_Classifier",
+        "GAM_Classifier_type": tune.choice(["logistic"]),
+        "GAM_Classifier_tol": tune.loguniform(1e-7, 1),
+    },
 ]
-
