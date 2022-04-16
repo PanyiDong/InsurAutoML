@@ -1,6 +1,6 @@
 # Project for Auto Machine Learning (AutoML)
 
-[![codecov](https://codecov.io/gh/PanyiDong/My_AutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/My_AutoML) [![codecov](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions) [![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions) [![build_nn](https://github.com/PanyiDong/My_AutoML/actions/workflows/build_nn/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions)
+[![codecov](https://codecov.io/gh/PanyiDong/My_AutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/My_AutoML) [![codecov](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions) [![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions) [![build_nn](https://github.com/PanyiDong/My_AutoML/actions/workflows/build_nn.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions)
 
 IRisk Lab Project, UIUC, Fall 2021
 
