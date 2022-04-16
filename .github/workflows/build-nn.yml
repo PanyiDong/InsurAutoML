@@ -1,4 +1,4 @@
-name: build pipeline with nn
+name: build-nn
 on:
   - pull_request
 jobs:
