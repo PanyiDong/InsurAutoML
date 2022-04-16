@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 6:25:42 pm
+Last Modified: Saturday, 16th April 2022 6:44:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -109,11 +109,11 @@ def test_insurance():
     mol.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/insurance_model/init.txt") == True
+        os.path.exists("tmp/insurance/init.txt") == True
     ), "Regression for Insurance data failed to initiated."
     assert mol._fitted == True, "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
 
 
