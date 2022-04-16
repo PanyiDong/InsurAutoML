@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 11:17:54 am
+Last Modified: Friday, 15th April 2022 7:25:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,6 +42,7 @@ import os
 import pandas as pd
 
 import My_AutoML
+from My_AutoML import load_data
 
 # use command line interaction to run the model
 # apparently, same class object called in one test case will not be able
@@ -102,9 +103,13 @@ def test_insurance():
         os.path.exists("tmp/insurance_model/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
 
+
 def test_stroke_import_version():
-    
-    data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+
+    # test load_data here
+    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = data["healthcare-dataset-stroke-data"]
+
     features = list(data.columns)
     features.remove("stroke")
     response = ["stroke"]
