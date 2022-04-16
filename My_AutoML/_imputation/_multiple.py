@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:03 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 1:39:43 pm
+Last Modified: Saturday, 16th April 2022 5:56:38 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -475,7 +475,7 @@ class MICE:
         features = list(X.columns)
 
         for _column in features:
-            if (X[_column].dtype == np.object) or (str(X[_column].dtype) == "category"):
+            if (X[_column].dtype == object) or (str(X[_column].dtype) == "category"):
                 raise ValueError(
                     "MICE can only handle numerical filling, run encoding first!"
                 )

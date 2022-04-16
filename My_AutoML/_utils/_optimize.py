@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 2:21:58 pm
+Last Modified: Saturday, 16th April 2022 5:51:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -78,6 +78,7 @@ def _get_hyperparameter_space(
                 # convert string to tune.choice
                 _item[_encoder_key] = tune.choice([_item[_encoder_key]])
                 _encoding_hyperparameter.append(_item)
+                break
 
     # raise error if no encoding hyperparameters are found
     if len(_encoding_hyperparameter) == 0:
@@ -107,6 +108,7 @@ def _get_hyperparameter_space(
                     # convert string to tune.choice
                     _item[_imputer_key] = tune.choice([_item[_imputer_key]])
                     _imputer_hyperparameter.append(_item)
+                    break
 
         # raise error if no imputation hyperparameters are found
         if len(_imputer_hyperparameter) == 0:
@@ -133,6 +135,7 @@ def _get_hyperparameter_space(
                 # convert string to tune.choice
                 _item[_balancing_key] = tune.choice([_item[_balancing_key]])
                 _balancing_hyperparameter.append(_item)
+                break
 
     # raise error if no balancing hyperparameters are found
     if len(_balancing_hyperparameter) == 0:
@@ -157,6 +160,7 @@ def _get_hyperparameter_space(
                 # convert string to tune.choice
                 _item[_scaling_key] = tune.choice([_item[_scaling_key]])
                 _scaling_hyperparameter.append(_item)
+                break
 
     # raise error if no scaling hyperparameters are found
     if len(_scaling_hyperparameter) == 0:
@@ -187,6 +191,7 @@ def _get_hyperparameter_space(
                     [_item[_feature_selection_key]]
                 )
                 _feature_selection_hyperparameter.append(_item)
+                break
 
     # raise error if no feature selection hyperparameters are found
     if len(_feature_selection_hyperparameter) == 0:
@@ -212,6 +217,7 @@ def _get_hyperparameter_space(
                 # convert string to tune.choice
                 _item[_model_key] = tune.choice([_item[_model_key]])
                 _model_hyperparameter.append(_item)
+                break
 
     # raise error if no model hyperparameters are found
     if len(_model_hyperparameter) == 0:

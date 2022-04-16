@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 4:11:57 pm
+Last Modified: Saturday, 16th April 2022 5:53:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -79,6 +79,7 @@ def test_heart():
     response = ["HeartDisease"]
 
     mol = My_AutoML.AutoTabular(
+        model_name = "heart",
         search_algo="GridSearch",
     )
     mol.fit(data[features], data[response])
@@ -102,7 +103,9 @@ def test_insurance():
     features.remove("expenses")
     response = ["expenses"]
 
-    mol = My_AutoML.AutoTabular()
+    mol = My_AutoML.AutoTabular(
+        model_name="insurance",
+    )
     mol.fit(data[features], data[response])
 
     assert (

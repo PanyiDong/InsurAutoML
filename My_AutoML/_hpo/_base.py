@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 2:48:20 pm
+Last Modified: Saturday, 16th April 2022 5:47:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -904,8 +904,6 @@ class AutoTabularBase:
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
 
-        print(hyperparameter_space)
-        print(hyperparameter_space["encoder"].categories)
         # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
         # if the model is already trained, read the setting

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:49:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 3:34:15 pm
+Last Modified: Saturday, 16th April 2022 5:57:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ SOFTWARE.
 from ._base import SimpleImputer, DummyImputer, JointImputer
 from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
 
-from ._clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
+# from ._clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
 
 
 imputers = {

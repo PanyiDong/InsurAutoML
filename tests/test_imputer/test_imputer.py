@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:13:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:05:12 pm
+Last Modified: Saturday, 16th April 2022 5:57:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -107,92 +107,92 @@ def test_imputer():
             )
 
 
-def test_imputer_AAI_kNN():
+# def test_imputer_AAI_kNN():
 
-    from My_AutoML._imputation._clustering import AAI_kNN
+#     from My_AutoML._imputation._clustering import AAI_kNN
 
-    # test AAI_kNN
+#     # test AAI_kNN
 
-    # generate missing data
-    data = pd.DataFrame(
-        np.random.randint(0, 100, size=(1000, 5)),
-        columns=["col_" + str(i) for i in range(1, 6)],
-    )
-    for _column in data.columns:
-        for _index in data.index:
-            if np.random.rand() < 0.1:
-                data.loc[_index, _column] = np.nan
+#     # generate missing data
+#     data = pd.DataFrame(
+#         np.random.randint(0, 100, size=(1000, 5)),
+#         columns=["col_" + str(i) for i in range(1, 6)],
+#     )
+#     for _column in data.columns:
+#         for _index in data.index:
+#             if np.random.rand() < 0.1:
+#                 data.loc[_index, _column] = np.nan
 
-    imputer = AAI_kNN(similarity="PCC")
-    fill_data = imputer.fill(data)
+#     imputer = AAI_kNN(similarity="PCC")
+#     fill_data = imputer.fill(data)
 
-    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
-        "AAI_kNN"
-    )
-    assert (
-        fill_data.isnull().any().any() == False
-    ), "The imputation method {} fail to impute all missings.".format("AAI_kNN")
+#     assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+#         "AAI_kNN"
+#     )
+#     assert (
+#         fill_data.isnull().any().any() == False
+#     ), "The imputation method {} fail to impute all missings.".format("AAI_kNN")
 
-    imputer = AAI_kNN(similarity="COS")
-    fill_data = imputer.fill(data)
+#     imputer = AAI_kNN(similarity="COS")
+#     fill_data = imputer.fill(data)
 
-    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
-        "AAI_kNN"
-    )
-    assert (
-        fill_data.isnull().any().any() == False
-    ), "The imputation method {} fail to impute all missings.".format("AAI_kNN")
-
-
-def test_imputer_CMI():
-
-    from My_AutoML._imputation._clustering import CMI
-
-    # test CMI
-
-    # generate missing data
-    data = pd.DataFrame(
-        np.random.randint(0, 100, size=(1000, 5)),
-        columns=["col_" + str(i) for i in range(1, 6)],
-    )
-    for _column in data.columns:
-        for _index in data.index:
-            if np.random.rand() < 0.1:
-                data.loc[_index, _column] = np.nan
-
-    imputer = CMI()
-    fill_data = imputer.fill(data)
-
-    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
-        "CMI"
-    )
-    assert (
-        fill_data.isnull().any().any() == False
-    ), "The imputation method {} fail to impute all missings.".format("CMI")
+#     assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+#         "AAI_kNN"
+#     )
+#     assert (
+#         fill_data.isnull().any().any() == False
+#     ), "The imputation method {} fail to impute all missings.".format("AAI_kNN")
 
 
-def test_imputer_k_Prototype_NN():
+# def test_imputer_CMI():
 
-    from My_AutoML._imputation._clustering import k_Prototype_NN
+#     from My_AutoML._imputation._clustering import CMI
 
-    # test k_Prototype_NN
+#     # test CMI
 
-    # generate missing data
-    data = pd.DataFrame(
-        np.random.randint(0, 100, size=(1000, 5)),
-        columns=["col_" + str(i) for i in range(1, 6)],
-    )
-    for _column in data.columns:
-        for _index in data.index:
-            if np.random.rand() < 0.1:
-                data.loc[_index, _column] = np.nan
+#     # generate missing data
+#     data = pd.DataFrame(
+#         np.random.randint(0, 100, size=(1000, 5)),
+#         columns=["col_" + str(i) for i in range(1, 6)],
+#     )
+#     for _column in data.columns:
+#         for _index in data.index:
+#             if np.random.rand() < 0.1:
+#                 data.loc[_index, _column] = np.nan
 
-    imputer = k_Prototype_NN()
-    fill_data = imputer.fill(data)
+#     imputer = CMI()
+#     fill_data = imputer.fill(data)
 
-    assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
-        "k_Prototype_NN"
-    )
-    assert (
-        fill_data.isnull().any().any() == False
-    ), "The imputation method {} fail to impute all missings.".format("k_Prototype_NN")
+#     assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+#         "CMI"
+#     )
+#     assert (
+#         fill_data.isnull().any().any() == False
+#     ), "The imputation method {} fail to impute all missings.".format("CMI")
+
+
+# def test_imputer_k_Prototype_NN():
+
+#     from My_AutoML._imputation._clustering import k_Prototype_NN
+
+#     # test k_Prototype_NN
+
+#     # generate missing data
+#     data = pd.DataFrame(
+#         np.random.randint(0, 100, size=(1000, 5)),
+#         columns=["col_" + str(i) for i in range(1, 6)],
+#     )
+#     for _column in data.columns:
+#         for _index in data.index:
+#             if np.random.rand() < 0.1:
+#                 data.loc[_index, _column] = np.nan
+
+#     imputer = k_Prototype_NN()
+#     fill_data = imputer.fill(data)
+
+#     assert imputer._fitted == True, "The method {} is not correctly fitted.".format(
+#         "k_Prototype_NN"
+#     )
+#     assert (
+#         fill_data.isnull().any().any() == False
+#     ), "The imputation method {} fail to impute all missings.".format("k_Prototype_NN")
