@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:03:45 am
+Last Modified: Friday, 15th April 2022 8:39:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,8 +42,8 @@ from ray import tune
 
 from My_AutoML._constant import (
     LIGHTGBM_REGRESSION,
-    LIGHTGBM_BOOSTING, 
-    LIGHTGBM_TREE_LEARNER
+    LIGHTGBM_BOOSTING,
+    LIGHTGBM_TREE_LEARNER,
 )
 
 # regressor hyperparameters
@@ -290,7 +290,7 @@ regressor_hyperparameter = [
         "LightGBM_Regressor_boosting": tune.choice(LIGHTGBM_BOOSTING),
         "LightGBM_Regressor_n_estimators": tune.qlograndint(50, 500, 1),
         # max_depth == -1 for no limit
-        "LightGBM_Regressor_max_depth": tune.randint(-1, 31), 
+        "LightGBM_Regressor_max_depth": tune.randint(-1, 31),
         "LightGBM_Regressor_num_leaves": tune.qlograndint(3, 2047, 1),
         "LightGBM_Regressor_min_data_in_leaf": tune.qrandint(1, 20, 1),
         "LightGBM_Regressor_learning_rate": tune.loguniform(1e-7, 1),
@@ -306,5 +306,12 @@ regressor_hyperparameter = [
         "XGBoost_Regressor_max_delta_step": tune.loguniform(1e-7, 1e1),
         "XGBoost_Regressor_reg_lambda": tune.uniform(0, 1),
         "XGBoost_Regressor_reg_alpha": tune.uniform(0, 1),
+    },
+    {
+        "model_23": "GAM_Regressor",
+        "GAM_Regressor_type": tune.choice(
+            ["linear", "gamma", "poisson", "inverse_gaussian"]
+        ),
+        "GAM_Regressor_tol": tune.loguniform(1e-7, 1),
     },
 ]
