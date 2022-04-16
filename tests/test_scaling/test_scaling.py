@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 1:56:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 1:07:51 pm
+Last Modified: Saturday, 16th April 2022 12:01:11 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,15 +63,24 @@ class TestScaling(unittest.TestCase):
         for method_name, method_object in zip(self.method_names, self.method_objects):
 
             mol = method_object()
-            mol.fit_transform(data_X, data_y)
+            scaled_X = mol.fit_transform(data_X, data_y)
 
             # check whether the method is fitted
             self.assertEqual(
                 mol._fitted,
                 True,
-                "The method {} is not correctly fitted.".format(method_name),
+                "The fit_transform method {} is not correctly fitted.".format(
+                    method_name
+                ),
             )
 
-            print(
-                "The method {} is correctly fitted.".format(method_name),
-            )
+            if method_name != "Winsorization":
+                mol.inverse_transform(scaled_X)
+
+                self.assertEqual(
+                    mol._fitted,
+                    False,
+                    "The inverse method {} is not correctly fitted.".format(
+                        method_name
+                    ),
+                )

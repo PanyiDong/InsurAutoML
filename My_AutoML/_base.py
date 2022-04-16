@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 12:15:11 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 5:52:12 pm
+Last Modified: Saturday, 16th April 2022 12:05:36 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -100,6 +100,12 @@ class no_processing:
             return X
         else:
             return X, y
+
+    def inverse_transform(self, X):
+
+        self._fitted = False
+
+        return X
 
 
 class load_data:

@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 9:08:12 pm
+Last Modified: Friday, 15th April 2022 11:58:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -51,13 +51,22 @@ from My_AutoML._encoding import DataEncoding
 
 
 class NoScaling:
+    def __init__(self):
+
+        self._fitted = False
+
     def fit(self, X, y=None):
+
+        self._fitted = True
+
         return self
 
     def transform(self, X):
         return X
 
     def inverse_transform(self, X):
+
+        self._fitted = False
         return X
 
 

@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 7:53:53 pm
+Last Modified: Saturday, 16th April 2022 12:31:47 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import numpy as np
+import pandas as pd
 
 
 def test_random_guess():
@@ -115,3 +116,48 @@ def test_type_of_script():
     assert (
         type_of_script() == "terminal"
     ), "type_of_script() should be 'terminal', get {}".format(type_of_script())
+
+
+def test_as_dataframe():
+
+    from My_AutoML._utils._data import as_dataframe
+
+    converter = as_dataframe()
+
+    _array = converter.to_array(pd.DataFrame([1, 2, 3, 4]))
+
+    _df = converter.to_df(_array)
+
+    assert isinstance(
+        _array, np.ndarray
+    ), "as_dataframe.to_array should return a np.ndarray, get {}".format(type(_array))
+
+    assert isinstance(
+        _df, pd.DataFrame
+    ), "as_dataframe.to_df should return a pd.DataFrame, get {}".format(type(_df))
+
+
+def test_unify_nan():
+
+    from My_AutoML._utils._data import unify_nan
+
+    data = np.arange(15).reshape(5, 3)
+    data = pd.DataFrame(data, columns=["column_1", "column_2", "column_3"])
+    data.loc[:, "column_1"] = "novalue"
+    data.loc[3, "column_2"] = "None"
+
+    target_data = pd.DataFrame(
+        {
+            "column_1": ["novalue", "novalue", "novalue", "novalue", "novalue"],
+            "column_2": [1, 4, 7, "None", 13],
+            "column_3": [2, 5, 8, 11, 14],
+            "column_1_useNA": [np.nan, np.nan, np.nan, np.nan, np.nan],
+            "column_2_useNA": [1, 4, 7, np.nan, 13],
+        }
+    )
+
+    assert (
+        (unify_nan(data).astype(str) == target_data.astype(str)).all().all()
+    ), "unify_nan should return target dataframe {}, get {}".format(
+        target_data, unify_nan(data)
+    )

@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:13:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 1:07:38 pm
+Last Modified: Saturday, 16th April 2022 12:16:53 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,44 +38,70 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import unittest
 import numpy as np
 import pandas as pd
 
-from My_AutoML._imputation import imputers
+# from My_AutoML._imputation import imputers
 
-data_X = pd.DataFrame(
-    {
-        "col_1": [np.nan, 8, 6, 7, 9, 9, 8, 8, 7, 5],
-        "col_2": [9, 7, 2, 1, 6, 8, 8, 9, 3, 6],
-    }
-)
+# data_X = pd.DataFrame(
+#     {
+#         "col_1": [np.nan, 8, 6, 7, 9, 9, 8, 8, 7, 5],
+#         "col_2": [9, 7, 2, 1, 6, 8, 8, 9, 3, 6],
+#     }
+# )
 
 
-class TestImputer(unittest.TestCase):
-    def test_Imputer(self):
+# class TestImputer(unittest.TestCase):
+#     def test_Imputer(self):
 
-        self.method_dict = imputers
-        self.method_names = list(self.method_dict.keys())
-        self.method_objects = list(self.method_dict.values())
+#         self.method_dict = imputers
+#         self.method_names = list(self.method_dict.keys())
+#         self.method_objects = list(self.method_dict.values())
 
-        for method_name, method_object in zip(self.method_names, self.method_objects):
+#         for method_name, method_object in zip(self.method_names, self.method_objects):
 
-            if method_name == "KNNImputer":
-                mol = method_object(n_neighbors=1)
-            else:
-                mol = method_object()
+#             if method_name == "KNNImputer":
+#                 mol = method_object(n_neighbors=1)
+#             else:
+#                 mol = method_object()
 
-            # mol.fill(data_X)
-            mol._fitted = True
+#             # mol.fill(data_X)
+#             mol._fitted = True
 
-            # check whether the method is fitted
-            self.assertEqual(
-                mol._fitted,
-                True,
-                "The method {} is not correctly fitted.".format(method_name),
-            )
+#             # check whether the method is fitted
+#             self.assertEqual(
+#                 mol._fitted,
+#                 True,
+#                 "The method {} is not correctly fitted.".format(method_name),
+#             )
 
-            print(
-                "The method {} is correctly fitted.".format(method_name),
+#             print(
+#                 "The method {} is correctly fitted.".format(method_name),
+#             )
+
+
+def test_imputer():
+
+    from My_AutoML._imputation import imputers
+    from My_AutoML._utils import formatting
+
+    for method_name, method_object in zip(imputers.keys(), imputers.values()):
+
+        imputer = method_object()
+        if method_name != "KNNImputer":
+
+            data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+
+            encoder = formatting()
+            encoder.fit(data)
+
+            data = imputer.fill(data)
+
+            assert (
+                imputer._fitted == True
+            ), "The method {} is not correctly fitted.".format(method_name)
+            assert (
+                data.isnull().any().any() == False
+            ), "The imputation method {} fail to impute all missings.".format(
+                method_name
             )
