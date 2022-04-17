@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:06:29 am
+Last Modified: Sunday, 17th April 2022 1:21:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -145,7 +145,8 @@ class AutoTabularRegressor(AutoTabularBase):
     cpu_threads: number of cpu threads to use, default = None
     if None, get all available cpu threads
 
-    use_gpu: whether to use gpu, default = False
+    use_gpu: whether to use gpu, default = None
+    if None, will use gpu if available, otherwise False (not to use gpu)
     
     reset_index: whether to reset index during traning, default = True
     there are methods that are index independent (ignore index, resetted, e.g. GAIN)
@@ -183,7 +184,7 @@ class AutoTabularRegressor(AutoTabularBase):
         full_status=False,
         verbose=1,
         cpu_threads=None,
-        use_gpu=False,
+        use_gpu=None,
         reset_index=True,
         seed=1,
     ):
@@ -365,7 +366,8 @@ class AutoTabularClassifier(AutoTabularBase):
     cpu_threads: number of cpu threads to use, default = None
     if None, get all available cpu threads
 
-    use_gpu: whether to use gpu, default = False
+    use_gpu: whether to use gpu, default = None
+    if None, will use gpu if available, otherwise False (not to use gpu)
     
     reset_index: whether to reset index during traning, default = True
     there are methods that are index independent (ignore index, resetted, e.g. GAIN)
@@ -403,7 +405,7 @@ class AutoTabularClassifier(AutoTabularBase):
         full_status=False,
         verbose=1,
         cpu_threads=None,
-        use_gpu=False,
+        use_gpu=None,
         reset_index=True,
         seed=1,
     ):
@@ -590,7 +592,8 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     cpu_threads: number of cpu threads to use, default = None
     if None, get all available cpu threads
 
-    use_gpu: whether to use gpu, default = False
+    use_gpu: whether to use gpu, default = None
+    if None, will use gpu if available, otherwise False (not to use gpu)
     
     reset_index: whether to reset index during traning, default = True
     there are methods that are index independent (ignore index, resetted, e.g. GAIN)
@@ -628,7 +631,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         full_status=False,
         verbose=1,
         cpu_threads=None,
-        use_gpu=False,
+        use_gpu=None,
         reset_index=True,
         seed=1,
     ):
