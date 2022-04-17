@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 7:12:12 pm
+Last Modified: Saturday, 16th April 2022 8:02:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,6 +45,7 @@ from My_AutoML._feature_selection._base import (
     LDASelection,
     RBFSampler,
 )
+
 
 def test_feature_selection():
 
@@ -82,9 +83,10 @@ def test_feature_selection_PCA_FeatureSelection():
     _X = feature_selection.transform(X)
 
     assert feature_selection._fitted == True, "Fitted should be True"
-    
+
+
 def test_feature_selection_LDASelection():
-    
+
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
@@ -93,7 +95,8 @@ def test_feature_selection_LDASelection():
     feature_selection.fit(X, y)
 
     assert feature_selection._fitted == True, "Fitted should be True"
-    
+
+
 def test_feature_selection_RBFSampler():
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
@@ -105,4 +108,126 @@ def test_feature_selection_RBFSampler():
     _X = feature_selection.transform(X)
 
     assert feature_selection._fitted == True, "Fitted should be True"
-    
+
+
+# test decrepted methods
+
+
+def test_feature_selection_densifier():
+
+    from My_AutoML._feature_selection._autosklearn import densifier
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = densifier()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_fast_ica():
+
+#     from My_AutoML._feature_selection._autosklearn import fast_ica
+
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = fast_ica()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+def test_feature_selection_feature_agglomeration():
+
+    from My_AutoML._feature_selection._autosklearn import feature_agglomeration
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = feature_agglomeration()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+
+def test_feature_selection_kernel_pca():
+
+    from My_AutoML._feature_selection._autosklearn import kernel_pca
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = kernel_pca()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+
+def test_feature_selection_kitchen_sinks():
+
+    from My_AutoML._feature_selection._autosklearn import kitchen_sinks
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = kitchen_sinks()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+
+def test_feature_selection_nystroem_sampler():
+
+    from My_AutoML._feature_selection._autosklearn import nystroem_sampler
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = nystroem_sampler()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+
+def test_feature_selection_pca():
+
+    from My_AutoML._feature_selection._autosklearn import pca
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = pca()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+
+def test_feature_selection_random_trees_embedding():
+
+    from My_AutoML._feature_selection._autosklearn import random_trees_embedding
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = random_trees_embedding()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"

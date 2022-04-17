@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:00:12 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:26:58 pm
+Last Modified: Saturday, 16th April 2022 7:42:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,7 +69,8 @@ from ._stat import (
     t_score,
     ANOVA,
 )
-from ._preprocessing import (
-    text_preprocessing_torchtext,
-    text_preprocessing_transformers,
-)
+
+# from ._preprocessing import (
+#     text_preprocessing_torchtext,
+#     text_preprocessing_transformers,
+# )

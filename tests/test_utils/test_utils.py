@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:12:09 pm
+Last Modified: Saturday, 16th April 2022 9:08:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -234,3 +234,68 @@ def test_class_means():
     assert isinstance(
         class_means(X, y), list
     ), "class_means should return a list, get {}".format(type(class_means(X, y)))
+
+
+def test_empirical_covariance():
+
+    from My_AutoML._utils import empirical_covariance
+
+    cov = empirical_covariance(10 * np.random.random(size=(10, 10)))
+
+    assert isinstance(
+        cov, np.ndarray
+    ), "empirical_covariance should return a np.ndarray, get {}".format(type(cov))
+
+
+def test_class_cov():
+
+    from My_AutoML._utils._stat import class_cov
+
+    X = np.arange(10)
+    y = np.array([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
+
+    cov = class_cov(X, y, priors=[0.2, 0.8])
+
+    assert isinstance(
+        cov, np.ndarray
+    ), "class_cov should return a numpy array, get {}".format(type(cov))
+
+
+def test_MI():
+
+    from My_AutoML._utils._stat import MI
+
+    X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
+    y = pd.DataFrame(np.random.randint(0, 2, size=(10, 2)), columns=["y_1", "y_2"])
+
+    mi = MI(X, y)
+
+    assert len(mi) == 2, "MI should return a list of length 2, get {}".format(len(mi))
+
+
+def test_t_score():
+
+    from My_AutoML._utils._stat import t_score
+
+    X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
+    y = pd.DataFrame(np.random.randint(0, 2, size=(10, 2)), columns=["y_1", "y_2"])
+
+    score = t_score(X, y)
+
+    assert len(score) == 2, "t_score should return a list of length 2, get {}".format(
+        len(score)
+    )
+
+
+def test_ANOVA():
+
+    from My_AutoML._utils._stat import ANOVA
+
+    X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
+    y = pd.DataFrame(np.random.randint(0, 5, size=(10, 2)), columns=["y_1", "y_2"])
+
+    score = ANOVA(X, y)
+
+    assert len(score) == 2, "ANOVA should return a list of length 2, get {}".format(
+        len(score)
+    )

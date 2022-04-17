@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:52:53 pm
+Last Modified: Saturday, 16th April 2022 9:06:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -141,11 +141,18 @@ def empirical_covariance(X, *, assume_centered=False):
 # return weighted within-class covariance matrix
 def class_cov(X, y, priors):
 
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+
+    if not isinstance(y, pd.Series):
+        y = pd.Series(y)
+
     _class = np.unique(y)
     cov = np.zeros(shape=(X.shape[1], X.shape[1]))
     for idx, _cl in enumerate(_class):
         _data = X.loc[y.values == _cl, :]
         cov += priors[idx] * empirical_covariance(_data)
+
     return cov
 
 
@@ -167,6 +174,11 @@ def MI(X, y):
 
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
+
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+    if not isinstance(y, pd.DataFrame):
+        y = pd.DataFrame(y)
 
     features = list(X.columns)
     _y_column = list(y.columns)

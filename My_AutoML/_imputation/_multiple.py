@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:03 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:56:38 pm
+Last Modified: Saturday, 16th April 2022 8:42:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -208,29 +208,33 @@ class KNNImputer:
             X
         )  # initial filling for missing values
 
-        random_feautres = random_list(
+        random_features = random_list(
             self._missing_feature, self.seed
         )  # the order to regress on missing features
-        _index = random_index(len(X.index))  # random index for cross validation
+        # _index = random_index(len(X.index))  # random index for cross validation
         _err = []
 
-        for i in range(self.fold):
-            _test = X.iloc[
-                i * int(len(X.index) / self.fold) : int(len(X.index) / self.fold), :
-            ]
-            _train = X
-            _train.drop(labels=_test.index, axis=0, inplace=True)
-            _err.append(self._cross_validation_knn(_train, _test, random_feautres))
+        # if assigned n_neighbors, use it, otherwise use k-fold cross validation
+        if self.n_neighbors is None:
+            for i in range(self.fold):
+                _test = X.iloc[
+                    i * int(len(X.index) / self.fold) : int(len(X.index) / self.fold), :
+                ]
+                _train = X
+                _train.drop(labels=_test.index, axis=0, inplace=True)
+                _err.append(self._cross_validation_knn(_train, _test, random_features))
 
-        _err = np.mean(np.array(_err), axis=0)  # mean of cross validation error
-        self.optimial_k = np.array(_err).argmin()[0] + 1  # optimal k
+            _err = np.mean(np.array(_err), axis=0)  # mean of cross validation error
+            self.optimial_k = np.array(_err).argmin()[0] + 1  # optimal k
 
-        X = self._knn_impute(X, random_feautres, self.optimial_k)
+            X = self._knn_impute(X, random_features, self.optimial_k)
+        else:
+            X = self._knn_impute(X, random_features, self.n_neighbors)
 
         return X
 
     def _cross_validation_knn(
-        self, _train, _test, random_feautres
+        self, _train, _test, random_features
     ):  # cross validation to return error
 
         from sklearn.neighbors import KNeighborsRegressor
@@ -249,7 +253,7 @@ class KNNImputer:
 
         for _k in n_neighbors:
             _test = _test_mark.copy(deep=True)
-            for _feature in random_feautres:
+            for _feature in random_features:
                 _subfeatures = list(_train.columns)
                 _subfeatures.remove(_feature)
 
@@ -260,15 +264,15 @@ class KNNImputer:
 
         return _err
 
-    def _knn_impute(self, X, random_feautres, k):
+    def _knn_impute(self, X, random_features, k):
 
         from sklearn.neighbors import KNeighborsRegressor
 
         features = list(X.columns)
-        for _column in random_feautres:
-            _subfeature = features
+        for _column in random_features:
+            _subfeature = features.copy()
             _subfeature.remove(_column)
-            X.loc[self._missing_table[_column] == 1, _column] = np.nan
+            X.loc[self._missing_table[_column], _column] = np.nan
             fit_model = KNeighborsRegressor(n_neighbors=k)
             fit_model.fit(
                 X.loc[~X[_column].isnull(), _subfeature],
@@ -503,22 +507,22 @@ class MICE:
             X
         )  # initial filling for missing values
 
-        random_feautres = random_list(
+        random_features = random_list(
             self._missing_feature, self.seed
         )  # the order to regress on missing features
 
         for _ in range(self.cycle):
-            X = self._cycle_impute(X, random_feautres)
+            X = self._cycle_impute(X, random_features)
 
         return X
 
-    def _cycle_impute(self, X, random_feautres):
+    def _cycle_impute(self, X, random_features):
 
         from sklearn.linear_model import LinearRegression, LogisticRegression, LassoCV
 
         features = list(X.columns)
 
-        for _column in random_feautres:
+        for _column in random_features:
             _subfeature = features
             _subfeature.remove(_column)
             _missing_index = self._missing_table[_column].tolist()

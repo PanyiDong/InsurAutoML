@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:13:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:57:33 pm
+Last Modified: Saturday, 16th April 2022 8:42:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -80,31 +80,82 @@ import pandas as pd
 #             )
 
 
-def test_imputer():
+# def test_imputer():
 
-    from My_AutoML._imputation import imputers
-    from My_AutoML._utils import formatting
+#     from My_AutoML._imputation import imputers
+#     from My_AutoML._utils import formatting
 
-    for method_name, method_object in zip(imputers.keys(), imputers.values()):
+#     for method_name, method_object in zip(imputers.keys(), imputers.values()):
 
-        imputer = method_object()
-        if method_name != "KNNImputer":
+#         imputer = method_object()
+#         if method_name != "KNNImputer":
 
-            data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+#             data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
 
-            encoder = formatting()
-            encoder.fit(data)
+#             encoder = formatting()
+#             encoder.fit(data)
 
-            data = imputer.fill(data)
+#             data = imputer.fill(data)
 
-            assert (
-                imputer._fitted == True
-            ), "The method {} is not correctly fitted.".format(method_name)
-            assert (
-                data.isnull().any().any() == False
-            ), "The imputation method {} fail to impute all missings.".format(
-                method_name
-            )
+#             assert (
+#                 imputer._fitted == True
+#             ), "The method {} is not correctly fitted.".format(method_name)
+#             assert (
+#                 data.isnull().any().any() == False
+#             ), "The imputation method {} fail to impute all missings.".format(
+#                 method_name
+#             )
+
+
+def test_DummyImputer():
+
+    from My_AutoML._imputation import DummyImputer
+
+    data = pd.DataFrame(
+        np.random.randint(0, 50, size=(100, 5)),
+        columns=["col_1", "col_2", "col_3", "col_4", "col_5"],
+    )
+    for _index in data.index:
+        if np.random.rand() < 0.1:
+            data.loc[_index, "col_3"] = np.nan
+    data["col_6"] = np.random.randint(0, 10, size=100)
+
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    imputer = DummyImputer(
+        method="median",
+    )
+    filled_data = imputer.fill(X, y)
+
+    assert imputer._fitted == True, "The method DummyImputer is not correctly fitted."
+    assert (
+        filled_data.isnull().any().any() == False
+    ), "The imputation method DummyImputer fail to impute all missings."
+
+
+def test_kNNImputer():
+
+    from My_AutoML._imputation import KNNImputer
+
+    data = pd.DataFrame(
+        np.random.randint(0, 50, size=(100, 5)),
+        columns=["col_1", "col_2", "col_3", "col_4", "col_5"],
+    )
+    for _index in data.index:
+        if np.random.rand() < 0.1:
+            data.loc[_index, "col_3"] = np.nan
+
+    imputer = KNNImputer(
+        n_neighbors=3,
+        method="median",
+    )
+    filled_data = imputer.fill(data)
+
+    assert imputer._fitted == True, "The method KNNImputer is not correctly fitted."
+    assert (
+        filled_data.isnull().any().any() == False
+    ), "The imputation method KNNImputer fail to impute all missings."
 
 
 # def test_imputer_AAI_kNN():

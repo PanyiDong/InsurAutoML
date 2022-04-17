@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 2:55:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 5:52:59 pm
+Last Modified: Saturday, 16th April 2022 7:58:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -156,13 +156,13 @@ class fast_ica(askfs.fast_ica.FastICA):
         algorithm="parallel",
         whiten=False,
         fun="logcosh",
-        n_component=5,
+        n_components=5,
     ):
         super().__init__(
             algorithm=algorithm,
             whiten=whiten,
             fun=fun,
-            n_component=n_component,
+            n_components=n_components,
         )
 
         self._fitted = False

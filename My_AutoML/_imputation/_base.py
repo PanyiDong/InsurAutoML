@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:49:51 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 9th April 2022 10:43:28 pm
+Last Modified: Saturday, 16th April 2022 8:33:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -146,7 +146,7 @@ class DummyImputer:
                 _mean_nan = y[X[_column].isnull()].mean()
                 _mean_non_nan = y[~X[_column].isnull()].mean()
                 if abs(_mean_nan / _mean_non_nan - 1) >= self.threshold:
-                    X[_column + "_nan"] = X[X[_column].isnull(), _column].astype(int)
+                    X[_column + "_nan"] = X[_column].isnull().astype(int)
                     X[_column] = X[_column].fillna(0)
                 else:
                     if self.method == "mean":
@@ -161,6 +161,8 @@ class DummyImputer:
                         )
                     else:
                         X[_column] = X[_column].fillna(self.method)
+
+        return X
 
 
 class JointImputer:

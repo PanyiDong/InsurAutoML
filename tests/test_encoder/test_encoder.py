@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:09:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 1:07:02 pm
+Last Modified: Saturday, 16th April 2022 7:50:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,51 +38,62 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import unittest
-import numpy as np
-import pandas as pd
 
-from My_AutoML._encoding import encoders
+def test_encoder_1():
 
-data_X = pd.DataFrame(
-    {
-        "col_1": [
-            "Sam",
-            "John",
-            "Sam",
-            "Amy",
-            "Amy",
-            "Sam",
-            "Sam",
-            "John",
-            "Amy",
-            "Sam",
-        ],
-        "col_2": [9, 7, 2, 1, 6, 8, 8, 9, 3, 6],
-    }
-)
-data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
+    from My_AutoML._encoding import DataEncoding
+    from My_AutoML import load_data
+
+    database = load_data().load("Appendix", "Employee")
+
+    encoder = DataEncoding(dummy_coding=True, transform=False)
+    encoder.fit(database["Employee"])
+    data = encoder.refit(database["Employee"])
+
+    # check whether the method is fitted
+    assert encoder._fitted == True, "The encoder is not correctly fitted."
 
 
-class TestEncoder(unittest.TestCase):
-    def test_Encoder(self):
+def test_encoder_2():
 
-        self.method_dict = encoders
-        self.method_names = list(self.method_dict.keys())
-        self.method_objects = list(self.method_dict.values())
+    from My_AutoML._encoding import DataEncoding
+    from My_AutoML import load_data
 
-        for method_name, method_object in zip(self.method_names, self.method_objects):
+    database = load_data().load("Appendix", "Employee")
 
-            mol = method_object()
-            mol.fit(data_X)
+    encoder = DataEncoding(dummy_coding=False, transform="standardize")
+    encoder.fit(database["Employee"])
+    data = encoder.refit(database["Employee"])
 
-            # check whether the method is fitted
-            self.assertEqual(
-                mol._fitted,
-                True,
-                "The method {} is not correctly fitted.".format(method_name),
-            )
+    # check whether the method is fitted
+    assert encoder._fitted == True, "The encoder is not correctly fitted."
 
-            print(
-                "The method {} is correctly fitted.".format(method_name),
-            )
+
+def test_encoder_3():
+
+    from My_AutoML._encoding import DataEncoding
+    from My_AutoML import load_data
+
+    database = load_data().load("Appendix", "Employee")
+
+    encoder = DataEncoding(dummy_coding=False, transform="center")
+    encoder.fit(database["Employee"])
+    data = encoder.refit(database["Employee"])
+
+    # check whether the method is fitted
+    assert encoder._fitted == True, "The encoder is not correctly fitted."
+
+
+def test_encoder_4():
+
+    from My_AutoML._encoding import DataEncoding
+    from My_AutoML import load_data
+
+    database = load_data().load("Appendix", "Employee")
+
+    encoder = DataEncoding(dummy_coding=False, transform="log")
+    encoder.fit(database["Employee"])
+    data = encoder.refit(database["Employee"])
+
+    # check whether the method is fitted
+    assert encoder._fitted == True, "The encoder is not correctly fitted."
