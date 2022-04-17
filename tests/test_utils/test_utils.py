@@ -322,7 +322,7 @@ def test_get_scheduler():
     get_scheduler("ASHAScheduler")
     get_scheduler("HyperBandScheduler")
     get_scheduler("MedianStoppingRule")
-    get_scheduler("PopulationBasedScheduler")
+    get_scheduler("PopulationBasedTraining")
 
     assert True, "The get_scheduler method is not correctly done."
 
