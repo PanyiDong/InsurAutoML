@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 4:52:31 pm
+Last Modified: Saturday, 16th April 2022 7:12:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,29 +46,29 @@ from My_AutoML._feature_selection._base import (
     RBFSampler,
 )
 
-# def test_feature_selection():
+def test_feature_selection():
 
-#     # loop through all feature selection methods
-#     for method_name, method in zip(
-#         feature_selections.keys(), feature_selections.values()
-#     ):
-#         data = pd.read_csv("Appendix/Medicalpremium.csv")
-#         X = data.iloc[:, :-1]
-#         y = data.iloc[:, -1]
+    # loop through all feature selection methods
+    for method_name, method in zip(
+        feature_selections.keys(), feature_selections.values()
+    ):
+        data = pd.read_csv("Appendix/Medicalpremium.csv")
+        X = data.iloc[:, :-1]
+        y = data.iloc[:, -1]
 
-#         if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
-#             feature_selection = method(n_components=5)
-#         else:
-#             feature_selection = method()
+        if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
+            feature_selection = method(n_components=5)
+        else:
+            feature_selection = method()
 
-#         feature_selection.fit(X, y)
-#         _X = feature_selection.transform(X)
+        feature_selection.fit(X, y)
+        _X = feature_selection.transform(X)
 
-#         assert feature_selection._fitted == True, "Fitted should be True"
-#         if method_name != "polynomial":
-#             assert (
-#                 _X.shape[1] <= X.shape[1]
-#             ), "Feature selection method {} failed".format(method_name)
+        assert feature_selection._fitted == True, "Fitted should be True"
+        if method_name != "polynomial":
+            assert (
+                _X.shape[1] <= X.shape[1]
+            ), "Feature selection method {} failed".format(method_name)
 
 
 def test_feature_selection_PCA_FeatureSelection():
