@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 1:56:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 11:57:34 pm
+Last Modified: Sunday, 17th April 2022 12:23:00 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -130,43 +130,3 @@ def test_feature_truncation():
     assert (
         (capped_data <= transformer.quantile_list).all().all()
     ), "The feature truncation is not correctly done."
-
-
-def test_get_algo():
-
-    from My_AutoML._utils._optimize import get_algo
-
-    get_algo("GridSearch")
-    get_algo("HyperOpt")
-    get_algo("Repeater")
-    get_algo("ConcurrencyLimtiter")
-
-    assert True, "The get_algo method is not correctly done."
-
-
-def test_get_scheduler():
-
-    from My_AutoML._utils._optimize import get_scheduler
-
-    get_scheduler("FIFOScheduler")
-    get_scheduler("ASHAScheduler")
-    get_scheduler("HyperBandScheduler")
-    get_scheduler("MeidanStoppingRule")
-    get_scheduler("PopulationBasedScheduler")
-
-    assert True, "The get_scheduler method is not correctly done."
-
-
-def test_get_progress_reporter():
-
-    from My_AutoML._utils._optimize import get_progress_reporter
-
-    get_progress_reporter("CLIReporter", max_evals=64, max_error=4)
-    get_progress_reporter("JupyterNotebookReporter", max_evals=64, max_error=4)
-
-
-def test_get_logger():
-
-    from My_AutoML._utils._optimize import get_logger
-
-    get_logger(["Logger", "TBX", "JSON", "CSV", "MLflow"])
