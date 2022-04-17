@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 8:02:22 pm
+Last Modified: Sunday, 17th April 2022 3:06:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,6 @@ import pandas as pd
 from My_AutoML._feature_selection import feature_selections
 from My_AutoML._feature_selection._base import (
     PCA_FeatureSelection,
-    LDASelection,
     RBFSampler,
 )
 
@@ -58,7 +57,7 @@ def test_feature_selection():
         y = data.iloc[:, -1]
 
         if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
-            feature_selection = method(n_components=5)
+            pass
         else:
             feature_selection = method()
 
@@ -72,29 +71,166 @@ def test_feature_selection():
             ), "Feature selection method {} failed".format(method_name)
 
 
+def test_FeatureFilter():
+
+    from My_AutoML._feature_selection import FeatureFilter
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = FeatureFilter(
+        n_components=5,
+        criteria="Pearson",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
+
+    feature_selection = FeatureFilter(
+        n_components=5,
+        criteria="MI",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
+
+
+def test_ASFFS():
+
+    from My_AutoML._feature_selection import ASFFS
+
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = ASFFS(
+        n_components=5,
+        model="Linear",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
+
+    feature_selection = ASFFS(
+        n_components=5,
+        model="lasso",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
+
+    feature_selection = ASFFS(n_components=5, model="ridge", objective="MAE")
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
+
+
+def test_GA():
+
+    from My_AutoML._encoding import DataEncoding
+    from My_AutoML._feature_selection import GeneticAlgorithm
+
+    data = pd.read_csv("Appendix/heart.csv")
+    formatter = DataEncoding()
+
+    # to numerical
+    formatter.fit(data)
+    data = formatter.refit(data)
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = GeneticAlgorithm(
+        n_components=5, feature_selection="random", fitness_fit="Linear"
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+    feature_selection = GeneticAlgorithm(
+        n_components=5, feature_selection=["Entropy"], fitness_fit="Logistic"
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+    feature_selection = GeneticAlgorithm(
+        n_components=5, feature_selection=["t_statistics"], fitness_fit="Random Forest"
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+    feature_selection = GeneticAlgorithm(
+        n_components=5, feature_selection="auto", fitness_fit="SVM"
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+
 def test_feature_selection_PCA_FeatureSelection():
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
-    feature_selection = PCA_FeatureSelection(n_components=5)
+    feature_selection = PCA_FeatureSelection(
+        n_components=5,
+        solver="full",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
+
+    # feature_selection = PCA_FeatureSelection(
+    #     n_components=5,
+    #     solver="truncated",
+    # )
+    # feature_selection.fit(X, y)
+    # _X = feature_selection.transform(X)
+
+    # assert feature_selection._fitted == True, "Fitted should be True"
+
+    feature_selection = PCA_FeatureSelection(
+        n_components=5,
+        solver="randomized",
+    )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
 
-def test_feature_selection_LDASelection():
+# def test_feature_selection_LDASelection():
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
 
-    feature_selection = LDASelection(n_components=5)
-    feature_selection.fit(X, y)
+#     feature_selection = LDASelection(n_components=5)
+#     feature_selection.fit(X, y)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+#     assert feature_selection._fitted == True, "Fitted should be True"
 
 
 def test_feature_selection_RBFSampler():

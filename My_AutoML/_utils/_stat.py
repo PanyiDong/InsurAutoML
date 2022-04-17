@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 9:44:04 pm
+Last Modified: Sunday, 17th April 2022 3:03:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -214,9 +214,10 @@ def t_score(X, y, fvalue=True, pvalue=False):
         raise ValueError("X and y not same size!")
 
     features = list(X.columns)
-    _y_column = list(y.columns)[0]  # only accept one column of response
+    if len(y.shape) > 1:
+        y = y.iloc[:, 0]  # only accept one column of response
 
-    _group = y[_y_column].unique()
+    _group = y.unique()
     if len(_group) != 2:
         raise ValueError(
             "Only 2 group datasets are acceptable, get {}.".format(len(_group))
@@ -227,8 +228,8 @@ def t_score(X, y, fvalue=True, pvalue=False):
 
     for _col in features:
         t_test = scipy.stats.ttest_ind(
-            X.loc[y[_y_column] == _group[0], _col],
-            X.loc[y[_y_column] == _group[1], _col],
+            X.loc[y == _group[0], _col],
+            X.loc[y == _group[1], _col],
         )
         if fvalue:
             _f.append(t_test[0])
@@ -250,9 +251,10 @@ def ANOVA(X, y, fvalue=True, pvalue=False):
         raise ValueError("X and y not same size!")
 
     features = list(X.columns)
-    _y_column = list(y.columns)[0]  # only accept one column of response
+    if len(y.shape) > 1:
+        y = y.iloc[:, 0]  # only accept one column of response
 
-    _group = y[_y_column].unique()
+    _group = y.unique()
 
     _f = []
     _p = []
@@ -260,7 +262,7 @@ def ANOVA(X, y, fvalue=True, pvalue=False):
     for _col in features:
         _group_value = []
         for _g in _group:
-            _group_value.append(X.loc[y[_y_column] == _g, _col])
+            _group_value.append(X.loc[y == _g, _col])
         _test = scipy.stats.f_oneway(*_group_value)
         if fvalue:
             _f.append(_test[0])

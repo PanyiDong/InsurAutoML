@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 5:48:22 pm
+Last Modified: Sunday, 17th April 2022 2:59:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -516,9 +516,9 @@ class GeneticAlgorithm:
     def _t_statistics(self, X, y, n):
 
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
-        if len(y[list(y.columns)[0]].unique()) == 2:
+        if len(y.unique()) == 2:
             _score = t_score(X, y)
-        elif len(y[list(y.columns)[0]].unique()) > 2:
+        elif len(y.unique()) > 2:
             _score = ANOVA(X, y)
         else:
             raise ValueError("Only support for more than 2 groups, get only 1 group!")
@@ -551,7 +551,7 @@ class GeneticAlgorithm:
 
     def _cal_fitness(self, X, y, selection):
 
-        from sklearn.metrics import accuracy_score
+        from sklearn.metrics import mean_squared_error
 
         if not self.fitness_func:  # fit selected features and calcualte accuracy score
             if self.fitness_fit == "Linear":
@@ -583,7 +583,7 @@ class GeneticAlgorithm:
                 )
             model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
             y_pred = model.predict(X.iloc[:, True_index(selection)])
-            _accuracy_score = accuracy_score(y, y_pred)
+            _accuracy_score = mean_squared_error(y, y_pred)
 
             return self.fitness_weight * _accuracy_score + (
                 1 - self.fitness_weight
@@ -755,16 +755,17 @@ class GeneticAlgorithm:
             ):  # get n_initial random feature selection rule
                 self._feature_sel_methods["random_" + str(i + 1)] = self._random
         else:
-            self._feature_sel_methods = self.feature_selection
+            self._feature_sel_methods = {}
 
             # check if all methods are available
-            for _method in self._feature_sel_methods:
+            for _method in self.feature_selection:
                 if _method not in [*self._auto_sel]:
                     raise ValueError(
                         "Not recognizing feature selection methods, only support {}, get {}.".format(
                             [*self._auto_sel], _method
                         )
                     )
+                self._feature_sel_methods[_method] = self._auto_sel[_method]
 
         self._fit(X, y)
 
@@ -790,8 +791,8 @@ class GeneticAlgorithm:
         for _gen in range(self.n_generations):
             _sel_pool = self._GeneticAlgorithm(X, y, _sel_pool)
 
-            # if self._early_stopping() :
-            #     break
+            if self._early_stopping():
+                break
 
         self.selection_ = _sel_pool[
             np.flip(np.argsort(self._fitness))[0]
