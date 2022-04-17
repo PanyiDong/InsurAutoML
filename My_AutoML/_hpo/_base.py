@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 9:49:15 pm
+Last Modified: Saturday, 16th April 2022 10:15:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -911,6 +911,8 @@ class AutoTabularBase:
 
             print("Stored model found, load previous model.")
             self.load_model(_X, _y)
+
+            self._fitted = True  # successfully fitted the model
 
             return self
 

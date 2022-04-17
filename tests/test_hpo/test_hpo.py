@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 9:50:46 pm
+Last Modified: Saturday, 16th April 2022 10:15:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -97,8 +97,6 @@ def test_heart():
 
 def test_insurance():
 
-    from My_AutoML._hpo._base import AutoTabularBase
-
     # test load_data here
     data = load_data().load("example/example_data", "insurance")
     data = data["insurance"]
@@ -107,8 +105,7 @@ def test_insurance():
     features.remove("expenses")
     response = ["expenses"]
 
-    mol = AutoTabularBase(
-        task_mode="regression",
+    mol = My_AutoML.AutoTabular(
         model_name="insurance",
         objective="MAE",
     )
@@ -136,18 +133,18 @@ def test_insurance_R2():
     response = ["expenses"]
 
     mol = AutoTabularBase(
+        model_name="insurance_R2",
         task_mode="regression",
         objective="R2",
-        model_name="insurance",
     )
     mol.fit(data[features], data[response])
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
+        os.path.exists("tmp/insurance_R2/init.txt") == True
     ), "Regression for Insurance data failed to initiated."
     assert mol._fitted == True, "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+        os.path.exists("tmp/insurance_R2/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
 
 
