@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 1:51:41 pm
+Last Modified: Sunday, 17th April 2022 2:01:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1200,28 +1200,41 @@ class AutoTabularBase:
 
             # since we tries to minimize the objective function, take negative accuracy here
             if self.full_status:
+                tune.report(
+                    encoder=_encoder,
+                    encoder_hyperparameter=_encoder_hyper,
+                    imputer=_imputer,
+                    imputer_hyperparameter=_imputer_hyper,
+                    balancing=_balancing,
+                    balancing_hyperparameter=_balancing_hyper,
+                    scaling=_scaling,
+                    scaling_hyperparameter=_scaling_hyper,
+                    feature_selection=_feature_selection,
+                    feature_selection_hyperparameter=_feature_selection_hyper,
+                    model=_model,
+                    model_hyperparameter=_model_hyper,
+                    fitted_model=_model,
+                    training_status="fitted",
+                    loss=_loss,
+                )
+
+                # only for possible checks
                 return {
-                    "encoder" : _encoder,
-                    "encoder_hyperparameter" : _encoder_hyper,
-                    "imputer" : _imputer,
-                    "imputer_hyperparameter" : _imputer_hyper,
-                    "balancing" : _balancing,
-                    "balancing_hyperparameter" : _balancing_hyper,
-                    "scaling" : _scaling,
-                    "scaling_hyperparameter" : _scaling_hyper,
-                    "feature_selection" : _feature_selection,
-                    "feature_selection_hyperparameter" : _feature_selection_hyper,
-                    "model" : _model,
-                    "model_hyperparameter" : _model_hyper,
-                    "fitted_model" : _model,
-                    "training_status" : "fitted",
-                    "loss" : _loss,
+                    "fitted_model": _model,
+                    "training_status": "fitted",
+                    "loss": _loss,
                 }
             else:
+                tune.report(
+                    fitted_model=_model,
+                    training_status="fitted",
+                    loss=_loss,
+                )
+                # only for possible checks
                 return {
-                    "fitted_model" : _model,
-                    "training_status" : "fitted",
-                    "loss" : _loss,
+                    "fitted_model": _model,
+                    "training_status": "fitted",
+                    "loss": _loss,
                 }
         else:
             _X_obj = _X.copy()
@@ -1311,28 +1324,41 @@ class AutoTabularBase:
             self._iter += 1
 
             if self.full_status:
+                tune.report(
+                    encoder=_encoder,
+                    encoder_hyperparameter=_encoder_hyper,
+                    imputer=_imputer,
+                    imputer_hyperparameter=_imputer_hyper,
+                    balancing=_balancing,
+                    balancing_hyperparameter=_balancing_hyper,
+                    scaling=_scaling,
+                    scaling_hyperparameter=_scaling_hyper,
+                    feature_selection=_feature_selection,
+                    feature_selection_hyperparameter=_feature_selection_hyper,
+                    model=_model,
+                    model_hyperparameter=_model_hyper,
+                    fitted_model=_model,
+                    training_status="fitted",
+                    loss=_loss,
+                )
+
+                # only for possible checks
                 return {
-                    "encoder" : _encoder,
-                    "encoder_hyperparameter" : _encoder_hyper,
-                    "imputer" : _imputer,
-                    "imputer_hyperparameter" : _imputer_hyper,
-                    "balancing" : _balancing,
-                    "balancing_hyperparameter" : _balancing_hyper,
-                    "scaling" : _scaling,
-                    "scaling_hyperparameter" : _scaling_hyper,
-                    "feature_selection" : _feature_selection,
-                    "feature_selection_hyperparameter" : _feature_selection_hyper,
-                    "model" : _model,
-                    "model_hyperparameter" : _model_hyper,
-                    "fitted_model" : _model,
-                    "training_status" : "fitted",
-                    "loss" : _loss,
+                    "fitted_model": _model,
+                    "training_status": "fitted",
+                    "loss": _loss,
                 }
             else:
+                tune.report(
+                    fitted_model=_model,
+                    training_status="fitted",
+                    loss=_loss,
+                )
+                # only for possible checks
                 return {
-                    "fitted_model" : _model,
-                    "training_status" : "fitted",
-                    "loss" : _loss,
+                    "fitted_model": _model,
+                    "training_status": "fitted",
+                    "loss": _loss,
                 }
 
     def fit(self, X, y):
