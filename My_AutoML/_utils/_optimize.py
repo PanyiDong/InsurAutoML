@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:51:36 pm
+Last Modified: Sunday, 17th April 2022 5:03:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -591,58 +591,60 @@ def get_logger(logger):
         from ray.tune.logger import LoggerCallback
 
         return [LoggerCallback()]
-    elif "Logger" in logger:
-        from ray.tune.logger import LoggerCallback
 
-        loggers.append(LoggerCallback())
-    elif "TBX" in logger:
+    for log in logger:
+        if "Logger" == log:
+            from ray.tune.logger import LoggerCallback
 
-        # check whether TensorBoardX is installed
-        TensorBoardX_spec = importlib.util.find_spec("tensorboardX")
-        if TensorBoardX_spec is None:
-            raise ImportError(
+            loggers.append(LoggerCallback())
+        elif "TBX" == log:
+
+            # check whether TensorBoardX is installed
+            TensorBoardX_spec = importlib.util.find_spec("tensorboardX")
+            if TensorBoardX_spec is None:
+                raise ImportError(
                 "TensorBoardX not installed. Please install it first to use TensorBoardX. \
                 Command to install: pip install tensorboardX"
             )
 
-        from ray.tune.logger import TBXLoggerCallback
+            from ray.tune.logger import TBXLoggerCallback
 
-        loggers.append(TBXLoggerCallback())
-    elif "JSON" in logger:
+            loggers.append(TBXLoggerCallback())
+        elif "JSON" in logger:
 
-        from ray.tune.logger import JsonLoggerCallback
+            from ray.tune.logger import JsonLoggerCallback
 
-        loggers.append(JsonLoggerCallback())
-    elif "CSV" in logger:
+            loggers.append(JsonLoggerCallback())
+        elif "CSV" in logger:
 
-        from ray.tune.logger import CSVLogger
+            from ray.tune.logger import CSVLogger
 
-        loggers.append(CSVLogger())
-    elif "MLflow" in logger:
+            loggers.append(CSVLogger())
+        elif "MLflow" in logger:
 
-        # checkwhether mlflow is installed
-        mlflow_spec = importlib.util.find_spec("mlflow")
-        if mlflow_spec is None:
-            raise ImportError(
-                "mlflow not installed. Please install it first to use mlflow. \
-                Command to install: pip install mlflow"
-            )
+            # checkwhether mlflow is installed
+            mlflow_spec = importlib.util.find_spec("mlflow")
+            if mlflow_spec is None:
+                raise ImportError(
+                    "mlflow not installed. Please install it first to use mlflow. \
+                    Command to install: pip install mlflow"
+                )
 
-        from ray.tune.integration.mlflow import MLflowLoggerCallback
+            from ray.tune.integration.mlflow import MLflowLoggerCallback
 
-        loggers.append(MLflowLoggerCallback())
-    elif "Wandb" in logger:
+            loggers.append(MLflowLoggerCallback())
+        elif "Wandb" in logger:
 
-        # check whether wandb is installed
-        wandb_spec = importlib.util.find_spec("wandb")
-        if wandb_spec is None:
-            raise ImportError(
-                "wandb not installed. Please install it first to use wandb. \
-                Command to install: pip install wandb"
-            )
+            # check whether wandb is installed
+            wandb_spec = importlib.util.find_spec("wandb")
+            if wandb_spec is None:
+                raise ImportError(
+                    "wandb not installed. Please install it first to use wandb. \
+                    Command to install: pip install wandb"
+                )
 
-        from ray.tune.integration.wandb import WandbLoggerCallback
+            from ray.tune.integration.wandb import WandbLoggerCallback
 
-        loggers.append(WandbLoggerCallback())
+            loggers.append(WandbLoggerCallback())
 
     return loggers

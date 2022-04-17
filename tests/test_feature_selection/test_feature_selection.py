@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 3:06:09 pm
+Last Modified: Sunday, 17th April 2022 5:18:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import numpy as np
 import pandas as pd
 from My_AutoML._feature_selection import feature_selections
 from My_AutoML._feature_selection._base import (
@@ -46,145 +47,146 @@ from My_AutoML._feature_selection._base import (
 )
 
 
-def test_feature_selection():
+# def test_feature_selection():
 
-    # loop through all feature selection methods
-    for method_name, method in zip(
-        feature_selections.keys(), feature_selections.values()
-    ):
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
+#     # loop through all feature selection methods
+#     for method_name, method in zip(
+#         feature_selections.keys(), feature_selections.values()
+#     ):
+#         data = pd.read_csv("Appendix/Medicalpremium.csv")
+#         X = data.iloc[:, :-1]
+#         y = data.iloc[:, -1]
 
-        if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
-            pass
-        else:
-            feature_selection = method()
+#         if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
+#             pass
+#         else:
+#             feature_selection = method()
 
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
+#         feature_selection.fit(X, y)
+#         _X = feature_selection.transform(X)
 
-        assert feature_selection._fitted == True, "Fitted should be True"
-        if method_name != "polynomial":
-            assert (
-                _X.shape[1] <= X.shape[1]
-            ), "Feature selection method {} failed".format(method_name)
-
-
-def test_FeatureFilter():
-
-    from My_AutoML._feature_selection import FeatureFilter
-
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-
-    feature_selection = FeatureFilter(
-        n_components=5,
-        criteria="Pearson",
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
-
-    feature_selection = FeatureFilter(
-        n_components=5,
-        criteria="MI",
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
+#         assert feature_selection._fitted == True, "Fitted should be True"
+#         if method_name != "polynomial":
+#             assert (
+#                 _X.shape[1] <= X.shape[1]
+#             ), "Feature selection method {} failed".format(method_name)
 
 
-def test_ASFFS():
+# def test_FeatureFilter():
 
-    from My_AutoML._feature_selection import ASFFS
+#     from My_AutoML._feature_selection import FeatureFilter
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
 
-    feature_selection = ASFFS(
-        n_components=5,
-        model="Linear",
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     feature_selection = FeatureFilter(
+#         n_components=5,
+#         criteria="Pearson",
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
 
-    feature_selection = ASFFS(
-        n_components=5,
-        model="lasso",
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     feature_selection = FeatureFilter(
+#         n_components=5,
+#         criteria="MI",
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
-
-    feature_selection = ASFFS(n_components=5, model="ridge", objective="MAE")
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
 
 
-def test_GA():
+# def test_ASFFS():
 
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._feature_selection import GeneticAlgorithm
+#     from My_AutoML._feature_selection import ASFFS
 
-    data = pd.read_csv("Appendix/heart.csv")
-    formatter = DataEncoding()
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
 
-    # to numerical
-    formatter.fit(data)
-    data = formatter.refit(data)
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
+#     feature_selection = ASFFS(
+#         n_components=5,
+#         model="Linear",
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection="random", fitness_fit="Linear"
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+#     feature_selection = ASFFS(
+#         n_components=5,
+#         model="lasso",
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection=["Entropy"], fitness_fit="Logistic"
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+#     feature_selection = ASFFS(n_components=5, model="ridge", objective="MAE")
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection=["t_statistics"], fitness_fit="Random Forest"
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
-    feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection="auto", fitness_fit="SVM"
-    )
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+# def test_GA():
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._feature_selection import GeneticAlgorithm
+
+#     data = pd.read_csv("Appendix/heart.csv")
+#     formatter = DataEncoding()
+
+#     # to numerical
+#     formatter.fit(data)
+#     data = formatter.refit(data)
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = GeneticAlgorithm(
+#         n_components=5, feature_selection="random", fitness_fit="Linear",
+#         n_generations=50,
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+#     feature_selection = GeneticAlgorithm(
+#         n_components=5, feature_selection=["Entropy"], fitness_fit="Logistic"
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+#     feature_selection = GeneticAlgorithm(
+#         n_components=5, feature_selection=["t_statistics"], fitness_fit="Random Forest"
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+#     feature_selection = GeneticAlgorithm(
+#         n_components=5, feature_selection="auto", fitness_fit="SVM"
+#     )
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+#     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
 
 def test_feature_selection_PCA_FeatureSelection():
@@ -202,14 +204,14 @@ def test_feature_selection_PCA_FeatureSelection():
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
-    # feature_selection = PCA_FeatureSelection(
-    #     n_components=5,
-    #     solver="truncated",
-    # )
-    # feature_selection.fit(X, y)
-    # _X = feature_selection.transform(X)
+    feature_selection = PCA_FeatureSelection(
+        n_components=5,
+        solver="truncated",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
 
-    # assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted == True, "Fitted should be True"
 
     feature_selection = PCA_FeatureSelection(
         n_components=5,
@@ -221,149 +223,149 @@ def test_feature_selection_PCA_FeatureSelection():
     assert feature_selection._fitted == True, "Fitted should be True"
 
 
-# def test_feature_selection_LDASelection():
+# # def test_feature_selection_LDASelection():
+
+# #     data = pd.read_csv("Appendix/Medicalpremium.csv")
+# #     X = data.iloc[:, :-1]
+# #     y = data.iloc[:, -1]
+
+# #     feature_selection = LDASelection(n_components=5)
+# #     feature_selection.fit(X, y)
+
+# #     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_RBFSampler():
 
 #     data = pd.read_csv("Appendix/Medicalpremium.csv")
 #     X = data.iloc[:, :-1]
 #     y = data.iloc[:, -1]
 
-#     feature_selection = LDASelection(n_components=5)
-#     feature_selection.fit(X, y)
-
-#     assert feature_selection._fitted == True, "Fitted should be True"
-
-
-def test_feature_selection_RBFSampler():
-
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-
-    feature_selection = RBFSampler(n_components=5)
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
-
-
-# test decrepted methods
-
-
-def test_feature_selection_densifier():
-
-    from My_AutoML._feature_selection._autosklearn import densifier
-
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-
-    feature_selection = densifier()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
-
-
-# def test_feature_selection_fast_ica():
-
-#     from My_AutoML._feature_selection._autosklearn import fast_ica
-
-#     data = pd.read_csv("Appendix/Medicalpremium.csv")
-#     X = data.iloc[:, :-1]
-#     y = data.iloc[:, -1]
-
-#     feature_selection = fast_ica()
+#     feature_selection = RBFSampler(n_components=5)
 #     feature_selection.fit(X, y)
 #     _X = feature_selection.transform(X)
 
 #     assert feature_selection._fitted == True, "Fitted should be True"
 
 
-def test_feature_selection_feature_agglomeration():
-
-    from My_AutoML._feature_selection._autosklearn import feature_agglomeration
-
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-
-    feature_selection = feature_agglomeration()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
+# # test decrepted methods
 
 
-def test_feature_selection_kernel_pca():
+# def test_feature_selection_densifier():
 
-    from My_AutoML._feature_selection._autosklearn import kernel_pca
+#     from My_AutoML._feature_selection._autosklearn import densifier
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
 
-    feature_selection = kernel_pca()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     feature_selection = densifier()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-
-
-def test_feature_selection_kitchen_sinks():
-
-    from My_AutoML._feature_selection._autosklearn import kitchen_sinks
-
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-
-    feature_selection = kitchen_sinks()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
+#     assert feature_selection._fitted == True, "Fitted should be True"
 
 
-def test_feature_selection_nystroem_sampler():
+# # def test_feature_selection_fast_ica():
 
-    from My_AutoML._feature_selection._autosklearn import nystroem_sampler
+# #     from My_AutoML._feature_selection._autosklearn import fast_ica
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
+# #     data = pd.read_csv("Appendix/Medicalpremium.csv")
+# #     X = data.iloc[:, :-1]
+# #     y = data.iloc[:, -1]
 
-    feature_selection = nystroem_sampler()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+# #     feature_selection = fast_ica()
+# #     feature_selection.fit(X, y)
+# #     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
-
-
-def test_feature_selection_pca():
-
-    from My_AutoML._feature_selection._autosklearn import pca
-
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
-
-    feature_selection = pca()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
-
-    assert feature_selection._fitted == True, "Fitted should be True"
+# #     assert feature_selection._fitted == True, "Fitted should be True"
 
 
-def test_feature_selection_random_trees_embedding():
+# def test_feature_selection_feature_agglomeration():
 
-    from My_AutoML._feature_selection._autosklearn import random_trees_embedding
+#     from My_AutoML._feature_selection._autosklearn import feature_agglomeration
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
-    X = data.iloc[:, :-1]
-    y = data.iloc[:, -1]
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
 
-    feature_selection = random_trees_embedding()
-    feature_selection.fit(X, y)
-    _X = feature_selection.transform(X)
+#     feature_selection = feature_agglomeration()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+#     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_kernel_pca():
+
+#     from My_AutoML._feature_selection._autosklearn import kernel_pca
+
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = kernel_pca()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_kitchen_sinks():
+
+#     from My_AutoML._feature_selection._autosklearn import kitchen_sinks
+
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = kitchen_sinks()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_nystroem_sampler():
+
+#     from My_AutoML._feature_selection._autosklearn import nystroem_sampler
+
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = nystroem_sampler()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_pca():
+
+#     from My_AutoML._feature_selection._autosklearn import pca
+
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = pca()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"
+
+
+# def test_feature_selection_random_trees_embedding():
+
+#     from My_AutoML._feature_selection._autosklearn import random_trees_embedding
+
+#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     X = data.iloc[:, :-1]
+#     y = data.iloc[:, -1]
+
+#     feature_selection = random_trees_embedding()
+#     feature_selection.fit(X, y)
+#     _X = feature_selection.transform(X)
+
+#     assert feature_selection._fitted == True, "Fitted should be True"

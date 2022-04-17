@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 3:07:05 pm
+Last Modified: Sunday, 17th April 2022 5:06:41 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -95,6 +95,63 @@ def test_random_list():
     ).all(), "random_index(5) should contain [0, 1, 2, 3, 4], get {}".format(
         random_list([0, 1, 2, 3, 4])
     )
+
+
+def test_is_date():
+
+    from My_AutoML._utils._base import is_date
+
+    test = pd.DataFrame(
+        {
+            "col_1": [1, 2, 3, 4, 5],
+            "col_2": [
+                "2020-01-01",
+                "2020-01-02",
+                "2020-01-03",
+                "2020-01-04",
+                "2020-01-05",
+            ],
+        }
+    )
+
+    assert is_date(test, rule="all"), "The is_date method is not correctly done."
+
+
+def test_feature_rounding():
+
+    from My_AutoML._utils._base import feature_rounding
+
+    test = pd.DataFrame(
+        {
+            "col_1": [1, 2, 3, 4, 5],
+            "col_2": [1.2, 2.2, 3.2, 4.2, 5.2],
+        }
+    )
+
+    target_data = pd.DataFrame(
+        {
+            "col_1": [1, 2, 3, 4, 5],
+            "col_2": [1.0, 2.0, 3.0, 4.0, 5.0],
+        }
+    )
+
+    assert (
+        feature_rounding(test) == target_data
+    ).all().all() == True, "The feature_rounding method is not correctly done."
+
+
+def test_timer():
+
+    from My_AutoML._utils._base import Timer
+
+    timer = Timer()
+    timer.start()
+    timer.stop()
+    timer.start()
+    timer.stop()
+
+    assert timer.sum() / timer.avg() == 2.0, "The timer is not correctly done."
+    assert timer.cumsum()[-1] == timer.sum(), "The timer is not correctly done."
 
 
 def test_minloc():
@@ -209,6 +266,24 @@ def test_remove_index_columns():
         type(remove_data_1)
     )
 
+    remove_data_0 = remove_index_columns(
+        data, axis=0, threshold=[0.8, 0.8, 0.8, 0.8, 0.8]
+    )
+    remove_data_1 = remove_index_columns(
+        data, axis=1, threshold=[0.8, 0.8, 0.8, 0.8, 0.8]
+    )
+
+    assert isinstance(
+        remove_data_0, pd.DataFrame
+    ), "remove_index_columns should return a pd.DataFrame, get {}".format(
+        type(remove_data_0)
+    )
+    assert isinstance(
+        remove_data_1, pd.DataFrame
+    ), "remove_index_columns should return a pd.DataFrame, get {}".format(
+        type(remove_data_1)
+    )
+
 
 def test_nan_cov():
 
@@ -311,6 +386,33 @@ def test_get_algo():
     get_algo("Repeater")
     get_algo("ConcurrencyLimiter")
 
+    try:
+        get_algo("AxSearch")
+    except ImportError:
+        pass
+
+    try:
+        get_algo("BlendSearch")
+    except ImportError:
+        pass
+
+    try:
+        get_algo("CFO")
+    except ImportError:
+        pass
+
+    try:
+        get_algo("HEBO")
+    except ImportError:
+        pass
+
+    try:
+        get_algo("Nevergrad")
+    except ImportError:
+        pass
+
+    get_algo(get_algo)
+
     assert True, "The get_algo method is not correctly done."
 
 
@@ -323,6 +425,19 @@ def test_get_scheduler():
     get_scheduler("HyperBandScheduler")
     get_scheduler("MedianStoppingRule")
     get_scheduler("PopulationBasedTraining")
+    get_scheduler("PopulationBasedTrainingReplay")
+
+    try:
+        get_scheduler("PB2")
+    except ImportError:
+        pass
+
+    try:
+        get_scheduler("HyperBandForBOHB")
+    except ImportError:
+        pass
+
+    get_scheduler(get_scheduler)
 
     assert True, "The get_scheduler method is not correctly done."
 
@@ -363,3 +478,76 @@ def test_save_model():
     )
 
     assert os.path.exists("model_name") == True, "The model is not saved."
+
+
+def test_formatting():
+
+    from My_AutoML._utils._data import formatting
+
+    data = pd.read_csv("Appendix/insurance.csv")
+    train = data.iloc[100:, :]
+    test = data.iloc[:100, :]
+
+    formatter = formatting()
+    formatter.fit(train)
+    formatter.refit(test)
+
+    assert True, "The formatting is not correctly done."
+
+
+def test_get_missing_matrix():
+
+    from My_AutoML._utils._data import get_missing_matrix
+
+    test = pd.DataFrame(
+        {
+            "col_1": [1, 2, 3, np.nan, 4, "NA"],
+            "col_2": [7, "novalue", "none", 10, 11, None],
+            "col_3": [
+                np.nan,
+                "3/12/2000",
+                "3/13/2000",
+                np.nan,
+                "3/12/2000",
+                "3/13/2000",
+            ],
+        }
+    )
+    test["col_3"] = pd.to_datetime(test["col_3"])
+
+    target_test = pd.DataFrame(
+        {
+            "col_1": [0, 0, 0, 1, 0, 1],
+            "col_2": [0, 1, 1, 0, 0, 1],
+            "col_3": [1, 0, 0, 1, 0, 0],
+        }
+    )
+
+    assert (
+        (get_missing_matrix(test) == target_test).all().all()
+    ), "The missing matrix is not correct."
+
+
+def test_extremeclass():
+
+    from My_AutoML._utils._data import ExtremeClass
+
+    cutter = ExtremeClass(extreme_threshold=0.9)
+    test = pd.DataFrame(
+        np.random.randint(0, 10, size=(100, 10)),
+        columns=["col_" + str(i) for i in range(10)],
+    )
+    test = cutter.cut(test)
+
+    assert True, "The extreme class is not correctly done."
+
+
+def test_assign_classes():
+
+    from My_AutoML._utils._data import assign_classes
+
+    test = [[0.9, 0.1], [0.2, 0.8]]
+
+    assert (
+        assign_classes(test) == np.array([0, 1])
+    ).all(), "The classes are not correctly assigned."

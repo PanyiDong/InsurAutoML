@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:33:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 2:35:39 pm
+Last Modified: Sunday, 17th April 2022 5:18:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -213,8 +213,8 @@ class PCA_FeatureSelection:
             from scipy.sparse.linalg import svds
 
             np.random.seed(self.seed)
-            v0 = np.random.uniform(-1, 1)
-            U, S, V = svds(X, k=n_components, tol=self.tol, v0=v0)
+            v0 = np.random.uniform(-1, 1, size=min(X.shape))
+            U, S, V = svds(X.values, k=n_components, tol=self.tol, v0=v0)
             S = S[::-1]
             U, V = svd_flip(U[:, ::-1], V[::-1])
         elif solver == "randomized":

@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 1:56:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 12:23:00 am
+Last Modified: Sunday, 17th April 2022 5:23:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -86,6 +86,21 @@ class TestScaling(unittest.TestCase):
                 )
 
 
+def test_NoScaing():
+
+    from My_AutoML._scaling._scaling import NoScaling
+
+    method = NoScaling()
+    method.fit(data_X, data_y)
+    fitted_data = method.transform(data_X)
+
+    assert method._fitted, "The NoScaling method is not correctly fitted."
+
+    data = method.inverse_transform(fitted_data)
+
+    assert method._fitted == False, "The NoScaling method is not correctly inversed."
+
+
 # test decrepted methods
 def test_feature_manipulation():
 
@@ -129,4 +144,10 @@ def test_feature_truncation():
 
     assert (
         (capped_data <= transformer.quantile_list).all().all()
+    ), "The feature truncation is not correctly done."
+
+    capped_data_2 = transformer.fit_transform(data)
+
+    assert (
+        (capped_data_2 <= transformer.quantile_list).all().all()
     ), "The feature truncation is not correctly done."
