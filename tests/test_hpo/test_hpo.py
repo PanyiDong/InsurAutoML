@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 8:00:55 pm
+Last Modified: Saturday, 16th April 2022 9:50:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -83,7 +83,7 @@ def test_heart():
         search_algo="GridSearch",
     )
     mol.fit(data[features], data[response])
-    
+
     y_pred = mol.predict(data[features])
 
     assert (
@@ -96,7 +96,7 @@ def test_heart():
 
 
 def test_insurance():
-    
+
     from My_AutoML._hpo._base import AutoTabularBase
 
     # test load_data here
@@ -110,6 +110,7 @@ def test_insurance():
     mol = AutoTabularBase(
         task_mode="regression",
         model_name="insurance",
+        objective="MAE",
     )
     mol.fit(data[features], data[response])
 
@@ -120,10 +121,10 @@ def test_insurance():
     assert (
         os.path.exists("tmp/insurance/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
-    
+
 
 def test_insurance_R2():
-    
+
     from My_AutoML._hpo._base import AutoTabularBase
 
     # test load_data here

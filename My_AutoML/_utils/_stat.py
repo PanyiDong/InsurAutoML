@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 9:06:46 pm
+Last Modified: Saturday, 16th April 2022 9:44:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -260,7 +260,7 @@ def ANOVA(X, y, fvalue=True, pvalue=False):
     for _col in features:
         _group_value = []
         for _g in _group:
-            _group_value.append(X.loc[y[_y_column] == _g, _col].flatten())
+            _group_value.append(X.loc[y[_y_column] == _g, _col])
         _test = scipy.stats.f_oneway(*_group_value)
         if fvalue:
             _f.append(_test[0])

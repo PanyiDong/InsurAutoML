@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:47:23 pm
+Last Modified: Saturday, 16th April 2022 9:49:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1259,9 +1259,9 @@ class AutoTabularBase:
                 ]:
                     # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
                     # larger the better, since to minimize, add negative sign
-                    _loss = -_obj(y_pred, _y_test_obj.values)
+                    _loss = -_obj(_y_test_obj.values, y_pred)
                 else:
-                    _loss = _obj(y_pred, _y_test_obj.values)
+                    _loss = _obj(_y_test_obj.values, y_pred)
 
                 with open("testing_objective.txt", "w") as f:
                     f.write("Loss from objective function is: {:.6f}\n".format(_loss))
@@ -1366,9 +1366,9 @@ class AutoTabularBase:
                 ]:
                     # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
                     # larger the better, since to minimize, add negative sign
-                    _loss = -_obj(y_pred, _y_obj.values)
+                    _loss = -_obj(_y_obj.values, y_pred)
                 else:
-                    _loss = _obj(y_pred, _y_obj.values)
+                    _loss = _obj(_y_obj.values, y_pred)
 
                 # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                 with open("testing_objective.txt", "w") as f:
