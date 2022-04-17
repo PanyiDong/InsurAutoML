@@ -24,7 +24,7 @@ coverage:
         target: 30% # specify the target "X%" coverage to hit
         threshold: 50% # allow this much decrease on patch
         if_ci_failed: error
-    changes: false
+    changes: true
 
 parsers:
   gcov:

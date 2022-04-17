@@ -8,8 +8,8 @@ matplotlib
 ray
 ray[tune]
 ray[rllib]
-# tqdm==4.62.3
-# mlflow==1.21.0
+tqdm==4.62.3
+mlflow==1.21.0
 tensorboardX
 hyperopt==0.2.5
 auto-sklearn==0.14.6
