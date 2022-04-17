@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 10:15:55 pm
+Last Modified: Sunday, 17th April 2022 11:00:47 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,7 +57,11 @@ from sklearn.exceptions import ConvergenceWarning
 from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._base import type_of_script
-from My_AutoML._utils._file import save_model
+from My_AutoML._utils._file import (
+    save_methods,
+    load_methods,
+    find_exact_path,
+)
 from My_AutoML._utils._data import (
     str2list,
     str2dict,
@@ -582,187 +586,174 @@ class AutoTabularBase:
             hyperparameter_space,
         )
 
+    # method is deprecated as pickle save/load methods are now supported
     # load hyperparameter settings and train on the data
-    def load_model(self, _X, _y):
+    # def load_model(self, _X, _y):
 
-        # load hyperparameter settings
-        with open(self.model_name) as f:
-            optimal_setting = f.readlines()
+    #     # load hyperparameter settings
+    #     with open(self.model_name) as f:
+    #         optimal_setting = f.readlines()
 
-        # remove change line signs
-        optimal_setting = [item.replace("\n", "") for item in optimal_setting]
-        # remove blank spaces
-        while "" in optimal_setting:
-            optimal_setting.remove("")
+    #     # remove change line signs
+    #     optimal_setting = [item.replace("\n", "") for item in optimal_setting]
+    #     # remove blank spaces
+    #     while "" in optimal_setting:
+    #         optimal_setting.remove("")
 
-        # convert strings to readable dictionaries
-        self.optimal_encoder = optimal_setting[0]
-        self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
-        self.optimal_imputer = optimal_setting[2]
-        self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
-        self.optimal_balancing = optimal_setting[4]
-        self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
-        self.optimal_scaling = optimal_setting[6]
-        self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
-        self.optimal_feature_selection = optimal_setting[8]
-        self.optimal_feature_selection_hyperparameters = ast.literal_eval(
-            optimal_setting[9]
-        )
-        self.optimal_model = optimal_setting[10]
-        self.optimal_model_hyperparameters = ast.literal_eval(optimal_setting[11])
+    #     # convert strings to readable dictionaries
+    #     self.optimal_encoder = optimal_setting[0]
+    #     self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
+    #     self.optimal_imputer = optimal_setting[2]
+    #     self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
+    #     self.optimal_balancing = optimal_setting[4]
+    #     self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
+    #     self.optimal_scaling = optimal_setting[6]
+    #     self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
+    #     self.optimal_feature_selection = optimal_setting[8]
+    #     self.optimal_feature_selection_hyperparameters = ast.literal_eval(
+    #         optimal_setting[9]
+    #     )
+    #     self.optimal_model = optimal_setting[10]
+    #     self.optimal_model_hyperparameters = ast.literal_eval(optimal_setting[11])
 
-        # map the methods and hyperparameters
-        # fit the methods
-        # encoding
-        self._fit_encoder = self._all_encoders[self.optimal_encoder](
-            **self.optimal_encoder_hyperparameters
-        )
-        _X = self._fit_encoder.fit(_X)
-        # imputer
-        self._fit_imputer = self._all_imputers[self.optimal_imputer](
-            **self.optimal_imputer_hyperparameters
-        )
-        _X = self._fit_imputer.fill(_X)
-        # balancing
-        self._fit_balancing = self._all_balancings[self.optimal_balancing](
-            **self.optimal_balancing_hyperparameters
-        )
-        _X, _y = self._fit_balancing.fit_transform(_X, _y)
+    #     # map the methods and hyperparameters
+    #     # fit the methods
+    #     # encoding
+    #     self._fit_encoder = self._all_encoders[self.optimal_encoder](
+    #         **self.optimal_encoder_hyperparameters
+    #     )
+    #     _X = self._fit_encoder.fit(_X)
+    #     # imputer
+    #     self._fit_imputer = self._all_imputers[self.optimal_imputer](
+    #         **self.optimal_imputer_hyperparameters
+    #     )
+    #     _X = self._fit_imputer.fill(_X)
+    #     # balancing
+    #     self._fit_balancing = self._all_balancings[self.optimal_balancing](
+    #         **self.optimal_balancing_hyperparameters
+    #     )
+    #     _X, _y = self._fit_balancing.fit_transform(_X, _y)
 
-        # make sure the classes are integers (belongs to certain classes)
-        if self.task_mode == "classification":
-            _y = _y.astype(int)
-        # scaling
-        self._fit_scaling = self._all_scalings[self.optimal_scaling](
-            **self.optimal_scaling_hyperparameters
-        )
-        self._fit_scaling.fit(_X, _y)
-        _X = self._fit_scaling.transform(_X)
-        # feature selection
-        self._fit_feature_selection = self._all_feature_selection[
-            self.optimal_feature_selection
-        ](**self.optimal_feature_selection_hyperparameters)
-        self._fit_feature_selection.fit(_X, _y)
-        _X = self._fit_feature_selection.transform(_X)
-        # model
-        self._fit_model = self._all_models[self.optimal_model](
-            **self.optimal_model_hyperparameters
-        )
-        self._fit_model.fit(_X, _y.values.ravel())
+    #     # make sure the classes are integers (belongs to certain classes)
+    #     if self.task_mode == "classification":
+    #         _y = _y.astype(int)
+    #     # scaling
+    #     self._fit_scaling = self._all_scalings[self.optimal_scaling](
+    #         **self.optimal_scaling_hyperparameters
+    #     )
+    #     self._fit_scaling.fit(_X, _y)
+    #     _X = self._fit_scaling.transform(_X)
+    #     # feature selection
+    #     self._fit_feature_selection = self._all_feature_selection[
+    #         self.optimal_feature_selection
+    #     ](**self.optimal_feature_selection_hyperparameters)
+    #     self._fit_feature_selection.fit(_X, _y)
+    #     _X = self._fit_feature_selection.transform(_X)
+    #     # model
+    #     self._fit_model = self._all_models[self.optimal_model](
+    #         **self.optimal_model_hyperparameters
+    #     )
+    #     self._fit_model.fit(_X, _y.values.ravel())
 
-        return self
+    #     return self
 
     # select optimal settings and fit on optimal hyperparameters
-    def _fit_optimal(self, optimal_point, _X, _y):
+    def _fit_optimal(self, optimal_point, best_path):
 
         # optimal encoder
-        self.optimal_encoder_hyperparameters = optimal_point["encoder"]
+        optimal_encoder_hyperparameters = optimal_point["encoder"]
         # find optimal encoder key
-        for _key in self.optimal_encoder_hyperparameters.keys():
+        for _key in optimal_encoder_hyperparameters.keys():
             if "encoder_" in _key:
                 _encoder_key = _key
                 break
-        self.optimal_encoder = self.optimal_encoder_hyperparameters[_encoder_key]
-        del self.optimal_encoder_hyperparameters[_encoder_key]
+        optimal_encoder = optimal_encoder_hyperparameters[_encoder_key]
+        del optimal_encoder_hyperparameters[_encoder_key]
         # remvoe indcations
-        self.optimal_encoder_hyperparameters = {
-            k.replace(
-                self.optimal_encoder + "_", ""
-            ): self.optimal_encoder_hyperparameters[k]
-            for k in self.optimal_encoder_hyperparameters
+        optimal_encoder_hyperparameters = {
+            k.replace(optimal_encoder + "_", ""): optimal_encoder_hyperparameters[k]
+            for k in optimal_encoder_hyperparameters
         }
 
         # optimal imputer
-        self.optimal_imputer_hyperparameters = optimal_point["imputer"]
+        optimal_imputer_hyperparameters = optimal_point["imputer"]
         # find optimal imputer key
-        for _key in self.optimal_imputer_hyperparameters.keys():
+        for _key in optimal_imputer_hyperparameters.keys():
             if "imputer_" in _key:
                 _imputer_key = _key
                 break
-        self.optimal_imputer = self.optimal_imputer_hyperparameters[_imputer_key]
-        del self.optimal_imputer_hyperparameters[_imputer_key]
+        optimal_imputer = optimal_imputer_hyperparameters[_imputer_key]
+        del optimal_imputer_hyperparameters[_imputer_key]
         # remvoe indcations
-        self.optimal_imputer_hyperparameters = {
-            k.replace(
-                self.optimal_imputer + "_", ""
-            ): self.optimal_imputer_hyperparameters[k]
-            for k in self.optimal_imputer_hyperparameters
+        optimal_imputer_hyperparameters = {
+            k.replace(optimal_imputer + "_", ""): optimal_imputer_hyperparameters[k]
+            for k in optimal_imputer_hyperparameters
         }
 
         # optimal balancing
-        self.optimal_balancing_hyperparameters = optimal_point["balancing"]
+        optimal_balancing_hyperparameters = optimal_point["balancing"]
         # find optimal balancing key
-        for _key in self.optimal_balancing_hyperparameters.keys():
+        for _key in optimal_balancing_hyperparameters.keys():
             if "balancing_" in _key:
                 _balancing_key = _key
                 break
-        self.optimal_balancing = self.optimal_balancing_hyperparameters[_balancing_key]
-        del self.optimal_balancing_hyperparameters[_balancing_key]
+        optimal_balancing = optimal_balancing_hyperparameters[_balancing_key]
+        del optimal_balancing_hyperparameters[_balancing_key]
         # remvoe indcations
-        self.optimal_balancing_hyperparameters = {
-            k.replace(
-                self.optimal_balancing + "_", ""
-            ): self.optimal_balancing_hyperparameters[k]
-            for k in self.optimal_balancing_hyperparameters
+        optimal_balancing_hyperparameters = {
+            k.replace(optimal_balancing + "_", ""): optimal_balancing_hyperparameters[k]
+            for k in optimal_balancing_hyperparameters
         }
 
         # optimal scaling
-        self.optimal_scaling_hyperparameters = optimal_point["scaling"]
+        optimal_scaling_hyperparameters = optimal_point["scaling"]
         # find optimal scaling key
-        for _key in self.optimal_scaling_hyperparameters.keys():
+        for _key in optimal_scaling_hyperparameters.keys():
             if "scaling_" in _key:
                 _scaling_key = _key
                 break
-        self.optimal_scaling = self.optimal_scaling_hyperparameters[_scaling_key]
-        del self.optimal_scaling_hyperparameters[_scaling_key]
+        optimal_scaling = optimal_scaling_hyperparameters[_scaling_key]
+        del optimal_scaling_hyperparameters[_scaling_key]
         # remvoe indcations
-        self.optimal_scaling_hyperparameters = {
-            k.replace(
-                self.optimal_scaling + "_", ""
-            ): self.optimal_scaling_hyperparameters[k]
-            for k in self.optimal_scaling_hyperparameters
+        optimal_scaling_hyperparameters = {
+            k.replace(optimal_scaling + "_", ""): optimal_scaling_hyperparameters[k]
+            for k in optimal_scaling_hyperparameters
         }
 
         # optimal feature selection
-        self.optimal_feature_selection_hyperparameters = optimal_point[
-            "feature_selection"
-        ]
+        optimal_feature_selection_hyperparameters = optimal_point["feature_selection"]
         # find optimal feature_selection key
-        for _key in self.optimal_feature_selection_hyperparameters.keys():
+        for _key in optimal_feature_selection_hyperparameters.keys():
             if "feature_selection_" in _key:
                 _feature_selection_key = _key
                 break
-        self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters[
+        optimal_feature_selection = optimal_feature_selection_hyperparameters[
             _feature_selection_key
         ]
-        del self.optimal_feature_selection_hyperparameters[_feature_selection_key]
+        del optimal_feature_selection_hyperparameters[_feature_selection_key]
         # remvoe indcations
-        self.optimal_feature_selection_hyperparameters = {
+        optimal_feature_selection_hyperparameters = {
             k.replace(
-                self.optimal_feature_selection + "_", ""
-            ): self.optimal_feature_selection_hyperparameters[k]
-            for k in self.optimal_feature_selection_hyperparameters
+                optimal_feature_selection + "_", ""
+            ): optimal_feature_selection_hyperparameters[k]
+            for k in optimal_feature_selection_hyperparameters
         }
 
         # optimal classifier
-        self.optimal_model_hyperparameters = optimal_point[
-            "model"
-        ]  # optimal model selected
+        optimal_model_hyperparameters = optimal_point["model"]  # optimal model selected
         # find optimal model key
-        for _key in self.optimal_model_hyperparameters.keys():
+        for _key in optimal_model_hyperparameters.keys():
             if "model_" in _key:
                 _model_key = _key
                 break
-        self.optimal_model = self.optimal_model_hyperparameters[
+        optimal_model = optimal_model_hyperparameters[
             _model_key
         ]  # optimal hyperparameter settings selected
-        del self.optimal_model_hyperparameters[_model_key]
+        del optimal_model_hyperparameters[_model_key]
         # remvoe indcations
-        self.optimal_model_hyperparameters = {
-            k.replace(self.optimal_model + "_", ""): self.optimal_model_hyperparameters[
-                k
-            ]
-            for k in self.optimal_model_hyperparameters
+        optimal_model_hyperparameters = {
+            k.replace(optimal_model + "_", ""): optimal_model_hyperparameters[k]
+            for k in optimal_model_hyperparameters
         }
 
         # record optimal settings
@@ -770,88 +761,107 @@ class AutoTabularBase:
             os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt"),
             "w",
         ) as f:
-            f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
+            f.write("Optimal encoding method is: {}\n".format(optimal_encoder))
             f.write("Optimal encoding hyperparameters:")
-            print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
+            print(optimal_encoder_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal imputation method is: {}\n".format(optimal_imputer))
             f.write("Optimal imputation hyperparameters:")
-            print(self.optimal_imputer_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
+            print(optimal_imputer_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal balancing method is: {}\n".format(optimal_balancing))
             f.write("Optimal balancing hyperparamters:")
-            print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
+            print(optimal_balancing_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal scaling method is: {}\n".format(optimal_scaling))
             f.write("Optimal scaling hyperparameters:")
-            print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
+            print(optimal_scaling_hyperparameters, file=f, end="\n\n")
             f.write(
                 "Optimal feature selection method is: {}\n".format(
-                    self.optimal_feature_selection
+                    optimal_feature_selection
                 )
             )
             f.write("Optimal feature selection hyperparameters:")
-            print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
-            f.write(
-                "Optimal {} model is: {}\n".format(self.task_mode, self.optimal_model)
-            )
+            print(optimal_feature_selection_hyperparameters, file=f, end="\n\n")
+            f.write("Optimal {} model is: {}\n".format(self.task_mode, optimal_model))
             f.write("Optimal {} hyperparameters:".format(self.task_mode))
-            print(self.optimal_model_hyperparameters, file=f, end="\n\n")
+            print(optimal_model_hyperparameters, file=f, end="\n\n")
 
-        # encoding
-        self._fit_encoder = self._all_encoders[self.optimal_encoder](
-            **self.optimal_encoder_hyperparameters
-        )
-        _X = self._fit_encoder.fit(_X)
+        # method is deprecated as pickle save/load methods are now supported
+        # # encoding
+        # self._fit_encoder = self._all_encoders[self.optimal_encoder](
+        #     **self.optimal_encoder_hyperparameters
+        # )
+        # _X = self._fit_encoder.fit(_X)
 
-        # imputer
-        self._fit_imputer = self._all_imputers[self.optimal_imputer](
-            **self.optimal_imputer_hyperparameters
-        )
-        _X = self._fit_imputer.fill(_X)
+        # # imputer
+        # self._fit_imputer = self._all_imputers[self.optimal_imputer](
+        #     **self.optimal_imputer_hyperparameters
+        # )
+        # _X = self._fit_imputer.fill(_X)
 
-        # balancing
-        self._fit_balancing = self._all_balancings[self.optimal_balancing](
-            **self.optimal_balancing_hyperparameters
-        )
-        _X, _y = self._fit_balancing.fit_transform(_X, _y)
-        # make sure the classes are integers (belongs to certain classes)
-        _y = _y.astype(int)
-        _y = _y.astype(int)
+        # # balancing
+        # self._fit_balancing = self._all_balancings[self.optimal_balancing](
+        #     **self.optimal_balancing_hyperparameters
+        # )
+        # _X, _y = self._fit_balancing.fit_transform(_X, _y)
+        # # make sure the classes are integers (belongs to certain classes)
+        # _y = _y.astype(int)
+        # _y = _y.astype(int)
 
-        # scaling
-        self._fit_scaling = self._all_scalings[self.optimal_scaling](
-            **self.optimal_scaling_hyperparameters
-        )
-        self._fit_scaling.fit(_X, _y)
-        _X = self._fit_scaling.transform(_X)
+        # # scaling
+        # self._fit_scaling = self._all_scalings[self.optimal_scaling](
+        #     **self.optimal_scaling_hyperparameters
+        # )
+        # self._fit_scaling.fit(_X, _y)
+        # _X = self._fit_scaling.transform(_X)
 
-        # feature selection
-        self._fit_feature_selection = self._all_feature_selection[
-            self.optimal_feature_selection
-        ](**self.optimal_feature_selection_hyperparameters)
-        self._fit_feature_selection.fit(_X, _y)
-        _X = self._fit_feature_selection.transform(_X)
+        # # feature selection
+        # self._fit_feature_selection = self._all_feature_selection[
+        #     self.optimal_feature_selection
+        # ](**self.optimal_feature_selection_hyperparameters)
+        # self._fit_feature_selection.fit(_X, _y)
+        # _X = self._fit_feature_selection.transform(_X)
 
-        # model fitting
-        self._fit_model = self._all_models[self.optimal_model](
-            **self.optimal_model_hyperparameters
-        )
-        self._fit_model.fit(_X, _y.values.ravel())
+        # # model fitting
+        # self._fit_model = self._all_models[self.optimal_model](
+        #     **self.optimal_model_hyperparameters
+        # )
+        # self._fit_model.fit(_X, _y.values.ravel())
+
+        (
+            self._fit_encoder,
+            self._fit_imputer,
+            self._fit_balancing,
+            self._fit_scaling,
+            self._fit_feature_selection,
+            self._fit_model,
+        ) = load_methods(best_path)
 
         # save the model
         if self.save:
-            save_model(
-                self.optimal_encoder,
-                self.optimal_encoder_hyperparameters,
-                self.optimal_imputer,
-                self.optimal_imputer_hyperparameters,
-                self.optimal_balancing,
-                self.optimal_balancing_hyperparameters,
-                self.optimal_scaling,
-                self.optimal_scaling_hyperparameters,
-                self.optimal_feature_selection,
-                self.optimal_feature_selection_hyperparameters,
-                self.optimal_model,
-                self.optimal_model_hyperparameters,
+            # save_model(
+            #     self.optimal_encoder,
+            #     self.optimal_encoder_hyperparameters,
+            #     self.optimal_imputer,
+            #     self.optimal_imputer_hyperparameters,
+            #     self.optimal_balancing,
+            #     self.optimal_balancing_hyperparameters,
+            #     self.optimal_scaling,
+            #     self.optimal_scaling_hyperparameters,
+            #     self.optimal_feature_selection,
+            #     self.optimal_feature_selection_hyperparameters,
+            #     self.optimal_model,
+            #     self.optimal_model_hyperparameters,
+            #     self.model_name,
+            # )
+            save_methods(
                 self.model_name,
+                [
+                    self._fit_encoder,
+                    self._fit_imputer,
+                    self._fit_balancing,
+                    self._fit_scaling,
+                    self._fit_feature_selection,
+                    self._fit_model,
+                ],
             )
 
         return self
@@ -910,7 +920,15 @@ class AutoTabularBase:
         if os.path.exists(self.model_name):
 
             print("Stored model found, load previous model.")
-            self.load_model(_X, _y)
+            # self.load_model(_X, _y)
+            (
+                self._fit_encoder,
+                self._fit_imputer,
+                self._fit_balancing,
+                self._fit_scaling,
+                self._fit_feature_selection,
+                self._fit_model,
+            ) = load_methods(self.model_name)
 
             self._fitted = True  # successfully fitted the model
 
@@ -1265,6 +1283,12 @@ class AutoTabularBase:
                 else:
                     _loss = _obj(_y_test_obj.values, y_pred)
 
+                # save the fitted model objects
+                save_methods(
+                    self.model_name,
+                    [enc, imp, blc, scl, fts, mol],
+                )
+
                 with open("testing_objective.txt", "w") as f:
                     f.write("Loss from objective function is: {:.6f}\n".format(_loss))
                     f.write("Loss is calculate using {}.".format(self.objective))
@@ -1371,6 +1395,12 @@ class AutoTabularBase:
                     _loss = -_obj(_y_obj.values, y_pred)
                 else:
                     _loss = _obj(_y_obj.values, y_pred)
+
+                # save the fitted model objects
+                save_methods(
+                    self.model_name,
+                    [enc, imp, blc, scl, fts, mol],
+                )
 
                 # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
                 with open("testing_objective.txt", "w") as f:
@@ -1486,8 +1516,18 @@ class AutoTabularBase:
         # check if ray is shutdown
         assert ray.is_initialized() == False, "Ray is not shutdown."
 
+        # get the best config settings
+        best_trial_id = str(
+            fit_analysis.get_best_trial(metric="loss", mode="min", scope="all").trial_id
+        )
+        # find the exact path
+        best_path = find_exact_path(
+            os.path.join(self.temp_directory, self.model_name), "id_" + best_trial_id
+        )
+        best_path = os.path.join(best_path, self.model_name)
+
         # select optimal settings and fit optimal pipeline
-        self._fit_optimal(fit_analysis.best_config, _X, _y)
+        self._fit_optimal(fit_analysis.best_config, best_path)
 
         # whether to retain temp files
         if self.delete_temp_after_terminate:

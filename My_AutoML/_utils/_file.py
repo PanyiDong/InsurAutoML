@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 6:25:09 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:27:24 pm
+Last Modified: Sunday, 17th April 2022 1:02:29 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,9 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import os
+import pickle
 
 # save model
 def save_model(
@@ -67,3 +70,49 @@ def save_model(
         print(feature_selection_hyperparameters, file=f, end="\n")
         f.write("{}\n".format(model))
         print(model_hyperparameters, file=f, end="\n")
+
+
+# save list of methods
+def save_methods(file_name, methods):
+
+    """
+    Parameters
+    ----------
+    file_name: path of the file to save
+
+    methods: list of methods objects to save
+    """
+
+    with open(file_name, "wb") as out_f:
+        for method in methods:
+            pickle.dump(method, out_f)
+
+
+# load methods
+def load_methods(file_name):
+
+    """
+    Parameters
+    ----------
+    file_name: path of the file to load
+    """
+
+    with open(file_name, "rb") as in_f:
+        results = []
+
+        # load all methods
+        while True:
+            try:
+                results.append(pickle.load(in_f))
+            except EOFError:
+                break
+
+    return results
+
+# find exact folder path
+def find_exact_path(path, spec_str) :
+    
+    for folder in os.listdir(path):
+        
+        if spec_str in os.path.join(path, folder):
+            return os.path.join(path, folder)

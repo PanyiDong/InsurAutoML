@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 9:44:19 pm
+Last Modified: Sunday, 17th April 2022 11:06:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
 import numpy as np
 import pandas as pd
 
@@ -299,3 +300,66 @@ def test_ANOVA():
     assert len(score) == 2, "ANOVA should return a list of length 2, get {}".format(
         len(score)
     )
+
+
+def test_get_algo():
+
+    from My_AutoML._utils._optimize import get_algo
+
+    get_algo("GridSearch")
+    get_algo("HyperOpt")
+    get_algo("Repeater")
+    get_algo("ConcurrencyLimiter")
+
+    assert True, "The get_algo method is not correctly done."
+
+
+def test_get_scheduler():
+
+    from My_AutoML._utils._optimize import get_scheduler
+
+    get_scheduler("FIFOScheduler")
+    get_scheduler("ASHAScheduler")
+    get_scheduler("HyperBandScheduler")
+    get_scheduler("MedianStoppingRule")
+    get_scheduler("PopulationBasedTraining")
+
+    assert True, "The get_scheduler method is not correctly done."
+
+
+def test_get_progress_reporter():
+
+    from My_AutoML._utils._optimize import get_progress_reporter
+
+    get_progress_reporter("CLIReporter", max_evals=64, max_error=4)
+    get_progress_reporter("JupyterNotebookReporter", max_evals=64, max_error=4)
+
+
+def test_get_logger():
+
+    from My_AutoML._utils._optimize import get_logger
+
+    get_logger(["Logger", "TBX", "JSON", "CSV", "MLflow"])
+
+
+def test_save_model():
+
+    from My_AutoML._utils._file import save_model
+
+    save_model(
+        "encoder",
+        "encoder_hyperparameters",
+        "imputer",
+        "imputer_hyperparameters",
+        "balancing",
+        "balancing_hyperparameters",
+        "scaling",
+        "scaling_hyperparameters",
+        "feature_selection",
+        "feature_selection_hyperparameters",
+        "model",
+        "model_hyperparameters",
+        "model_name",
+    )
+
+    assert os.path.exists("model_name") == True, "The model is not saved."

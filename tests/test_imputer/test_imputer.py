@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:13:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 8:42:36 pm
+Last Modified: Saturday, 16th April 2022 11:46:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -80,31 +80,31 @@ import pandas as pd
 #             )
 
 
-# def test_imputer():
+def test_imputer():
 
-#     from My_AutoML._imputation import imputers
-#     from My_AutoML._utils import formatting
+    from My_AutoML._imputation import imputers
+    from My_AutoML._utils import formatting
 
-#     for method_name, method_object in zip(imputers.keys(), imputers.values()):
+    for method_name, method_object in zip(imputers.keys(), imputers.values()):
 
-#         imputer = method_object()
-#         if method_name != "KNNImputer":
+        imputer = method_object()
+        if method_name != "KNNImputer":
 
-#             data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+            data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
 
-#             encoder = formatting()
-#             encoder.fit(data)
+            encoder = formatting()
+            encoder.fit(data)
 
-#             data = imputer.fill(data)
+            data = imputer.fill(data)
 
-#             assert (
-#                 imputer._fitted == True
-#             ), "The method {} is not correctly fitted.".format(method_name)
-#             assert (
-#                 data.isnull().any().any() == False
-#             ), "The imputation method {} fail to impute all missings.".format(
-#                 method_name
-#             )
+            assert (
+                imputer._fitted == True
+            ), "The method {} is not correctly fitted.".format(method_name)
+            assert (
+                data.isnull().any().any() == False
+            ), "The imputation method {} fail to impute all missings.".format(
+                method_name
+            )
 
 
 def test_DummyImputer():
