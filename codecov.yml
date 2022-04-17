@@ -21,10 +21,10 @@ coverage:
     patch:
       default:
         base: auto
-        target: 30% # specify the target "X%" coverage to hit
+        target: 80% # specify the target "X%" coverage to hit
         threshold: 50% # allow this much decrease on patch
         if_ci_failed: error
-    changes: true
+    changes: false
 
 parsers:
   gcov:

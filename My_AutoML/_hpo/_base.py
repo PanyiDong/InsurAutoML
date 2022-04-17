@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 1:16:31 am
+Last Modified: Sunday, 17th April 2022 11:00:47 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -58,7 +58,6 @@ from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._base import type_of_script
 from My_AutoML._utils._file import (
-    save_model,
     save_methods,
     load_methods,
     find_exact_path,

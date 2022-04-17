@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 12:23:44 am
+Last Modified: Sunday, 17th April 2022 11:06:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
 import numpy as np
 import pandas as pd
 
@@ -339,3 +340,26 @@ def test_get_logger():
     from My_AutoML._utils._optimize import get_logger
 
     get_logger(["Logger", "TBX", "JSON", "CSV", "MLflow"])
+
+
+def test_save_model():
+
+    from My_AutoML._utils._file import save_model
+
+    save_model(
+        "encoder",
+        "encoder_hyperparameters",
+        "imputer",
+        "imputer_hyperparameters",
+        "balancing",
+        "balancing_hyperparameters",
+        "scaling",
+        "scaling_hyperparameters",
+        "feature_selection",
+        "feature_selection_hyperparameters",
+        "model",
+        "model_hyperparameters",
+        "model_name",
+    )
+
+    assert os.path.exists("model_name") == True, "The model is not saved."
