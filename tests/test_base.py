@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 6:46:02 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 7:14:15 pm
+Last Modified: Sunday, 17th April 2022 8:29:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,4 +57,4 @@ def test_load_data():
         "credit",
     ]
 
-    assert set(database.keys) == set(database_names), "Not all databases are loaded."
+    assert set(database.keys()) == set(database_names), "Not all databases are loaded."
