@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 10:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 12:15:26 am
+Last Modified: Monday, 18th April 2022 8:23:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -89,7 +89,7 @@ import autosklearn.pipeline.components.regression as apcr
 # classifiers
 
 
-class AdaboostClassifier(apcc.adaboost.AdaBoostClassifier):
+class AdaboostClassifier(apcc.adaboost.AdaboostClassifier):
     def __init__(
         self,
         n_estimators=50,
@@ -282,8 +282,8 @@ class GradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifi
         early_stop="off",
         tol=1e-7,
         scoring="loss",
-        n_iter_no_change = 10,
-        validation_fraction = 0.1,
+        n_iter_no_change=10,
+        validation_fraction=0.1,
     ):
         self.loss = loss
         self.learning_rate = learning_rate
@@ -309,8 +309,8 @@ class GradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifi
             early_stop=self.early_stop,
             tol=self.tol,
             scoring=self.scoring,
-            n_iter_no_change = self.n_iter_no_change,
-            validation_fraction = self.validation_fraction,
+            n_iter_no_change=self.n_iter_no_change,
+            validation_fraction=self.validation_fraction,
         )
 
         self._fitted = False
@@ -328,7 +328,7 @@ class GradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifi
         return super().predict(X)
 
 
-class KNearestNeighborsClassifier(apcc.k_nearest_neighbors.KNeighborsClassifier):
+class KNearestNeighborsClassifier(apcc.k_nearest_neighbors.KNearestNeighborsClassifier):
     def __init__(
         self,
         n_neighbors=1,
@@ -758,24 +758,23 @@ class SGDClassifier(apcc.sgd.SGD):
 
 
 class AdaboostRegressor(apcr.adaboost.AdaboostRegressor):
-    
     def __init__(
         self,
         n_estimators=50,
         learning_rate=0.1,
-        loss = "linear",
-        max_depth = 1,
+        loss="linear",
+        max_depth=1,
     ):
         self.n_estimators = n_estimators
         self.learning_rate = learning_rate
         self.loss = loss
         self.max_depth = max_depth
-        
+
         super().__init__(
-            n_estimators = self.n_estimators,
-            learning_rate = self.learning_rate,
-            loss = self.loss,
-            max_depth = self.max_depth,
+            n_estimators=self.n_estimators,
+            learning_rate=self.learning_rate,
+            loss=self.loss,
+            max_depth=self.max_depth,
         )
 
         self._fitted = False
@@ -794,17 +793,16 @@ class AdaboostRegressor(apcr.adaboost.AdaboostRegressor):
 
 
 class ARDRegression(apcr.ard_regression.ARDRegression):
-    
     def __init__(
         self,
         n_iter=300,
-        tol = 1e-3,
-        alpha_1 = 1e-6,
-        alpha_2 = 1e-6,
-        lambda_1 = 1e-6,
-        lambda_2 = 1e-6,
-        threshold_lambda = 1e4,
-        fit_intercept = "True",
+        tol=1e-3,
+        alpha_1=1e-6,
+        alpha_2=1e-6,
+        lambda_1=1e-6,
+        lambda_2=1e-6,
+        threshold_lambda=1e4,
+        fit_intercept="True",
     ):
         self.n_iter = n_iter
         self.tol = tol
@@ -814,16 +812,16 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
         self.lambda_2 = lambda_2
         self.threshold_lambda = threshold_lambda
         self.fit_intercept = fit_intercept
-        
+
         super().__init__(
-            n_iter = self.n_iter,
-            tol = self.tol,
-            alpha_1 = self.alpha_1,
-            alpha_2 = self.alpha_2,
-            lambda_1 = self.lambda_1,
-            lambda_2 = self.lambda_2,
-            threshold_lambda = self.threshold_lambda,
-            fit_intercept = self.fit_intercept,
+            n_iter=self.n_iter,
+            tol=self.tol,
+            alpha_1=self.alpha_1,
+            alpha_2=self.alpha_2,
+            lambda_1=self.lambda_1,
+            lambda_2=self.lambda_2,
+            threshold_lambda=self.threshold_lambda,
+            fit_intercept=self.fit_intercept,
         )
 
         self._fitted = False
@@ -842,7 +840,6 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
 
 
 class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
-    
     def __init__(
         self,
         criterion="mse",
@@ -890,7 +887,6 @@ class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
 
 
 class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
-    
     def __init__(
         self,
         criterion="mse",
@@ -941,21 +937,20 @@ class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
 
 
 class GaussianProcess(apcr.gaussian_process.GaussianProcess):
-    
     def __init__(
         self,
-        alpha = 1e-8,
-        thetaL = 1e-6,
-        thetaU = 100000.0,
+        alpha=1e-8,
+        thetaL=1e-6,
+        thetaU=100000.0,
     ):
         self.alpha = alpha
         self.thetaL = thetaL
         self.thetaU = thetaU
-        
+
         super().__init__(
-            alpha = self.alpha,
-            thetaL = self.thetaL,
-            thetaU = self.thetaU,
+            alpha=self.alpha,
+            thetaL=self.thetaL,
+            thetaU=self.thetaU,
         )
 
         self._fitted = False
@@ -974,7 +969,6 @@ class GaussianProcess(apcr.gaussian_process.GaussianProcess):
 
 
 class GradientBoosting(apcr.gradient_boosting.GradientBoosting):
-    
     def __init__(
         self,
         loss="least_squares",
@@ -987,8 +981,8 @@ class GradientBoosting(apcr.gradient_boosting.GradientBoosting):
         early_stop="off",
         tol=1e-7,
         scoring="loss",
-        n_iter_no_change = 10,
-        validation_fraction = 0.1
+        n_iter_no_change=10,
+        validation_fraction=0.1,
     ):
         self.loss = loss
         self.learning_rate = learning_rate
@@ -1014,8 +1008,8 @@ class GradientBoosting(apcr.gradient_boosting.GradientBoosting):
             early_stop=self.early_stop,
             tol=self.tol,
             scoring=self.scoring,
-            n_iter_no_change = self.n_iter_no_change,
-            validation_fraction = self.validation_fraction,
+            n_iter_no_change=self.n_iter_no_change,
+            validation_fraction=self.validation_fraction,
         )
 
         self._fitted = False
@@ -1034,7 +1028,6 @@ class GradientBoosting(apcr.gradient_boosting.GradientBoosting):
 
 
 class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegressor):
-    
     def __init__(
         self,
         n_neighbors=1,
@@ -1067,17 +1060,16 @@ class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegre
 
 
 class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
-    
     def __init__(
         self,
-        epsilon = 0.1,
+        epsilon=0.1,
         loss="squared_epsilon_insensitive",
         dual="False",
         tol=1e-4,
         C=1.0,
         fit_intercept="True",
         intercept_scaling=1,
-    ):        
+    ):
         self.epsilon = epsilon
         self.loss = loss
         self.dual = dual
@@ -1112,12 +1104,11 @@ class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
 
 
 class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
-    
     def __init__(
         self,
-        kernel = "rbf",
+        kernel="rbf",
         C=1.0,
-        epsilon = 0.1,
+        epsilon=0.1,
         degree=3,
         gamma=0.1,
         coef0=0,
@@ -1138,7 +1129,7 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
         super().__init__(
             C=self.C,
             kernel=self.kernel,
-            epsilon = self.epsilon,
+            epsilon=self.epsilon,
             degree=self.degree,
             gamma=self.gamma,
             coef0=self.coef0,
@@ -1163,7 +1154,6 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
 
 
 class MLPRegressor(apcr.mlp.MLPRegressor):
-    
     def __init__(
         self,
         hidden_layer_depth=1,
@@ -1232,7 +1222,6 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
 
 
 class RandomForestRegressor(apcr.random_forest.RandomForest):
-    
     def __init__(
         self,
         criterion="mse",
@@ -1283,7 +1272,6 @@ class RandomForestRegressor(apcr.random_forest.RandomForest):
 
 
 class SGDRegressor(apcr.sgd.SGD):
-    
     def __init__(
         self,
         loss="squared_loss",
