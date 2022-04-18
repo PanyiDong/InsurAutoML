@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 10:42:38 pm
+Last Modified: Monday, 18th April 2022 4:55:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1551,10 +1551,10 @@ class AutoTabularBase:
             config=hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             resume="AUTO",
-            checkpoint_freq=1,
-            checkpoint_at_end=True,
-            keep_checkpoints_num=self.max_evals,
-            checkpoint_score_attr="loss",
+            # checkpoint_freq=1,  # disable checkpoint
+            # checkpoint_at_end=True,
+            # keep_checkpoints_num=self.max_evals,
+            # checkpoint_score_attr="loss",
             mode="min",  # always call a minimization process
             search_alg=algo(**self.search_algo_settings),
             scheduler=scheduler(**self.search_scheduler_settings),
