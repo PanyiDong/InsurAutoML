@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 12:35:51 am
+Last Modified: Monday, 18th April 2022 9:41:29 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -123,7 +123,7 @@ class ComplementNB(sklearn.naive_bayes.ComplementNB):
 class HistGradientBoostingClassifier(sklearn.ensemble.HistGradientBoostingClassifier):
     def __init__(
         self,
-        loss="loss",
+        loss="auto",
         learning_rate=0.1,
         max_leaf_nodes=31,
         max_depth=None,
