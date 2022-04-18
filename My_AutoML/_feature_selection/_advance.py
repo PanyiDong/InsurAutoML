@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 2:59:56 pm
+Last Modified: Sunday, 17th April 2022 9:00:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -637,7 +637,7 @@ class GeneticAlgorithm:
         if (
             np.random.rand() < self.p_crossover
         ):  # only certain probability of executing crossover
-            if self.ga_crossover == "single-point":
+            if self.ga_crossover == "Single-point":
                 if not self.crossover_n:
                     self.crossover_n = int(
                         p / 4

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:08 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:21:35 pm
+Last Modified: Sunday, 17th April 2022 9:07:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,4 +40,5 @@ SOFTWARE.
 
 # from ._base import AutoTabularBase
 from ._ML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
-from ._DL import AutoTextClassifier, AutoNextWordPrediction
+
+# from ._DL import AutoTextClassifier, AutoNextWordPrediction

@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 6:10:29 pm
+Last Modified: Sunday, 17th April 2022 9:03:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -156,6 +156,7 @@ def test_GA():
         feature_selection="random",
         fitness_fit="Linear",
         n_generations=50,
+        p_mutation=0.1,
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
@@ -196,6 +197,15 @@ def test_feature_selection_PCA_FeatureSelection():
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
+
+    feature_selection = PCA_FeatureSelection(
+        n_components=5,
+        solver="auto",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted == True, "Fitted should be True"
 
     feature_selection = PCA_FeatureSelection(
         n_components=5,

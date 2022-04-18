@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 5:03:56 pm
+Last Modified: Sunday, 17th April 2022 9:08:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -603,24 +603,24 @@ def get_logger(logger):
             TensorBoardX_spec = importlib.util.find_spec("tensorboardX")
             if TensorBoardX_spec is None:
                 raise ImportError(
-                "TensorBoardX not installed. Please install it first to use TensorBoardX. \
+                    "TensorBoardX not installed. Please install it first to use TensorBoardX. \
                 Command to install: pip install tensorboardX"
-            )
+                )
 
             from ray.tune.logger import TBXLoggerCallback
 
             loggers.append(TBXLoggerCallback())
-        elif "JSON" in logger:
+        elif "JSON" == log:
 
             from ray.tune.logger import JsonLoggerCallback
 
             loggers.append(JsonLoggerCallback())
-        elif "CSV" in logger:
+        elif "CSV" == log:
 
             from ray.tune.logger import CSVLogger
 
             loggers.append(CSVLogger())
-        elif "MLflow" in logger:
+        elif "MLflow" == log:
 
             # checkwhether mlflow is installed
             mlflow_spec = importlib.util.find_spec("mlflow")
@@ -633,7 +633,7 @@ def get_logger(logger):
             from ray.tune.integration.mlflow import MLflowLoggerCallback
 
             loggers.append(MLflowLoggerCallback())
-        elif "Wandb" in logger:
+        elif "Wandb" == log:
 
             # check whether wandb is installed
             wandb_spec = importlib.util.find_spec("wandb")

@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 7:17:43 pm
+Last Modified: Sunday, 17th April 2022 9:10:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -358,6 +358,8 @@ def test_t_score():
 
     score = t_score(X, y)
 
+    fvalue, pvalue = t_score(X, y, pvalue=True)
+
     assert len(score) == 2, "t_score should return a list of length 2, get {}".format(
         len(score)
     )
@@ -371,6 +373,8 @@ def test_ANOVA():
     y = pd.DataFrame(np.random.randint(0, 5, size=(10, 2)), columns=["y_1", "y_2"])
 
     score = ANOVA(X, y)
+
+    fvalue, pvalue = ANOVA(X, y, pvalue=True)
 
     assert len(score) == 2, "ANOVA should return a list of length 2, get {}".format(
         len(score)
