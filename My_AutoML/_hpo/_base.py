@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 4:55:39 pm
+Last Modified: Monday, 18th April 2022 5:16:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1220,6 +1220,7 @@ class AutoTabularBase:
                     feature_selection_hyperparameter=_feature_selection_hyper,
                     model=_model,
                     model_hyperparameter=_model_hyper,
+                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
@@ -1227,18 +1228,21 @@ class AutoTabularBase:
 
                 # only for possible checks
                 return {
+                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
                 }
             else:
                 tune.report(
+                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
                 )
                 # only for possible checks
                 return {
+                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
@@ -1344,6 +1348,7 @@ class AutoTabularBase:
                     feature_selection_hyperparameter=_feature_selection_hyper,
                     model=_model,
                     model_hyperparameter=_model_hyper,
+                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
@@ -1351,18 +1356,21 @@ class AutoTabularBase:
 
                 # only for possible checks
                 return {
+                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
                 }
             else:
                 tune.report(
+                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
                 )
                 # only for possible checks
                 return {
+                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
