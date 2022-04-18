@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 10:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 8:23:03 am
+Last Modified: Monday, 18th April 2022 10:33:29 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -78,6 +78,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import pandas as pd
 import autosklearn.pipeline.components.classification as apcc
 import autosklearn.pipeline.components.regression as apcr
 
@@ -1142,6 +1143,9 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
 
     def fit(self, X, y):
 
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
+
         super().fit(X, y)
 
         self._fitted = True
@@ -1209,6 +1213,9 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
         self._fitted = False
 
     def fit(self, X, y):
+
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         super().fit(X, y)
 
@@ -1315,6 +1322,9 @@ class SGDRegressor(apcr.sgd.SGD):
         self._fitted = False
 
     def fit(self, X, y):
+
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         super().fit(X, y)
 

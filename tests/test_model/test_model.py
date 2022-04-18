@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 9:47:17 am
+Last Modified: Monday, 18th April 2022 10:33:49 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -104,6 +104,66 @@ def test_regressors():
             )
 
 
+def test_add_classifier():
+
+    from My_AutoML._model._sklearn import ComplementNB
+
+    data = pd.read_csv("example/example_data/heart.csv")
+    # encoding categorical features
+    encoder = formatting()
+    encoder.fit(data)
+
+    # X/y split
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    mol = ComplementNB()
+    mol.fit(X.abs(), y)  # make sure no negative values
+    y_pred = mol.predict(X)
+
+    assert mol._fitted == True, "Model ComplementNB has not been fitted."
+
+
+def test_add_regressor():
+
+    from My_AutoML._model._sklearn import HistGradientBoostingRegressor
+
+    from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+
+    data = pd.read_csv("example/example_data/insurance.csv")
+
+    # encoding categorical features
+    encoder = formatting()
+    encoder.fit(data)
+
+    # X/y split
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    model = HistGradientBoostingRegressor()
+
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert (
+        model._fitted == True
+    ), "Model HistGradientBoostingRegressor has not been fitted."
+
+    model = MLPRegressor()
+
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model._fitted == True, "Model MLPRegressor has not been fitted."
+
+    model = SGDRegressor()
+
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model._fitted == True, "Model SGDRegressor has not been fitted."
+
+
 def test_lightgbm_classifier():
 
     from My_AutoML._model import LightGBM_Classifier
@@ -132,6 +192,7 @@ def test_lightgbm_classifier():
     )
 
     model.fit(X, y)
+    y_pred = model.predict(X)
 
     assert model._fitted == True, "Model has not been fitted."
 
@@ -164,6 +225,7 @@ def test_lightgbm_regressor():
     )
 
     model.fit(X, y)
+    y_pred = model.predict(X)
 
     assert model._fitted == True, "Model has not been fitted."
 
@@ -193,6 +255,7 @@ def test_xgboost_classifier():
     )
 
     model.fit(X, y)
+    y_pred = model.predict(X)
 
     assert model._fitted == True, "Model has not been fitted."
 
@@ -222,6 +285,7 @@ def test_xgboost_regressor():
     )
 
     model.fit(X, y)
+    y_pred = model.predict(X)
 
     assert model._fitted == True, "Model has not been fitted."
 
@@ -246,6 +310,7 @@ def test_gam_classifier():
     )
 
     model.fit(X, y)
+    y_pred = model.predict(X)
 
     assert model._fitted == True, "Model has not been fitted."
 
@@ -270,5 +335,38 @@ def test_gam_regressor():
     )
 
     model.fit(X, y)
+    y_pred = model.predict(X)
 
-    assert model._fitted == True, "Model has not been fitted."
+    assert model._fitted == True, "Model GAM_Regressor Linear has not been fitted."
+
+    model = GAM_Regressor(
+        type="gamma",
+        tol=1e-4,
+    )
+
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model._fitted == True, "Model GAM_Regressor Gamma has not been fitted."
+
+    model = GAM_Regressor(
+        type="poisson",
+        tol=1e-4,
+    )
+
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert model._fitted == True, "Model GAM_Regressor Poisson has not been fitted."
+
+    model = GAM_Regressor(
+        type="inverse_gaussian",
+        tol=1e-4,
+    )
+
+    model.fit(X, y)
+    y_pred = model.predict(X)
+
+    assert (
+        model._fitted == True
+    ), "Model GAM_Regressor Inverse Gaussian has not been fitted."

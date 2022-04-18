@@ -23,9 +23,11 @@ cd My_AutoML
 pip install -r requirements.txt
 ```
 
+For neural network related support (need `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
+
 3. Put data in the folder and run for training/evaluation
 
-Example below runs a classification task on heart.csv file in example/example_data folder
+Example below runs a classification task on `heart.csv` file in `example/example_data` folder
 
 `train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
 
@@ -33,6 +35,12 @@ Your can specify the data folder (or by default at current folder), test_data na
 
 ```console
 python main.py --data_folder example/example_data --train_data heart --response HeartDisease
+```
+
+And an example run regression task on `insurance.csv` file in `example/example_data` folder
+
+```console
+python main.py --data_folder example/example_data --train_data insurance --response expenses
 ```
 
 Or, you can treat it like a package and follows the fit/predict workflow like jupyter notebooks in `examples`.
@@ -45,7 +53,7 @@ model.fit(train_X, train_y)
 model.predict(test_X)
 ```
 
-By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs.
+By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs. (Now, the pipeline can identify whether console terminal/Jupyter Notebook environment is used, you don't need to worry about it.)
 
 Moreover, in current version, model selection and hyperparameter optimization is achieved by `ray.tune`. However, if you still need previous `HyperOpt` version, you can call as:
 
@@ -59,11 +67,13 @@ model.predict(test_X)
 
 ## Summary
 
-> Required Packages: numpy, pandas, scipy, os, shutil, time, itertools, functools, importlib, cmath, tqdm, warnings, rpy2$^{*}$, tensorflow$^{**}$, mlflow, ray, hyperopt, sklearn, autosklearn
+> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn, scikit-learn, lightgbm, xgboost, pygamrpy2$^{*}$, tensorflow$^{**}$, torch$^{***}$
 >
 > $*$ rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
 >
 > $**$ tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
+>
+> $***$ torch is required for neural network support.
 
 Current Progress:
 
@@ -95,7 +105,27 @@ The pipeline of AutoML:
 >
 > 6. Regression/Classification: perform regression/classification models to fit the datasets.
 
-Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file. Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time.
+Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time.
+
+### Configuration
+
+Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRegressor`) (only some common arguments here):
+
+> 1. timeout: maximum allowed time for the tuning job.
+>
+> 2. max_evals: maximum allowed trials for the tuning job.
+>
+> 3. allow_error_prop: maximum allowed failure errors proportion (number of allowed error = proportion * max_evals)
+>
+> 4. model_name: saved model names, will be used to recognized for later runs
+>
+> 5. encoder, imputer, balancing, scaling, feature_selection, models: `auto` (use default methods) or limit as a list of allowed methods.
+>
+> 6. objective: metrics use to evaluate trials' performance
+>
+> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch` and `HyperOpt` are now supported, will add more search algorithms
+>
+> 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
 
 Other files in the repository:
 

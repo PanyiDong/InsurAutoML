@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 12:20:17 am
+Last Modified: Monday, 18th April 2022 10:34:20 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,10 +65,10 @@ from ._autosklearn import (
     GradientBoosting,
     KNearestNeighborsRegressor,
     LibLinear_SVR,
-    # LibSVM_SVR,
-    # MLPRegressor,
+    LibSVM_SVR,
+    MLPRegressor,
     RandomForestRegressor,
-    # SGDRegressor
+    SGDRegressor,
 )
 
 from ._sklearn import (
@@ -124,10 +124,10 @@ regressors = {
     "GradientBoosting": GradientBoosting,
     "KNearestNeighborsRegressor": KNearestNeighborsRegressor,
     "LibLinear_SVR": LibLinear_SVR,
-    # "LibSVM_SVR": LibSVM_SVR,
-    # "MLPRegressor": MLPRegressor,
+    "LibSVM_SVR": LibSVM_SVR,
+    "MLPRegressor": MLPRegressor,
     "RandomForest": RandomForestRegressor,
-    # "SGD": SGDSGDRegressor,
+    "SGD": SGDRegressor,
     # regression models from sklearn
     "LinearRegression": LinearRegression,
     "Lasso": Lasso,
