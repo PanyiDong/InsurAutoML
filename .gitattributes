@@ -1,4 +1,3 @@
-*.bat          text eol=crlf
 **/Dockerfile  linguist-detectable=true
 **/*.sh        linguist-detectable=true
 **/*.yml       linguist-detectable=true
@@ -6,9 +5,10 @@
 **/*.md        linguist-detectable=true
 **/*.py        linguist-detectable=true
 **/*.ipynb     linguist-detectable=true
-**/*.csv       linguist-vendored
-**/*.data      linguist-vendored
-**/*.rda       linguist-vendored
-**/*.rdata     linguist-vendored
-**/*.json      linguist-vendored
-**/*.asc       linguist-vendored
+**/*.csv       linguist-vendored=true
+**/*.data      linguist-vendored=true
+**/*.rda       linguist-vendored=true
+**/*.rdata     linguist-vendored=true
+**/*.json      linguist-vendored=true
+**/*.asc       linguist-vendored=true
+Appendix/*.asc linguist-vendored=true
