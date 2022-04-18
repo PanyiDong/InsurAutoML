@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 8:41:38 pm
+Last Modified: Monday, 18th April 2022 12:07:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -94,6 +94,7 @@ classifier_hyperparameter = [
         "GradientBoostingClassifier_early_stop": tune.choice(["off", "train", "valid"]),
         "GradientBoostingClassifier_tol": tune.choice([1e-7]),
         "GradientBoostingClassifier_scoring": tune.choice(["loss"]),
+        "GradientBoostingClassifier_n_iter_no_change": tune.qrandint(1, 20, 1),
         "GradientBoostingClassifier_validation_fraction": tune.uniform(0.01, 0.4),
     },
     {

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 2:01:40 pm
+Last Modified: Sunday, 17th April 2022 10:42:38 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from logging import warning
 import ray
 from ray import tune
 
@@ -47,13 +46,13 @@ import copy
 import shutil
 import importlib
 import warnings
-import ast
 import random
 import numpy as np
 import pandas as pd
 import scipy
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
+from typing import Callable
 
 from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
@@ -911,9 +910,13 @@ class AutoTabularBase:
                 )  # focus on reducing extreme losses
 
                 _obj = max_error
+            elif isinstance(self.objective, Callable):
+
+                # if callable, use the callable
+                _obj = self.objective
             else:
                 raise ValueError(
-                    'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX"], get{}'.format(
+                    'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
@@ -939,9 +942,13 @@ class AutoTabularBase:
                 from sklearn.metrics import f1_score
 
                 _obj = f1_score
+            elif isinstance(self.objective, Callable):
+
+                # if callable, use the callable
+                _obj = self.objective
             else:
                 raise ValueError(
-                    'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1"], get{}'.format(
+                    'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
