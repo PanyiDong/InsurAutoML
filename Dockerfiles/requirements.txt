@@ -1,10 +1,21 @@
 # To ensure app dependencies are ported from your virtual environment/host machine into your container, run 'pip freeze > requirements.txt' in the terminal to overwrite this file
-numpy
+# common packages
+numpy 
 pandas
 scipy
 matplotlib
+ray
+ray[tune]
+ray[rllib]
 tqdm==4.62.3
 mlflow==1.21.0
+tensorboardX
 hyperopt==0.2.5
-scikit-learn
-auto-sklearn
+auto-sklearn==0.14.6
+scikit-learn==0.24.2
+lightgbm
+xgboost
+pygam
+# optional packages
+rpy2
+# tensorflow
