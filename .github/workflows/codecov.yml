@@ -1,7 +1,6 @@
 name: CodeCov
 on:
   - pull_request
-  - push
 jobs:
   run:
     runs-on: ubuntu-latest
