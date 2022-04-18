@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 5:06:41 pm
+Last Modified: Sunday, 17th April 2022 7:17:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -252,8 +252,8 @@ def test_remove_index_columns():
         }
     )
 
-    remove_data_0 = remove_index_columns(data, axis=0, threshold=0.8)
-    remove_data_1 = remove_index_columns(data, axis=1, threshold=0.8)
+    remove_data_0 = remove_index_columns(data.values, axis=0, threshold=0.8)
+    remove_data_1 = remove_index_columns(data, axis=1, threshold=0.8, save=True)
 
     assert isinstance(
         remove_data_0, pd.DataFrame
@@ -270,7 +270,7 @@ def test_remove_index_columns():
         data, axis=0, threshold=[0.8, 0.8, 0.8, 0.8, 0.8]
     )
     remove_data_1 = remove_index_columns(
-        data, axis=1, threshold=[0.8, 0.8, 0.8, 0.8, 0.8]
+        data, axis=1, threshold=[0.8, 0.8, 0.8, 0.8, 0.8], save=True
     )
 
     assert isinstance(
@@ -490,6 +490,7 @@ def test_formatting():
 
     formatter = formatting()
     formatter.fit(train)
+    formatter.refit(train)
     formatter.refit(test)
 
     assert True, "The formatting is not correctly done."
