@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:06:50 pm
+Last Modified: Sunday, 17th April 2022 9:43:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -656,75 +656,6 @@ def test_objective_9():
     clf = AutoTabularBase(
         task_mode="regression",
         model_name="obj_9",
-        validation=False,
-        objective="MSLE",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LinearRegression": LinearRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_13": "LinearRegression",
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_10():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "insurance")
-    data = data["insurance"]
-
-    features = list(data.columns)
-    features.remove("expenses")
-    response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_10",
         validation=False,
         objective="MAX",
     )

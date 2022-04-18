@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:08:33 pm
+Last Modified: Sunday, 17th April 2022 9:41:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -617,9 +617,9 @@ def get_logger(logger):
             loggers.append(JsonLoggerCallback())
         elif "CSV" == log:
 
-            from ray.tune.logger import CSVLogger
+            from ray.tune.logger import CSVLoggerCallback
 
-            loggers.append(CSVLogger())
+            loggers.append(CSVLoggerCallback())
         elif "MLflow" == log:
 
             # checkwhether mlflow is installed
