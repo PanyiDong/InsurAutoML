@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 11:36:52 am
+Last Modified: Tuesday, 19th April 2022 12:19:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -2107,8 +2107,8 @@ class AutoTabularBase:
             timeout=self.timeout,
             metric="loss",
             std=0.1,
-            num_results=2,
-            grace_period=2,
+            num_results=4,
+            grace_period=4,
             mode="min",
         )
 
@@ -2147,10 +2147,10 @@ class AutoTabularBase:
             config=hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             # resume="AUTO",
-            checkpoint_freq=8,  # disable checkpoint
-            checkpoint_at_end=True,
-            keep_checkpoints_num=4,
-            checkpoint_score_attr="loss",
+            # checkpoint_freq=8,  # disable checkpoint
+            # checkpoint_at_end=True,
+            # keep_checkpoints_num=4,
+            # checkpoint_score_attr="loss",
             mode="min",  # always call a minimization process
             search_alg=algo(**self.search_algo_settings),
             scheduler=scheduler(**self.search_scheduler_settings),
