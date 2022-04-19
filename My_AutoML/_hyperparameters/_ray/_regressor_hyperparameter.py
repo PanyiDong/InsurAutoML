@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 8:39:34 pm
+Last Modified: Tuesday, 19th April 2022 12:25:08 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -300,10 +300,10 @@ regressor_hyperparameter = [
     {
         "model_22": "XGBoost_Regressor",
         "XGBoost_Regressor_eta": tune.uniform(0, 1),
-        "XGBoost_Regressor_gamma": tune.loguniform(1e-10, 1e3),
-        "XGBoost_Regressor_max_depth": tune.randint(1, 31),
-        "XGBoost_Regressor_min_child_weight": tune.loguniform(1e-10, 1e3),
-        "XGBoost_Regressor_max_delta_step": tune.loguniform(1e-7, 1e1),
+        "XGBoost_Regressor_gamma": tune.loguniform(1e-4, 1e3),
+        "XGBoost_Regressor_max_depth": tune.randint(1, 12),
+        "XGBoost_Regressor_min_child_weight": tune.loguniform(1e-4, 1e3),
+        "XGBoost_Regressor_max_delta_step": tune.loguniform(1e-3, 1e1),
         "XGBoost_Regressor_reg_lambda": tune.uniform(0, 1),
         "XGBoost_Regressor_reg_alpha": tune.uniform(0, 1),
     },
@@ -312,6 +312,6 @@ regressor_hyperparameter = [
         "GAM_Regressor_type": tune.choice(
             ["linear", "gamma", "poisson", "inverse_gaussian"]
         ),
-        "GAM_Regressor_tol": tune.loguniform(1e-7, 1),
+        "GAM_Regressor_tol": tune.loguniform(1e-4, 1),
     },
 ]
