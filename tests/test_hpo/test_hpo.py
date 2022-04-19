@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:43:48 pm
+Last Modified: Tuesday, 19th April 2022 4:06:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -71,7 +71,7 @@ from My_AutoML import load_data
 
 def test_objective_1():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -85,13 +85,6 @@ def test_objective_1():
     features = list(data.columns)
     features.remove("HeartDisease")
     response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_1",
-        objective="accuracy",
-        full_status=True,
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -119,8 +112,11 @@ def test_objective_1():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -129,7 +125,18 @@ def test_objective_1():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_1",
+        task_mode="classification",
+        objective="accuracy",
+        validation=True,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -143,7 +150,7 @@ def test_objective_1():
 
 def test_objective_2():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -157,13 +164,6 @@ def test_objective_2():
     features = list(data.columns)
     features.remove("HeartDisease")
     response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_2",
-        validation=False,
-        objective="auc",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -191,8 +191,11 @@ def test_objective_2():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -201,7 +204,18 @@ def test_objective_2():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_2",
+        task_mode="classification",
+        objective="auc",
+        validation=False,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -215,7 +229,7 @@ def test_objective_2():
 
 def test_objective_3():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -229,13 +243,6 @@ def test_objective_3():
     features = list(data.columns)
     features.remove("expenses")
     response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_3",
-        validation=False,
-        objective="MAE",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -260,8 +267,11 @@ def test_objective_3():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -270,7 +280,18 @@ def test_objective_3():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_3",
+        task_mode="regression",
+        objective="MAE",
+        validation=True,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -284,7 +305,7 @@ def test_objective_3():
 
 def test_objective_4():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -298,13 +319,6 @@ def test_objective_4():
     features = list(data.columns)
     features.remove("expenses")
     response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_4",
-        objective="R2",
-        full_status=True,
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -329,8 +343,11 @@ def test_objective_4():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -339,7 +356,18 @@ def test_objective_4():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_4",
+        task_mode="regression",
+        objective="R2",
+        validation=True,
+        valid_size=0.15,
+        full_status=True,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -353,7 +381,7 @@ def test_objective_4():
 
 def test_objective_5():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -367,13 +395,6 @@ def test_objective_5():
     features = list(data.columns)
     features.remove("HeartDisease")
     response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_5",
-        validation=False,
-        objective="precision",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -401,8 +422,11 @@ def test_objective_5():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -411,7 +435,18 @@ def test_objective_5():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_5",
+        task_mode="classification",
+        objective="precision",
+        validation=True,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -425,7 +460,7 @@ def test_objective_5():
 
 def test_objective_6():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -439,13 +474,6 @@ def test_objective_6():
     features = list(data.columns)
     features.remove("HeartDisease")
     response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_6",
-        validation=False,
-        objective="hinge",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -473,8 +501,11 @@ def test_objective_6():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -483,7 +514,18 @@ def test_objective_6():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_6",
+        task_mode="classification",
+        objective="hinge",
+        validation=False,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -497,7 +539,7 @@ def test_objective_6():
 
 def test_objective_7():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -511,13 +553,6 @@ def test_objective_7():
     features = list(data.columns)
     features.remove("HeartDisease")
     response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_7",
-        validation=False,
-        objective="f1",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -545,8 +580,11 @@ def test_objective_7():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -555,7 +593,18 @@ def test_objective_7():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_7",
+        task_mode="classification",
+        objective="f1",
+        validation=False,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -569,7 +618,7 @@ def test_objective_7():
 
 def test_objective_8():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -583,13 +632,6 @@ def test_objective_8():
     features = list(data.columns)
     features.remove("expenses")
     response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_8",
-        validation=False,
-        objective="MSE",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -614,8 +656,11 @@ def test_objective_8():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -624,7 +669,18 @@ def test_objective_8():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_8",
+        task_mode="regression",
+        objective="MSE",
+        validation=False,
+        valid_size=0.15,
+        full_status=False,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -638,7 +694,7 @@ def test_objective_8():
 
 def test_objective_9():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._utils._optimize import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -652,13 +708,6 @@ def test_objective_9():
     features = list(data.columns)
     features.remove("expenses")
     response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_9",
-        validation=False,
-        objective="MAX",
-    )
 
     encoder = {"DataEncoding": DataEncoding}
     imputer = {"SimpleImputer": SimpleImputer}
@@ -683,8 +732,11 @@ def test_objective_9():
         },
     }
 
-    result = clf._objective(
-        params=params,
+    clf = TabularObjective(
+        params,
+    )
+    clf.setup(
+        params,
         _X=data[features],
         _y=data[response],
         encoder=encoder,
@@ -693,7 +745,18 @@ def test_objective_9():
         scaling=scaling,
         feature_selection=feature_selection,
         models=models,
+        model_name="obj_9",
+        task_mode="regression",
+        objective="MAX",
+        validation=True,
+        valid_size=0.15,
+        full_status=True,
+        reset_index=True,
+        _iter=1,
+        seed=1,
     )
+    result = clf.step()
+    clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."
     assert "loss" in result.keys(), "Objective function should return loss."
@@ -718,6 +781,7 @@ def test_heart():
     mol = My_AutoML.AutoTabular(
         model_name="heart",
         search_algo="GridSearch",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 
@@ -745,8 +809,10 @@ def test_insurance():
     mol = My_AutoML.AutoTabular(
         model_name="insurance",
         objective="MAE",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
 
     assert (
         os.path.exists("tmp/insurance/init.txt") == True
@@ -773,6 +839,7 @@ def test_insurance_R2():
         model_name="insurance_R2",
         task_mode="regression",
         objective="R2",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 
@@ -798,6 +865,7 @@ def test_stroke_import_version():
     mol = My_AutoML.AutoTabular(
         model_name="stroke",
         objective="auc",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 
@@ -824,6 +892,7 @@ def test_stroke_loading():
 
     mol = My_AutoML.AutoTabular(
         model_name="stroke",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 
@@ -851,6 +920,7 @@ def test_stroke_with_limit():
         validation=False,
         search_algo="GridSearch",
         objective="precision",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 

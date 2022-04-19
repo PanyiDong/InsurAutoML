@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 4:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th April 2022 10:33:16 am
+Last Modified: Monday, 18th April 2022 12:55:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,127 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+# encoders
+ENCODERS = ["DataEncoding"]
+
+# imputers
+IMPUTERS = [
+    "SimpleImputer",
+    "DummyImputer",
+    "JointImputer",
+    "ExpectationMaximization",
+    "KNNImputer",
+    "MissForestImputer",
+    "MICE",
+    "AAI_kNN",
+    "KMI",
+    "CMI",
+    "k_Prototype_NN",
+]
+
+# balancings
+BALANCINGS = [
+    "no_processing",
+    "SimpleRandomOverSampling",
+    "SimpleRandomUnderSampling",
+    "TomekLink",
+    "EditedNearestNeighbor",
+    "CondensedNearestNeighbor",
+    "OneSidedSelection",
+    "CNN_TomekLink",
+    "Smote",
+    "Smote_TomekLink",
+    "Smote_ENN",
+]
+
+# scalings
+SCALINGS = [
+    "no_processing",
+    "MinMaxScale",
+    "Standardize",
+    "Normalize",
+    "RobustScale",
+    "PowerTransformer",
+    "QuantileTransformer",
+    "Winsorization",
+    "Feature_Manipulation",
+    "Feature_Truncation",
+]
+
+# feature_selection
+FEATURE_SELECTION = [
+    "no_processing",
+    "LDASelection",
+    "PCA_FeatureSelection",
+    "RBFSampler",
+    "FeatureFilter",
+    "ASFFS",
+    "GeneticAlgorithm",
+    "extra_trees_preproc_for_classification",
+    "extra_trees_preproc_for_regression",
+    "liblinear_svc_preprocessor",
+    "polynomial",
+    "select_percentile_classification",
+    "select_percentile_regression",
+    "select_rates_classification",
+    "select_rates_regression",
+    "truncatedSVD",
+]
+
+# classifiers
+CLASSIFIERS = [
+    "AdaboostClassifier",
+    "BernoulliNB",
+    "DecisionTree",
+    "ExtraTreesClassifier",
+    "GaussianNB",
+    "GradientBoostingClassifier",
+    "KNearestNeighborsClassifier",
+    "LDA",
+    "LibLinear_SVC",
+    "LibSVM_SVC",
+    "MLPClassifier",
+    "MultinomialNB",
+    "PassiveAggressive",
+    "QDA",
+    "RandomForest",
+    "SGD",
+    "LogisticRegression",
+    "ComplementNB",
+    "HistGradientBoostingClassifier",
+    "LightGBM_Classifier",
+    "XGBoost_Classifier",
+    "GAM_Classifier",
+    "MLP_Classifier",
+    "RNN_Classifier",
+]
+
+# regressors
+REGRESSORS = [
+    "AdaboostRegressor",
+    "ARDRegression",
+    "DecisionTree",
+    "ExtraTreesRegressor",
+    "GaussianProcess",
+    "GradientBoosting",
+    "KNearestNeighborsRegressor",
+    "LibLinear_SVR",
+    "LibSVM_SVR",
+    "MLPRegressor",
+    "RandomForest",
+    "SGD",
+    "LinearRegression",
+    "Lasso",
+    "RidgeRegression",
+    "ElasticNet",
+    "BayesianRidge",
+    "HistGradientBoostingRegressor",
+    "LightGBM_Regressor",
+    "XGBoost_Regressor",
+    "GAM_Regressor",
+    "MLP_Regressor",
+    "RNN_Regressor",
+]
 
 # maximum unique classes determined as categorical variable
 # 31 is capped by days in a month
@@ -49,11 +170,20 @@ LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross_entropy"]
 # multiclass classification
 LIGHTGBM_MULTICLASS_CLASSIFICATION = ["multiclass", "multiclassova", "num_class"]
 # regression
-LIGHTGBM_REGRESSION = ["regression", "regression_l1", "huber", "fair", "poisson", \
-    "quantile", "mape", "gamma", "tweedie"]
+LIGHTGBM_REGRESSION = [
+    "regression",
+    "regression_l1",
+    "huber",
+    "fair",
+    "poisson",
+    "quantile",
+    "mape",
+    "gamma",
+    "tweedie",
+]
 
 # LightGBM boosting methods
-LIGHTGBM_BOOSTING = ["gbdt", "dart", "goss"] # suppress "rf"
+LIGHTGBM_BOOSTING = ["gbdt", "dart", "goss"]  # suppress "rf"
 
 
 # LightGBM tree learner
