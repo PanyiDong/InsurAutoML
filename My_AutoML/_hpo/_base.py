@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 12:20:48 am
+Last Modified: Tuesday, 19th April 2022 9:09:32 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -100,6 +100,19 @@ if torch_spec is not None:
     device_count = torch.cuda.device_count()
 else:
     device_count = 0
+
+
+class ObjectiveTrainer(tune.Trainable):
+    def setup(self, config):
+        self.config = config
+
+    def step(self):
+
+        print(self.config)
+
+        return {
+            "loss": 1,
+        }
 
 
 class AutoTabularBase:
@@ -1225,7 +1238,6 @@ class AutoTabularBase:
                     training_status="fitted",
                     loss=_loss,
                 )
-
                 # only for possible checks
                 return {
                     "fitted_model": _model,
@@ -1349,7 +1361,6 @@ class AutoTabularBase:
                     training_status="fitted",
                     loss=_loss,
                 )
-
                 # only for possible checks
                 return {
                     "fitted_model": _model,
@@ -1559,6 +1570,7 @@ class AutoTabularBase:
                 feature_selection=feature_selection,
                 models=models,
             ),
+            # ObjectiveTrainer,
             config=hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             # resume="AUTO",
