@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 11:33:31 am
+Last Modified: Tuesday, 19th April 2022 11:36:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from sklearn import feature_selection
 import ray
 from ray import tune
 
@@ -73,7 +72,7 @@ from My_AutoML._utils._optimize import (
     get_scheduler,
     get_logger,
     get_progress_reporter,
-    # TimePlateauStopper,
+    TimePlateauStopper,
 )
 
 # filter certain warnings
