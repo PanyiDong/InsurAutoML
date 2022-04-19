@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 9:09:32 am
+Last Modified: Tuesday, 19th April 2022 11:33:31 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from sklearn import feature_selection
 import ray
 from ray import tune
 
@@ -103,16 +104,567 @@ else:
 
 
 class ObjectiveTrainer(tune.Trainable):
-    def setup(self, config):
-        self.config = config
+    def setup(
+        self,
+        params,
+        _X,
+        _y,
+        encoder,
+        imputer,
+        balancing,
+        scaling,
+        feature_selection,
+        models,
+        model_name,
+        task_mode,
+        objective,
+        validation,
+        valid_size,
+        full_status,
+        reset_index,
+        _iter,
+        seed,
+    ):
+        # assign parameters
+        self._X = _X
+        self._y = _y
+        self.model_name = model_name
+        self.task_mode = task_mode
+        self.objective = objective
+        self.validation = validation
+        self.valid_size = valid_size
+        self.full_status = full_status
+        self.reset_index = reset_index
+        self._iter = _iter
+        self.seed = seed
+
+        # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
+        # select encoder and set hyperparameters
+
+        # issue 1: https://github.com/PanyiDong/My_AutoML/issues/1
+        # HyperOpt hyperparameter space conflicts with ray.tune
+
+        # while setting hyperparameters space,
+        # the method name is injected into the hyperparameter space
+        # so, before fitting, these indications are removed
+
+        # must have encoder
+        self._encoder_hyper = params["encoder"].copy()
+        # find corresponding encoder key
+        for key in self._encoder_hyper.keys():
+            if "encoder_" in key:
+                _encoder_key = key
+                break
+        self._encoder = self._encoder_hyper[_encoder_key]
+        del self._encoder_hyper[_encoder_key]
+        # remvoe indcations
+        self._encoder_hyper = {
+            k.replace(self._encoder + "_", ""): self._encoder_hyper[k]
+            for k in self._encoder_hyper
+        }
+        self.enc = encoder[self._encoder](**self._encoder_hyper)
+
+        # select imputer and set hyperparameters
+        self._imputer_hyper = params["imputer"].copy()
+        # find corresponding imputer key
+        for key in self._imputer_hyper.keys():
+            if "imputer_" in key:
+                _imputer_key = key
+                break
+        self._imputer = self._imputer_hyper[_imputer_key]
+        del self._imputer_hyper[_imputer_key]
+        # remvoe indcations
+        self._imputer_hyper = {
+            k.replace(self._imputer + "_", ""): self._imputer_hyper[k]
+            for k in self._imputer_hyper
+        }
+        self.imp = imputer[self._imputer](**self._imputer_hyper)
+
+        # select balancing and set hyperparameters
+        # must have balancing, since no_preprocessing is included
+        self._balancing_hyper = params["balancing"]
+        # find corresponding balancing key
+        for key in self._balancing_hyper.keys():
+            if "balancing_" in key:
+                _balancing_key = key
+                break
+        self._balancing = self._balancing_hyper[_balancing_key]
+        del self._balancing_hyper[_balancing_key]
+        # remvoe indcations
+        self._balancing_hyper = {
+            k.replace(self._balancing + "_", ""): self._balancing_hyper[k]
+            for k in self._balancing_hyper
+        }
+        self.blc = balancing[self._balancing](**self._balancing_hyper)
+
+        # select scaling and set hyperparameters
+        # must have scaling, since no_preprocessing is included
+        self._scaling_hyper = params["scaling"]
+        # find corresponding scaling key
+        for key in self._scaling_hyper.keys():
+            if "scaling_" in key:
+                _scaling_key = key
+                break
+        self._scaling = self._scaling_hyper[_scaling_key]
+        del self._scaling_hyper[_scaling_key]
+        # remvoe indcations
+        self._scaling_hyper = {
+            k.replace(self._scaling + "_", ""): self._scaling_hyper[k]
+            for k in self._scaling_hyper
+        }
+        self.scl = scaling[self._scaling](**self._scaling_hyper)
+
+        # select feature selection and set hyperparameters
+        # must have feature selection, since no_preprocessing is included
+        self._feature_selection_hyper = params["feature_selection"]
+        # find corresponding feature_selection key
+        for key in self._feature_selection_hyper.keys():
+            if "feature_selection_" in key:
+                _feature_selection_key = key
+                break
+        self._feature_selection = self._feature_selection_hyper[_feature_selection_key]
+        del self._feature_selection_hyper[_feature_selection_key]
+        # remvoe indcations
+        self._feature_selection_hyper = {
+            k.replace(self._feature_selection + "_", ""): self._feature_selection_hyper[
+                k
+            ]
+            for k in self._feature_selection_hyper
+        }
+        self.fts = feature_selection[self._feature_selection](
+            **self._feature_selection_hyper
+        )
+
+        # select model model and set hyperparameters
+        # must have a model
+        self._model_hyper = params["model"]
+        # find corresponding model key
+        for key in self._model_hyper.keys():
+            if "model_" in key:
+                _model_key = key
+                break
+        self._model = self._model_hyper[_model_key]
+        del self._model_hyper[_model_key]
+        # remvoe indcations
+        self._model_hyper = {
+            k.replace(self._model + "_", ""): self._model_hyper[k]
+            for k in self._model_hyper
+        }
+        self.mol = models[self._model](
+            **self._model_hyper
+        )  # call the model using passed parameters
+
+        # obj_tmp_directory = self.temp_directory  # + "/iter_" + str(self._iter + 1)
+        # if not os.path.isdir(obj_tmp_directory):
+        #     os.makedirs(obj_tmp_directory)
+
+        # with open(obj_tmp_directory + "/hyperparameter_settings.txt", "w") as f:
+        with open("hyperparameter_settings.txt", "w") as f:
+            f.write("Encoding method: {}\n".format(self._encoder))
+            f.write("Encoding Hyperparameters:")
+            print(self._encoder_hyper, file=f, end="\n\n")
+            f.write("Imputation method: {}\n".format(self._imputer))
+            f.write("Imputation Hyperparameters:")
+            print(self._imputer_hyper, file=f, end="\n\n")
+            f.write("Balancing method: {}\n".format(self._balancing))
+            f.write("Balancing Hyperparameters:")
+            print(self._balancing_hyper, file=f, end="\n\n")
+            f.write("Scaling method: {}\n".format(self._scaling))
+            f.write("Scaling Hyperparameters:")
+            print(self._scaling_hyper, file=f, end="\n\n")
+            f.write("Feature Selection method: {}\n".format(self._feature_selection))
+            f.write("Feature Selection Hyperparameters:")
+            print(self._feature_selection_hyper, file=f, end="\n\n")
+            f.write("Model: {}\n".format(self._model))
+            f.write("Model Hyperparameters:")
+            print(self._model_hyper, file=f, end="\n\n")
 
     def step(self):
 
-        print(self.config)
+        return self._objective()
 
-        return {
-            "loss": 1,
-        }
+    @ignore_warnings(category=ConvergenceWarning)
+    def _objective(
+        self,
+    ):
+
+        # different evaluation metrics for classification and regression
+        # notice: if add metrics that is larger the better, need to add - sign
+        # at actual fitting process below (since try to minimize the loss)
+        if self.task_mode == "regression":
+            # evaluation for predictions
+            if self.objective == "MSE":
+                from sklearn.metrics import mean_squared_error
+
+                _obj = mean_squared_error
+            elif self.objective == "MAE":
+                from sklearn.metrics import mean_absolute_error
+
+                _obj = mean_absolute_error
+            elif self.objective == "MSLE":
+                from sklearn.metrics import mean_squared_log_error
+
+                _obj = mean_squared_log_error
+            elif self.objective == "R2":
+                from sklearn.metrics import r2_score
+
+                _obj = r2_score
+            elif self.objective == "MAX":
+                from sklearn.metrics import (
+                    max_error,
+                )  # focus on reducing extreme losses
+
+                _obj = max_error
+            elif isinstance(self.objective, Callable):
+
+                # if callable, use the callable
+                _obj = self.objective
+            else:
+                raise ValueError(
+                    'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
+                        self.task_mode, self.objective
+                    )
+                )
+        elif self.task_mode == "classification":
+            # evaluation for predictions
+            if self.objective == "accuracy":
+                from sklearn.metrics import accuracy_score
+
+                _obj = accuracy_score
+            elif self.objective == "precision":
+                from sklearn.metrics import precision_score
+
+                _obj = precision_score
+            elif self.objective == "auc":
+                from sklearn.metrics import roc_auc_score
+
+                _obj = roc_auc_score
+            elif self.objective == "hinge":
+                from sklearn.metrics import hinge_loss
+
+                _obj = hinge_loss
+            elif self.objective == "f1":
+                from sklearn.metrics import f1_score
+
+                _obj = f1_score
+            elif isinstance(self.objective, Callable):
+
+                # if callable, use the callable
+                _obj = self.objective
+            else:
+                raise ValueError(
+                    'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
+                        self.task_mode, self.objective
+                    )
+                )
+
+        if self.validation:
+            # only perform train_test_split when validation
+            # train test split so the performance of model selection and
+            # hyperparameter optimization can be evaluated
+            X_train, X_test, y_train, y_test = train_test_split(
+                self._X, self._y, test_perc=self.valid_size, seed=self.seed
+            )
+
+            if self.reset_index:
+                # reset index to avoid indexing order error
+                X_train.reset_index(drop=True, inplace=True)
+                X_test.reset_index(drop=True, inplace=True)
+                y_train.reset_index(drop=True, inplace=True)
+                y_test.reset_index(drop=True, inplace=True)
+
+            _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
+            _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
+
+            # encoding
+            _X_train_obj = self.enc.fit(_X_train_obj)
+            _X_test_obj = self.enc.refit(_X_test_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Encoding finished, in imputation process.")
+
+            # imputer
+            _X_train_obj = self.imp.fill(_X_train_obj)
+            _X_test_obj = self.imp.fill(_X_test_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Imputation finished, in scaling process.")
+
+            # balancing
+            _X_train_obj, _y_train_obj = self.blc.fit_transform(
+                _X_train_obj, _y_train_obj
+            )
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Balancing finished, in scaling process.")
+            # make sure the classes are integers (belongs to certain classes)
+            _y_train_obj = _y_train_obj.astype(int)
+            _y_test_obj = _y_test_obj.astype(int)
+
+            # scaling
+            self.scl.fit(_X_train_obj, _y_train_obj)
+            _X_train_obj = self.scl.transform(_X_train_obj)
+            _X_test_obj = self.scl.transform(_X_test_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Scaling finished, in feature selection process.")
+
+            # feature selection
+            self.fts.fit(_X_train_obj, _y_train_obj)
+            _X_train_obj = self.fts.transform(_X_train_obj)
+            _X_test_obj = self.fts.transform(_X_test_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write(
+                    "Feature selection finished, in {} model.".format(self.task_mode)
+                )
+
+            # fit model
+            if scipy.sparse.issparse(_X_train_obj):  # check if returns sparse matrix
+                _X_train_obj = _X_train_obj.toarray()
+            if scipy.sparse.issparse(_X_test_obj):
+                _X_test_obj = _X_test_obj.toarray()
+
+            # store the preprocessed train/test datasets
+            if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
+                pd.concat(
+                    [pd.DataFrame(_X_train_obj), _y_train_obj],
+                    axis=1,
+                    ignore_index=True,
+                ).to_csv("train_preprocessed.csv", index=False)
+            elif isinstance(_X_train_obj, pd.DataFrame):
+                pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
+                    "train_preprocessed.csv", index=False
+                )
+            else:
+                raise TypeError("Only accept numpy array or pandas dataframe!")
+
+            if isinstance(_X_test_obj, np.ndarray):
+                pd.concat(
+                    [pd.DataFrame(_X_test_obj), _y_test_obj],
+                    axis=1,
+                    ignore_index=True,
+                ).to_csv("test_preprocessed.csv", index=False)
+            elif isinstance(_X_test_obj, pd.DataFrame):
+                pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
+                    "test_preprocessed.csv", index=False
+                )
+            else:
+                raise TypeError("Only accept numpy array or pandas dataframe!")
+
+            self.mol.fit(_X_train_obj, _y_train_obj.values.ravel())
+            os.remove("objective_process.txt")
+
+            y_pred = self.mol.predict(_X_test_obj)
+            if self.objective in [
+                "R2",
+                "accuracy",
+                "precision",
+                "auc",
+                "hinge",
+                "f1",
+            ]:
+                # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
+                # larger the better, since to minimize, add negative sign
+                _loss = -_obj(_y_test_obj.values, y_pred)
+            else:
+                _loss = _obj(_y_test_obj.values, y_pred)
+
+            # save the fitted model objects
+            save_methods(
+                self.model_name,
+                [self.enc, self.imp, self.blc, self.scl, self.fts, self.mol],
+            )
+
+            with open("testing_objective.txt", "w") as f:
+                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
+                f.write("Loss is calculate using {}.".format(self.objective))
+            self._iter += 1
+
+            # since we tries to minimize the objective function, take negative accuracy here
+            if self.full_status:
+                # tune.report(
+                #     encoder=_encoder,
+                #     encoder_hyperparameter=_encoder_hyper,
+                #     imputer=_imputer,
+                #     imputer_hyperparameter=_imputer_hyper,
+                #     balancing=_balancing,
+                #     balancing_hyperparameter=_balancing_hyper,
+                #     scaling=_scaling,
+                #     scaling_hyperparameter=_scaling_hyper,
+                #     feature_selection=_feature_selection,
+                #     feature_selection_hyperparameter=_feature_selection_hyper,
+                #     model=_model,
+                #     model_hyperparameter=_model_hyper,
+                #     fitted_model=_model,
+                #     training_status="fitted",
+                #     loss=_loss,
+                # )
+                # only for possible checks
+                return {
+                    "encoder": self._encoder,
+                    "encoder_hyperparameter": self._encoder_hyper,
+                    "imputer": self._imputer,
+                    "imputer_hyperparameter": self._imputer_hyper,
+                    "balancing": self._balancing,
+                    "balancing_hyperparameter": self._balancing_hyper,
+                    "scaling": self._scaling,
+                    "scaling_hyperparameter": self._scaling_hyper,
+                    "feature_selection": self._feature_selection,
+                    "feature_selection_hyperparameter": self._feature_selection_hyper,
+                    "model": self._model,
+                    "model_hyperparameter": self._model_hyper,
+                    "fitted_model": self._model,
+                    "training_status": "fitted",
+                    "loss": _loss,
+                }
+            else:
+                # tune.report(
+                #     fitted_model=_model,
+                #     training_status="fitted",
+                #     loss=_loss,
+                # )
+                # only for possible checks
+                return {
+                    "fitted_model": self._model,
+                    "training_status": "fitted",
+                    "loss": _loss,
+                }
+        else:
+            _X_obj = self._X.copy()
+            _y_obj = self._y.copy()
+
+            # encoding
+            _X_obj = self.enc.fit(_X_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Encoding finished, in imputation process.")
+
+            # imputer
+            _X_obj = self.imp.fill(_X_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Imputation finished, in scaling process.")
+
+            # balancing
+            _X_obj = self.blc.fit_transform(_X_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Balancing finished, in feature selection process.")
+
+            # scaling
+            self.scl.fit(_X_obj, _y_obj)
+            _X_obj = self.scl.transform(_X_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write("Scaling finished, in balancing process.")
+
+            # feature selection
+            self.fts.fit(_X_obj, _y_obj)
+            _X_obj = self.fts.transform(_X_obj)
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            with open("objective_process.txt", "w") as f:
+                f.write(
+                    "Feature selection finished, in {} model.".format(self.task_mode)
+                )
+
+            # fit model
+            if scipy.sparse.issparse(_X_obj):  # check if returns sparse matrix
+                _X_obj = _X_obj.toarray()
+
+            # store the preprocessed train/test datasets
+            if isinstance(_X_obj, np.ndarray):  # in case numpy array is returned
+                pd.concat(
+                    [pd.DataFrame(_X_obj), _y_obj],
+                    axis=1,
+                    ignore_index=True,
+                ).to_csv("train_preprocessed.csv", index=False)
+            elif isinstance(_X_obj, pd.DataFrame):
+                pd.concat([_X_obj, _y_obj], axis=1).to_csv(
+                    "train_preprocessed.csv", index=False
+                )
+            else:
+                raise TypeError("Only accept numpy array or pandas dataframe!")
+
+            self.mol.fit(_X_obj, _y_obj.values.ravel())
+            os.remove("objective_process.txt")
+
+            y_pred = self.mol.predict(_X_obj)
+
+            if self.objective in [
+                "R2",
+                "accuracy",
+                "precision",
+                "auc",
+                "hinge",
+                "f1",
+            ]:
+                # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
+                # larger the better, since to minimize, add negative sign
+                _loss = -_obj(_y_obj.values, y_pred)
+            else:
+                _loss = _obj(_y_obj.values, y_pred)
+
+            # save the fitted model objects
+            save_methods(
+                self.model_name,
+                [self.enc, self.imp, self.blc, self.scl, self.fts, self.mol],
+            )
+
+            # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
+            with open("testing_objective.txt", "w") as f:
+                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
+                f.write("Loss is calculate using {}.".format(self.objective))
+            self._iter += 1
+
+            if self.full_status:
+                # tune.report(
+                #     encoder=_encoder,
+                #     encoder_hyperparameter=_encoder_hyper,
+                #     imputer=_imputer,
+                #     imputer_hyperparameter=_imputer_hyper,
+                #     balancing=_balancing,
+                #     balancing_hyperparameter=_balancing_hyper,
+                #     scaling=_scaling,
+                #     scaling_hyperparameter=_scaling_hyper,
+                #     feature_selection=_feature_selection,
+                #     feature_selection_hyperparameter=_feature_selection_hyper,
+                #     model=_model,
+                #     model_hyperparameter=_model_hyper,
+                #     fitted_model=_model,
+                #     training_status="fitted",
+                #     loss=_loss,
+                # )
+                # only for possible checks
+                return {
+                    "encoder": self._encoder,
+                    "encoder_hyperparameter": self._encoder_hyper,
+                    "imputer": self._imputer,
+                    "imputer_hyperparameter": self._imputer_hyper,
+                    "balancing": self._balancing,
+                    "balancing_hyperparameter": self._balancing_hyper,
+                    "scaling": self._scaling,
+                    "scaling_hyperparameter": self._scaling_hyper,
+                    "feature_selection": self._feature_selection,
+                    "feature_selection_hyperparameter": self._feature_selection_hyper,
+                    "model": self._model,
+                    "model_hyperparameter": self._model_hyper,
+                    "fitted_model": self._model,
+                    "training_status": "fitted",
+                    "loss": _loss,
+                }
+            else:
+                # tune.report(
+                #     fitted_model=_model,
+                #     training_status="fitted",
+                #     loss=_loss,
+                # )
+                # only for possible checks
+                return {
+                    "fitted_model": self._model,
+                    "training_status": "fitted",
+                    "loss": _loss,
+                }
 
 
 class AutoTabularBase:
@@ -883,502 +1435,502 @@ class AutoTabularBase:
 
     # the objective function of HPO tries to minimize the loss
     # default use accuracy score
-    @ignore_warnings(category=ConvergenceWarning)
-    def _objective(
-        self,
-        params,
-        _X,
-        _y,
-        encoder,
-        imputer,
-        balancing,
-        scaling,
-        feature_selection,
-        models,
-    ):
+    # @ignore_warnings(category=ConvergenceWarning)
+    # def _objective(
+    #     self,
+    #     params,
+    #     _X,
+    #     _y,
+    #     encoder,
+    #     imputer,
+    #     balancing,
+    #     scaling,
+    #     feature_selection,
+    #     models,
+    # ):
 
-        # different evaluation metrics for classification and regression
-        # notice: if add metrics that is larger the better, need to add - sign
-        # at actual fitting process below (since try to minimize the loss)
-        if self.task_mode == "regression":
-            # evaluation for predictions
-            if self.objective == "MSE":
-                from sklearn.metrics import mean_squared_error
+    #     # different evaluation metrics for classification and regression
+    #     # notice: if add metrics that is larger the better, need to add - sign
+    #     # at actual fitting process below (since try to minimize the loss)
+    #     if self.task_mode == "regression":
+    #         # evaluation for predictions
+    #         if self.objective == "MSE":
+    #             from sklearn.metrics import mean_squared_error
 
-                _obj = mean_squared_error
-            elif self.objective == "MAE":
-                from sklearn.metrics import mean_absolute_error
+    #             _obj = mean_squared_error
+    #         elif self.objective == "MAE":
+    #             from sklearn.metrics import mean_absolute_error
 
-                _obj = mean_absolute_error
-            elif self.objective == "MSLE":
-                from sklearn.metrics import mean_squared_log_error
+    #             _obj = mean_absolute_error
+    #         elif self.objective == "MSLE":
+    #             from sklearn.metrics import mean_squared_log_error
 
-                _obj = mean_squared_log_error
-            elif self.objective == "R2":
-                from sklearn.metrics import r2_score
+    #             _obj = mean_squared_log_error
+    #         elif self.objective == "R2":
+    #             from sklearn.metrics import r2_score
 
-                _obj = r2_score
-            elif self.objective == "MAX":
-                from sklearn.metrics import (
-                    max_error,
-                )  # focus on reducing extreme losses
+    #             _obj = r2_score
+    #         elif self.objective == "MAX":
+    #             from sklearn.metrics import (
+    #                 max_error,
+    #             )  # focus on reducing extreme losses
 
-                _obj = max_error
-            elif isinstance(self.objective, Callable):
+    #             _obj = max_error
+    #         elif isinstance(self.objective, Callable):
 
-                # if callable, use the callable
-                _obj = self.objective
-            else:
-                raise ValueError(
-                    'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
-                )
-        elif self.task_mode == "classification":
-            # evaluation for predictions
-            if self.objective == "accuracy":
-                from sklearn.metrics import accuracy_score
+    #             # if callable, use the callable
+    #             _obj = self.objective
+    #         else:
+    #             raise ValueError(
+    #                 'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
+    #                     self.task_mode, self.objective
+    #                 )
+    #             )
+    #     elif self.task_mode == "classification":
+    #         # evaluation for predictions
+    #         if self.objective == "accuracy":
+    #             from sklearn.metrics import accuracy_score
 
-                _obj = accuracy_score
-            elif self.objective == "precision":
-                from sklearn.metrics import precision_score
+    #             _obj = accuracy_score
+    #         elif self.objective == "precision":
+    #             from sklearn.metrics import precision_score
 
-                _obj = precision_score
-            elif self.objective == "auc":
-                from sklearn.metrics import roc_auc_score
+    #             _obj = precision_score
+    #         elif self.objective == "auc":
+    #             from sklearn.metrics import roc_auc_score
 
-                _obj = roc_auc_score
-            elif self.objective == "hinge":
-                from sklearn.metrics import hinge_loss
+    #             _obj = roc_auc_score
+    #         elif self.objective == "hinge":
+    #             from sklearn.metrics import hinge_loss
 
-                _obj = hinge_loss
-            elif self.objective == "f1":
-                from sklearn.metrics import f1_score
+    #             _obj = hinge_loss
+    #         elif self.objective == "f1":
+    #             from sklearn.metrics import f1_score
 
-                _obj = f1_score
-            elif isinstance(self.objective, Callable):
+    #             _obj = f1_score
+    #         elif isinstance(self.objective, Callable):
 
-                # if callable, use the callable
-                _obj = self.objective
-            else:
-                raise ValueError(
-                    'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
-                )
+    #             # if callable, use the callable
+    #             _obj = self.objective
+    #         else:
+    #             raise ValueError(
+    #                 'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
+    #                     self.task_mode, self.objective
+    #                 )
+    #             )
 
-        # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
-        # select encoder and set hyperparameters
+    #     # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
+    #     # select encoder and set hyperparameters
 
-        # issue 1: https://github.com/PanyiDong/My_AutoML/issues/1
-        # HyperOpt hyperparameter space conflicts with ray.tune
+    #     # issue 1: https://github.com/PanyiDong/My_AutoML/issues/1
+    #     # HyperOpt hyperparameter space conflicts with ray.tune
 
-        # while setting hyperparameters space,
-        # the method name is injected into the hyperparameter space
-        # so, before fitting, these indications are removed
+    #     # while setting hyperparameters space,
+    #     # the method name is injected into the hyperparameter space
+    #     # so, before fitting, these indications are removed
 
-        # must have encoder
-        _encoder_hyper = params["encoder"]
-        # find corresponding encoder key
-        for key in _encoder_hyper.keys():
-            if "encoder_" in key:
-                _encoder_key = key
-                break
-        _encoder = _encoder_hyper[_encoder_key]
-        del _encoder_hyper[_encoder_key]
-        # remvoe indcations
-        _encoder_hyper = {
-            k.replace(_encoder + "_", ""): _encoder_hyper[k] for k in _encoder_hyper
-        }
-        enc = encoder[_encoder](**_encoder_hyper)
+    #     # must have encoder
+    #     _encoder_hyper = params["encoder"]
+    #     # find corresponding encoder key
+    #     for key in _encoder_hyper.keys():
+    #         if "encoder_" in key:
+    #             _encoder_key = key
+    #             break
+    #     _encoder = _encoder_hyper[_encoder_key]
+    #     del _encoder_hyper[_encoder_key]
+    #     # remvoe indcations
+    #     _encoder_hyper = {
+    #         k.replace(_encoder + "_", ""): _encoder_hyper[k] for k in _encoder_hyper
+    #     }
+    #     enc = encoder[_encoder](**_encoder_hyper)
 
-        # select imputer and set hyperparameters
-        _imputer_hyper = params["imputer"]
-        # find corresponding imputer key
-        for key in _imputer_hyper.keys():
-            if "imputer_" in key:
-                _imputer_key = key
-                break
-        _imputer = _imputer_hyper[_imputer_key]
-        del _imputer_hyper[_imputer_key]
-        # remvoe indcations
-        _imputer_hyper = {
-            k.replace(_imputer + "_", ""): _imputer_hyper[k] for k in _imputer_hyper
-        }
-        imp = imputer[_imputer](**_imputer_hyper)
+    #     # select imputer and set hyperparameters
+    #     _imputer_hyper = params["imputer"]
+    #     # find corresponding imputer key
+    #     for key in _imputer_hyper.keys():
+    #         if "imputer_" in key:
+    #             _imputer_key = key
+    #             break
+    #     _imputer = _imputer_hyper[_imputer_key]
+    #     del _imputer_hyper[_imputer_key]
+    #     # remvoe indcations
+    #     _imputer_hyper = {
+    #         k.replace(_imputer + "_", ""): _imputer_hyper[k] for k in _imputer_hyper
+    #     }
+    #     imp = imputer[_imputer](**_imputer_hyper)
 
-        # select balancing and set hyperparameters
-        # must have balancing, since no_preprocessing is included
-        _balancing_hyper = params["balancing"]
-        # find corresponding balancing key
-        for key in _balancing_hyper.keys():
-            if "balancing_" in key:
-                _balancing_key = key
-                break
-        _balancing = _balancing_hyper[_balancing_key]
-        del _balancing_hyper[_balancing_key]
-        # remvoe indcations
-        _balancing_hyper = {
-            k.replace(_balancing + "_", ""): _balancing_hyper[k]
-            for k in _balancing_hyper
-        }
-        blc = balancing[_balancing](**_balancing_hyper)
+    #     # select balancing and set hyperparameters
+    #     # must have balancing, since no_preprocessing is included
+    #     _balancing_hyper = params["balancing"]
+    #     # find corresponding balancing key
+    #     for key in _balancing_hyper.keys():
+    #         if "balancing_" in key:
+    #             _balancing_key = key
+    #             break
+    #     _balancing = _balancing_hyper[_balancing_key]
+    #     del _balancing_hyper[_balancing_key]
+    #     # remvoe indcations
+    #     _balancing_hyper = {
+    #         k.replace(_balancing + "_", ""): _balancing_hyper[k]
+    #         for k in _balancing_hyper
+    #     }
+    #     blc = balancing[_balancing](**_balancing_hyper)
 
-        # select scaling and set hyperparameters
-        # must have scaling, since no_preprocessing is included
-        _scaling_hyper = params["scaling"]
-        # find corresponding scaling key
-        for key in _scaling_hyper.keys():
-            if "scaling_" in key:
-                _scaling_key = key
-                break
-        _scaling = _scaling_hyper[_scaling_key]
-        del _scaling_hyper[_scaling_key]
-        # remvoe indcations
-        _scaling_hyper = {
-            k.replace(_scaling + "_", ""): _scaling_hyper[k] for k in _scaling_hyper
-        }
-        scl = scaling[_scaling](**_scaling_hyper)
+    #     # select scaling and set hyperparameters
+    #     # must have scaling, since no_preprocessing is included
+    #     _scaling_hyper = params["scaling"]
+    #     # find corresponding scaling key
+    #     for key in _scaling_hyper.keys():
+    #         if "scaling_" in key:
+    #             _scaling_key = key
+    #             break
+    #     _scaling = _scaling_hyper[_scaling_key]
+    #     del _scaling_hyper[_scaling_key]
+    #     # remvoe indcations
+    #     _scaling_hyper = {
+    #         k.replace(_scaling + "_", ""): _scaling_hyper[k] for k in _scaling_hyper
+    #     }
+    #     scl = scaling[_scaling](**_scaling_hyper)
 
-        # select feature selection and set hyperparameters
-        # must have feature selection, since no_preprocessing is included
-        _feature_selection_hyper = params["feature_selection"]
-        # find corresponding feature_selection key
-        for key in _feature_selection_hyper.keys():
-            if "feature_selection_" in key:
-                _feature_selection_key = key
-                break
-        _feature_selection = _feature_selection_hyper[_feature_selection_key]
-        del _feature_selection_hyper[_feature_selection_key]
-        # remvoe indcations
-        _feature_selection_hyper = {
-            k.replace(_feature_selection + "_", ""): _feature_selection_hyper[k]
-            for k in _feature_selection_hyper
-        }
-        fts = feature_selection[_feature_selection](**_feature_selection_hyper)
+    #     # select feature selection and set hyperparameters
+    #     # must have feature selection, since no_preprocessing is included
+    #     _feature_selection_hyper = params["feature_selection"]
+    #     # find corresponding feature_selection key
+    #     for key in _feature_selection_hyper.keys():
+    #         if "feature_selection_" in key:
+    #             _feature_selection_key = key
+    #             break
+    #     _feature_selection = _feature_selection_hyper[_feature_selection_key]
+    #     del _feature_selection_hyper[_feature_selection_key]
+    #     # remvoe indcations
+    #     _feature_selection_hyper = {
+    #         k.replace(_feature_selection + "_", ""): _feature_selection_hyper[k]
+    #         for k in _feature_selection_hyper
+    #     }
+    #     fts = feature_selection[_feature_selection](**_feature_selection_hyper)
 
-        # select model model and set hyperparameters
-        # must have a model
-        _model_hyper = params["model"]
-        # find corresponding model key
-        for key in _model_hyper.keys():
-            if "model_" in key:
-                _model_key = key
-                break
-        _model = _model_hyper[_model_key]
-        del _model_hyper[_model_key]
-        # remvoe indcations
-        _model_hyper = {
-            k.replace(_model + "_", ""): _model_hyper[k] for k in _model_hyper
-        }
-        mol = models[_model](**_model_hyper)  # call the model using passed parameters
+    #     # select model model and set hyperparameters
+    #     # must have a model
+    #     _model_hyper = params["model"]
+    #     # find corresponding model key
+    #     for key in _model_hyper.keys():
+    #         if "model_" in key:
+    #             _model_key = key
+    #             break
+    #     _model = _model_hyper[_model_key]
+    #     del _model_hyper[_model_key]
+    #     # remvoe indcations
+    #     _model_hyper = {
+    #         k.replace(_model + "_", ""): _model_hyper[k] for k in _model_hyper
+    #     }
+    #     mol = models[_model](**_model_hyper)  # call the model using passed parameters
 
-        # obj_tmp_directory = self.temp_directory  # + "/iter_" + str(self._iter + 1)
-        # if not os.path.isdir(obj_tmp_directory):
-        #     os.makedirs(obj_tmp_directory)
+    #     # obj_tmp_directory = self.temp_directory  # + "/iter_" + str(self._iter + 1)
+    #     # if not os.path.isdir(obj_tmp_directory):
+    #     #     os.makedirs(obj_tmp_directory)
 
-        # with open(obj_tmp_directory + "/hyperparameter_settings.txt", "w") as f:
-        with open("hyperparameter_settings.txt", "w") as f:
-            f.write("Encoding method: {}\n".format(_encoder))
-            f.write("Encoding Hyperparameters:")
-            print(_encoder_hyper, file=f, end="\n\n")
-            f.write("Imputation method: {}\n".format(_imputer))
-            f.write("Imputation Hyperparameters:")
-            print(_imputer_hyper, file=f, end="\n\n")
-            f.write("Balancing method: {}\n".format(_balancing))
-            f.write("Balancing Hyperparameters:")
-            print(_balancing_hyper, file=f, end="\n\n")
-            f.write("Scaling method: {}\n".format(_scaling))
-            f.write("Scaling Hyperparameters:")
-            print(_scaling_hyper, file=f, end="\n\n")
-            f.write("Feature Selection method: {}\n".format(_feature_selection))
-            f.write("Feature Selection Hyperparameters:")
-            print(_feature_selection_hyper, file=f, end="\n\n")
-            f.write("Model: {}\n".format(_model))
-            f.write("Model Hyperparameters:")
-            print(_model_hyper, file=f, end="\n\n")
+    #     # with open(obj_tmp_directory + "/hyperparameter_settings.txt", "w") as f:
+    #     with open("hyperparameter_settings.txt", "w") as f:
+    #         f.write("Encoding method: {}\n".format(_encoder))
+    #         f.write("Encoding Hyperparameters:")
+    #         print(_encoder_hyper, file=f, end="\n\n")
+    #         f.write("Imputation method: {}\n".format(_imputer))
+    #         f.write("Imputation Hyperparameters:")
+    #         print(_imputer_hyper, file=f, end="\n\n")
+    #         f.write("Balancing method: {}\n".format(_balancing))
+    #         f.write("Balancing Hyperparameters:")
+    #         print(_balancing_hyper, file=f, end="\n\n")
+    #         f.write("Scaling method: {}\n".format(_scaling))
+    #         f.write("Scaling Hyperparameters:")
+    #         print(_scaling_hyper, file=f, end="\n\n")
+    #         f.write("Feature Selection method: {}\n".format(_feature_selection))
+    #         f.write("Feature Selection Hyperparameters:")
+    #         print(_feature_selection_hyper, file=f, end="\n\n")
+    #         f.write("Model: {}\n".format(_model))
+    #         f.write("Model Hyperparameters:")
+    #         print(_model_hyper, file=f, end="\n\n")
 
-        if self.validation:
-            # only perform train_test_split when validation
-            # train test split so the performance of model selection and
-            # hyperparameter optimization can be evaluated
-            X_train, X_test, y_train, y_test = train_test_split(
-                _X, _y, test_perc=self.valid_size, seed=self.seed
-            )
+    #     if self.validation:
+    #         # only perform train_test_split when validation
+    #         # train test split so the performance of model selection and
+    #         # hyperparameter optimization can be evaluated
+    #         X_train, X_test, y_train, y_test = train_test_split(
+    #             _X, _y, test_perc=self.valid_size, seed=self.seed
+    #         )
 
-            if self.reset_index:
-                # reset index to avoid indexing order error
-                X_train.reset_index(drop=True, inplace=True)
-                X_test.reset_index(drop=True, inplace=True)
-                y_train.reset_index(drop=True, inplace=True)
-                y_test.reset_index(drop=True, inplace=True)
+    #         if self.reset_index:
+    #             # reset index to avoid indexing order error
+    #             X_train.reset_index(drop=True, inplace=True)
+    #             X_test.reset_index(drop=True, inplace=True)
+    #             y_train.reset_index(drop=True, inplace=True)
+    #             y_test.reset_index(drop=True, inplace=True)
 
-            _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
-            _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
+    #         _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
+    #         _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
 
-            # encoding
-            _X_train_obj = enc.fit(_X_train_obj)
-            _X_test_obj = enc.refit(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Encoding finished, in imputation process.")
+    #         # encoding
+    #         _X_train_obj = enc.fit(_X_train_obj)
+    #         _X_test_obj = enc.refit(_X_test_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Encoding finished, in imputation process.")
 
-            # imputer
-            _X_train_obj = imp.fill(_X_train_obj)
-            _X_test_obj = imp.fill(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Imputation finished, in scaling process.")
+    #         # imputer
+    #         _X_train_obj = imp.fill(_X_train_obj)
+    #         _X_test_obj = imp.fill(_X_test_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Imputation finished, in scaling process.")
 
-            # balancing
-            _X_train_obj, _y_train_obj = blc.fit_transform(_X_train_obj, _y_train_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Balancing finished, in scaling process.")
-            # make sure the classes are integers (belongs to certain classes)
-            _y_train_obj = _y_train_obj.astype(int)
-            _y_test_obj = _y_test_obj.astype(int)
+    #         # balancing
+    #         _X_train_obj, _y_train_obj = blc.fit_transform(_X_train_obj, _y_train_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Balancing finished, in scaling process.")
+    #         # make sure the classes are integers (belongs to certain classes)
+    #         _y_train_obj = _y_train_obj.astype(int)
+    #         _y_test_obj = _y_test_obj.astype(int)
 
-            # scaling
-            scl.fit(_X_train_obj, _y_train_obj)
-            _X_train_obj = scl.transform(_X_train_obj)
-            _X_test_obj = scl.transform(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Scaling finished, in feature selection process.")
+    #         # scaling
+    #         scl.fit(_X_train_obj, _y_train_obj)
+    #         _X_train_obj = scl.transform(_X_train_obj)
+    #         _X_test_obj = scl.transform(_X_test_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Scaling finished, in feature selection process.")
 
-            # feature selection
-            fts.fit(_X_train_obj, _y_train_obj)
-            _X_train_obj = fts.transform(_X_train_obj)
-            _X_test_obj = fts.transform(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write(
-                    "Feature selection finished, in {} model.".format(self.task_mode)
-                )
+    #         # feature selection
+    #         fts.fit(_X_train_obj, _y_train_obj)
+    #         _X_train_obj = fts.transform(_X_train_obj)
+    #         _X_test_obj = fts.transform(_X_test_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write(
+    #                 "Feature selection finished, in {} model.".format(self.task_mode)
+    #             )
 
-            # fit model
-            if scipy.sparse.issparse(_X_train_obj):  # check if returns sparse matrix
-                _X_train_obj = _X_train_obj.toarray()
-            if scipy.sparse.issparse(_X_test_obj):
-                _X_test_obj = _X_test_obj.toarray()
+    #         # fit model
+    #         if scipy.sparse.issparse(_X_train_obj):  # check if returns sparse matrix
+    #             _X_train_obj = _X_train_obj.toarray()
+    #         if scipy.sparse.issparse(_X_test_obj):
+    #             _X_test_obj = _X_test_obj.toarray()
 
-            # store the preprocessed train/test datasets
-            if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
-                pd.concat(
-                    [pd.DataFrame(_X_train_obj), _y_train_obj],
-                    axis=1,
-                    ignore_index=True,
-                ).to_csv("train_preprocessed.csv", index=False)
-            elif isinstance(_X_train_obj, pd.DataFrame):
-                pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
-                    "train_preprocessed.csv", index=False
-                )
-            else:
-                raise TypeError("Only accept numpy array or pandas dataframe!")
+    #         # store the preprocessed train/test datasets
+    #         if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
+    #             pd.concat(
+    #                 [pd.DataFrame(_X_train_obj), _y_train_obj],
+    #                 axis=1,
+    #                 ignore_index=True,
+    #             ).to_csv("train_preprocessed.csv", index=False)
+    #         elif isinstance(_X_train_obj, pd.DataFrame):
+    #             pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
+    #                 "train_preprocessed.csv", index=False
+    #             )
+    #         else:
+    #             raise TypeError("Only accept numpy array or pandas dataframe!")
 
-            if isinstance(_X_test_obj, np.ndarray):
-                pd.concat(
-                    [pd.DataFrame(_X_test_obj), _y_test_obj],
-                    axis=1,
-                    ignore_index=True,
-                ).to_csv("test_preprocessed.csv", index=False)
-            elif isinstance(_X_test_obj, pd.DataFrame):
-                pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
-                    "test_preprocessed.csv", index=False
-                )
-            else:
-                raise TypeError("Only accept numpy array or pandas dataframe!")
+    #         if isinstance(_X_test_obj, np.ndarray):
+    #             pd.concat(
+    #                 [pd.DataFrame(_X_test_obj), _y_test_obj],
+    #                 axis=1,
+    #                 ignore_index=True,
+    #             ).to_csv("test_preprocessed.csv", index=False)
+    #         elif isinstance(_X_test_obj, pd.DataFrame):
+    #             pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
+    #                 "test_preprocessed.csv", index=False
+    #             )
+    #         else:
+    #             raise TypeError("Only accept numpy array or pandas dataframe!")
 
-            mol.fit(_X_train_obj, _y_train_obj.values.ravel())
-            os.remove("objective_process.txt")
+    #         mol.fit(_X_train_obj, _y_train_obj.values.ravel())
+    #         os.remove("objective_process.txt")
 
-            y_pred = mol.predict(_X_test_obj)
-            if self.objective in [
-                "R2",
-                "accuracy",
-                "precision",
-                "auc",
-                "hinge",
-                "f1",
-            ]:
-                # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
-                # larger the better, since to minimize, add negative sign
-                _loss = -_obj(_y_test_obj.values, y_pred)
-            else:
-                _loss = _obj(_y_test_obj.values, y_pred)
+    #         y_pred = mol.predict(_X_test_obj)
+    #         if self.objective in [
+    #             "R2",
+    #             "accuracy",
+    #             "precision",
+    #             "auc",
+    #             "hinge",
+    #             "f1",
+    #         ]:
+    #             # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
+    #             # larger the better, since to minimize, add negative sign
+    #             _loss = -_obj(_y_test_obj.values, y_pred)
+    #         else:
+    #             _loss = _obj(_y_test_obj.values, y_pred)
 
-            # save the fitted model objects
-            save_methods(
-                self.model_name,
-                [enc, imp, blc, scl, fts, mol],
-            )
+    #         # save the fitted model objects
+    #         save_methods(
+    #             self.model_name,
+    #             [enc, imp, blc, scl, fts, mol],
+    #         )
 
-            with open("testing_objective.txt", "w") as f:
-                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
-                f.write("Loss is calculate using {}.".format(self.objective))
-            self._iter += 1
+    #         with open("testing_objective.txt", "w") as f:
+    #             f.write("Loss from objective function is: {:.6f}\n".format(_loss))
+    #             f.write("Loss is calculate using {}.".format(self.objective))
+    #         self._iter += 1
 
-            # since we tries to minimize the objective function, take negative accuracy here
-            if self.full_status:
-                tune.report(
-                    encoder=_encoder,
-                    encoder_hyperparameter=_encoder_hyper,
-                    imputer=_imputer,
-                    imputer_hyperparameter=_imputer_hyper,
-                    balancing=_balancing,
-                    balancing_hyperparameter=_balancing_hyper,
-                    scaling=_scaling,
-                    scaling_hyperparameter=_scaling_hyper,
-                    feature_selection=_feature_selection,
-                    feature_selection_hyperparameter=_feature_selection_hyper,
-                    model=_model,
-                    model_hyperparameter=_model_hyper,
-                    fitted_model=_model,
-                    training_status="fitted",
-                    loss=_loss,
-                )
-                # only for possible checks
-                return {
-                    "fitted_model": _model,
-                    "training_status": "fitted",
-                    "loss": _loss,
-                }
-            else:
-                tune.report(
-                    fitted_model=_model,
-                    training_status="fitted",
-                    loss=_loss,
-                )
-                # only for possible checks
-                return {
-                    "fitted_model": _model,
-                    "training_status": "fitted",
-                    "loss": _loss,
-                }
-        else:
-            _X_obj = _X.copy()
-            _y_obj = _y.copy()
+    #         # since we tries to minimize the objective function, take negative accuracy here
+    #         if self.full_status:
+    #             tune.report(
+    #                 encoder=_encoder,
+    #                 encoder_hyperparameter=_encoder_hyper,
+    #                 imputer=_imputer,
+    #                 imputer_hyperparameter=_imputer_hyper,
+    #                 balancing=_balancing,
+    #                 balancing_hyperparameter=_balancing_hyper,
+    #                 scaling=_scaling,
+    #                 scaling_hyperparameter=_scaling_hyper,
+    #                 feature_selection=_feature_selection,
+    #                 feature_selection_hyperparameter=_feature_selection_hyper,
+    #                 model=_model,
+    #                 model_hyperparameter=_model_hyper,
+    #                 fitted_model=_model,
+    #                 training_status="fitted",
+    #                 loss=_loss,
+    #             )
+    #             # only for possible checks
+    #             return {
+    #                 "fitted_model": _model,
+    #                 "training_status": "fitted",
+    #                 "loss": _loss,
+    #             }
+    #         else:
+    #             tune.report(
+    #                 fitted_model=_model,
+    #                 training_status="fitted",
+    #                 loss=_loss,
+    #             )
+    #             # only for possible checks
+    #             return {
+    #                 "fitted_model": _model,
+    #                 "training_status": "fitted",
+    #                 "loss": _loss,
+    #             }
+    #     else:
+    #         _X_obj = _X.copy()
+    #         _y_obj = _y.copy()
 
-            # encoding
-            _X_obj = enc.fit(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Encoding finished, in imputation process.")
+    #         # encoding
+    #         _X_obj = enc.fit(_X_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Encoding finished, in imputation process.")
 
-            # imputer
-            _X_obj = imp.fill(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Imputation finished, in scaling process.")
+    #         # imputer
+    #         _X_obj = imp.fill(_X_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Imputation finished, in scaling process.")
 
-            # balancing
-            _X_obj = blc.fit_transform(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Balancing finished, in feature selection process.")
+    #         # balancing
+    #         _X_obj = blc.fit_transform(_X_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Balancing finished, in feature selection process.")
 
-            # scaling
-            scl.fit(_X_obj, _y_obj)
-            _X_obj = scl.transform(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write("Scaling finished, in balancing process.")
+    #         # scaling
+    #         scl.fit(_X_obj, _y_obj)
+    #         _X_obj = scl.transform(_X_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write("Scaling finished, in balancing process.")
 
-            # feature selection
-            fts.fit(_X_obj, _y_obj)
-            _X_obj = fts.transform(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
-            with open("objective_process.txt", "w") as f:
-                f.write(
-                    "Feature selection finished, in {} model.".format(self.task_mode)
-                )
+    #         # feature selection
+    #         fts.fit(_X_obj, _y_obj)
+    #         _X_obj = fts.transform(_X_obj)
+    #         # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+    #         with open("objective_process.txt", "w") as f:
+    #             f.write(
+    #                 "Feature selection finished, in {} model.".format(self.task_mode)
+    #             )
 
-            # fit model
-            if scipy.sparse.issparse(_X_obj):  # check if returns sparse matrix
-                _X_obj = _X_obj.toarray()
+    #         # fit model
+    #         if scipy.sparse.issparse(_X_obj):  # check if returns sparse matrix
+    #             _X_obj = _X_obj.toarray()
 
-            # store the preprocessed train/test datasets
-            if isinstance(_X_obj, np.ndarray):  # in case numpy array is returned
-                pd.concat(
-                    [pd.DataFrame(_X_obj), _y_obj],
-                    axis=1,
-                    ignore_index=True,
-                ).to_csv("train_preprocessed.csv", index=False)
-            elif isinstance(_X_obj, pd.DataFrame):
-                pd.concat([_X_obj, _y_obj], axis=1).to_csv(
-                    "train_preprocessed.csv", index=False
-                )
-            else:
-                raise TypeError("Only accept numpy array or pandas dataframe!")
+    #         # store the preprocessed train/test datasets
+    #         if isinstance(_X_obj, np.ndarray):  # in case numpy array is returned
+    #             pd.concat(
+    #                 [pd.DataFrame(_X_obj), _y_obj],
+    #                 axis=1,
+    #                 ignore_index=True,
+    #             ).to_csv("train_preprocessed.csv", index=False)
+    #         elif isinstance(_X_obj, pd.DataFrame):
+    #             pd.concat([_X_obj, _y_obj], axis=1).to_csv(
+    #                 "train_preprocessed.csv", index=False
+    #             )
+    #         else:
+    #             raise TypeError("Only accept numpy array or pandas dataframe!")
 
-            mol.fit(_X_obj, _y_obj.values.ravel())
-            os.remove("objective_process.txt")
+    #         mol.fit(_X_obj, _y_obj.values.ravel())
+    #         os.remove("objective_process.txt")
 
-            y_pred = mol.predict(_X_obj)
+    #         y_pred = mol.predict(_X_obj)
 
-            if self.objective in [
-                "R2",
-                "accuracy",
-                "precision",
-                "auc",
-                "hinge",
-                "f1",
-            ]:
-                # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
-                # larger the better, since to minimize, add negative sign
-                _loss = -_obj(_y_obj.values, y_pred)
-            else:
-                _loss = _obj(_y_obj.values, y_pred)
+    #         if self.objective in [
+    #             "R2",
+    #             "accuracy",
+    #             "precision",
+    #             "auc",
+    #             "hinge",
+    #             "f1",
+    #         ]:
+    #             # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
+    #             # larger the better, since to minimize, add negative sign
+    #             _loss = -_obj(_y_obj.values, y_pred)
+    #         else:
+    #             _loss = _obj(_y_obj.values, y_pred)
 
-            # save the fitted model objects
-            save_methods(
-                self.model_name,
-                [enc, imp, blc, scl, fts, mol],
-            )
+    #         # save the fitted model objects
+    #         save_methods(
+    #             self.model_name,
+    #             [enc, imp, blc, scl, fts, mol],
+    #         )
 
-            # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
-            with open("testing_objective.txt", "w") as f:
-                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
-                f.write("Loss is calculate using {}.".format(self.objective))
-            self._iter += 1
+    #         # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
+    #         with open("testing_objective.txt", "w") as f:
+    #             f.write("Loss from objective function is: {:.6f}\n".format(_loss))
+    #             f.write("Loss is calculate using {}.".format(self.objective))
+    #         self._iter += 1
 
-            if self.full_status:
-                tune.report(
-                    encoder=_encoder,
-                    encoder_hyperparameter=_encoder_hyper,
-                    imputer=_imputer,
-                    imputer_hyperparameter=_imputer_hyper,
-                    balancing=_balancing,
-                    balancing_hyperparameter=_balancing_hyper,
-                    scaling=_scaling,
-                    scaling_hyperparameter=_scaling_hyper,
-                    feature_selection=_feature_selection,
-                    feature_selection_hyperparameter=_feature_selection_hyper,
-                    model=_model,
-                    model_hyperparameter=_model_hyper,
-                    fitted_model=_model,
-                    training_status="fitted",
-                    loss=_loss,
-                )
-                # only for possible checks
-                return {
-                    "fitted_model": _model,
-                    "training_status": "fitted",
-                    "loss": _loss,
-                }
-            else:
-                tune.report(
-                    fitted_model=_model,
-                    training_status="fitted",
-                    loss=_loss,
-                )
-                # only for possible checks
-                return {
-                    "fitted_model": _model,
-                    "training_status": "fitted",
-                    "loss": _loss,
-                }
+    #         if self.full_status:
+    #             tune.report(
+    #                 encoder=_encoder,
+    #                 encoder_hyperparameter=_encoder_hyper,
+    #                 imputer=_imputer,
+    #                 imputer_hyperparameter=_imputer_hyper,
+    #                 balancing=_balancing,
+    #                 balancing_hyperparameter=_balancing_hyper,
+    #                 scaling=_scaling,
+    #                 scaling_hyperparameter=_scaling_hyper,
+    #                 feature_selection=_feature_selection,
+    #                 feature_selection_hyperparameter=_feature_selection_hyper,
+    #                 model=_model,
+    #                 model_hyperparameter=_model_hyper,
+    #                 fitted_model=_model,
+    #                 training_status="fitted",
+    #                 loss=_loss,
+    #             )
+    #             # only for possible checks
+    #             return {
+    #                 "fitted_model": _model,
+    #                 "training_status": "fitted",
+    #                 "loss": _loss,
+    #             }
+    #         else:
+    #             tune.report(
+    #                 fitted_model=_model,
+    #                 training_status="fitted",
+    #                 loss=_loss,
+    #             )
+    #             # only for possible checks
+    #             return {
+    #                 "fitted_model": _model,
+    #                 "training_status": "fitted",
+    #                 "loss": _loss,
+    #             }
 
     def fit(self, X, y):
 
@@ -1516,6 +2068,28 @@ class AutoTabularBase:
             #     Example: self.search_algo_settings = {'optimizer': nevergrad.optimizers.NGOpt}."
             # )
 
+        # set trainable
+        trainer = tune.with_parameters(
+            ObjectiveTrainer,
+            _X=_X,
+            _y=_y,
+            encoder=encoder,
+            imputer=imputer,
+            balancing=balancing,
+            scaling=scaling,
+            feature_selection=feature_selection,
+            models=models,
+            model_name=self.model_name,
+            task_mode=self.task_mode,
+            objective=self.objective,
+            validation=self.validation,
+            valid_size=self.valid_size,
+            full_status=self.full_status,
+            reset_index=self.reset_index,
+            _iter=self._iter,
+            seed=self.seed,
+        )
+
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
 
@@ -1529,15 +2103,15 @@ class AutoTabularBase:
             self.max_error,
         )
 
-        # # initialize stopper
-        # stopper = TimePlateauStopper(
-        #     timeout=self.timeout,
-        #     metric="loss",
-        #     std=0.1,
-        #     num_results=4,
-        #     grace_period=4,
-        #     mode="min",
-        # )
+        # initialize stopper
+        stopper = TimePlateauStopper(
+            timeout=self.timeout,
+            metric="loss",
+            std=0.1,
+            num_results=2,
+            grace_period=2,
+            mode="min",
+        )
 
         # initialize ray
         # if already initialized, do nothing
@@ -1559,18 +2133,18 @@ class AutoTabularBase:
         # optimization process
         # partially activated objective function
         fit_analysis = tune.run(
-            tune.with_parameters(
-                self._objective,
-                _X=_X,
-                _y=_y,
-                encoder=encoder,
-                imputer=imputer,
-                balancing=balancing,
-                scaling=scaling,
-                feature_selection=feature_selection,
-                models=models,
-            ),
-            # ObjectiveTrainer,
+            # tune.with_parameters(
+            #     self._objective,
+            #     _X=_X,
+            #     _y=_y,
+            #     encoder=encoder,
+            #     imputer=imputer,
+            #     balancing=balancing,
+            #     scaling=scaling,
+            #     feature_selection=feature_selection,
+            #     models=models,
+            # ),
+            trainer,
             config=hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             # resume="AUTO",
@@ -1584,9 +2158,9 @@ class AutoTabularBase:
             metric="loss",
             num_samples=self.max_evals,
             max_failures=self.max_error,
-            # stop=stopper,  # use stopper
+            stop=stopper,  # use stopper
             callbacks=logger,
-            time_budget_s=self.timeout,  # included in stopper
+            # time_budget_s=self.timeout,  # included in stopper
             progress_reporter=progress_reporter,
             verbose=self.verbose,
             trial_dirname_creator=trial_str_creator,
