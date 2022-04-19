@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 7:20:04 pm
+Last Modified: Tuesday, 19th April 2022 2:49:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,643 +69,14 @@ from My_AutoML import load_data
 #     ), "Classification for Stroke data failed to find optimal setting."
 
 
-def test_objective_1():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "heart")
-    data = data["heart"]
-
-    features = list(data.columns)
-    features.remove("HeartDisease")
-    response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_1",
-        objective="accuracy",
-        full_status=True,
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LogisticRegression": LogisticRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_17": "LogisticRegression",
-            "LogisticRegression_penalty": "l2",
-            "LogisticRegression_tol": 1e-4,
-            "LogisticRegression_C": 1,
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_2():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "heart")
-    data = data["heart"]
-
-    features = list(data.columns)
-    features.remove("HeartDisease")
-    response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_2",
-        validation=False,
-        objective="auc",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LogisticRegression": LogisticRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_17": "LogisticRegression",
-            "LogisticRegression_penalty": "l2",
-            "LogisticRegression_tol": 1e-4,
-            "LogisticRegression_C": 1,
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_3():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "insurance")
-    data = data["insurance"]
-
-    features = list(data.columns)
-    features.remove("expenses")
-    response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_3",
-        validation=False,
-        objective="MAE",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LinearRegression": LinearRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_13": "LinearRegression",
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_4():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "insurance")
-    data = data["insurance"]
-
-    features = list(data.columns)
-    features.remove("expenses")
-    response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_4",
-        objective="R2",
-        full_status=True,
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LinearRegression": LinearRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_13": "LinearRegression",
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_5():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "heart")
-    data = data["heart"]
-
-    features = list(data.columns)
-    features.remove("HeartDisease")
-    response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_5",
-        validation=False,
-        objective="precision",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LogisticRegression": LogisticRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_17": "LogisticRegression",
-            "LogisticRegression_penalty": "l2",
-            "LogisticRegression_tol": 1e-4,
-            "LogisticRegression_C": 1,
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_6():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "heart")
-    data = data["heart"]
-
-    features = list(data.columns)
-    features.remove("HeartDisease")
-    response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_6",
-        validation=False,
-        objective="hinge",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LogisticRegression": LogisticRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_17": "LogisticRegression",
-            "LogisticRegression_penalty": "l2",
-            "LogisticRegression_tol": 1e-4,
-            "LogisticRegression_C": 1,
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_7():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "heart")
-    data = data["heart"]
-
-    features = list(data.columns)
-    features.remove("HeartDisease")
-    response = ["HeartDisease"]
-
-    clf = AutoTabularBase(
-        task_mode="classification",
-        model_name="obj_7",
-        validation=False,
-        objective="f1",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LogisticRegression": LogisticRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_17": "LogisticRegression",
-            "LogisticRegression_penalty": "l2",
-            "LogisticRegression_tol": 1e-4,
-            "LogisticRegression_C": 1,
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_8():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "insurance")
-    data = data["insurance"]
-
-    features = list(data.columns)
-    features.remove("expenses")
-    response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_8",
-        validation=False,
-        objective="MSE",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LinearRegression": LinearRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_13": "LinearRegression",
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-def test_objective_9():
-
-    from My_AutoML._hpo._base import AutoTabularBase
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
-
-    # test load_data here
-    data = load_data().load("example/example_data", "insurance")
-    data = data["insurance"]
-
-    features = list(data.columns)
-    features.remove("expenses")
-    response = ["expenses"]
-
-    clf = AutoTabularBase(
-        task_mode="regression",
-        model_name="obj_9",
-        validation=False,
-        objective="MAX",
-    )
-
-    encoder = {"DataEncoding": DataEncoding}
-    imputer = {"SimpleImputer": SimpleImputer}
-    balancing = {"no_processing": no_processing}
-    scaling = {"Standardize": Standardize}
-    feature_selection = {"no_processing": no_processing}
-    models = {"LinearRegression": LinearRegression}
-
-    params = {
-        "encoder": {
-            "encoder_1": "DataEncoding",
-        },
-        "imputer": {
-            "imputer_1": "SimpleImputer",
-            "SimpleImputer_method": "mean",
-        },
-        "balancing": {"balancing_1": "no_processing"},
-        "scaling": {"scaling_2": "Standardize"},
-        "feature_selection": {"feature_selection_1": "no_processing"},
-        "model": {
-            "model_13": "LinearRegression",
-        },
-    }
-
-    result = clf._objective(
-        params=params,
-        _X=data[features],
-        _y=data[response],
-        encoder=encoder,
-        imputer=imputer,
-        balancing=balancing,
-        scaling=scaling,
-        feature_selection=feature_selection,
-        models=models,
-    )
-
-    assert isinstance(result, dict), "Objective function should return a dict."
-    assert "loss" in result.keys(), "Objective function should return loss."
-    assert (
-        "fitted_model" in result.keys()
-    ), "Objective function should return fitted model."
-    assert (
-        "training_status" in result.keys()
-    ), "Objective function should return training status."
-
-
-# def test_heart():
+# def test_objective_1():
+
+#     from My_AutoML._hpo._base import ObjectiveTrainer
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LogisticRegression
 
 #     # test load_data here
 #     data = load_data().load("example/example_data", "heart")
@@ -715,21 +86,656 @@ def test_objective_9():
 #     features.remove("HeartDisease")
 #     response = ["HeartDisease"]
 
-#     mol = My_AutoML.AutoTabular(
-#         model_name="heart",
-#         search_algo="GridSearch",
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LogisticRegression": LogisticRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_17": "LogisticRegression",
+#             "LogisticRegression_penalty": "l2",
+#             "LogisticRegression_tol": 1e-4,
+#             "LogisticRegression_C": 1,
+#         },
+#     }
+
+#     clf = tune.with_parameters(
+#         ObjectiveTrainer,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#         model_name="obj_1",
+#         task_mode="classification",
+#         objective="accuracy",
+#         validation=True,
+#         valid_size=0.15,
+#         full_status=False,
+#         reset_index=True,
+#         _iter=1,
+#         seed=1,
 #     )
-#     mol.fit(data[features], data[response])
+#     clf.setup(params)
+#     result = clf.step()
+#     clf.reset_config(params)
 
-#     y_pred = mol.predict(data[features])
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
 
+
+# def test_objective_2():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LogisticRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "heart")
+#     data = data["heart"]
+
+#     features = list(data.columns)
+#     features.remove("HeartDisease")
+#     response = ["HeartDisease"]
+
+#     clf = AutoTabularBase(
+#         task_mode="classification",
+#         model_name="obj_2",
+#         validation=False,
+#         objective="auc",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LogisticRegression": LogisticRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_17": "LogisticRegression",
+#             "LogisticRegression_penalty": "l2",
+#             "LogisticRegression_tol": 1e-4,
+#             "LogisticRegression_C": 1,
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
 #     assert (
-#         os.path.exists("tmp/heart/init.txt") == True
-#     ), "Classification for Heart data failed to initiated."
-#     assert mol._fitted == True, "Classification for Heart data failed to fit."
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
 #     assert (
-#         os.path.exists("tmp/heart/optimal_setting.txt") == True
-#     ), "Classification for Heart data failed to find optimal setting."
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_3():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LinearRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "insurance")
+#     data = data["insurance"]
+
+#     features = list(data.columns)
+#     features.remove("expenses")
+#     response = ["expenses"]
+
+#     clf = AutoTabularBase(
+#         task_mode="regression",
+#         model_name="obj_3",
+#         validation=False,
+#         objective="MAE",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LinearRegression": LinearRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_13": "LinearRegression",
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_4():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LinearRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "insurance")
+#     data = data["insurance"]
+
+#     features = list(data.columns)
+#     features.remove("expenses")
+#     response = ["expenses"]
+
+#     clf = AutoTabularBase(
+#         task_mode="regression",
+#         model_name="obj_4",
+#         objective="R2",
+#         full_status=True,
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LinearRegression": LinearRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_13": "LinearRegression",
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_5():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LogisticRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "heart")
+#     data = data["heart"]
+
+#     features = list(data.columns)
+#     features.remove("HeartDisease")
+#     response = ["HeartDisease"]
+
+#     clf = AutoTabularBase(
+#         task_mode="classification",
+#         model_name="obj_5",
+#         validation=False,
+#         objective="precision",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LogisticRegression": LogisticRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_17": "LogisticRegression",
+#             "LogisticRegression_penalty": "l2",
+#             "LogisticRegression_tol": 1e-4,
+#             "LogisticRegression_C": 1,
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_6():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LogisticRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "heart")
+#     data = data["heart"]
+
+#     features = list(data.columns)
+#     features.remove("HeartDisease")
+#     response = ["HeartDisease"]
+
+#     clf = AutoTabularBase(
+#         task_mode="classification",
+#         model_name="obj_6",
+#         validation=False,
+#         objective="hinge",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LogisticRegression": LogisticRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_17": "LogisticRegression",
+#             "LogisticRegression_penalty": "l2",
+#             "LogisticRegression_tol": 1e-4,
+#             "LogisticRegression_C": 1,
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_7():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LogisticRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "heart")
+#     data = data["heart"]
+
+#     features = list(data.columns)
+#     features.remove("HeartDisease")
+#     response = ["HeartDisease"]
+
+#     clf = AutoTabularBase(
+#         task_mode="classification",
+#         model_name="obj_7",
+#         validation=False,
+#         objective="f1",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LogisticRegression": LogisticRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_17": "LogisticRegression",
+#             "LogisticRegression_penalty": "l2",
+#             "LogisticRegression_tol": 1e-4,
+#             "LogisticRegression_C": 1,
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_8():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LinearRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "insurance")
+#     data = data["insurance"]
+
+#     features = list(data.columns)
+#     features.remove("expenses")
+#     response = ["expenses"]
+
+#     clf = AutoTabularBase(
+#         task_mode="regression",
+#         model_name="obj_8",
+#         validation=False,
+#         objective="MSE",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LinearRegression": LinearRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_13": "LinearRegression",
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+# def test_objective_9():
+
+#     from My_AutoML._hpo._base import AutoTabularBase
+#     from My_AutoML._encoding import DataEncoding
+#     from My_AutoML._imputation import SimpleImputer
+#     from My_AutoML._base import no_processing
+#     from My_AutoML._scaling import Standardize
+#     from My_AutoML._model import LinearRegression
+
+#     # test load_data here
+#     data = load_data().load("example/example_data", "insurance")
+#     data = data["insurance"]
+
+#     features = list(data.columns)
+#     features.remove("expenses")
+#     response = ["expenses"]
+
+#     clf = AutoTabularBase(
+#         task_mode="regression",
+#         model_name="obj_9",
+#         validation=False,
+#         objective="MAX",
+#     )
+
+#     encoder = {"DataEncoding": DataEncoding}
+#     imputer = {"SimpleImputer": SimpleImputer}
+#     balancing = {"no_processing": no_processing}
+#     scaling = {"Standardize": Standardize}
+#     feature_selection = {"no_processing": no_processing}
+#     models = {"LinearRegression": LinearRegression}
+
+#     params = {
+#         "encoder": {
+#             "encoder_1": "DataEncoding",
+#         },
+#         "imputer": {
+#             "imputer_1": "SimpleImputer",
+#             "SimpleImputer_method": "mean",
+#         },
+#         "balancing": {"balancing_1": "no_processing"},
+#         "scaling": {"scaling_2": "Standardize"},
+#         "feature_selection": {"feature_selection_1": "no_processing"},
+#         "model": {
+#             "model_13": "LinearRegression",
+#         },
+#     }
+
+#     result = clf._objective(
+#         params=params,
+#         _X=data[features],
+#         _y=data[response],
+#         encoder=encoder,
+#         imputer=imputer,
+#         balancing=balancing,
+#         scaling=scaling,
+#         feature_selection=feature_selection,
+#         models=models,
+#     )
+
+#     assert isinstance(result, dict), "Objective function should return a dict."
+#     assert "loss" in result.keys(), "Objective function should return loss."
+#     assert (
+#         "fitted_model" in result.keys()
+#     ), "Objective function should return fitted model."
+#     assert (
+#         "training_status" in result.keys()
+#     ), "Objective function should return training status."
+
+
+def test_heart():
+
+    # test load_data here
+    data = load_data().load("example/example_data", "heart")
+    data = data["heart"]
+
+    features = list(data.columns)
+    features.remove("HeartDisease")
+    response = ["HeartDisease"]
+
+    mol = My_AutoML.AutoTabular(
+        model_name="heart",
+        search_algo="GridSearch",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+
+    y_pred = mol.predict(data[features])
+
+    assert (
+        os.path.exists("tmp/heart/init.txt") == True
+    ), "Classification for Heart data failed to initiated."
+    assert mol._fitted == True, "Classification for Heart data failed to fit."
+    assert (
+        os.path.exists("tmp/heart/optimal_setting.txt") == True
+    ), "Classification for Heart data failed to find optimal setting."
 
 
 def test_insurance():
@@ -745,6 +751,7 @@ def test_insurance():
     mol = My_AutoML.AutoTabular(
         model_name="insurance",
         objective="MAE",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
     y_pred = mol.predict(data[features])
@@ -758,32 +765,33 @@ def test_insurance():
     ), "Regression for Insurance data failed to find optimal setting."
 
 
-# def test_insurance_R2():
+def test_insurance_R2():
 
-#     from My_AutoML._hpo._base import AutoTabularBase
+    from My_AutoML._hpo._base import AutoTabularBase
 
-#     # test load_data here
-#     data = load_data().load("example/example_data", "insurance")
-#     data = data["insurance"]
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
 
-#     features = list(data.columns)
-#     features.remove("expenses")
-#     response = ["expenses"]
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
 
-#     mol = AutoTabularBase(
-#         model_name="insurance_R2",
-#         task_mode="regression",
-#         objective="R2",
-#     )
-#     mol.fit(data[features], data[response])
+    mol = AutoTabularBase(
+        model_name="insurance_R2",
+        task_mode="regression",
+        objective="R2",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
 
-#     assert (
-#         os.path.exists("tmp/insurance_R2/init.txt") == True
-#     ), "Regression for Insurance data failed to initiated."
-#     assert mol._fitted == True, "Regression for Insurance data failed to fit."
-#     assert (
-#         os.path.exists("tmp/insurance_R2/optimal_setting.txt") == True
-#     ), "Regression for Insurance data failed to find optimal setting."
+    assert (
+        os.path.exists("tmp/insurance_R2/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance_R2/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
 
 
 def test_stroke_import_version():
@@ -799,6 +807,7 @@ def test_stroke_import_version():
     mol = My_AutoML.AutoTabular(
         model_name="stroke",
         objective="auc",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 
@@ -825,6 +834,7 @@ def test_stroke_loading():
 
     mol = My_AutoML.AutoTabular(
         model_name="stroke",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 
@@ -852,6 +862,7 @@ def test_stroke_with_limit():
         validation=False,
         search_algo="GridSearch",
         objective="precision",
+        timeout=60,
     )
     mol.fit(data[features], data[response])
 

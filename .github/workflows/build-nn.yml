@@ -16,5 +16,5 @@ jobs:
       - name: "run tests (with neural network)"
         run: |
           pip install -r requirements_nn.txt
-          python main.py --data_folder example/example_data --train_data heart --response HeartDisease
-          python main.py --data_folder example/example_data --train_data insurance --response expenses
+          python main.py --data_folder example/example_data --train_data heart --response HeartDisease --timeout 60
+          python main.py --data_folder example/example_data --train_data insurance --response expenses --timeout 60
