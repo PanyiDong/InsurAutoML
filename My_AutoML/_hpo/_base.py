@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 5:16:26 pm
+Last Modified: Monday, 18th April 2022 7:30:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,6 +72,7 @@ from My_AutoML._utils._optimize import (
     get_scheduler,
     get_logger,
     get_progress_reporter,
+    TimePlateauStopper,
 )
 
 # filter certain warnings
@@ -1220,7 +1221,6 @@ class AutoTabularBase:
                     feature_selection_hyperparameter=_feature_selection_hyper,
                     model=_model,
                     model_hyperparameter=_model_hyper,
-                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
@@ -1228,21 +1228,18 @@ class AutoTabularBase:
 
                 # only for possible checks
                 return {
-                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
                 }
             else:
                 tune.report(
-                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
                 )
                 # only for possible checks
                 return {
-                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
@@ -1348,7 +1345,6 @@ class AutoTabularBase:
                     feature_selection_hyperparameter=_feature_selection_hyper,
                     model=_model,
                     model_hyperparameter=_model_hyper,
-                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
@@ -1356,21 +1352,18 @@ class AutoTabularBase:
 
                 # only for possible checks
                 return {
-                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
                 }
             else:
                 tune.report(
-                    done=True,
                     fitted_model=_model,
                     training_status="fitted",
                     loss=_loss,
                 )
                 # only for possible checks
                 return {
-                    "done": True,
                     "fitted_model": _model,
                     "training_status": "fitted",
                     "loss": _loss,
@@ -1525,6 +1518,16 @@ class AutoTabularBase:
             self.max_error,
         )
 
+        # initialize stopper
+        stopper = TimePlateauStopper(
+            timeout=self.timeout,
+            metric="loss",
+            std=0.1,
+            num_results=4,
+            grace_period=4,
+            mode="min",
+        )
+
         # initialize ray
         # if already initialized, do nothing
         if not ray.is_initialized():
@@ -1559,22 +1562,19 @@ class AutoTabularBase:
             config=hyperparameter_space,
             name=self.model_name,  # name of the tuning process, use model_name
             resume="AUTO",
-            # checkpoint_freq=1,  # disable checkpoint
-            # checkpoint_at_end=True,
-            # keep_checkpoints_num=self.max_evals,
-            # checkpoint_score_attr="loss",
+            checkpoint_freq=8,  # disable checkpoint
+            checkpoint_at_end=True,
+            keep_checkpoints_num=4,
+            checkpoint_score_attr="loss",
             mode="min",  # always call a minimization process
             search_alg=algo(**self.search_algo_settings),
             scheduler=scheduler(**self.search_scheduler_settings),
             metric="loss",
             num_samples=self.max_evals,
             max_failures=self.max_error,
-            stop={
-                "training_iteration": 5,
-                # "max_failures": 3,
-            },
+            stop=stopper,  # use stopper
             callbacks=logger,
-            time_budget_s=self.timeout,
+            # time_budget_s=self.timeout, # included in stopper
             progress_reporter=progress_reporter,
             verbose=self.verbose,
             trial_dirname_creator=trial_str_creator,

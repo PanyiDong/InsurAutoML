@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:41:19 pm
+Last Modified: Monday, 18th April 2022 7:33:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,11 @@ SOFTWARE.
 """
 
 import copy
+import time
+from collections import defaultdict, deque
+import numpy as np
 from ray import tune
+from ray.tune import Stopper
 import importlib
 from typing import Callable
 
@@ -648,3 +652,70 @@ def get_logger(logger):
             loggers.append(WandbLoggerCallback())
 
     return loggers
+
+
+class TimePlateauStopper(Stopper):
+
+    """
+    Combination of TimeoutStopper and TrialPlateauStopper
+    """
+
+    def __init__(
+        self,
+        timeout=360,
+        metric="loss",
+        std=0.01,
+        num_results=4,
+        grace_period=4,
+        metric_threshold=None,
+        mode="min",
+    ):
+        self._start = time.time()
+        self._deadline = timeout
+
+        self._metric = metric
+        self._mode = mode
+
+        self._std = std
+        self._num_results = num_results
+        self._grace_period = grace_period
+        self._metric_threshold = metric_threshold
+
+        self._iter = defaultdict(lambda: 0)
+        self._trial_results = defaultdict(lambda: deque(maxlen=self._num_results))
+
+    def __call__(self, trial_id, result):
+
+        metric_result = result.get(self._metric)  # get metric from result
+        self._trial_results[trial_id].append(metric_result)
+        self._iter[trial_id] += 1  # record trial results and iteration
+
+        # If still in grace period, do not stop yet
+        if self._iter[trial_id] < self._grace_period:
+            return False
+
+        # If not enough results yet, do not stop yet
+        if len(self._trial_results[trial_id]) < self._num_results:
+            return False
+
+        # if threshold specified, use threshold to stop
+        # If metric threshold value not reached, do not stop yet
+        if self._metric_threshold is not None:
+            if self._mode == "min" and metric_result > self._metric_threshold:
+                return False
+            elif self._mode == "max" and metric_result < self._metric_threshold:
+                return False
+
+        # if threshold not specified, use std to stop
+        # Calculate stdev of last `num_results` results
+        try:
+            current_std = np.std(self._trial_results[trial_id])
+        except Exception:
+            current_std = float("inf")
+
+        # If stdev is lower than threshold, stop early.
+        return current_std < self._std
+
+    def stop_all(self):
+
+        return time.time() - self._start > self._deadline

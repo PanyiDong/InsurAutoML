@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 6:53:56 pm
+Last Modified: Monday, 18th April 2022 7:20:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -747,6 +747,7 @@ def test_insurance():
         objective="MAE",
     )
     mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
 
     assert (
         os.path.exists("tmp/insurance/init.txt") == True
