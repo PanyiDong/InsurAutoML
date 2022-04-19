@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 3:55:47 pm
+Last Modified: Tuesday, 19th April 2022 4:06:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -768,160 +768,160 @@ def test_objective_9():
     ), "Objective function should return training status."
 
 
-# def test_heart():
+def test_heart():
 
-#     # test load_data here
-#     data = load_data().load("example/example_data", "heart")
-#     data = data["heart"]
+    # test load_data here
+    data = load_data().load("example/example_data", "heart")
+    data = data["heart"]
 
-#     features = list(data.columns)
-#     features.remove("HeartDisease")
-#     response = ["HeartDisease"]
+    features = list(data.columns)
+    features.remove("HeartDisease")
+    response = ["HeartDisease"]
 
-#     mol = My_AutoML.AutoTabular(
-#         model_name="heart",
-#         search_algo="GridSearch",
-#         timeout=60,
-#     )
-#     mol.fit(data[features], data[response])
+    mol = My_AutoML.AutoTabular(
+        model_name="heart",
+        search_algo="GridSearch",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
 
-#     y_pred = mol.predict(data[features])
+    y_pred = mol.predict(data[features])
 
-#     assert (
-#         os.path.exists("tmp/heart/init.txt") == True
-#     ), "Classification for Heart data failed to initiated."
-#     assert mol._fitted == True, "Classification for Heart data failed to fit."
-#     assert (
-#         os.path.exists("tmp/heart/optimal_setting.txt") == True
-#     ), "Classification for Heart data failed to find optimal setting."
-
-
-# def test_insurance():
-
-#     # test load_data here
-#     data = load_data().load("example/example_data", "insurance")
-#     data = data["insurance"]
-
-#     features = list(data.columns)
-#     features.remove("expenses")
-#     response = ["expenses"]
-
-#     mol = My_AutoML.AutoTabular(
-#         model_name="insurance",
-#         objective="MAE",
-#         timeout=60,
-#     )
-#     mol.fit(data[features], data[response])
-#     y_pred = mol.predict(data[features])
-
-#     assert (
-#         os.path.exists("tmp/insurance/init.txt") == True
-#     ), "Regression for Insurance data failed to initiated."
-#     assert mol._fitted == True, "Regression for Insurance data failed to fit."
-#     assert (
-#         os.path.exists("tmp/insurance/optimal_setting.txt") == True
-#     ), "Regression for Insurance data failed to find optimal setting."
+    assert (
+        os.path.exists("tmp/heart/init.txt") == True
+    ), "Classification for Heart data failed to initiated."
+    assert mol._fitted == True, "Classification for Heart data failed to fit."
+    assert (
+        os.path.exists("tmp/heart/optimal_setting.txt") == True
+    ), "Classification for Heart data failed to find optimal setting."
 
 
-# def test_insurance_R2():
+def test_insurance():
 
-#     from My_AutoML._hpo._base import AutoTabularBase
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
 
-#     # test load_data here
-#     data = load_data().load("example/example_data", "insurance")
-#     data = data["insurance"]
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
 
-#     features = list(data.columns)
-#     features.remove("expenses")
-#     response = ["expenses"]
+    mol = My_AutoML.AutoTabular(
+        model_name="insurance",
+        objective="MAE",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
 
-#     mol = AutoTabularBase(
-#         model_name="insurance_R2",
-#         task_mode="regression",
-#         objective="R2",
-#         timeout=60,
-#     )
-#     mol.fit(data[features], data[response])
-
-#     assert (
-#         os.path.exists("tmp/insurance_R2/init.txt") == True
-#     ), "Regression for Insurance data failed to initiated."
-#     assert mol._fitted == True, "Regression for Insurance data failed to fit."
-#     assert (
-#         os.path.exists("tmp/insurance_R2/optimal_setting.txt") == True
-#     ), "Regression for Insurance data failed to find optimal setting."
+    assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
 
 
-# def test_stroke_import_version():
+def test_insurance_R2():
 
-#     # test load_data here
-#     data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
-#     data = data["healthcare-dataset-stroke-data"]
+    from My_AutoML._hpo._base import AutoTabularBase
 
-#     features = list(data.columns)
-#     features.remove("stroke")
-#     response = ["stroke"]
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
 
-#     mol = My_AutoML.AutoTabular(
-#         model_name="stroke",
-#         objective="auc",
-#         timeout=60,
-#     )
-#     mol.fit(data[features], data[response])
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
 
-#     assert (
-#         os.path.exists("tmp/stroke/init.txt") == True
-#     ), "Classification for Stroke data (import_version) failed to initiated."
-#     assert (
-#         mol._fitted == True
-#     ), "Classification for Stroke data (import_version) failed to fit."
-#     assert (
-#         os.path.exists("tmp/stroke/optimal_setting.txt") == True
-#     ), "Classification for Stroke data (import_version) failed to find optimal setting."
+    mol = AutoTabularBase(
+        model_name="insurance_R2",
+        task_mode="regression",
+        objective="R2",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
 
-
-# def test_stroke_loading():
-
-#     # test load_data here
-#     data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
-#     data = data["healthcare-dataset-stroke-data"]
-
-#     features = list(data.columns)
-#     features.remove("stroke")
-#     response = ["stroke"]
-
-#     mol = My_AutoML.AutoTabular(
-#         model_name="stroke",
-#         timeout=60,
-#     )
-#     mol.fit(data[features], data[response])
-
-#     assert mol._fitted == True, "AutoTabular with loading failed to fit."
+    assert (
+        os.path.exists("tmp/insurance_R2/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance_R2/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
 
 
-# def test_stroke_with_limit():
+def test_stroke_import_version():
 
-#     # test load_data here
-#     data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
-#     data = data["healthcare-dataset-stroke-data"]
+    # test load_data here
+    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = data["healthcare-dataset-stroke-data"]
 
-#     features = list(data.columns)
-#     features.remove("stroke")
-#     response = ["stroke"]
+    features = list(data.columns)
+    features.remove("stroke")
+    response = ["stroke"]
 
-#     mol = My_AutoML.AutoTabular(
-#         model_name="no_valid",
-#         encoder=["DataEncoding"],
-#         imputer=["SimpleImputer"],
-#         balancing=["no_processing"],
-#         scaling=["no_processing"],
-#         feature_selection=["no_processing"],
-#         models=["DecisionTree"],
-#         validation=False,
-#         search_algo="GridSearch",
-#         objective="precision",
-#         timeout=60,
-#     )
-#     mol.fit(data[features], data[response])
+    mol = My_AutoML.AutoTabular(
+        model_name="stroke",
+        objective="auc",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
 
-#     assert mol._fitted == True, "AutoTabular with limited space failed to fit."
+    assert (
+        os.path.exists("tmp/stroke/init.txt") == True
+    ), "Classification for Stroke data (import_version) failed to initiated."
+    assert (
+        mol._fitted == True
+    ), "Classification for Stroke data (import_version) failed to fit."
+    assert (
+        os.path.exists("tmp/stroke/optimal_setting.txt") == True
+    ), "Classification for Stroke data (import_version) failed to find optimal setting."
+
+
+def test_stroke_loading():
+
+    # test load_data here
+    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = data["healthcare-dataset-stroke-data"]
+
+    features = list(data.columns)
+    features.remove("stroke")
+    response = ["stroke"]
+
+    mol = My_AutoML.AutoTabular(
+        model_name="stroke",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+
+    assert mol._fitted == True, "AutoTabular with loading failed to fit."
+
+
+def test_stroke_with_limit():
+
+    # test load_data here
+    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = data["healthcare-dataset-stroke-data"]
+
+    features = list(data.columns)
+    features.remove("stroke")
+    response = ["stroke"]
+
+    mol = My_AutoML.AutoTabular(
+        model_name="no_valid",
+        encoder=["DataEncoding"],
+        imputer=["SimpleImputer"],
+        balancing=["no_processing"],
+        scaling=["no_processing"],
+        feature_selection=["no_processing"],
+        models=["DecisionTree"],
+        validation=False,
+        search_algo="GridSearch",
+        objective="precision",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+
+    assert mol._fitted == True, "AutoTabular with limited space failed to fit."
