@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 3:56:28 pm
+Last Modified: Tuesday, 19th April 2022 5:01:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1032,6 +1032,7 @@ class AutoTabularBase:
             valid_size=self.valid_size,
             full_status=self.full_status,
             reset_index=self.reset_index,
+            timeout = self.timeout / 100,
             _iter=self._iter,
             seed=self.seed,
         )

@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 3:54:16 pm
+Last Modified: Tuesday, 19th April 2022 5:04:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import os
+import warnings
 import json
 import copy
 import time
@@ -54,12 +55,16 @@ import scipy
 from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
+# from wrapt_timeout_decorator import *
+from yaml import warnings
+
 from My_AutoML._utils._file import (
     save_methods,
 )
 from My_AutoML._utils._data import (
     train_test_split,
 )
+
 
 class TabularObjective(tune.Trainable):
     def setup(
@@ -80,6 +85,7 @@ class TabularObjective(tune.Trainable):
         valid_size=0.15,
         full_status=False,
         reset_index=True,
+        timeout=36,
         _iter=1,
         seed=1,
     ):
@@ -101,6 +107,7 @@ class TabularObjective(tune.Trainable):
         self.valid_size = valid_size
         self.full_status = full_status
         self.reset_index = reset_index
+        self.timeout = timeout
         self._iter = _iter
         self.seed = seed
 
@@ -109,6 +116,32 @@ class TabularObjective(tune.Trainable):
 
     def step(self):
 
+        # try:
+        #     self.status_dict = self._objective()
+        # except:
+        #     warnings.warn("Objective not finished due to timeout.")
+        #     if self.full_status:
+        #         self.status_dict = {
+        #             "encoder": self._encoder,
+        #             "encoder_hyperparameter": self._encoder_hyper,
+        #             "imputer": self._imputer,
+        #             "imputer_hyperparameter": self._imputer_hyper,
+        #             "balancing": self._balancing,
+        #             "balancing_hyperparameter": self._balancing_hyper,
+        #             "scaling": self._scaling,
+        #             "scaling_hyperparameter": self._scaling_hyper,
+        #             "feature_selection": self._feature_selection,
+        #             "feature_selection_hyperparameter": self._feature_selection_hyper,
+        #             "model": self._model,
+        #             "model_hyperparameter": self._model_hyper,
+        #             "training_status": "not fitted",
+        #             "status": "TIMEOUT",
+        #         }
+        #     else:
+        #         self.status_dict = {
+        #             "training_status": "not fitted",
+        #             "status": "TIMEOUT",
+        #         }
         self.status_dict = self._objective()
 
         return self.status_dict
@@ -284,7 +317,16 @@ class TabularObjective(tune.Trainable):
         with open(checkpoint_path, "r") as inp_f:
             self.status_dict = json.load(inp_f)
 
-    # actual objective function
+    # # wrapped timeout decorator
+    # def wrap_timeout(f):
+    #     def wrapper(*args):
+    #         timeout(args[0].timeout)
+    #         return f(*args)
+
+    #     return wrapper
+
+    # # actual objective function
+    # @wrap_timeout
     @ignore_warnings(category=ConvergenceWarning)
     def _objective(
         self,
@@ -667,6 +709,7 @@ class TabularObjective(tune.Trainable):
                     "training_status": "fitted",
                     "loss": _loss,
                 }
+
 
 # create hyperparameter space using ray.tune.choice
 # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
