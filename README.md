@@ -1,6 +1,6 @@
 # Project for Auto Machine Learning (AutoML)
 
-[![codecov](https://codecov.io/gh/PanyiDong/My_AutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/My_AutoML) [![codecov](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml) [![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml)
+[![codecov](https://codecov.io/gh/PanyiDong/My_AutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/My_AutoML) [![codecov](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml) [![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml) [![build-nn](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml)
 
 IRisk Lab Project, UIUC, Fall 2021
 
@@ -64,6 +64,8 @@ model.fit(train_X, train_y)
 
 model.predict(test_X)
 ```
+
+One important issue I find now is that, `ray.tune` does not force to stop running trials but only stop generating new trials. So, if setting `timeout` too low, it's common the fitting does not end in time (long running trials are expected not to finish in short time). However, if the pipeline is used as normal cases, which the `timeout` and `max_evals` both should be set to a rather large number, this case should not be as significant as very short time limit. I think that force trial runtime to stop can be a solution, but with few tryouts, I haven't found anything useful yet.
 
 ## Summary
 
