@@ -15,5 +15,6 @@ jobs:
           python-version: 3.7
       - name: "run tests (with neural network)"
         run: |
+          pip install pytest
           pip install -e .[nn]
           pytest tests/
