@@ -80,7 +80,8 @@ setup(
         exclude=["tests", "example", "archive", "Appendix", "docs", "tests"]
     ),
     package_dir={"My_AutoML": "My_AutoML"},
-    package_data={"My_AutoML": ["Appendix/*", "archive/*"]},
+    include_package_data=True,
+    package_data={"My_AutoML": ["Appendix/*", "example/*"]},
     platforms=["Linux"],
     python_requires=">=3.7",
     install_requires=[
