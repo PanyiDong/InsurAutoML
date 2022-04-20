@@ -6,17 +6,33 @@ IRisk Lab Project, UIUC, Fall 2021
 
 Now a personally-maintained project
 
-The project aims to create a AutoML package with special focus on insurance data (with some imbalance in nature).
+The project aims to create a AutoML package with special focus on insurance data (with some imbalance in nature). The pipeline is now workable with encoding, imputation, balancing, scaling, feature selection, models (regression, classification models) as pipeline components and model selection/hyperparameter optimization (HPO) process as it's core of connection among all components for tuning.
+
+## Prerequisites
+
+System Requirements:
+
+- Linux (write and tested on Ubuntu 20.04)
+
+- As all trials are running parallelized, more threads (correspondingly, more memory) will increase the training efficiency
+
+- `pip`, `git` is required for installation
+  
+- Python version: should support version >= 3.7 (write and tested on `3.8` and `3.9`)
+  
+- If neural network is required, please use GPU supported device
 
 ## Usage
 
-1. Clone the repository
+### 1. Clone the repository
 
 ```console
 git clone https://github.com/PanyiDong/My_AutoML.git
 ```
 
-2. Install dependencies
+### 2. Install dependencies
+
+#### install by `requirements.txt`
 
 ```console
 cd My_AutoML
@@ -25,7 +41,18 @@ pip install -r requirements.txt
 
 For neural network related support (need `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
 
-3. Put data in the folder and run for training/evaluation
+#### install by `setup.py`
+
+```console
+cd My_AutoML
+pip install -e .[normal]
+```
+
+This method will use `setup.py` to install the dependencies, by default, if no GPU support, should install `normal` version. If GPU is supported, and you wish to test neural network related architectures, use `pip install -e .[nn]` for neural network installation; or, if you wish to use a lightweight, essential-only installation, use `pip install -e .[lightweight]`.
+
+At this moment, `normal` contains few more ML packages that allows testing on a larger model/hyperparameter space. The differences may becomes larger for later versions.
+
+### 3. Put data in the folder and run for training/evaluation
 
 Example below runs a classification task on `heart.csv` file in `example/example_data` folder
 
@@ -69,13 +96,13 @@ One important issue I find now is that, `ray.tune` does not force to stop runnin
 
 ## Summary
 
-> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn, scikit-learn, lightgbm, xgboost, pygamrpy2$^{*}$, tensorflow$^{**}$, torch$^{***}$
+> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn, scikit-learn, lightgbm, xgboost, pygamrpy2 $^{1}$, tensorflow $^{2}$, torch $^{3}$
 >
-> $*$ rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
+> <sub><sup>1.</sup></sub> rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
 >
-> $**$ tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
+> <sub><sup>2.</sup></sub> tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
 >
-> $***$ torch is required for neural network support.
+> <sub><sup>3.</sup></sub> torch is required for neural network support.
 
 Current Progress:
 
@@ -107,7 +134,7 @@ The pipeline of AutoML:
 >
 > 6. Regression/Classification: perform regression/classification models to fit the datasets.
 
-Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time.
+Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time. Fitted models, preprocessed train/test datasets, hyperparameter settings for each trials will also by stored in `tmp` folders for inspection. (Both `model` and `tmp` are changeable arguments if you prefer other names.)
 
 ### Configuration
 
@@ -115,7 +142,7 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 
 > 1. timeout: maximum allowed time for the tuning job.
 >
-> 2. max_evals: maximum allowed trials for the tuning job.
+> 2. max_evals: maximum allowed trials for the tuning job. (each trial is trained multiple times, whose training iterations are controlled by limitation time, `timeout` and performance improvements.)
 >
 > 3. allow_error_prop: maximum allowed failure errors proportion (number of allowed error = proportion * max_evals)
 >
@@ -125,13 +152,13 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 >
 > 6. objective: metrics use to evaluate trials' performance
 >
-> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch` and `HyperOpt` are now supported, will add more search algorithms
+> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch` and `HyperOpt` are now supported, may seek compatibility for more search algorithms
 >
 > 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
 
 Other files in the repository:
 
-1. `report.pdf` provides an introduction to the AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
+1. `report.pdf` and presentation provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
 
 2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
 

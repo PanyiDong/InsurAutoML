@@ -16,7 +16,7 @@ jobs:
       - name: "generate report"
         run: |
           pip install coverage pytest
-          pip install -r requirements.txt
+          pip install -e .[normal]
           coverage run -m pytest
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1

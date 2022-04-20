@@ -15,6 +15,6 @@ jobs:
           python-version: 3.7
       - name: "run tests (with neural network)"
         run: |
-          pip install -r requirements_nn.txt
+          pip install -e .[nn]
           python main.py --data_folder example/example_data --train_data heart --response HeartDisease --max_evals 32
           python main.py --data_folder example/example_data --train_data insurance --response expenses --max_evals 32

@@ -5,6 +5,9 @@ __pycache__/
 .DS_Store
 notes.md
 tmp/
+build/
+dist/
+My_AutoML.egg-info/
 .coverage
 htmlcov/*
 .ipynb_checkpoints/
