@@ -102,11 +102,13 @@ setup(
     extras_require={
         "lightweight": [],
         "normal": [
+            "rpy2",
             "lightgbm",
             "xgboost",
             "pygam",
         ],
         "nn": [
+            "rpy2",
             "lightgbm",
             "xgboost",
             "pygam",
