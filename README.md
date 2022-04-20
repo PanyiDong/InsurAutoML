@@ -69,13 +69,13 @@ One important issue I find now is that, `ray.tune` does not force to stop runnin
 
 ## Summary
 
-> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn, scikit-learn, lightgbm, xgboost, pygamrpy2$^{*}$, tensorflow$^{**}$, torch$^{***}$
+> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn, scikit-learn, lightgbm, xgboost, pygam, rpy2 $^{1}$, tensorflow $^{2}$, torch $^{3}$
 >
-> $*$ rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
+> <sub><sup>1.</sup></sub> rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
 >
-> $**$ tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
+> <sub><sup>2.</sup></sub> tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
 >
-> $***$ torch is required for neural network support.
+> <sub><sup>3.</sup></sub> torch is required for neural network support.
 
 Current Progress:
 
