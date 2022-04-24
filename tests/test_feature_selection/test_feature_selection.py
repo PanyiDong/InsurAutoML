@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 5:58:33 pm
+Last Modified: Sunday, 24th April 2022 6:12:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -129,7 +129,7 @@ def test_ASFFS():
 
     feature_selection = ASFFS(
         n_components=5,
-        model="lasso",
+        model="Lasso",
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
@@ -137,7 +137,7 @@ def test_ASFFS():
     assert feature_selection._fitted == True, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
-    feature_selection = ASFFS(n_components=5, model="ridge", objective="MAE")
+    feature_selection = ASFFS(n_components=5, model="Ridge", objective="MAE")
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
