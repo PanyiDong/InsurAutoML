@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 10:06:01 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:24:06 pm
+Last Modified: Sunday, 24th April 2022 5:50:41 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,9 +46,30 @@ feature_selection_hyperparameter = [
     {"feature_selection_2": "LDASelection"},
     {"feature_selection_3": "PCA_FeatureSelection"},
     {"feature_selection_4": "RBFSampler"},
-    {"feature_selection_5": "FeatureFilter"},
-    {"feature_selection_6": "ASFFS"},
-    {"feature_selection_7": "GeneticAlgorithm"},
+    {
+        "feature_selection_5": "FeatureFilter",
+        "FeatureFilter_criteria": tune.choice(["Pearson", "MI"]),
+        "FeatureFilter_n_prop": tune.uniform(0, 1),
+    },
+    {
+        "feature_selection_6": "ASFFS",
+        "ASFFS_model": tune.choice(["Linear", "Lasso", "Ridge"]),
+        "ASFFS_objective": tune.choice(["MSE", "MAE"]),
+    },
+    {
+        "feature_selection_7": "GeneticAlgorithm",
+        "GeneticAlgorithm_n_prop": tune.uniform(0.6, 1),
+        "GeneticAlgorithm_n_generations": tune.qrandint(10, 40),
+        "GeneticAlgorithm_feature_selection": tune.choice(
+            ["auto", "random", "Entropy", "t_statistics"]
+        ),
+        "GeneticAlgorithm_n_initial": tune.qrandint(5, 15),
+        "GeneticAlgorithm_fitness_fit": tune.choice(
+            ["Linear", "Logistic", "Random Forest", "SVM"]
+        ),
+        "GeneticAlgorithm_p_crossover": tune.uniform(0.8, 1),
+        "GeneticAlgorithm_p_mutation": tune.loguniform(1e-5, 1),
+    },
     {
         "feature_selection_8": "extra_trees_preproc_for_classification",
         "extra_trees_preproc_for_classification_n_estimators": tune.choice([100]),
@@ -197,5 +218,26 @@ feature_selection_hyperparameter = [
     {
         "feature_selection_23": "truncatedSVD",
         "truncatedSVD_target_dim": tune.qrandint(10, 256, 1),
+    },
+    {
+        "feature_selection_24": "ExhaustiveFS",
+        "ExhaustiveFS_estimator": tune.choice(["Lasso"]),
+        "ExhaustiveFS_criteria": tune.choice(["accuracy"]),
+    },
+    {
+        "feature_selection_25": "SFS",
+        # will be specified by task_type when initializing the HPO model
+        "SFS_estimator": tune.choice(["Need to specify by task_type"]),
+        "SFS_n_prop": tune.uniform(0, 1),
+        "SFS_criteria": tune.choice(["Need to specify by task_type"]),
+    },
+    {
+        "feature_selection_26": "mRMR",
+        "mRMR_n_prop": tune.uniform(0, 1),
+    },
+    {
+        "feature_selection_27": "CBFS",
+        "CBFS_copula": tune.choice(["empirical"]),
+        "CBFS_n_prop": tune.uniform(0, 1),
     },
 ]

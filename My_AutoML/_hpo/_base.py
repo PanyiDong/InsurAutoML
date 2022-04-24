@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 5:01:07 pm
+Last Modified: Saturday, 23rd April 2022 10:42:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from re import L
 import ray
 from ray import tune
 
@@ -518,9 +519,33 @@ class AutoTabularBase:
         # _all_scalings_hyperparameters = copy.deepcopy(self._all_scalings_hyperparameters)
 
         # all hyperparameters for feature selections
-        # _all_feature_selection_hyperparameters = copy.deepcopy(
-        #     feature_selection_hyperparameter
-        # )
+        _all_feature_selection_hyperparameters = copy.deepcopy(
+            feature_selection_hyperparameter
+        )
+
+        # special treatment, for SFS hyperparameter space
+        if self.task_mode == "classification":
+            for item in _all_feature_selection_hyperparameters:
+                if "SFS" in item.values():
+                    from My_AutoML._constant import (
+                        CLASSIFICATION_ESTIMATORS,
+                        CLASSIFICATION_CRITERIA,
+                    )
+
+                    item["SFS_estimator"] = tune.choice(CLASSIFICATION_ESTIMATORS)
+                    item["SFS_criteria"] = tune.choice(CLASSIFICATION_CRITERIA)
+                    break
+        elif self.task_mode == "regression":
+            for item in _all_feature_selection_hyperparameters:
+                if "SFS" in item.values():
+                    from My_AutoML._constant import (
+                        REGRESSION_ESTIMATORS,
+                        REGRESSION_CRITERIA,
+                    )
+
+                    item["SFS_estimator"] = tune.choice(REGRESSION_ESTIMATORS)
+                    item["SFS_criteria"] = tune.choice(REGRESSION_CRITERIA)
+                    break
 
         # # initialize feature selection hyperparameter space
         # _all_feature_selection_hyperparameters = copy.deepcopy(
@@ -539,21 +564,24 @@ class AutoTabularBase:
         if self.task_mode == "classification":
             # get LightGBM_Regressor key
             for item in _all_models_hyperparameters:
-                for key in item.keys():
-                    if key == "LightGBM_Classifier_objective":
-                        # flatten to 1d
-                        if len(pd.unique(y.to_numpy().flatten())) == 2:
-                            from My_AutoML._constant import (
-                                LIGHTGBM_BINARY_CLASSIFICATION,
-                            )
+                if "LightGBM_Classifier" in item.values():
+                    # flatten to 1d
+                    if len(pd.unique(y.to_numpy().flatten())) == 2:
+                        from My_AutoML._constant import (
+                            LIGHTGBM_BINARY_CLASSIFICATION,
+                        )
 
-                            item[key] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
-                        else:
-                            from My_AutoML._constant import (
-                                LIGHTGBM_MULTICLASS_CLASSIFICATION,
-                            )
+                        item["LightGBM_Classifier_objective"] = tune.choice(
+                            LIGHTGBM_BINARY_CLASSIFICATION
+                        )
+                    else:
+                        from My_AutoML._constant import (
+                            LIGHTGBM_MULTICLASS_CLASSIFICATION,
+                        )
 
-                            item[key] = tune.choice(LIGHTGBM_MULTICLASS_CLASSIFICATION)
+                        item["LightGBM_Classifier_objective"] = tune.choice(
+                            LIGHTGBM_MULTICLASS_CLASSIFICATION
+                        )
 
         # generate the hyperparameter space
         hyperparameter_space = _get_hyperparameter_space(
@@ -566,7 +594,7 @@ class AutoTabularBase:
             balancing,
             scaling_hyperparameter,
             scaling,
-            feature_selection_hyperparameter,
+            _all_feature_selection_hyperparameters,
             feature_selection,
             _all_models_hyperparameters,
             models,
@@ -1032,7 +1060,7 @@ class AutoTabularBase:
             valid_size=self.valid_size,
             full_status=self.full_status,
             reset_index=self.reset_index,
-            timeout = self.timeout / 100,
+            timeout=self.timeout / 100,
             _iter=self._iter,
             seed=self.seed,
         )

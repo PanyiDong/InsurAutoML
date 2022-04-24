@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:10:26 pm
+Last Modified: Sunday, 24th April 2022 5:54:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -556,3 +556,55 @@ def test_assign_classes():
     assert (
         assign_classes(test) == np.array([0, 1])
     ).all(), "The classes are not correctly assigned."
+
+
+def test_has_method():
+
+    from My_AutoML._utils._base import has_method
+    from sklearn.linear_model import LogisticRegression
+
+    mol = LogisticRegression()
+
+    assert has_method(mol, "fit") == True, "The has_method function is not correct."
+    assert has_method(mol, "__fit") == False, "The has_method function is not correct."
+
+
+def test_neg_metrics():
+
+    from My_AutoML._utils._stat import (
+        neg_R2,
+        neg_accuracy,
+        neg_precision,
+        neg_auc,
+        neg_hinge,
+        neg_f1,
+    )
+    from sklearn.metrics import (
+        r2_score,
+        accuracy_score,
+        precision_score,
+        roc_auc_score,
+        hinge_loss,
+        f1_score,
+    )
+
+    y_true = np.random.randint(0, 2, size=(100,))
+    y_pred = np.random.randint(0, 2, size=(100,))
+    assert neg_R2(y_true, y_pred) == -1 * r2_score(
+        y_true, y_pred
+    ), "The neg_R2 function is not correct."
+    assert neg_accuracy(y_true, y_pred) == -1 * accuracy_score(
+        y_true, y_pred
+    ), "The neg_accuracy function is not correct."
+    assert neg_precision(y_true, y_pred) == -1 * precision_score(
+        y_true, y_pred
+    ), "The neg_precision function is not correct."
+    assert neg_auc(y_true, y_pred) == -1 * roc_auc_score(
+        y_true, y_pred
+    ), "The neg_auc function is not correct."
+    assert neg_hinge(y_true, y_pred) == -1 * hinge_loss(
+        y_true, y_pred
+    ), "The neg_hinge function is not correct."
+    assert neg_f1(y_true, y_pred) == -1 * f1_score(
+        y_true, y_pred
+    ), "The neg_f1 function is not correct."

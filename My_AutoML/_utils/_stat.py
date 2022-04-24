@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 3:03:34 pm
+Last Modified: Saturday, 23rd April 2022 10:15:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -275,3 +275,47 @@ def ANOVA(X, y, fvalue=True, pvalue=False):
         return _f
     elif pvalue:
         return _p
+
+
+# convert metrics to minimize the error (as a loss function)
+# add negative sign to make maximization to minimize
+def neg_R2(y_true, y_pred):
+
+    from sklearn.metrics import r2_score
+
+    return -r2_score(y_true, y_pred)
+
+
+def neg_accuracy(y_true, y_pred):
+
+    from sklearn.metrics import accuracy_score
+
+    return -accuracy_score(y_true, y_pred)
+
+
+def neg_precision(y_true, y_pred):
+
+    from sklearn.metrics import precision_score
+
+    return -precision_score(y_true, y_pred)
+
+
+def neg_auc(y_true, y_pred):
+
+    from sklearn.metrics import roc_auc_score
+
+    return -roc_auc_score(y_true, y_pred)
+
+
+def neg_hinge(y_true, y_pred):
+
+    from sklearn.metrics import hinge_loss
+
+    return -hinge_loss(y_true, y_pred)
+
+
+def neg_f1(y_true, y_pred):
+
+    from sklearn.metrics import f1_score
+
+    return -f1_score(y_true, y_pred)

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:00:40 pm
+Last Modified: Sunday, 24th April 2022 5:50:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,12 +38,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from inspect import isclass
+from typing import Callable
+from itertools import combinations
+from collections import Counter
+from My_AutoML._utils._base import has_method
 import warnings
 import numpy as np
 import pandas as pd
 import itertools
 
 from My_AutoML._utils import (
+    minloc,
     maxloc,
     True_index,
     Pearson_Corr,
@@ -68,11 +74,21 @@ class FeatureFilter:
 
     n_components: threshold to retain features, default = None
     will be set to n_features
+
+    n_prop: float, default = None
+    proprotion of features to select, if None, no limit
+    n_components have higher priority than n_prop
     """
 
-    def __init__(self, criteria="Pearson", n_components=None):
+    def __init__(
+        self,
+        criteria="Pearson",
+        n_components=None,
+        n_prop=None,
+    ):
         self.criteria = criteria
         self.n_components = n_components
+        self.n_prop = n_prop
 
         self._fitted = False
 
@@ -102,12 +118,16 @@ class FeatureFilter:
 
     def transform(self, X):
 
-        if self.n_components == None:
-            n_components = X.shape[1]
-        else:
-            n_components = self.n_components
+        # check whether n_components/n_prop is valid
+        if self.n_components is None and self.n_prop is None:
+            self.n_components = X.shape[1]
+        elif self.n_components is not None:
+            self.n_components = min(self.n_components, X.shape[1])
+        # make sure selected features is at least 1
+        elif self.n_prop is not None:
+            self.n_components = max(1, int(self.n_prop * X.shape[1]))
 
-        _columns = np.argsort(self._score)[:n_components]
+        _columns = np.argsort(self._score)[: self.n_components]
 
         return X.iloc[:, _columns]
 
@@ -148,7 +168,7 @@ class ASFFS:
     maximum features to be considered as one step
 
     model: the model used to evaluate the objective function, default = 'linear'
-    supproted ('linear', 'lasso', 'ridge')
+    supproted ('Linear', 'Lasso', 'Ridge')
 
     objective: the objective function of significance of the features, default = 'MSE'
     supported {'MSE', 'MAE'}
@@ -195,11 +215,11 @@ class ASFFS:
             from sklearn.linear_model import LinearRegression
 
             _model = LinearRegression()
-        elif self.model == "lasso":
+        elif self.model == "Lasso":
             from sklearn.linear_model import Lasso
 
             _model = Lasso()
-        elif self.model == "ridge":
+        elif self.model == "Ridge":
             from sklearn.linear_model import Ridge
 
             _model = Ridge()
@@ -239,11 +259,11 @@ class ASFFS:
             from sklearn.linear_model import LinearRegression
 
             _model = LinearRegression()
-        elif self.model == "lasso":
+        elif self.model == "Lasso":
             from sklearn.linear_model import Lasso
 
             _model = Lasso()
-        elif self.model == "ridge":
+        elif self.model == "Ridge":
             from sklearn.linear_model import Ridge
 
             _model = Ridge()
@@ -401,6 +421,10 @@ class GeneticAlgorithm:
     ----------
     n_components: Number of features to retain, default = 20
 
+    n_prop: float, default = None
+    proprotion of features to select, if None, no limit
+    n_components have higher priority than n_prop
+
     n_generations: Number of looping generation for GA, default = 10
 
     feature_selection: Feature selection methods to generate a pool of selections, default = 'auto'
@@ -439,7 +463,8 @@ class GeneticAlgorithm:
 
     def __init__(
         self,
-        n_components=20,
+        n_components=None,
+        n_prop=None,
         n_generations=10,
         feature_selection="random",
         n_initial=10,
@@ -456,6 +481,7 @@ class GeneticAlgorithm:
         seed=1,
     ):
         self.n_components = n_components
+        self.n_prop = n_prop
         self.n_generations = n_generations
         self.feature_selection = feature_selection
         self.n_initial = n_initial
@@ -516,9 +542,9 @@ class GeneticAlgorithm:
     def _t_statistics(self, X, y, n):
 
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
-        if len(y.unique()) == 2:
+        if len(np.unique(y)) == 2:
             _score = t_score(X, y)
-        elif len(y.unique()) > 2:
+        elif len(np.unique(y)) > 2:
             _score = ANOVA(X, y)
         else:
             raise ValueError("Only support for more than 2 groups, get only 1 group!")
@@ -581,8 +607,14 @@ class GeneticAlgorithm:
                         self.fitness_fit
                     )
                 )
-            model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
-            y_pred = model.predict(X.iloc[:, True_index(selection)])
+
+            # if none of the features are selected, use mean as prediction
+            if (np.array(selection) == 0).all():
+                y_pred = [np.mean(y) for _ in range(len(y))]
+            # otherwise, use selected features to fit a model and predict
+            else:
+                model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
+                y_pred = model.predict(X.iloc[:, True_index(selection)])
             _accuracy_score = mean_squared_error(y, y_pred)
 
             return self.fitness_weight * _accuracy_score + (
@@ -629,7 +661,7 @@ class GeneticAlgorithm:
             for _ in range(2 * self.n_pair):
                 selection_pool.append(
                     selection_pool[
-                        np.random.choice(len(self._fitness), p=self._fitness)
+                        np.random.choice(len(self._fitness), 1, p=self._fitness)[0]
                     ]
                 )
 
@@ -715,10 +747,14 @@ class GeneticAlgorithm:
         np.random.seed(self.seed)  # set random seed
 
         n, p = X.shape
-        self.n_components = int(self.n_components)
-        self.n_components = min(
-            self.n_components, p
-        )  # prevent selected number of features larger than dataset
+        # check whether n_components/n_prop is valid
+        if self.n_components is None and self.n_prop is None:
+            self.n_components = X.shape[1]
+        elif self.n_components is not None:
+            self.n_components = min(self.n_components, p)
+        # make sure selected features is at least 1
+        elif self.n_prop is not None:
+            self.n_components = max(1, int(self.n_prop * p))
         if self.n_components == p:
             warnings.warn("All features selected, no selection performed!")
             self.selection_ = [1 for _ in range(self.n_components)]
@@ -755,6 +791,11 @@ class GeneticAlgorithm:
             ):  # get n_initial random feature selection rule
                 self._feature_sel_methods["random_" + str(i + 1)] = self._random
         else:
+            self.feature_selection = (
+                [self.feature_selection]
+                if not isinstance(self.feature_selection, list)
+                else self.feature_selection
+            )
             self._feature_sel_methods = {}
 
             # check if all methods are available
@@ -781,14 +822,14 @@ class GeneticAlgorithm:
         self._fitness = None  # store the fitness of every individual
 
         # keep diversity for the pool, selection rule can have different number of features retained
-        _iter = int(np.log2(self.n_components))
+        _iter = max(1, int(np.log2(self.n_components)))
         for i in range(_iter):
             n = 2 ** (i + 1)
             for _method in _sel_methods:
                 _sel_pool.append(self._feature_sel_methods[_method](X, y, n))
 
         # loop through generations to run Genetic algorithm and Induction algorithm
-        for _gen in range(self.n_generations):
+        for _ in range(self.n_generations):
             _sel_pool = self._GeneticAlgorithm(X, y, _sel_pool)
 
             if self._early_stopping():
@@ -815,3 +856,514 @@ class GeneticAlgorithm:
 
 
 # CHCGA
+
+
+class ExhaustiveFS:
+
+    """
+    Exhaustive Feature Selection
+
+    Parameters
+    ----------
+    estimator: str or sklearn estimator, default = "Lasso"
+    estimator must have fit/predict methods
+
+    criteria: str or sklearn metric, default = "accuracy"
+    """
+
+    def __init__(
+        self,
+        estimator="Lasso",
+        criteria="neg_accuracy",
+    ):
+        self.estimator = estimator
+        self.criteria = criteria
+
+        self._fitted = False
+
+    def fit(self, X, y):
+
+        # make sure estimator is recognized
+        if self.estimator == "Lasso":
+            from sklearn.linear_model import Lasso
+
+            self.estimator = Lasso()
+        elif self.estimator == "Ridge":
+            from sklearn.linear_model import Ridge
+
+            self.estimator = Ridge()
+        elif isclass(type(self.estimator)):
+            # if estimator is recognized as a class
+            # make sure it has fit/predict methods
+            if not has_method(self.estimator, "fit") or not has_method(
+                self.estimator, "predict"
+            ):
+                raise ValueError("Estimator must have fit/predict methods!")
+        else:
+            raise AttributeError("Unrecognized estimator!")
+
+        # check whether criteria is valid
+        if self.criteria == "neg_accuracy":
+            from My_AutoML._utils._stat import neg_accuracy
+
+            self.criteria = neg_accuracy
+        elif self.criteria == "MSE":
+            from sklearn.metrics import mean_squared_error
+
+            self.criteria = mean_squared_error
+        elif isinstance(self.criteria, Callable):
+            # if callable, pass
+            pass
+        else:
+            raise ValueError("Unrecognized criteria!")
+
+        # get all combinations of features
+        all_comb = []
+        for i in range(1, X.shape[1] + 1):
+            for item in list(combinations(list(range(X.shape[1])), i)):
+                all_comb.append(list(item))
+        all_comb = np.array(all_comb).flatten()  # flatten 2D to 1D
+
+        # initialize results
+        results = []
+
+        for comb in all_comb:
+            self.estimator.fit(X.iloc[:, comb], y)
+            results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
+
+        self.selected_features = all_comb[np.argmin(results)]
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X):
+
+        return X[:, self.selected_features]
+
+
+class SFS:
+
+    """
+    Use Sequential Forward Selection/SFS to select subset of features.
+
+    Parameters
+    ----------
+    estimators: str or estimator, default = "Lasso"
+    string for some pre-defined estimator, or a estimator contains fit/predict methods
+
+    n_components: int, default = None
+    limit maximum number of features to select, if None, no limit
+
+    n_prop: float, default = None
+    proprotion of features to select, if None, no limit
+    n_components have higher priority than n_prop
+
+    criteria: str, default = "accuracy"
+    criteria used to select features, can be "accuracy"
+    """
+
+    def __init__(
+        self,
+        estimator="Lasso",
+        n_components=None,
+        n_prop=None,
+        criteria="neg_accuracy",
+    ):
+        self.estimator = estimator
+        self.n_components = n_components
+        self.n_prop = n_prop
+        self.criteria = criteria
+
+        self._fitted = False
+
+    def select_feature(self, X, y, selected_features, unselected_features):
+
+        # select one feature as step, get all possible combinations
+        test_item = list(combinations(unselected_features, 1))
+        # concat new test_comb with selected_features
+        test_comb = [list(item) + selected_features for item in test_item]
+
+        # initialize test results
+        results = []
+        for _comb in test_comb:
+            # fit estimator
+            self.estimator.fit(X.iloc[:, _comb], y)
+            # get test results
+            test_results = self.criteria(y, self.estimator.predict(X.iloc[:, _comb]))
+            # append test results
+            results.append(test_results)
+
+        return (
+            results[minloc(results)],
+            test_item[minloc(results)][0],
+        )  # use 0 to select item instead of tuple
+
+    def fit(self, X, y=None):
+
+        # check whether y is empty
+        # for SFS, y is required to train a model
+        if isinstance(y, pd.DataFrame):
+            _empty = y.isnull().all().all()
+        elif isinstance(y, pd.Series):
+            _empty = y.isnull().all()
+        elif isinstance(y, np.ndarray):
+            _empty = np.all(np.isnan(y))
+        else:
+            _empty = y == None
+
+        # if empty, raise error
+        if _empty:
+            raise ValueError("Must have response!")
+
+        # make sure estimator is recognized
+        if self.estimator == "Lasso":
+            from sklearn.linear_model import Lasso
+
+            self.estimator = Lasso()
+        elif self.estimator == "Ridge":
+            from sklearn.linear_model import Ridge
+
+            self.estimator = Ridge()
+        elif self.estimator == "ExtraTreeRegressor":
+            from sklearn.tree import ExtraTreeRegressor
+
+            self.estimator = ExtraTreeRegressor()
+        elif self.estimator == "RandomForestRegressor":
+            from sklearn.ensemble import RandomForestRegressor
+
+            self.estimator = RandomForestRegressor()
+        elif self.estimator == "LogisticRegression":
+
+            from sklearn.linear_model import LogisticRegression
+
+            self.estimator = LogisticRegression()
+        elif self.estimator == "ExtraTreeClassifier":
+
+            from sklearn.tree import ExtraTreeClassifier
+
+            self.estimator = ExtraTreeClassifier()
+        elif self.estimator == "RandomForestClassifier":
+
+            from sklearn.ensemble import RandomForestClassifier
+
+            self.estimator = RandomForestClassifier()
+        elif isclass(type(self.estimator)):
+            # if estimator is recognized as a class
+            # make sure it has fit/predict methods
+            if not has_method(self.estimator, "fit") or not has_method(
+                self.estimator, "predict"
+            ):
+                raise ValueError("Estimator must have fit/predict methods!")
+        else:
+            raise AttributeError("Unrecognized estimator!")
+
+        # check whether n_components/n_prop is valid
+        if self.n_components is None and self.n_prop is None:
+            self.n_components = X.shape[1]
+        elif self.n_components is not None:
+            self.n_components = min(self.n_components, X.shape[1])
+        # make sure selected features is at least 1
+        elif self.n_prop is not None:
+            self.n_components = max(1, int(self.n_prop * X.shape[1]))
+
+        # check whether criteria is valid
+        if self.criteria == "neg_accuracy":
+            from My_AutoML._utils._stat import neg_accuracy
+
+            self.criteria = neg_accuracy
+        elif self.criteria == "neg_precision":
+            from My_AutoML._utils._stat import neg_precision
+
+            self.criteria = neg_precision
+        elif self.criteria == "neg_auc":
+            from My_AutoML._utils._stat import neg_auc
+
+            self.criteria = neg_auc
+        elif self.criteria == "neg_hinge":
+            from My_AutoML._utils._stat import neg_hinge
+
+            self.criteria = neg_hinge
+        elif self.criteria == "neg_f1":
+            from My_AutoML._utils._stat import neg_f1
+
+            self.criteria = neg_f1
+        elif self.criteria == "MSE":
+            from sklearn.metrics import mean_squared_error
+
+            self.criteria = mean_squared_error
+        elif self.criteria == "MAE":
+            from sklearn.metrics import mean_absolute_error
+
+            self.criteria = mean_absolute_error
+        elif self.criteria == "MSLE":
+            from sklearn.metrics import mean_squared_log_error
+
+            self.criteria = mean_squared_log_error
+        elif self.criteria == "neg_R2":
+            from My_AutoML._utils._stat import neg_R2
+
+            self.criteria = neg_R2
+        elif self.criteria == "MAX":
+            from sklearn.metrics import max_error
+
+            self.criteria = max_error
+        elif isinstance(self.criteria, Callable):
+            # if callable, pass
+            pass
+        else:
+            raise ValueError("Unrecognized criteria!")
+
+        # initialize selected/unselected features
+        selected_features = []
+        optimal_loss = 0
+        unselected_features = list(range(X.shape[1]))
+
+        # iterate until n_components are selected
+        for _ in range(self.n_components):
+            # get the current optimal loss and feature
+            loss, new_feature = self.select_feature(
+                X, y, selected_features, unselected_features
+            )
+            if loss > optimal_loss:  # if no better combination is found, stop
+                break
+            else:
+                optimal_loss = loss
+                selected_features.append(new_feature)
+                unselected_features.remove(new_feature)
+
+        # record selected features
+        self.selected_features = selected_features
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X):
+
+        return X.iloc[:, self.selected_features]
+
+
+class mRMR:
+
+    """
+    mRMR [1] minimal-redundancy-maximal-relevance as criteria for filter-based
+    feature selection
+
+    [1] Peng, H., Long, F., & Ding, C. (2005). Feature selection based on mutual
+    information criteria of max-dependency, max-relevance, and min-redundancy.
+    IEEE Transactions on pattern analysis and machine intelligence, 27(8), 1226-1238.
+
+    Parameters
+    ----------
+    n_components: int, default = None
+    number of components to select, if None, no limit
+
+    n_prop: float, default = None
+    proprotion of features to select, if None, no limit
+    n_components have higher priority than n_prop
+    """
+
+    def __init__(
+        self,
+        n_components=None,
+        n_prop=None,
+    ):
+        self.n_components = n_components
+        self.n_prop = n_prop
+
+        self._fitted = False
+
+    def select_feature(self, X, y, selected_features, unselected_features):
+
+        # select one feature as step, get all possible combinations
+        test_item = list(combinations(unselected_features, 1))
+
+        # initialize test results
+        results = []
+        for _comb in test_item:
+            dependency = MI(X.iloc[:, _comb[0]], y)
+            if len(selected_features) > 0:
+                redundancy = np.mean(
+                    [
+                        MI(X.iloc[:, item], X.iloc[:, _comb[0]])
+                        for item in selected_features
+                    ]
+                )
+                # append test results
+                results.append(dependency - redundancy)
+            # at initial, no selected feature, so no redundancy
+            else:
+                results.append(dependency)
+
+        return test_item[maxloc(results)][0]  # use 0 to select item instead of tuple
+
+    def fit(self, X, y=None):
+
+        # check whether n_components/n_prop is valid
+        if self.n_components is None and self.n_prop is None:
+            self.n_components = X.shape[1]
+        elif self.n_components is not None:
+            self.n_components = min(self.n_components, X.shape[1])
+        # make sure selected features is at least 1
+        elif self.n_prop is not None:
+            self.n_components = max(1, int(self.n_prop * X.shape[1]))
+
+        # initialize selected/unselected features
+        selected_features = []
+        unselected_features = list(range(X.shape[1]))
+
+        for _ in range(self.n_components):
+            # get the current optimal loss and feature
+            new_feature = self.select_feature(
+                X, y, selected_features, unselected_features
+            )
+            selected_features.append(new_feature)
+            unselected_features.remove(new_feature)
+
+        # record selected features
+        self.select_features = selected_features
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X):
+
+        return X.iloc[:, self.select_features]
+
+
+class CBFS:
+
+    """
+    CBFS Copula-based Feature Selection [1]
+
+    [1] Lall, S., Sinha, D., Ghosh, A., Sengupta, D., & Bandyopadhyay, S. (2021).
+    Stable feature selection using copula based mutual information. Pattern Recognition,
+    112, 107697.
+
+    Parameters
+    ----------
+    copula: str, default = "empirical"
+    what type of copula to use for feature selection
+
+    n_components: int, default = None
+    number of components to select, if None, no limit
+
+    n_prop: float, default = None
+    proprotion of features to select, if None, no limit
+    n_components have higher priority than n_prop
+    """
+
+    def __init__(
+        self,
+        copula="empirical",
+        n_components=None,
+        n_prop=None,
+    ):
+        self.copula = copula
+        self.n_components = n_components
+        self.n_prop = n_prop
+
+        self._fitted = False
+
+    def Empirical_Copula(self, data):
+
+        # make sure it's a dataframe
+        if not isinstance(data, pd.DataFrame):
+            try:
+                data = pd.DataFrame(data)
+            except:
+                raise ValueError(
+                    "data must be a pandas DataFrame or convertable to one!"
+                )
+
+        p = []
+        for idx in data.index:
+            p.append((data <= data.iloc[idx, :]).all(axis=1).sum() / data.shape[0])
+
+        return p
+
+    def select_feature(self, X, y, selected_features, unselected_features):
+
+        # select one feature as step, get all possible combinations
+        test_item = list(combinations(unselected_features, 1))
+        # concat new test_comb with selected_features
+        test_comb = [list(item) + selected_features for item in test_item]
+
+        # initialize test results
+        results = []
+        for col, comb in zip(test_item, test_comb):
+            # at initial, no selected feature, so no redundancy
+            if len(selected_features) == 0:
+                if self.copula == "empirical":
+                    p_dependent = self.Empirical_Copula(
+                        pd.concat([X.iloc[:, col[0]], y], axis=1)
+                    )
+                # calculate dependency based on empirical copula
+                entropy_dependent = np.sum(
+                    [-item * np.log2(item) for item in Counter(p_dependent).values()]
+                )
+                # append test results
+                results.append(entropy_dependent)
+            else:
+                if self.copula == "empirical":
+                    p_dependent = self.Empirical_Copula(
+                        pd.concat([X.iloc[:, col[0]], y], axis=1)
+                    )
+                    p_redundant = self.Empirical_Copula(X.iloc[:, comb])
+
+                # calculate dependency based on empirical copula
+                entropy_dependent = np.sum(
+                    [-item * np.log2(item) for item in Counter(p_dependent).values()]
+                )
+                # calculate redundancy based on empirical copula
+                entropy_redundant = np.sum(
+                    [-item * np.log2(item) for item in Counter(p_redundant).values()]
+                )
+                # append test results
+                results.append(entropy_dependent - entropy_redundant)
+
+        return (
+            results[maxloc(results)],
+            test_item[maxloc(results)][0],
+        )  # use 0 to select item instead of tuple
+
+    def fit(self, X, y=None):
+
+        # check whether n_components/n_prop is valid
+        if self.n_components is None and self.n_prop is None:
+            self.n_components = X.shape[1]
+        elif self.n_components is not None:
+            self.n_components = min(self.n_components, X.shape[1])
+        elif self.n_prop is not None:
+            self.n_components = max(1, int(self.n_prop * X.shape[1]))
+
+        # initialize selected/unselected features
+        selected_features = []
+        optimal_loss = -np.inf
+        unselected_features = list(range(X.shape[1]))
+
+        # iterate until n_components are selected
+        for _ in range(self.n_components):
+            # get the current optimal loss and feature
+            loss, new_feature = self.select_feature(
+                X, y, selected_features, unselected_features
+            )
+            if loss < optimal_loss:  # if no better combination is found, stop
+                break
+            else:
+                optimal_loss = loss
+                selected_features.append(new_feature)
+                unselected_features.remove(new_feature)
+
+        # record selected features
+        self.selected_features = selected_features
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X):
+
+        return X.iloc[:, self.selected_features]
