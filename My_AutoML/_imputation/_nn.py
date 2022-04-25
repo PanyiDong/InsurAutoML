@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:50:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 7:48:58 pm
+Last Modified: Sunday, 24th April 2022 10:50:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -787,5 +787,7 @@ class GAIN(GAIN_tf, GAIN_torch):
             )
 
     def fill(self, X):
+
+        self._fitted = True
 
         return self.model.fill(X)

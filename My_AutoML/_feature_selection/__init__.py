@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:32:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 2:35:47 pm
+Last Modified: Sunday, 24th April 2022 5:49:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -70,7 +70,15 @@ from ._autosklearn import (
 #     SelectRegressionRates,
 #     TruncatedSVD,
 # )
-from ._advance import FeatureFilter, ASFFS, GeneticAlgorithm
+from ._advance import (
+    FeatureFilter,
+    ASFFS,
+    GeneticAlgorithm,
+    # ExhaustiveFS,
+    SFS,
+    mRMR,
+    CBFS,
+)
 from My_AutoML._base import no_processing
 
 feature_selections = {
@@ -91,4 +99,8 @@ feature_selections = {
     "select_rates_classification": select_rates_classification,
     "select_rates_regression": select_rates_regression,
     "truncatedSVD": truncatedSVD,
+    # "ExhaustiveFS": ExhaustiveFS, # exhaustive search is not practical, takes too long
+    "SFS": SFS,
+    "mRMR": mRMR,
+    "CBFS": CBFS,
 }

@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:03:11 pm
+Last Modified: Sunday, 24th April 2022 6:12:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -59,6 +59,14 @@ def test_feature_selection():
 
         if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
             pass
+        elif method_name == "SFS":
+            feature_selection = method(
+                estimator="Lasso",
+                n_components=5,
+                criteria="MSE",
+            )
+        elif method_name in ["mRMR", "CBFS"]:
+            feature_selection = method(n_components=5)
         else:
             feature_selection = method()
 
@@ -121,7 +129,7 @@ def test_ASFFS():
 
     feature_selection = ASFFS(
         n_components=5,
-        model="lasso",
+        model="Lasso",
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
@@ -129,7 +137,7 @@ def test_ASFFS():
     assert feature_selection._fitted == True, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
-    feature_selection = ASFFS(n_components=5, model="ridge", objective="MAE")
+    feature_selection = ASFFS(n_components=5, model="Ridge", objective="MAE")
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 

@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:20 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 4:41:24 pm
+Last Modified: Saturday, 23rd April 2022 2:36:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -217,3 +217,8 @@ def type_of_script():
             return "ipython"
     except:
         return "terminal"
+
+
+# determine whether a method exists in a class
+def has_method(obj, name):
+    return callable(getattr(obj, name, None))

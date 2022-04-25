@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 4:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 12:55:09 pm
+Last Modified: Saturday, 23rd April 2022 11:02:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -188,3 +188,37 @@ LIGHTGBM_BOOSTING = ["gbdt", "dart", "goss"]  # suppress "rf"
 
 # LightGBM tree learner
 LIGHTGBM_TREE_LEARNER = ["serial", "feature", "data", "voting"]
+
+
+# Classification estimators
+CLASSIFICATION_ESTIMATORS = [
+    "LogisticRegression",
+    "ExtraTreeClassifier",
+    "RandomForestClassifier",
+]
+
+# Classification metrics
+CLASSIFICATION_CRITERIA = [
+    "neg_accuracy",
+    "neg_precision",
+    "neg_auc",
+    "neg_hinge",
+    "neg_f1",
+]
+
+# Regression estimators
+REGRESSION_ESTIMATORS = [
+    "Lasso",
+    "Ridge",
+    "ExtraTreeRegressor",
+    "RandomForestRegressor",
+]
+
+# Regression metrics
+REGRESSION_CRITERIA = [
+    "MSE",
+    "MAE",
+    "MSLE",
+    "neg_R2",
+    "MAX",
+]

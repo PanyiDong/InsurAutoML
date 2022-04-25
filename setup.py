@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 12:15:39 am
+Last Modified: Tuesday, 19th April 2022 10:42:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -36,7 +36,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import os
 from setuptools import setup, find_packages
 
 # from Cython.Build import cythonize
@@ -46,39 +45,75 @@ from setuptools import setup, find_packages
 # ]
 
 
-def get_ext_path(root_dir, exclude_files):
+# def get_ext_path(root_dir, exclude_files):
 
-    """
-    Get file paths needed compilation
-    Exclude certain files
-    """
+#     """
+#     Get file paths needed compilation
+#     Exclude certain files
+#     """
 
-    paths = []
+#     paths = []
 
-    for root, dirs, files in os.walk(root_dir):
-        for filename in files:
-            if os.path.splitext(filename)[1] != ".py":
-                continue
+#     for root, dirs, files in os.walk(root_dir):
+#         for filename in files:
+#             if os.path.splitext(filename)[1] != ".py":
+#                 continue
 
-            file_path = os.path.join(root, filename)
-            if file_path in exclude_files:
-                continue
+#             file_path = os.path.join(root, filename)
+#             if file_path in exclude_files:
+#                 continue
 
-            paths.append(file_path)
+#             paths.append(file_path)
 
-    return paths
+#     return paths
 
 
 setup(
     name="My_AutoML",
     version="0.2.0",
-    author='Panyi Dong',
-    author_email='panyid2@illinois.edu',
-    description='Automated Machine Learning/ AutoML pipeline.',
-    packages=find_packages(exclude=["tests", "example", "archive", "Appendix"]),
-    platforms=['Linux'],
-    # ext_modules = cythonize(
-    #     get_ext_path("My_AutoML", EXCLUDE_FILES),
-    #     compiler_directives = {'language_level': 3}
-    # )
+    author="Panyi Dong",
+    url="https://github.com/PanyiDong/My_AutoML",
+    author_email="panyid2@illinois.edu",
+    description="Automated Machine Learning/AutoML pipeline.",
+    license="MIT",
+    packages=find_packages(
+        exclude=["tests", "example", "archive", "Appendix", "docs", "tests"]
+    ),
+    package_dir={"My_AutoML": "My_AutoML"},
+    include_package_data=True,
+    package_data={"My_AutoML": ["Appendix/*", "example/*"]},
+    platforms=["Linux"],
+    python_requires=">=3.7",
+    install_requires=[
+        "numpy",
+        "pandas",
+        "scipy",
+        "matplotlib",
+        "ray",
+        "ray[tune]",
+        "ray[rllib]",
+        "tqdm==4.62.3",
+        "mlflow==1.21.0",
+        "tensorboardX",
+        "hyperopt==0.2.5",
+        "auto-sklearn==0.14.6",
+        "scikit-learn==0.24.2",
+    ],
+    extras_require={
+        "lightweight": [],
+        "normal": [
+            "rpy2",
+            "lightgbm",
+            "xgboost",
+            "pygam",
+        ],
+        "nn": [
+            "rpy2",
+            "lightgbm",
+            "xgboost",
+            "pygam",
+            "torch",
+            # "transformers",
+        ],
+    },
 )
