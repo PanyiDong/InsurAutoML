@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 9:04:57 pm
+Last Modified: Sunday, 24th April 2022 9:36:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -863,88 +863,88 @@ class GeneticAlgorithm:
 
 # Exhaustive search is practically impossible to implement in a reasonable time,
 # so it's not included in the package, but it can be used.
-class ExhaustiveFS:
+# class ExhaustiveFS:
 
-    """
-    Exhaustive Feature Selection
+#     """
+#     Exhaustive Feature Selection
 
-    Parameters
-    ----------
-    estimator: str or sklearn estimator, default = "Lasso"
-    estimator must have fit/predict methods
+#     Parameters
+#     ----------
+#     estimator: str or sklearn estimator, default = "Lasso"
+#     estimator must have fit/predict methods
 
-    criteria: str or sklearn metric, default = "accuracy"
-    """
+#     criteria: str or sklearn metric, default = "accuracy"
+#     """
 
-    def __init__(
-        self,
-        estimator="Lasso",
-        criteria="neg_accuracy",
-    ):
-        self.estimator = estimator
-        self.criteria = criteria
+#     def __init__(
+#         self,
+#         estimator="Lasso",
+#         criteria="neg_accuracy",
+#     ):
+#         self.estimator = estimator
+#         self.criteria = criteria
 
-        self._fitted = False
+#         self._fitted = False
 
-    def fit(self, X, y):
+#     def fit(self, X, y):
 
-        # make sure estimator is recognized
-        if self.estimator == "Lasso":
-            from sklearn.linear_model import Lasso
+#         # make sure estimator is recognized
+#         if self.estimator == "Lasso":
+#             from sklearn.linear_model import Lasso
 
-            self.estimator = Lasso()
-        elif self.estimator == "Ridge":
-            from sklearn.linear_model import Ridge
+#             self.estimator = Lasso()
+#         elif self.estimator == "Ridge":
+#             from sklearn.linear_model import Ridge
 
-            self.estimator = Ridge()
-        elif isclass(type(self.estimator)):
-            # if estimator is recognized as a class
-            # make sure it has fit/predict methods
-            if not has_method(self.estimator, "fit") or not has_method(
-                self.estimator, "predict"
-            ):
-                raise ValueError("Estimator must have fit/predict methods!")
-        else:
-            raise AttributeError("Unrecognized estimator!")
+#             self.estimator = Ridge()
+#         elif isclass(type(self.estimator)):
+#             # if estimator is recognized as a class
+#             # make sure it has fit/predict methods
+#             if not has_method(self.estimator, "fit") or not has_method(
+#                 self.estimator, "predict"
+#             ):
+#                 raise ValueError("Estimator must have fit/predict methods!")
+#         else:
+#             raise AttributeError("Unrecognized estimator!")
 
-        # check whether criteria is valid
-        if self.criteria == "neg_accuracy":
-            from My_AutoML._utils._stat import neg_accuracy
+#         # check whether criteria is valid
+#         if self.criteria == "neg_accuracy":
+#             from My_AutoML._utils._stat import neg_accuracy
 
-            self.criteria = neg_accuracy
-        elif self.criteria == "MSE":
-            from sklearn.metrics import mean_squared_error
+#             self.criteria = neg_accuracy
+#         elif self.criteria == "MSE":
+#             from sklearn.metrics import mean_squared_error
 
-            self.criteria = mean_squared_error
-        elif isinstance(self.criteria, Callable):
-            # if callable, pass
-            pass
-        else:
-            raise ValueError("Unrecognized criteria!")
+#             self.criteria = mean_squared_error
+#         elif isinstance(self.criteria, Callable):
+#             # if callable, pass
+#             pass
+#         else:
+#             raise ValueError("Unrecognized criteria!")
 
-        # get all combinations of features
-        all_comb = []
-        for i in range(1, X.shape[1] + 1):
-            for item in list(combinations(list(range(X.shape[1])), i)):
-                all_comb.append(list(item))
-        all_comb = np.array(all_comb).flatten()  # flatten 2D to 1D
+#         # get all combinations of features
+#         all_comb = []
+#         for i in range(1, X.shape[1] + 1):
+#             for item in list(combinations(list(range(X.shape[1])), i)):
+#                 all_comb.append(list(item))
+#         all_comb = np.array(all_comb).flatten()  # flatten 2D to 1D
 
-        # initialize results
-        results = []
+#         # initialize results
+#         results = []
 
-        for comb in all_comb:
-            self.estimator.fit(X.iloc[:, comb], y)
-            results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
+#         for comb in all_comb:
+#             self.estimator.fit(X.iloc[:, comb], y)
+#             results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
 
-        self.selected_features = all_comb[np.argmin(results)]
+#         self.selected_features = all_comb[np.argmin(results)]
 
-        self._fitted = True
+#         self._fitted = True
 
-        return self
+#         return self
 
-    def transform(self, X):
+#     def transform(self, X):
 
-        return X[:, self.selected_features]
+#         return X[:, self.selected_features]
 
 
 class SFS:

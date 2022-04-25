@@ -17,5 +17,5 @@ jobs:
       - name: "run tests (without neural network)"
         run: |
           pip install pytest
-          pip install -e .[normal]
+          pip install requirements_nn.txt
           pytest tests/
