@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 9:36:17 pm
+Last Modified: Sunday, 24th April 2022 10:49:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1038,7 +1038,7 @@ class SFS:
 
         # initialize selected/unselected features
         selected_features = []
-        optimal_loss = 0
+        optimal_loss = np.inf
         unselected_features = list(range(X.shape[1]))
 
         # iterate until n_components are selected
