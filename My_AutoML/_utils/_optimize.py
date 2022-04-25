@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 5:04:20 pm
+Last Modified: Sunday, 24th April 2022 9:10:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,8 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from logging import warning
 import os
 import warnings
+from inspect import isclass
 import json
 import copy
 import time
@@ -56,8 +58,10 @@ from sklearn.utils._testing import ignore_warnings
 from sklearn.exceptions import ConvergenceWarning
 
 # from wrapt_timeout_decorator import *
-from yaml import warnings
 
+from My_AutoML._utils._base import (
+    has_method,
+)
 from My_AutoML._utils._file import (
     save_methods,
 )
@@ -1383,3 +1387,135 @@ class TimePlateauStopper(Stopper):
     def stop_all(self):
 
         return time.time() - self._start > self._deadline
+
+
+# get estimator based on string or class
+def get_estimator(estimator_str):
+
+    if estimator_str == "Lasso":
+        from sklearn.linear_model import Lasso
+
+        return Lasso()
+    elif estimator_str == "Ridge":
+        from sklearn.linear_model import Ridge
+
+        return Ridge()
+    elif estimator_str == "ExtraTreeRegressor":
+        from sklearn.tree import ExtraTreeRegressor
+
+        return ExtraTreeRegressor()
+    elif estimator_str == "RandomForestRegressor":
+        from sklearn.ensemble import RandomForestRegressor
+
+        return RandomForestRegressor()
+    elif estimator_str == "LogisticRegression":
+
+        from sklearn.linear_model import LogisticRegression
+
+        return LogisticRegression()
+    elif estimator_str == "ExtraTreeClassifier":
+
+        from sklearn.tree import ExtraTreeClassifier
+
+        return ExtraTreeClassifier()
+    elif estimator_str == "RandomForestClassifier":
+
+        from sklearn.ensemble import RandomForestClassifier
+
+        return RandomForestClassifier()
+    elif isclass(type(estimator_str)):
+        # if estimator is recognized as a class
+        # make sure it has fit/predict methods
+        if not has_method(estimator_str, "fit") or not has_method(
+            estimator_str, "predict"
+        ):
+            raise ValueError("Estimator must have fit/predict methods!")
+
+        return estimator_str()
+    else:
+        raise AttributeError("Unrecognized estimator!")
+
+
+# get metrics based on string or class
+# if not in min mode, call negative of the metric
+def get_metrics(metric_str):
+
+    if metric_str == "neg_accuracy":
+        from My_AutoML._utils._stat import neg_accuracy
+
+        return neg_accuracy
+    elif metric_str == "accuracy":
+        from sklearn.metrics import accuracy_score
+
+        warnings.warn(
+            "accuracy_score is not for min mode, please use neg_accuracy instead."
+        )
+        return accuracy_score
+    elif metric_str == "neg_precision":
+        from My_AutoML._utils._stat import neg_precision
+
+        return neg_precision
+    elif metric_str == "precision":
+        from sklearn.metrics import precision_score
+
+        warnings.warn(
+            "precision_score is not for min mode, please use neg_precision instead."
+        )
+        return precision_score
+    elif metric_str == "neg_auc":
+        from My_AutoML._utils._stat import neg_auc
+
+        return neg_auc
+    elif metric_str == "auc":
+        from sklearn.metrics import roc_auc_score
+
+        warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
+        return roc_auc_score
+    elif metric_str == "neg_hinge":
+        from My_AutoML._utils._stat import neg_hinge
+
+        return neg_hinge
+    elif metric_str == "hinge":
+        from sklearn.metrics import hinge_loss
+
+        warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
+        return hinge_loss
+    elif metric_str == "neg_f1":
+        from My_AutoML._utils._stat import neg_f1
+
+        return neg_f1
+    elif metric_str == "f1":
+        from sklearn.metrics import f1_score
+
+        warnings.warn("f1_score is not for min mode, please use neg_f1 instead.")
+        return f1_score
+    elif metric_str == "MSE":
+        from sklearn.metrics import mean_squared_error
+
+        return mean_squared_error
+    elif metric_str == "MAE":
+        from sklearn.metrics import mean_absolute_error
+
+        return mean_absolute_error
+    elif metric_str == "MSLE":
+        from sklearn.metrics import mean_squared_log_error
+
+        return mean_squared_log_error
+    elif metric_str == "neg_R2":
+        from My_AutoML._utils._stat import neg_R2
+
+        return neg_R2
+    elif metric_str == "R2":
+        from sklearn.metrics import r2_score
+
+        warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
+        return r2_score
+    elif metric_str == "MAX":
+        from sklearn.metrics import max_error
+
+        return max_error
+    elif isinstance(metric_str, Callable):
+        # if callable, pass
+        return metric_str
+    else:
+        raise ValueError("Unrecognized criteria!")

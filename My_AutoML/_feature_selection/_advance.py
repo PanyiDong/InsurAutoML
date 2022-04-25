@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 5:50:35 pm
+Last Modified: Sunday, 24th April 2022 9:04:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,6 +57,10 @@ from My_AutoML._utils import (
     t_score,
     ANOVA,
     random_index,
+)
+from My_AutoML._utils._optimize import (
+    get_estimator,
+    get_metrics,
 )
 
 
@@ -857,7 +861,8 @@ class GeneticAlgorithm:
 
 # CHCGA
 
-
+# Exhaustive search is practically impossible to implement in a reasonable time,
+# so it's not included in the package, but it can be used.
 class ExhaustiveFS:
 
     """
@@ -1017,46 +1022,7 @@ class SFS:
             raise ValueError("Must have response!")
 
         # make sure estimator is recognized
-        if self.estimator == "Lasso":
-            from sklearn.linear_model import Lasso
-
-            self.estimator = Lasso()
-        elif self.estimator == "Ridge":
-            from sklearn.linear_model import Ridge
-
-            self.estimator = Ridge()
-        elif self.estimator == "ExtraTreeRegressor":
-            from sklearn.tree import ExtraTreeRegressor
-
-            self.estimator = ExtraTreeRegressor()
-        elif self.estimator == "RandomForestRegressor":
-            from sklearn.ensemble import RandomForestRegressor
-
-            self.estimator = RandomForestRegressor()
-        elif self.estimator == "LogisticRegression":
-
-            from sklearn.linear_model import LogisticRegression
-
-            self.estimator = LogisticRegression()
-        elif self.estimator == "ExtraTreeClassifier":
-
-            from sklearn.tree import ExtraTreeClassifier
-
-            self.estimator = ExtraTreeClassifier()
-        elif self.estimator == "RandomForestClassifier":
-
-            from sklearn.ensemble import RandomForestClassifier
-
-            self.estimator = RandomForestClassifier()
-        elif isclass(type(self.estimator)):
-            # if estimator is recognized as a class
-            # make sure it has fit/predict methods
-            if not has_method(self.estimator, "fit") or not has_method(
-                self.estimator, "predict"
-            ):
-                raise ValueError("Estimator must have fit/predict methods!")
-        else:
-            raise AttributeError("Unrecognized estimator!")
+        self.estimator = get_estimator(self.estimator)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -1068,51 +1034,7 @@ class SFS:
             self.n_components = max(1, int(self.n_prop * X.shape[1]))
 
         # check whether criteria is valid
-        if self.criteria == "neg_accuracy":
-            from My_AutoML._utils._stat import neg_accuracy
-
-            self.criteria = neg_accuracy
-        elif self.criteria == "neg_precision":
-            from My_AutoML._utils._stat import neg_precision
-
-            self.criteria = neg_precision
-        elif self.criteria == "neg_auc":
-            from My_AutoML._utils._stat import neg_auc
-
-            self.criteria = neg_auc
-        elif self.criteria == "neg_hinge":
-            from My_AutoML._utils._stat import neg_hinge
-
-            self.criteria = neg_hinge
-        elif self.criteria == "neg_f1":
-            from My_AutoML._utils._stat import neg_f1
-
-            self.criteria = neg_f1
-        elif self.criteria == "MSE":
-            from sklearn.metrics import mean_squared_error
-
-            self.criteria = mean_squared_error
-        elif self.criteria == "MAE":
-            from sklearn.metrics import mean_absolute_error
-
-            self.criteria = mean_absolute_error
-        elif self.criteria == "MSLE":
-            from sklearn.metrics import mean_squared_log_error
-
-            self.criteria = mean_squared_log_error
-        elif self.criteria == "neg_R2":
-            from My_AutoML._utils._stat import neg_R2
-
-            self.criteria = neg_R2
-        elif self.criteria == "MAX":
-            from sklearn.metrics import max_error
-
-            self.criteria = max_error
-        elif isinstance(self.criteria, Callable):
-            # if callable, pass
-            pass
-        else:
-            raise ValueError("Unrecognized criteria!")
+        self.criteria = get_metrics(self.criteria)
 
         # initialize selected/unselected features
         selected_features = []

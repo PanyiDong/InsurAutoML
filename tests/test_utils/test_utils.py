@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 5:54:51 pm
+Last Modified: Sunday, 24th April 2022 9:20:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -608,3 +608,59 @@ def test_neg_metrics():
     assert neg_f1(y_true, y_pred) == -1 * f1_score(
         y_true, y_pred
     ), "The neg_f1 function is not correct."
+
+
+def test_get_estimator():
+
+    from My_AutoML._utils._optimize import get_estimator
+    from sklearn.linear_model import LinearRegression
+    from My_AutoML._utils._base import has_method
+
+    test_list = [
+        "Lasso",
+        "Ridge",
+        "ExtraTreeRegressor",
+        "RandomForestRegressor",
+        "LogisticRegression",
+        "ExtraTreeClassifier",
+        "RandomForestClassifier",
+        LinearRegression,
+    ]
+
+    for item in test_list:
+        estimator = get_estimator(item)
+        assert has_method(estimator, "fit") and has_method(
+            estimator, "predict"
+        ), "The estimator is not correctly called."
+
+
+def test_get_metrics():
+
+    from My_AutoML._utils._optimize import get_metrics
+    from sklearn.metrics import accuracy_score
+    from typing import Callable
+
+    test_list = [
+        "neg_accuracy",
+        "accuracy",
+        "neg_precision",
+        "precision",
+        "neg_auc",
+        "auc",
+        "neg_hinge",
+        "hinge",
+        "neg_f1",
+        "f1",
+        "MSE",
+        "MAE",
+        "MSLE",
+        "neg_R2",
+        "R2",
+        "MAX",
+        accuracy_score,
+    ]
+
+    for item in test_list:
+        assert isinstance(
+            get_metrics(item), Callable
+        ), "The metrics are not correctly called."

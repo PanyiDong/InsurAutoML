@@ -1,6 +1,6 @@
 # Project for Auto Machine Learning (AutoML)
 
-[![System](https://img.shields.io/badge/System-Linux-brightgreen)](https://img.shields.io/badge/System-Linux-brightgreen) [![release](https://img.shields.io/github/v/release/PanyiDong/My_AutoML)](https://img.shields.io/github/v/release/PanyiDong/My_AutoML) [![Codecov](https://img.shields.io/codecov/c/github/PanyiDong/My_AutoML)]((https://codecov.io/gh/PanyiDong/My_AutoML)) [![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml) [![build-nn](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml)
+[![System](https://img.shields.io/badge/System-Linux-brightgreen)](https://img.shields.io/badge/System-Linux-brightgreen) [![release](https://img.shields.io/github/v/release/PanyiDong/My_AutoML)](https://img.shields.io/github/v/release/PanyiDong/My_AutoML) [![codecov](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/codecov.yml) [![build](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml) [![build-nn](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml)
 
 IRisk Lab Project, UIUC, Fall 2021
 
@@ -26,8 +26,11 @@ System Requirements:
 
 ### 1. Clone the repository
 
+Open a command terminal.
+
 ```console
 git clone https://github.com/PanyiDong/My_AutoML.git
+cd My_AutoML
 ```
 
 ### 2. Install dependencies
@@ -35,7 +38,6 @@ git clone https://github.com/PanyiDong/My_AutoML.git
 #### install by `requirements.txt`
 
 ```console
-cd My_AutoML
 pip install -r requirements.txt
 ```
 
@@ -44,7 +46,6 @@ For neural network related support (need `CUDA` supported devices), please use `
 #### install by `setup.py`
 
 ```console
-cd My_AutoML
 pip install -e .[normal]
 ```
 
