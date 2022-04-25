@@ -16,5 +16,5 @@ jobs:
       - name: "run tests (with neural network)"
         run: |
           pip install pytest
-          pip install -e .[normal]
+          pip install -e .[nn]
           pytest tests/

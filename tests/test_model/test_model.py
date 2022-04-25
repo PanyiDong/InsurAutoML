@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 10:33:49 am
+Last Modified: Sunday, 24th April 2022 10:25:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,6 +53,8 @@ def test_classifiers():
             "LightGBM_Classifier",
             "XGBoost_Classifier",
             "GAM_Classifier",
+            "MLP_Classifier",
+            "RNN_Classifier",
         ]:
 
             data = pd.read_csv("example/example_data/heart.csv")
@@ -84,6 +86,8 @@ def test_regressors():
             "LightGBM_Regressor",
             "XGBoost_Regressor",
             "GAM_Regressor",
+            "MLP_Regressor",
+            "RNN_Regressor",
         ]:
 
             data = pd.read_csv("example/example_data/insurance.csv")
