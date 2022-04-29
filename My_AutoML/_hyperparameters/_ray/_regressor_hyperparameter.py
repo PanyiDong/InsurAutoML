@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 12:25:08 am
+Last Modified: Thursday, 28th April 2022 5:22:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -104,22 +104,24 @@ regressor_hyperparameter = [
         "GaussianProcess_thetaU": tune.loguniform(1, 1e5),
     },
     {
-        "model_6": "GradientBoosting",
+        "model_6": "HistGradientBoostingRegressor",
         # n_iter_no_change only selected for early_stop in ['valid', 'train']
         # validation_fraction only selected for early_stop = 'valid'
         # "GradientBoosting_loss": tune.choice(["squared_error"]),
-        "GradientBoosting_loss": tune.choice(["least_squares"]),
-        "GradientBoosting_learning_rate": tune.loguniform(0.01, 1),
-        "GradientBoosting_min_samples_leaf": tune.qlograndint(1, 200, 1),
-        "GradientBoosting_max_depth": tune.choice([None]),
-        "GradientBoosting_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
-        "GradientBoosting_max_bins": tune.choice([255]),
-        "GradientBoosting_l2_regularization": tune.loguniform(1e-10, 1),
-        "GradientBoosting_early_stop": tune.choice(["off", "train", "valid"]),
-        "GradientBoosting_tol": tune.choice([1e-7]),
-        "GradientBoosting_scoring": tune.choice(["loss"]),
-        "GradientBoosting_n_iter_no_change": tune.qrandint(1, 20, 1),
-        "GradientBoosting_validation_fraction": tune.uniform(0.01, 0.4),
+        "HistGradientBoostingRegressor_loss": tune.choice(["least_squares"]),
+        "HistGradientBoostingRegressor_learning_rate": tune.loguniform(0.01, 1),
+        "HistGradientBoostingRegressor_min_samples_leaf": tune.qlograndint(1, 200, 1),
+        "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
+        "HistGradientBoostingRegressor_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
+        "HistGradientBoostingRegressor_max_bins": tune.choice([255]),
+        "HistGradientBoostingRegressor_l2_regularization": tune.loguniform(1e-10, 1),
+        "HistGradientBoostingRegressor_early_stop": tune.choice(
+            ["off", "train", "valid"]
+        ),
+        "HistGradientBoostingRegressor_tol": tune.choice([1e-7]),
+        "HistGradientBoostingRegressor_scoring": tune.choice(["loss"]),
+        "HistGradientBoostingRegressor_n_iter_no_change": tune.qrandint(1, 20, 1),
+        "HistGradientBoostingRegressor_validation_fraction": tune.uniform(0.01, 0.4),
     },
     {
         "model_7": "KNearestNeighborsRegressor",
@@ -244,21 +246,21 @@ regressor_hyperparameter = [
         "BayesianRidge_lambda_1": tune.loguniform(1e-7, 1e-1),
         "BayesianRidge_lambda_2": tune.loguniform(1e-7, 1e-1),
     },
-    {
-        "model_18": "HistGradientBoostingRegressor",
-        # "HistGradientBoostingRegressor_loss": tune.choice(
-        #     ["squared_error", "absolute_error", "poisson"]
-        # ),
-        "HistGradientBoostingRegressor_loss": tune.choice(
-            ["least_squares", "least_absolute_deviation", "poisson"]
-        ),
-        "HistGradientBoostingRegressor_learning_rate": tune.loguniform(1e-7, 1e-1),
-        "HistGradientBoostingRegressor_max_leaf_nodes": tune.choice([None]),
-        "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
-        "HistGradientBoostingRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
-        "HistGradientBoostingRegressor_l2_regularization": tune.uniform(0, 1),
-        "HistGradientBoostingRegressor_tol": tune.loguniform(1e-5, 1e-1),
-    },
+    # {
+    #     "model_18": "HistGradientBoostingRegressor",
+    #     # "HistGradientBoostingRegressor_loss": tune.choice(
+    #     #     ["squared_error", "absolute_error", "poisson"]
+    #     # ),
+    #     "HistGradientBoostingRegressor_loss": tune.choice(
+    #         ["least_squares", "least_absolute_deviation", "poisson"]
+    #     ),
+    #     "HistGradientBoostingRegressor_learning_rate": tune.loguniform(1e-7, 1e-1),
+    #     "HistGradientBoostingRegressor_max_leaf_nodes": tune.choice([None]),
+    #     "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
+    #     "HistGradientBoostingRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
+    #     "HistGradientBoostingRegressor_l2_regularization": tune.uniform(0, 1),
+    #     "HistGradientBoostingRegressor_tol": tune.loguniform(1e-5, 1e-1),
+    # },
     # self-defined models
     {
         "model_19": "MLP_Regressor",

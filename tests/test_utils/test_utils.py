@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 9:20:55 pm
+Last Modified: Thursday, 28th April 2022 9:09:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -664,3 +664,11 @@ def test_get_metrics():
         assert isinstance(
             get_metrics(item), Callable
         ), "The metrics are not correctly called."
+
+
+def test_is_none():
+
+    from My_AutoML._utils._base import is_none
+
+    assert is_none(None) == True, "The is_none function is not correct."
+    assert is_none("not none") == False, "The is_none function is not correct."

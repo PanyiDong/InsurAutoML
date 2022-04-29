@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 12:24:46 am
+Last Modified: Thursday, 28th April 2022 5:21:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -83,19 +83,21 @@ classifier_hyperparameter = [
     },
     {"model_5": "GaussianNB"},
     {
-        "model_6": "GradientBoostingClassifier",
-        "GradientBoostingClassifier_loss": tune.choice(["auto"]),
-        "GradientBoostingClassifier_learning_rate": tune.loguniform(0.01, 1),
-        "GradientBoostingClassifier_min_samples_leaf": tune.qlograndint(1, 200, 1),
-        "GradientBoostingClassifier_max_depth": tune.choice(["None"]),
-        "GradientBoostingClassifier_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
-        "GradientBoostingClassifier_max_bins": tune.choice([255]),
-        "GradientBoostingClassifier_l2_regularization": tune.loguniform(1e-10, 1),
-        "GradientBoostingClassifier_early_stop": tune.choice(["off", "train", "valid"]),
-        "GradientBoostingClassifier_tol": tune.choice([1e-7]),
-        "GradientBoostingClassifier_scoring": tune.choice(["loss"]),
-        "GradientBoostingClassifier_n_iter_no_change": tune.qrandint(1, 20, 1),
-        "GradientBoostingClassifier_validation_fraction": tune.uniform(0.01, 0.4),
+        "model_6": "HistGradientBoostingClassifier",
+        "HistGradientBoostingClassifier_loss": tune.choice(["auto"]),
+        "HistGradientBoostingClassifier_learning_rate": tune.loguniform(0.01, 1),
+        "HistGradientBoostingClassifier_min_samples_leaf": tune.qlograndint(1, 200, 1),
+        "HistGradientBoostingClassifier_max_depth": tune.choice(["None"]),
+        "HistGradientBoostingClassifier_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
+        "HistGradientBoostingClassifier_max_bins": tune.choice([255]),
+        "HistGradientBoostingClassifier_l2_regularization": tune.loguniform(1e-10, 1),
+        "HistGradientBoostingClassifier_early_stop": tune.choice(
+            ["off", "train", "valid"]
+        ),
+        "HistGradientBoostingClassifier_tol": tune.choice([1e-7]),
+        "HistGradientBoostingClassifier_scoring": tune.choice(["loss"]),
+        "HistGradientBoostingClassifier_n_iter_no_change": tune.qrandint(1, 20, 1),
+        "HistGradientBoostingClassifier_validation_fraction": tune.uniform(0.01, 0.4),
     },
     {
         "model_7": "KNearestNeighborsClassifier",
@@ -215,16 +217,16 @@ classifier_hyperparameter = [
         "ComplementNB_fit_prior": tune.choice([True, False]),
         "ComplementNB_norm": tune.choice([True, False]),
     },
-    {
-        "model_19": "HistGradientBoostingClassifier",
-        "HistGradientBoostingClassifier_loss": tune.choice(["auto"]),
-        "HistGradientBoostingClassifier_learning_rate": tune.uniform(1e-7, 1),
-        "HistGradientBoostingClassifier_max_leaf_nodes": tune.choice([None]),
-        "HistGradientBoostingClassifier_max_depth": tune.choice([None]),
-        "HistGradientBoostingClassifier_min_samples_leaf": tune.qrandint(1, 20, 1),
-        "HistGradientBoostingClassifier_l2_regularization": tune.uniform(0, 1),
-        "HistGradientBoostingClassifier_tol": tune.loguniform(1e-5, 1e-1),
-    },
+    # {
+    #     "model_19": "HistGradientBoostingClassifier",
+    #     "HistGradientBoostingClassifier_loss": tune.choice(["auto"]),
+    #     "HistGradientBoostingClassifier_learning_rate": tune.uniform(1e-7, 1),
+    #     "HistGradientBoostingClassifier_max_leaf_nodes": tune.choice([None]),
+    #     "HistGradientBoostingClassifier_max_depth": tune.choice([None]),
+    #     "HistGradientBoostingClassifier_min_samples_leaf": tune.qrandint(1, 20, 1),
+    #     "HistGradientBoostingClassifier_l2_regularization": tune.uniform(0, 1),
+    #     "HistGradientBoostingClassifier_tol": tune.loguniform(1e-5, 1e-1),
+    # },
     # self-defined models
     {
         "model_20": "MLP_Classifier",

@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 4:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 23rd April 2022 11:02:02 pm
+Last Modified: Wednesday, 27th April 2022 5:53:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -163,6 +163,9 @@ REGRESSORS = [
 # maximum unique classes determined as categorical variable
 # 31 is capped by days in a month
 UNI_CLASS = 31
+
+# maximum iteration allowed for the algorithm
+MAX_ITER = 1024
 
 # LightGBM default object (metric/loss)
 # binary classification
