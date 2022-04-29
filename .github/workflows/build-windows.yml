@@ -1,0 +1,21 @@
+name: build-windows
+on:
+  - pull_request
+  - push
+jobs:
+  run:
+    runs-on: windows-latest
+    env:
+      OS: windows-latest
+      PYTHON: "3.9"
+    steps:
+      - uses: actions/checkout@master
+      - name: Setup Python
+        uses: actions/setup-python@master
+        with:
+          python-version: 3.9
+      - name: "run tests (without neural network)"
+        run: |
+          pip install pytest
+          pip install -e .[normal]
+          pytest tests/

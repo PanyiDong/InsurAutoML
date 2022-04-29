@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 28th April 2022 11:28:43 pm
+Last Modified: Friday, 29th April 2022 1:41:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -354,7 +354,7 @@ class HistGradientBoostingClassifier:
                 max_leaf_nodes=self.max_leaf_nodes,
                 max_bins=self.max_bins,
                 l2_regularization=self.l2_regularization,
-                early_stop=self.early_stop,
+                early_stopping=self.early_stopping_,
                 tol=self.tol,
                 scoring=self.scoring,
                 n_iter_no_change=self.n_iter_no_change,
@@ -1397,7 +1397,7 @@ class HistGradientBoostingRegressor:
                 max_leaf_nodes=self.max_leaf_nodes,
                 max_bins=self.max_bins,
                 l2_regularization=self.l2_regularization,
-                early_stop=self.early_stop,
+                early_stopping=self.early_stopping_,
                 tol=self.tol,
                 scoring=self.scoring,
                 n_iter_no_change=self.n_iter_no_change,
@@ -1511,7 +1511,7 @@ class LibLinear_SVR(sklearn.svm.LinearSVR):
         return super().predict(X)
 
 
-class LibSVM_SVC(sklearn.svm.SVC):
+class LibSVM_SVR(sklearn.svm.SVR):
     def __init__(
         self,
         kernel="rbf",
