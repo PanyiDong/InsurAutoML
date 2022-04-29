@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 1:41:21 pm
+Last Modified: Friday, 29th April 2022 2:14:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -110,7 +110,7 @@ class BernoulliNB(sklearn.naive_bayes.BernoulliNB):
         alpha=1,
         fit_prior=True,
     ):
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.fit_prior = fit_prior
 
         super().__init__(
@@ -298,17 +298,17 @@ class HistGradientBoostingClassifier:
         validation_fraction=0.1,
     ):
         self.loss = loss
-        self.learning_rate = learning_rate
-        self.min_samples_leaf = min_samples_leaf
-        self.max_depth = max_depth
-        self.max_leaf_nodes = max_leaf_nodes
-        self.max_bins = max_bins
-        self.l2_regularization = l2_regularization
+        self.learning_rate = float(learning_rate)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.max_leaf_nodes = int(max_leaf_nodes)
+        self.max_bins = int(max_bins)
+        self.l2_regularization = float(l2_regularization)
         self.early_stop = early_stop
-        self.tol = tol
+        self.tol = float(tol)
         self.scoring = scoring
-        self.n_iter_no_change = n_iter_no_change
-        self.validation_fraction = validation_fraction
+        self.n_iter_no_change = int(n_iter_no_change)
+        self.validation_fraction = float(validation_fraction)
 
         self.estimator = None  # the fitted estimator
         self.max_iter = self._get_max_iter()  # limit the number of iterations
@@ -398,9 +398,9 @@ class KNearestNeighborsClassifier(sklearn.neighbors.KNeighborsClassifier):
         weights="uniform",
         p=2,
     ):
-        self.n_neighbors = n_neighbors
+        self.n_neighbors = int(n_neighbors)
         self.weights = weights
-        self.p = p
+        self.p = int(p)
 
         super().__init__(
             n_neighbors=self.n_neighbors,
@@ -431,8 +431,8 @@ class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
         tol=1e-4,
     ):
         self.shrinkage = shrinkage
-        self.shrinkage_factor = shrinkage_factor
-        self.tol = tol
+        self.shrinkage_factor = float(shrinkage_factor)
+        self.tol = float(tol)
 
         self._fitted = False  # whether the model is fitted
 
@@ -969,8 +969,8 @@ class LogisticRegression(sklearn.linear_model.LogisticRegression):
         C=1.0,
     ):
         self.penalty = penalty
-        self.tol = tol
-        self.C = C
+        self.tol = float(tol)
+        self.C = float(C)
 
         super().__init__(
             penalty=self.penalty,
@@ -1000,7 +1000,7 @@ class ComplementNB(sklearn.naive_bayes.ComplementNB):
         fit_prior=True,
         norm=False,
     ):
-        self.alpha = alpha
+        self.alpha = float(alpha)
         self.fit_prior = fit_prior
         self.norm = norm
 
@@ -1219,14 +1219,14 @@ class ExtraTreesRegressor:
         min_impurity_decrease=0.0,
     ):
         self.criterion = criterion
-        self.max_depth = max_depth
-        self.max_leaf_nodes = max_leaf_nodes
-        self.min_samples_leaf = min_samples_leaf
-        self.min_samples_split = min_samples_split
-        self.max_features = max_features
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.min_samples_split = int(min_samples_split)
+        self.max_features = float(max_features)
         self.bootstrap = bootstrap
-        self.min_weight_fraction_leaf = min_weight_fraction_leaf
-        self.min_impurity_decrease = min_impurity_decrease
+        self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
+        self.min_impurity_decrease = float(min_impurity_decrease)
 
         self.estimator = None  # the fitted estimator
         self.max_iter = self._get_max_iter()  # limit the number of iterations
@@ -1341,17 +1341,17 @@ class HistGradientBoostingRegressor:
         validation_fraction=0.1,
     ):
         self.loss = loss
-        self.learning_rate = learning_rate
-        self.min_samples_leaf = min_samples_leaf
-        self.max_depth = max_depth
-        self.max_leaf_nodes = max_leaf_nodes
-        self.max_bins = max_bins
-        self.l2_regularization = l2_regularization
+        self.learning_rate = float(learning_rate)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.max_leaf_nodes = int(max_leaf_nodes)
+        self.max_bins = int(max_bins)
+        self.l2_regularization = float(l2_regularization)
         self.early_stop = early_stop
-        self.tol = tol
+        self.tol = float(tol)
         self.scoring = scoring
-        self.n_iter_no_change = n_iter_no_change
-        self.validation_fraction = validation_fraction
+        self.n_iter_no_change = int(n_iter_no_change)
+        self.validation_fraction = float(validation_fraction)
 
         self.estimator = None  # the fitted estimator
         self.max_iter = self._get_max_iter()  # limit the number of iterations
@@ -1441,9 +1441,9 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
         weights="uniform",
         p=2,
     ):
-        self.n_neighbors = n_neighbors
+        self.n_neighbors = int(n_neighbors)
         self.weights = weights
-        self.p = p
+        self.p = int(p)
 
         super().__init__(
             n_neighbors=self.n_neighbors,
@@ -1963,11 +1963,11 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
         lambda_1=1e-6,
         lambda_2=1e-6,
     ):
-        self.tol = tol
-        self.alpha_1 = alpha_1
-        self.alpha_2 = alpha_2
-        self.lambda_1 = lambda_1
-        self.lambda_2 = lambda_2
+        self.tol = float(tol)
+        self.alpha_1 = float(alpha_1)
+        self.alpha_2 = float(alpha_2)
+        self.lambda_1 = float(lambda_1)
+        self.lambda_2 = float(lambda_2)
 
         super().__init__(
             tol=self.tol,

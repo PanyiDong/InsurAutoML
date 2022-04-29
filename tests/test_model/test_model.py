@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 10:25:56 pm
+Last Modified: Friday, 29th April 2022 2:14:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -79,6 +79,8 @@ def test_regressors():
 
     from My_AutoML._model import regressors
 
+    print(regressors)
+
     for method_name, method in regressors.items():
 
         # pass these methods as they are tested individually
@@ -130,7 +132,7 @@ def test_add_classifier():
 
 def test_add_regressor():
 
-    from My_AutoML._model._sklearn import HistGradientBoostingRegressor
+    # from My_AutoML._model._sklearn import HistGradientBoostingRegressor
 
     from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
 
@@ -144,14 +146,21 @@ def test_add_regressor():
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
-    model = HistGradientBoostingRegressor()
+    # model = HistGradientBoostingRegressor()
+
+    # model.fit(X, y)
+    # y_pred = model.predict(X)
+
+    # assert (
+    #     model._fitted == True
+    # ), "Model HistGradientBoostingRegressor has not been fitted."
+
+    model = LibSVM_SVR()
 
     model.fit(X, y)
     y_pred = model.predict(X)
 
-    assert (
-        model._fitted == True
-    ), "Model HistGradientBoostingRegressor has not been fitted."
+    assert model._fitted == True, "Model LibSVM_SVR has not been fitted."
 
     model = MLPRegressor()
 

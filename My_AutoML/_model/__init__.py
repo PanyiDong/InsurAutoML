@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:35:00 am
+Last Modified: Friday, 29th April 2022 2:10:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -221,7 +221,7 @@ classifiers["LogisticRegression"] = LogisticRegression
 # classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
 
 # regression models from sklearn
-regressors["LinearRegression"] = (LinearRegression,)
+regressors["LinearRegression"] = LinearRegression
 regressors["Lasso"] = Lasso
 regressors["RidgeRegression"] = Ridge
 regressors["ElasticNet"] = ElasticNet
