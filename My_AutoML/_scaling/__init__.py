@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 10:40:25 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:26:24 pm
+Last Modified: Friday, 29th April 2022 10:31:06 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,8 +46,8 @@ from ._scaling import (
     PowerTransformer,
     QuantileTransformer,
     Winsorization,
-    Feature_Manipulation,
-    Feature_Truncation,
+    # Feature_Manipulation,
+    # Feature_Truncation,
 )
 from My_AutoML._base import no_processing
 

@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:32:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 5:49:36 pm
+Last Modified: Friday, 29th April 2022 10:37:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,17 +39,6 @@ SOFTWARE.
 """
 
 from ._base import PCA_FeatureSelection, RBFSampler
-from ._autosklearn import (
-    extra_trees_preproc_for_classification,
-    extra_trees_preproc_for_regression,
-    liblinear_svc_preprocessor,
-    polynomial,
-    select_percentile_classification,
-    select_percentile_regression,
-    select_rates_classification,
-    select_rates_regression,
-    truncatedSVD,
-)
 
 # from ._imported import (
 #     Densifier,
@@ -89,18 +78,78 @@ feature_selections = {
     "FeatureFilter": FeatureFilter,
     "ASFFS": ASFFS,
     "GeneticAlgorithm": GeneticAlgorithm,
-    # from autosklearn
-    "extra_trees_preproc_for_classification": extra_trees_preproc_for_classification,
-    "extra_trees_preproc_for_regression": extra_trees_preproc_for_regression,
-    "liblinear_svc_preprocessor": liblinear_svc_preprocessor,
-    "polynomial": polynomial,
-    "select_percentile_classification": select_percentile_classification,
-    "select_percentile_regression": select_percentile_regression,
-    "select_rates_classification": select_rates_classification,
-    "select_rates_regression": select_rates_regression,
-    "truncatedSVD": truncatedSVD,
     # "ExhaustiveFS": ExhaustiveFS, # exhaustive search is not practical, takes too long
     "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
 }
+
+import importlib
+
+# check if autosklearn is installed, if not, use sklearn replacement
+autosklearn_spec = importlib.util.find_spec("autosklearn")
+sklearn_spec = importlib.util.find_spec("sklearn")
+
+if autosklearn_spec is not None:
+    from ._autosklearn import (
+        extra_trees_preproc_for_classification,
+        extra_trees_preproc_for_regression,
+        liblinear_svc_preprocessor,
+        polynomial,
+        select_percentile_classification,
+        select_percentile_regression,
+        select_rates_classification,
+        select_rates_regression,
+        truncatedSVD,
+    )
+
+    # from autosklearn
+    feature_selections[
+        "extra_trees_preproc_for_classification"
+    ] = extra_trees_preproc_for_classification
+    feature_selections[
+        "extra_trees_preproc_for_regression"
+    ] = extra_trees_preproc_for_regression
+    feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
+    feature_selections["polynomial"] = polynomial
+    feature_selections[
+        "select_percentile_classification"
+    ] = select_percentile_classification
+    feature_selections["select_percentile_regression"] = select_percentile_regression
+    feature_selections["select_rates_classification"] = select_rates_classification
+    feature_selections["select_rates_regression"] = select_rates_regression
+    feature_selections["truncatedSVD"] = truncatedSVD
+# elif sklearn not installed, raise error
+elif sklearn_spec is None:
+    raise ImportError(
+        "None of autosklearn or sklearn is installed. Please install at least one of them to use feature selection."
+    )
+else:
+    from ._sklearn import (
+        extra_trees_preproc_for_classification,
+        extra_trees_preproc_for_regression,
+        liblinear_svc_preprocessor,
+        polynomial,
+        select_percentile_classification,
+        select_percentile_regression,
+        select_rates_classification,
+        select_rates_regression,
+        truncatedSVD,
+    )
+
+    # from autosklearn
+    feature_selections[
+        "extra_trees_preproc_for_classification"
+    ] = extra_trees_preproc_for_classification
+    feature_selections[
+        "extra_trees_preproc_for_regression"
+    ] = extra_trees_preproc_for_regression
+    feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
+    feature_selections["polynomial"] = polynomial
+    feature_selections[
+        "select_percentile_classification"
+    ] = select_percentile_classification
+    feature_selections["select_percentile_regression"] = select_percentile_regression
+    feature_selections["select_rates_classification"] = select_rates_classification
+    feature_selections["select_rates_regression"] = select_rates_regression
+    feature_selections["truncatedSVD"] = truncatedSVD

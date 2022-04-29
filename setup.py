@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 10:42:03 pm
+Last Modified: Friday, 29th April 2022 10:30:18 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -92,12 +92,15 @@ setup(
         "ray",
         "ray[tune]",
         "ray[rllib]",
+        "redis",
         "tqdm==4.62.3",
         "mlflow==1.21.0",
         "tensorboardX",
         "hyperopt==0.2.5",
-        "auto-sklearn==0.14.6",
-        "scikit-learn==0.24.2",
+        "auto-sklearn==0.14.6;platform_system=='Linux'",
+        "scikit-learn==0.24.2;platform_system=='Linux'",
+        "scikit-learn>1.0.0;platform_system=='Windows'",
+        "scikit-learn>1.0.0;platform_system=='MacOS'",
     ],
     extras_require={
         "lightweight": [],

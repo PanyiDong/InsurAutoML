@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 10:49:15 pm
+Last Modified: Friday, 29th April 2022 10:27:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -982,7 +982,7 @@ class SFS:
 
         self._fitted = False
 
-    def select_feature(self, X, y, selected_features, unselected_features):
+    def select_feature(self, X, y, estimator, selected_features, unselected_features):
 
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
@@ -993,9 +993,9 @@ class SFS:
         results = []
         for _comb in test_comb:
             # fit estimator
-            self.estimator.fit(X.iloc[:, _comb], y)
+            estimator.fit(X.iloc[:, _comb], y)
             # get test results
-            test_results = self.criteria(y, self.estimator.predict(X.iloc[:, _comb]))
+            test_results = self.criteria(y, estimator.predict(X.iloc[:, _comb]))
             # append test results
             results.append(test_results)
 
@@ -1022,7 +1022,7 @@ class SFS:
             raise ValueError("Must have response!")
 
         # make sure estimator is recognized
-        self.estimator = get_estimator(self.estimator)
+        estimator = get_estimator(self.estimator)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -1045,7 +1045,7 @@ class SFS:
         for _ in range(self.n_components):
             # get the current optimal loss and feature
             loss, new_feature = self.select_feature(
-                X, y, selected_features, unselected_features
+                X, y, estimator, selected_features, unselected_features
             )
             if loss > optimal_loss:  # if no better combination is found, stop
                 break
