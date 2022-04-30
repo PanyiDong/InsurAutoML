@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 2:58:43 pm
+Last Modified: Friday, 29th April 2022 11:09:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -79,8 +79,6 @@ def test_regressors():
 
     from My_AutoML._model import regressors
 
-    print(regressors)
-
     for method_name, method in regressors.items():
 
         # pass these methods as they are tested individually
@@ -137,7 +135,7 @@ def test_add_regressor():
 
     # if autosklearn in installed, use autosklearn version for testing
     # else, use sklearn version for testing
-    autosklearn_spec = importlib.utils.find_spec("autosklearn")
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
         from My_AutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
     else:
