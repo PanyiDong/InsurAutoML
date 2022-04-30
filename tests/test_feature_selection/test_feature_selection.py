@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 2:28:43 pm
+Last Modified: Saturday, 30th April 2022 3:05:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import autosklearn
 import numpy as np
 import pandas as pd
 from My_AutoML._feature_selection import feature_selections
