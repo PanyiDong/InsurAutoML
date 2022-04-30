@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 6:12:15 pm
+Last Modified: Saturday, 30th April 2022 12:41:56 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -273,7 +273,13 @@ def test_feature_selection_RBFSampler():
 
 def test_feature_selection_densifier():
 
-    from My_AutoML._feature_selection._autosklearn import densifier
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import densifier
+    else:
+        from My_AutoML._feature_selection._autosklearn import densifier
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -303,7 +309,13 @@ def test_feature_selection_densifier():
 
 def test_feature_selection_feature_agglomeration():
 
-    from My_AutoML._feature_selection._autosklearn import feature_agglomeration
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import feature_agglomeration
+    else:
+        from My_AutoML._feature_selection._autosklearn import feature_agglomeration
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -318,7 +330,13 @@ def test_feature_selection_feature_agglomeration():
 
 def test_feature_selection_kernel_pca():
 
-    from My_AutoML._feature_selection._autosklearn import kernel_pca
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import kernel_pca
+    else:
+        from My_AutoML._feature_selection._autosklearn import kernel_pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -333,7 +351,13 @@ def test_feature_selection_kernel_pca():
 
 def test_feature_selection_kitchen_sinks():
 
-    from My_AutoML._feature_selection._autosklearn import kitchen_sinks
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import kitchen_sinks
+    else:
+        from My_AutoML._feature_selection._autosklearn import kitchen_sinks
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -348,7 +372,13 @@ def test_feature_selection_kitchen_sinks():
 
 def test_feature_selection_nystroem_sampler():
 
-    from My_AutoML._feature_selection._autosklearn import nystroem_sampler
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import nystroem_sampler
+    else:
+        from My_AutoML._feature_selection._autosklearn import nystroem_sampler
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -363,7 +393,13 @@ def test_feature_selection_nystroem_sampler():
 
 def test_feature_selection_pca():
 
-    from My_AutoML._feature_selection._autosklearn import pca
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import pca
+    else:
+        from My_AutoML._feature_selection._autosklearn import pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -378,7 +414,13 @@ def test_feature_selection_pca():
 
 def test_feature_selection_random_trees_embedding():
 
-    from My_AutoML._feature_selection._autosklearn import random_trees_embedding
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._feature_selection._sklearn import random_trees_embedding
+    else:
+        from My_AutoML._feature_selection._autosklearn import random_trees_embedding
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]

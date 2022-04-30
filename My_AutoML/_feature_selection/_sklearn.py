@@ -11,7 +11,7 @@ File Created: Friday, 29th April 2022 10:38:02 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 1:20:57 pm
+Last Modified: Saturday, 30th April 2022 12:39:56 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -54,7 +54,7 @@ from My_AutoML._utils._base import is_none
 # sklearn replacement of feature selection
 
 
-class Densifier:
+class densifier:
     def __init__(
         self,
     ):
@@ -732,7 +732,7 @@ class select_rates_regression(sklearn.feature_selection.GenericUnivariateSelect)
     def __init__(
         self,
         alpha=0.3,
-        score_func="chi2",
+        score_func="f_regression",
         mode="fpr",
     ):
         self.alpha = float(alpha)
