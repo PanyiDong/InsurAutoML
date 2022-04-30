@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 12:15:11 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 12:05:36 am
+Last Modified: Saturday, 30th April 2022 12:44:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -191,7 +191,13 @@ class load_data:
                 warnings.warn("No .asc file found!")
             elif _csv_files + _data_files:
                 for _data_path in _csv_files + _data_files:
-                    _filename = _data_path.split("/")[-1]
+                    # in linux path, the path separator is '/'
+                    # in windows path, the path separator is '\\'
+                    _filename = (
+                        _data_path.split("/")[-1]
+                        if "/" in _data_path
+                        else _data_path.split("\\")[-1]
+                    )
                     self.database[_filename.split(".")[0]] = pd.read_csv(_data_path)
 
         # load .rda/.rdata files in the path
@@ -232,7 +238,13 @@ class load_data:
                     warnings.warn("No .rdata file found!")
                 elif _rda_files + _rdata_files:
                     for _data_path in _rda_files + _rdata_files:
-                        _filename = _data_path.split("/")[-1]
+                        # in linux path, the path separator is '/'
+                        # in windows path, the path separator is '\\'
+                        _filename = (
+                            _data_path.split("/")[-1]
+                            if "/" in _data_path
+                            else _data_path.split("\\")[-1]
+                        )
                         ro.r('load("' + _data_path + '")')
                         ro.r("rdata = " + _filename.split(".")[0])
                         with localconverter(ro.default_converter + pandas2ri.converter):

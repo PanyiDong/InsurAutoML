@@ -11,7 +11,7 @@ File Created: Friday, 29th April 2022 10:38:02 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 11:01:11 am
+Last Modified: Saturday, 30th April 2022 12:35:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -590,11 +590,11 @@ class select_percentile_classification(sklearn.feature_selection.SelectPercentil
             self.score_func = sklearn.feature_selection.chi2
         elif score_func == "f_classif":
             self.score_func = sklearn.feature_selection.f_classif
-        elif score_func == "mutual_info":
+        elif score_func == "mutual_info_classif":
             self.score_func = sklearn.feature_selection.mutual_info_classif
         else:
             raise ValueError(
-                "score_func must be one of 'chi2', 'f_classif', 'mutual_info', but got {}".format(
+                "score_func must be one of 'chi2', 'f_classif', 'mutual_info_classif', but got {}".format(
                     score_func
                 )
             )

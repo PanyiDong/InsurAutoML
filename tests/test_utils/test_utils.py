@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 11:30:23 pm
+Last Modified: Saturday, 30th April 2022 12:31:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,16 +47,16 @@ def test_load_data():
 
     from My_AutoML import load_data
 
-    data = load_data().load("Appendix", "credit")
+    data = load_data().load("Appendix", "insurance")
 
     assert isinstance(
         data, dict
     ), "load_data should return a dict database, get {}".format(type(data))
 
     assert isinstance(
-        data["credit"], pd.DataFrame
+        data["insurance"], pd.DataFrame
     ), "load_data should return a dict database containing dataframes, get {}".format(
-        type(data["credit"])
+        type(data["insurance"])
     )
 
 
