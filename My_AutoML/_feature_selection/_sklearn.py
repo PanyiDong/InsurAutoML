@@ -11,7 +11,7 @@ File Created: Friday, 29th April 2022 10:38:02 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 9:48:25 am
+Last Modified: Saturday, 30th April 2022 11:01:11 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -255,7 +255,7 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration):
     def fit(self, X, y=None):
 
         if not callable(self.pooling_func):
-            self.pooling_func = self.pooling_func_mapping[self.pooling_func]
+            self.pooling_func = self.pooling_func_dict[self.pooling_func]
 
         super().__init__(
             n_clusters=min(self.n_clusters, X.shape[1]),

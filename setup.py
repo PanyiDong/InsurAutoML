@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:30:18 am
+Last Modified: Saturday, 30th April 2022 11:01:57 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -105,13 +105,13 @@ setup(
     extras_require={
         "lightweight": [],
         "normal": [
-            "rpy2",
+            "rpy2;platform_system=='Linux'",
             "lightgbm",
             "xgboost",
             "pygam",
         ],
         "nn": [
-            "rpy2",
+            "rpy2;platform_system=='Linux'",
             "lightgbm",
             "xgboost",
             "pygam",

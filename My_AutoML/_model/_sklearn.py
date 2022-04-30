@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 9:51:21 am
+Last Modified: Saturday, 30th April 2022 11:06:04 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -942,8 +942,9 @@ class SGDClassifier:
 
         self.estimator.fit(X, y)
 
-        if self.estimator.max_iter >= self.max_iter or self.estimator.max_iter > len(
-            self.estimator.n_iter_
+        if (
+            self.estimator.max_iter >= self.max_iter
+            or self.estimator.max_iter > self.estimator.n_iter_
         ):
             self._fitted = True
 
@@ -1817,8 +1818,9 @@ class SGDRegressor:
 
         self.estimator.fit(X, y)
 
-        if self.estimator.max_iter >= self.max_iter or self.estimator.max_iter > len(
-            self.estimator.n_iter_
+        if (
+            self.estimator.max_iter >= self.max_iter
+            or self.estimator.max_iter > self.estimator.n_iter_
         ):
             self._fitted = True
 

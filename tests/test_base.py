@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 6:46:02 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 8:29:37 pm
+Last Modified: Saturday, 30th April 2022 11:03:27 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,6 +42,9 @@ SOFTWARE.
 def test_load_data():
 
     from My_AutoML._base import load_data
+    import importlib
+
+    rpy2_spec = importlib.util.find_spec("rpy2")
 
     database = load_data().load("Appendix")
 
@@ -54,7 +57,15 @@ def test_load_data():
         "healthcare-dataset-stroke-data",
         "heart",
         "hurricanehist",
-        "credit",
+        # "credit",
     ]
 
-    assert set(database.keys()) == set(database_names), "Not all databases are loaded."
+    if rpy2_spec is not None:
+        database_names.append("credit")
+        assert set(database.keys()) == set(
+            database_names
+        ), "Not all databases are loaded."
+    else:
+        assert set(database.keys()) == set(
+            database_names
+        ), "Not all databases are loaded."
