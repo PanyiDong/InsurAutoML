@@ -11,7 +11,7 @@ File Created: Friday, 29th April 2022 10:38:02 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 12:39:56 am
+Last Modified: Saturday, 30th April 2022 9:48:25 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -244,9 +244,18 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration):
         self.linkage = linkage
         self.pooling_func = pooling_func
 
+        self.pooling_func_dict = {
+            "mean": np.mean,
+            "median": np.median,
+            "max": np.max,
+        }
+
         self._fitted = False
 
     def fit(self, X, y=None):
+
+        if not callable(self.pooling_func):
+            self.pooling_func = self.pooling_func_mapping[self.pooling_func]
 
         super().__init__(
             n_clusters=min(self.n_clusters, X.shape[1]),
@@ -530,7 +539,7 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
         max_depth=3,
         min_samples_split=5,
         min_samples_leaf=5,
-        min_weight_fraction_leaf=1.0,
+        min_weight_fraction_leaf=0.0,
         max_leaf_nodes=None,
         bootstrap=True,
     ):

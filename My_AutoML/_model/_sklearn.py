@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 11:36:15 pm
+Last Modified: Saturday, 30th April 2022 9:51:21 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -724,7 +724,7 @@ class PassiveAggressive:
         self.fit_intercept = fit_intercept
         self.average = average
         self.tol = float(tol)
-        self.loss = float(loss)
+        self.loss = loss
 
         self.estimator = None  # the fitted estimator
         self.max_iter = self._get_max_iter()  # limit the number of iterations
@@ -1486,12 +1486,11 @@ class LibLinear_SVR(sklearn.svm.LinearSVR):
         self.intercept_scaling = intercept_scaling
 
         super().__init__(
-            penalty=self.penalty,
+            epsilon=self.epsilon,
             loss=self.loss,
             dual=self.dual,
             tol=self.tol,
             C=self.C,
-            multi_class=self.multi_class,
             fit_intercept=self.fit_intercept,
             intercept_scaling=self.intercept_scaling,
         )
@@ -1592,7 +1591,7 @@ class MLPRegressor:
         self.validation_fraction = float(validation_fraction)
         self.tol = float(tol)
         self.solver = solver
-        self.batch_size = int(batch_size)
+        self.batch_size = batch_size
         self.shuffle = shuffle
         self.beta_1 = float(beta_1)
         self.beta_2 = float(beta_2)
