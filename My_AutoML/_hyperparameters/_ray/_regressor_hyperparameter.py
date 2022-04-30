@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 12:25:08 am
+Last Modified: Saturday, 30th April 2022 3:22:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+# NOTE:
+# As sklearn enters version 1.0, some of the losses have changed its name,
+# hyperparameters will change accordingly
+import sklearn
+
+sklearn_1_0_0 = sklearn.__version__ <= "1.0.0"
 
 from ray import tune
 
@@ -70,10 +77,11 @@ regressor_hyperparameter = [
     },
     {
         "model_3": "DecisionTree",
-        # "DecisionTree_criterion": tune.choice(
-        #     ["squared_error", "friedman_mse", "absolute_error", "poisson"]
-        # ),
-        "DecisionTree_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
+        "DecisionTree_criterion": tune.choice(["mse", "friedman_mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(
+            ["squared_error", "friedman_mse", "absolute_error", "poisson"]
+        ),
         "DecisionTree_max_features": tune.choice([1.0]),
         "DecisionTree_max_depth_factor": tune.uniform(0.0, 2.0),
         "DecisionTree_min_samples_split": tune.qrandint(2, 20, 1),
@@ -84,13 +92,12 @@ regressor_hyperparameter = [
     },
     {
         "model_4": "ExtraTreesRegressor",
-        # "ExtraTreesRegressor_criterion": tune.choice(
-        #     ["squared_error", "friedman_mse", "absolute_error"]
-        # ),
-        "ExtraTreesRegressor_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
+        "ExtraTreesRegressor_criterion": tune.choice(["mse", "friedman_mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(["squared_error", "absolute_error"]),
         "ExtraTreesRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
         "ExtraTreesRegressor_min_samples_split": tune.qrandint(2, 20, 1),
-        "ExtraTreesRegressor_max_features": tune.uniform(0.1, 1.0),
+        "ExtraTreesRegressor_max_features": tune.uniform(0.0, 1.0),
         "ExtraTreesRegressor_bootstrap": tune.choice([True, False]),
         "ExtraTreesRegressor_max_leaf_nodes": tune.choice([None]),
         "ExtraTreesRegressor_max_depth": tune.choice([None]),
@@ -104,22 +111,25 @@ regressor_hyperparameter = [
         "GaussianProcess_thetaU": tune.loguniform(1, 1e5),
     },
     {
-        "model_6": "GradientBoosting",
+        "model_6": "HistGradientBoostingRegressor",
         # n_iter_no_change only selected for early_stop in ['valid', 'train']
         # validation_fraction only selected for early_stop = 'valid'
-        # "GradientBoosting_loss": tune.choice(["squared_error"]),
-        "GradientBoosting_loss": tune.choice(["least_squares"]),
-        "GradientBoosting_learning_rate": tune.loguniform(0.01, 1),
-        "GradientBoosting_min_samples_leaf": tune.qlograndint(1, 200, 1),
-        "GradientBoosting_max_depth": tune.choice([None]),
-        "GradientBoosting_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
-        "GradientBoosting_max_bins": tune.choice([255]),
-        "GradientBoosting_l2_regularization": tune.loguniform(1e-10, 1),
-        "GradientBoosting_early_stop": tune.choice(["off", "train", "valid"]),
-        "GradientBoosting_tol": tune.choice([1e-7]),
-        "GradientBoosting_scoring": tune.choice(["loss"]),
-        "GradientBoosting_n_iter_no_change": tune.qrandint(1, 20, 1),
-        "GradientBoosting_validation_fraction": tune.uniform(0.01, 0.4),
+        "HistGradientBoostingRegressor_loss": tune.choice(["least_squares"])
+        if sklearn_1_0_0
+        else tune.choice(["squared_error"]),
+        "HistGradientBoostingRegressor_learning_rate": tune.loguniform(0.01, 1),
+        "HistGradientBoostingRegressor_min_samples_leaf": tune.qlograndint(1, 200, 1),
+        "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
+        "HistGradientBoostingRegressor_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
+        "HistGradientBoostingRegressor_max_bins": tune.choice([255]),
+        "HistGradientBoostingRegressor_l2_regularization": tune.loguniform(1e-10, 1),
+        "HistGradientBoostingRegressor_early_stop": tune.choice(
+            ["off", "train", "valid"]
+        ),
+        "HistGradientBoostingRegressor_tol": tune.choice([1e-7]),
+        "HistGradientBoostingRegressor_scoring": tune.choice(["loss"]),
+        "HistGradientBoostingRegressor_n_iter_no_change": tune.qrandint(1, 20, 1),
+        "HistGradientBoostingRegressor_validation_fraction": tune.uniform(0.01, 0.4),
     },
     {
         "model_7": "KNearestNeighborsRegressor",
@@ -176,10 +186,9 @@ regressor_hyperparameter = [
     },
     {
         "model_11": "RandomForest",
-        # "RandomForest_criterion": tune.choice(
-        #     ["squared_error", "absolute_error", "poisson"]
-        # ),
-        "RandomForest_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
+        "RandomForest_criterion": tune.choice(["mse", "friedman_mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(["squared_error", "absolute_error", "poisson"]),
         "RandomForest_max_features": tune.uniform(0.1, 1.0),
         "RandomForest_max_depth": tune.choice([None]),
         "RandomForest_min_samples_split": tune.qrandint(2, 20, 1),
@@ -202,6 +211,15 @@ regressor_hyperparameter = [
                 "epsilon_insensitive",
                 "squared_epsilon_insensitive",
             ],
+        )
+        if sklearn_1_0_0
+        else tune.choice(
+            [
+                "squared_error",
+                "huber",
+                "epsilon_insensitive",
+                "squared_epsilon_insensitive",
+            ]
         ),
         "SGD_penalty": tune.choice(["l1", "l2", "elasticnet"]),
         "SGD_alpha": tune.loguniform(1e-7, 1e-1),
@@ -244,21 +262,21 @@ regressor_hyperparameter = [
         "BayesianRidge_lambda_1": tune.loguniform(1e-7, 1e-1),
         "BayesianRidge_lambda_2": tune.loguniform(1e-7, 1e-1),
     },
-    {
-        "model_18": "HistGradientBoostingRegressor",
-        # "HistGradientBoostingRegressor_loss": tune.choice(
-        #     ["squared_error", "absolute_error", "poisson"]
-        # ),
-        "HistGradientBoostingRegressor_loss": tune.choice(
-            ["least_squares", "least_absolute_deviation", "poisson"]
-        ),
-        "HistGradientBoostingRegressor_learning_rate": tune.loguniform(1e-7, 1e-1),
-        "HistGradientBoostingRegressor_max_leaf_nodes": tune.choice([None]),
-        "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
-        "HistGradientBoostingRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
-        "HistGradientBoostingRegressor_l2_regularization": tune.uniform(0, 1),
-        "HistGradientBoostingRegressor_tol": tune.loguniform(1e-5, 1e-1),
-    },
+    # {
+    #     "model_18": "HistGradientBoostingRegressor",
+    #     # "HistGradientBoostingRegressor_loss": tune.choice(
+    #     #     ["squared_error", "absolute_error", "poisson"]
+    #     # ),
+    #     "HistGradientBoostingRegressor_loss": tune.choice(
+    #         ["least_squares", "least_absolute_deviation", "poisson"]
+    #     ),
+    #     "HistGradientBoostingRegressor_learning_rate": tune.loguniform(1e-7, 1e-1),
+    #     "HistGradientBoostingRegressor_max_leaf_nodes": tune.choice([None]),
+    #     "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
+    #     "HistGradientBoostingRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
+    #     "HistGradientBoostingRegressor_l2_regularization": tune.uniform(0, 1),
+    #     "HistGradientBoostingRegressor_tol": tune.loguniform(1e-5, 1e-1),
+    # },
     # self-defined models
     {
         "model_19": "MLP_Regressor",

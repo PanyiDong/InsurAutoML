@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 9:20:55 pm
+Last Modified: Saturday, 30th April 2022 12:31:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,16 +47,16 @@ def test_load_data():
 
     from My_AutoML import load_data
 
-    data = load_data().load("Appendix", "credit")
+    data = load_data().load("Appendix", "insurance")
 
     assert isinstance(
         data, dict
     ), "load_data should return a dict database, get {}".format(type(data))
 
     assert isinstance(
-        data["credit"], pd.DataFrame
+        data["insurance"], pd.DataFrame
     ), "load_data should return a dict database containing dataframes, get {}".format(
-        type(data["credit"])
+        type(data["insurance"])
     )
 
 
@@ -143,11 +143,14 @@ def test_feature_rounding():
 def test_timer():
 
     from My_AutoML._utils._base import Timer
+    import time
 
     timer = Timer()
     timer.start()
+    time.sleep(4)
     timer.stop()
     timer.start()
+    time.sleep(3)
     timer.stop()
 
     assert timer.sum() / timer.avg() == 2.0, "The timer is not correctly done."
@@ -664,3 +667,11 @@ def test_get_metrics():
         assert isinstance(
             get_metrics(item), Callable
         ), "The metrics are not correctly called."
+
+
+def test_is_none():
+
+    from My_AutoML._utils._base import is_none
+
+    assert is_none(None) == True, "The is_none function is not correct."
+    assert is_none("not none") == False, "The is_none function is not correct."

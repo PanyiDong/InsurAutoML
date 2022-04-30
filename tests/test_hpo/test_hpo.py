@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th April 2022 4:06:17 pm
+Last Modified: Friday, 29th April 2022 11:28:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -839,6 +839,7 @@ def test_insurance_R2():
         model_name="insurance_R2",
         task_mode="regression",
         objective="R2",
+        max_evals=8,
         timeout=60,
     )
     mol.fit(data[features], data[response])

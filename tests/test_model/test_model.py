@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 10:25:56 pm
+Last Modified: Saturday, 30th April 2022 2:32:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -74,6 +74,68 @@ def test_classifiers():
                 method_name
             )
 
+    # test sklearn version if autosklearn is installed
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is not None:
+        from My_AutoML._model._sklearn import (
+            AdaboostClassifier,
+            BernoulliNB,
+            DecisionTreeClassifier,
+            ExtraTreesClassifier,
+            GaussianNB,
+            HistGradientBoostingClassifier,
+            KNearestNeighborsClassifier,
+            LDA,
+            LibLinear_SVC,
+            LibSVM_SVC,
+            MLPClassifier,
+            MultinomialNB,
+            PassiveAggressive,
+            QDA,
+            RandomForestClassifier,
+            SGDClassifier,
+        )
+
+        sklearn_classifiers = {
+            "AdaboostClassifier": AdaboostClassifier,
+            "BernoulliNB": BernoulliNB,
+            "DecisionTreeClassifier": DecisionTreeClassifier,
+            "ExtraTreesClassifier": ExtraTreesClassifier,
+            "GaussianNB": GaussianNB,
+            "HistGradientBoostingClassifier": HistGradientBoostingClassifier,
+            "KNearestNeighborsClassifier": KNearestNeighborsClassifier,
+            "LDA": LDA,
+            "LibLinear_SVC": LibLinear_SVC,
+            "LibSVM_SVC": LibSVM_SVC,
+            "MLPClassifier": MLPClassifier,
+            "MultinomialNB": MultinomialNB,
+            "PassiveAggressive": PassiveAggressive,
+            "QDA": QDA,
+            "RandomForestClassifier": RandomForestClassifier,
+            "SGDClassifier": SGDClassifier,
+        }
+
+        for method_name, method in sklearn_classifiers.items():
+
+            data = pd.read_csv("example/example_data/heart.csv")
+            # encoding categorical features
+            encoder = formatting()
+            encoder.fit(data)
+
+            # X/y split
+            X = data.iloc[:, :-1]
+            y = data.iloc[:, -1]
+
+            mol = method()
+            mol.fit(X, y)
+            y_pred = mol.predict(X)
+
+            assert mol._fitted == True, "Model {} has not been fitted.".format(
+                method_name
+            )
+
 
 def test_regressors():
 
@@ -89,6 +151,60 @@ def test_regressors():
             "MLP_Regressor",
             "RNN_Regressor",
         ]:
+
+            data = pd.read_csv("example/example_data/insurance.csv")
+            # encoding categorical features
+            encoder = formatting()
+            encoder.fit(data)
+
+            # X/y split
+            X = data.iloc[:, :-1]
+            y = data.iloc[:, -1]
+
+            mol = method()
+            mol.fit(X, y)
+            y_pred = mol.predict(X)
+
+            assert mol._fitted == True, "Model {} has not been fitted.".format(
+                method_name
+            )
+
+    # test sklearn version if autosklearn is installed
+    import importlib
+
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is not None:
+        from My_AutoML._model._sklearn import (
+            AdaboostRegressor,
+            ARDRegression,
+            DecisionTreeRegressor,
+            ExtraTreesRegressor,
+            GaussianProcess,
+            HistGradientBoostingRegressor,
+            KNearestNeighborsRegressor,
+            LibLinear_SVR,
+            LibSVM_SVR,
+            MLPRegressor,
+            RandomForestRegressor,
+            SGDRegressor,
+        )
+
+        sklearn_regressors = {
+            "AdaboostRegressor": AdaboostRegressor,
+            "ARDRegression": ARDRegression,
+            "DecisionTreeRegressor": DecisionTreeRegressor,
+            "ExtraTreesRegressor": ExtraTreesRegressor,
+            "GaussianProcess": GaussianProcess,
+            "HistGradientBoostingRegressor": HistGradientBoostingRegressor,
+            "KNearestNeighborsRegressor": KNearestNeighborsRegressor,
+            "LibLinear_SVR": LibLinear_SVR,
+            "LibSVM_SVR": LibSVM_SVR,
+            "MLPRegressor": MLPRegressor,
+            "RandomForestRegressor": RandomForestRegressor,
+            "SGDRegressor": SGDRegressor,
+        }
+
+        for method_name, method in sklearn_regressors.items():
 
             data = pd.read_csv("example/example_data/insurance.csv")
             # encoding categorical features
@@ -130,9 +246,16 @@ def test_add_classifier():
 
 def test_add_regressor():
 
-    from My_AutoML._model._sklearn import HistGradientBoostingRegressor
+    # from My_AutoML._model._sklearn import HistGradientBoostingRegressor
+    import importlib
 
-    from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+    # if autosklearn in installed, use autosklearn version for testing
+    # else, use sklearn version for testing
+    autosklearn_spec = importlib.util.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+    else:
+        from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -144,14 +267,21 @@ def test_add_regressor():
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
-    model = HistGradientBoostingRegressor()
+    # model = HistGradientBoostingRegressor()
+
+    # model.fit(X, y)
+    # y_pred = model.predict(X)
+
+    # assert (
+    #     model._fitted == True
+    # ), "Model HistGradientBoostingRegressor has not been fitted."
+
+    model = LibSVM_SVR()
 
     model.fit(X, y)
     y_pred = model.predict(X)
 
-    assert (
-        model._fitted == True
-    ), "Model HistGradientBoostingRegressor has not been fitted."
+    assert model._fitted == True, "Model LibSVM_SVR has not been fitted."
 
     model = MLPRegressor()
 

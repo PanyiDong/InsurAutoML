@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 10:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 18th April 2022 10:33:29 am
+Last Modified: Thursday, 28th April 2022 10:10:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -207,7 +207,7 @@ class ExtraTreesClassifier(apcc.extra_trees.ExtraTreesClassifier):
         min_samples_leaf=1,
         min_samples_split=2,
         max_features=0.5,
-        bootstrap="False",
+        bootstrap=False,
         min_weight_fraction_leaf=0.0,
         min_impurity_decrease=0.0,
     ):
@@ -270,7 +270,7 @@ class GaussianNB(apcc.gaussian_nb.GaussianNB):
         return super().predict(X)
 
 
-class GradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifier):
+class HistGradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifier):
     def __init__(
         self,
         loss="auto",
@@ -398,11 +398,11 @@ class LibLinear_SVC(apcc.liblinear_svc.LibLinear_SVC):
         self,
         penalty="l2",
         loss="squared_hinge",
-        dual="False",
+        dual=False,
         tol=1e-4,
         C=1.0,
         multi_class="ovr",
-        fit_intercept="True",
+        fit_intercept=True,
         intercept_scaling=1,
     ):
         self.penalty = penalty
@@ -449,7 +449,7 @@ class LibSVM_SVC(apcc.libsvm_svc.LibSVM_SVC):
         gamma=0.1,
         coef0=0,
         tol=1e-3,
-        shrinking="True",
+        shrinking=True,
         max_iter=-1,
     ):
         self.C = C
@@ -501,7 +501,7 @@ class MLPClassifier(apcc.mlp.MLPClassifier):
         tol=1e-4,
         solver="adam",
         batch_size="auto",
-        shuffle="True",
+        shuffle=True,
         beta_1=0.9,
         beta_2=0.999,
         epsilon=1e-8,
@@ -559,7 +559,7 @@ class MultinomialNB(apcc.multinomial_nb.MultinomialNB):
     def __init__(
         self,
         alpha=1,
-        fit_prior="True",
+        fit_prior=True,
     ):
         self.alpha = alpha
         self.fit_prior = fit_prior
@@ -588,8 +588,8 @@ class PassiveAggressive(apcc.passive_aggressive.PassiveAggressive):
     def __init__(
         self,
         C=1.0,
-        fit_intercept="True",
-        average="False",
+        fit_intercept=True,
+        average=False,
         tol=1e-4,
         loss="hinge",
     ):
@@ -657,7 +657,7 @@ class RandomForestClassifier(apcc.random_forest.RandomForest):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        bootstrap="True",
+        bootstrap=True,
         max_leaf_nodes="None",
         min_impurity_decrease=0.0,
     ):
@@ -704,14 +704,14 @@ class SGDClassifier(apcc.sgd.SGD):
         loss="log",
         penalty="l2",
         alpha=0.0001,
-        fit_intercept="True",
+        fit_intercept=True,
         tol=1e-4,
         learning_rate="invscaling",
         l1_ratio=0.15,
         epsilon=1e-4,
         eta0=0.01,
         power_t=0.5,
-        average="False",
+        average=False,
     ):
         self.loss = loss
         self.penalty = penalty
@@ -803,7 +803,7 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
         lambda_1=1e-6,
         lambda_2=1e-6,
         threshold_lambda=1e4,
-        fit_intercept="True",
+        fit_intercept=True,
     ):
         self.n_iter = n_iter
         self.tol = tol
@@ -896,7 +896,7 @@ class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
         min_samples_leaf=1,
         min_samples_split=2,
         max_features=1,
-        bootstrap="False",
+        bootstrap=False,
         min_weight_fraction_leaf=0.0,
         min_impurity_decrease=0.0,
     ):
@@ -969,7 +969,7 @@ class GaussianProcess(apcr.gaussian_process.GaussianProcess):
         return super().predict(X)
 
 
-class GradientBoosting(apcr.gradient_boosting.GradientBoosting):
+class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
     def __init__(
         self,
         loss="least_squares",
@@ -1065,10 +1065,10 @@ class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
         self,
         epsilon=0.1,
         loss="squared_epsilon_insensitive",
-        dual="False",
+        dual=False,
         tol=1e-4,
         C=1.0,
-        fit_intercept="True",
+        fit_intercept=True,
         intercept_scaling=1,
     ):
         self.epsilon = epsilon
@@ -1114,7 +1114,7 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
         gamma=0.1,
         coef0=0,
         tol=1e-3,
-        shrinking="True",
+        shrinking=True,
         max_iter=-1,
     ):
         self.C = C
@@ -1171,7 +1171,7 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
         tol=1e-4,
         solver="adam",
         batch_size="auto",
-        shuffle="True",
+        shuffle=True,
         beta_1=0.9,
         beta_2=0.999,
         epsilon=1e-8,
@@ -1237,7 +1237,7 @@ class RandomForestRegressor(apcr.random_forest.RandomForest):
         min_samples_split=2,
         min_samples_leaf=1,
         min_weight_fraction_leaf=0.0,
-        bootstrap="True",
+        bootstrap=True,
         max_leaf_nodes="None",
         min_impurity_decrease=0.0,
     ):
@@ -1284,14 +1284,14 @@ class SGDRegressor(apcr.sgd.SGD):
         loss="squared_loss",
         penalty="l2",
         alpha=0.0001,
-        fit_intercept="True",
+        fit_intercept=True,
         tol=1e-4,
         learning_rate="invscaling",
         l1_ratio=0.15,
         epsilon=1e-4,
         eta0=0.01,
         power_t=0.5,
-        average="False",
+        average=False,
     ):
         self.loss = loss
         self.penalty = penalty

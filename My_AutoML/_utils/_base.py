@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:20 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 23rd April 2022 2:36:50 pm
+Last Modified: Thursday, 28th April 2022 7:08:05 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -222,3 +222,12 @@ def type_of_script():
 # determine whether a method exists in a class
 def has_method(obj, name):
     return callable(getattr(obj, name, None))
+
+
+# check if is None
+def is_none(item, pat=[None, "None", "none", "NONE"]):
+
+    if item in pat:
+        return True
+    else:
+        return False
