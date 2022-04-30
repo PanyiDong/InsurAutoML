@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 11:32:07 pm
+Last Modified: Saturday, 30th April 2022 3:22:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -114,8 +114,9 @@ regressor_hyperparameter = [
         "model_6": "HistGradientBoostingRegressor",
         # n_iter_no_change only selected for early_stop in ['valid', 'train']
         # validation_fraction only selected for early_stop = 'valid'
-        # "GradientBoosting_loss": tune.choice(["squared_error"]),
-        "HistGradientBoostingRegressor_loss": tune.choice(["least_squares"]),
+        "HistGradientBoostingRegressor_loss": tune.choice(["least_squares"])
+        if sklearn_1_0_0
+        else tune.choice(["squared_error"]),
         "HistGradientBoostingRegressor_learning_rate": tune.loguniform(0.01, 1),
         "HistGradientBoostingRegressor_min_samples_leaf": tune.qlograndint(1, 200, 1),
         "HistGradientBoostingRegressor_max_depth": tune.choice([None]),
