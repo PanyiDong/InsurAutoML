@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 2:14:55 pm
+Last Modified: Friday, 29th April 2022 2:58:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -133,8 +133,15 @@ def test_add_classifier():
 def test_add_regressor():
 
     # from My_AutoML._model._sklearn import HistGradientBoostingRegressor
+    import importlib
 
-    from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+    # if autosklearn in installed, use autosklearn version for testing
+    # else, use sklearn version for testing
+    autosklearn_spec = importlib.utils.find_spec("autosklearn")
+    if autosklearn_spec is None:
+        from My_AutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+    else:
+        from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 

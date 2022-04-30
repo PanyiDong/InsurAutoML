@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 28th April 2022 5:22:12 pm
+Last Modified: Friday, 29th April 2022 10:38:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+# NOTE:
+# As sklearn enters version 1.0, some of the losses have changed its name,
+# hyperparameters will change accordingly
+import sklearn
+
+sklearn_1_0_0 = sklearn.__version__ <= "1.0.0"
 
 from ray import tune
 
@@ -70,10 +77,11 @@ regressor_hyperparameter = [
     },
     {
         "model_3": "DecisionTree",
-        # "DecisionTree_criterion": tune.choice(
-        #     ["squared_error", "friedman_mse", "absolute_error", "poisson"]
-        # ),
-        "DecisionTree_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
+        "DecisionTree_criterion": tune.choice(["mse", "friedman_mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(
+            ["squared_error", "friedman_mse", "absolute_error", "poisson"]
+        ),
         "DecisionTree_max_features": tune.choice([1.0]),
         "DecisionTree_max_depth_factor": tune.uniform(0.0, 2.0),
         "DecisionTree_min_samples_split": tune.qrandint(2, 20, 1),
@@ -84,10 +92,9 @@ regressor_hyperparameter = [
     },
     {
         "model_4": "ExtraTreesRegressor",
-        # "ExtraTreesRegressor_criterion": tune.choice(
-        #     ["squared_error", "friedman_mse", "absolute_error"]
-        # ),
-        "ExtraTreesRegressor_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
+        "ExtraTreesRegressor_criterion": tune.choice(["mse", "friedman_mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(["squared_error", "absolute_error"]),
         "ExtraTreesRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
         "ExtraTreesRegressor_min_samples_split": tune.qrandint(2, 20, 1),
         "ExtraTreesRegressor_max_features": tune.uniform(0.1, 1.0),
@@ -178,10 +185,9 @@ regressor_hyperparameter = [
     },
     {
         "model_11": "RandomForest",
-        # "RandomForest_criterion": tune.choice(
-        #     ["squared_error", "absolute_error", "poisson"]
-        # ),
-        "RandomForest_criterion": tune.choice(["mse", "friedman_mse", "mae"]),
+        "RandomForest_criterion": tune.choice(["mse", "friedman_mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(["squared_error", "absolute_error", "poisson"]),
         "RandomForest_max_features": tune.uniform(0.1, 1.0),
         "RandomForest_max_depth": tune.choice([None]),
         "RandomForest_min_samples_split": tune.qrandint(2, 20, 1),
@@ -204,6 +210,15 @@ regressor_hyperparameter = [
                 "epsilon_insensitive",
                 "squared_epsilon_insensitive",
             ],
+        )
+        if sklearn_1_0_0
+        else tune.choice(
+            [
+                "squared_error",
+                "huber",
+                "epsilon_insensitive",
+                "squared_epsilon_insensitive",
+            ]
         ),
         "SGD_penalty": tune.choice(["l1", "l2", "elasticnet"]),
         "SGD_alpha": tune.loguniform(1e-7, 1e-1),

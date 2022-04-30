@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 28th April 2022 5:21:04 pm
+Last Modified: Friday, 29th April 2022 10:33:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+# NOTE:
+# As sklearn enters version 1.0, some of the losses have changed its name,
+# hyperparameters will change accordingly
+import sklearn
+
+sklearn_1_0_0 = sklearn.__version__ <= "1.0.0"
 
 from ray import tune
 
