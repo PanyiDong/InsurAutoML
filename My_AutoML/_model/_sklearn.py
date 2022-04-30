@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 11:06:04 am
+Last Modified: Saturday, 30th April 2022 2:56:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 import numpy as np
 import scipy
+import sklearn
 import sklearn.linear_model
 import sklearn.neighbors
 import sklearn.tree
@@ -52,9 +53,9 @@ import sklearn.neural_network
 
 # need to enable hist gradient boosting features first
 # no need for sklearn version >= 1.0.0
-# since conflict between sklearn >=1.0.0 and autosklearn,
-# still use 0.24.2 sklearn here
-from sklearn.experimental import enable_hist_gradient_boosting
+sklearn_1_0_0 = sklearn.__version__ < "1.0.0"
+if sklearn_1_0_0:
+    from sklearn.experimental import enable_hist_gradient_boosting
 
 from My_AutoML._constant import MAX_ITER
 from My_AutoML._utils._base import is_none
@@ -250,8 +251,14 @@ class ExtraTreesClassifier:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -381,8 +388,14 @@ class HistGradientBoostingClassifier:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -670,8 +683,14 @@ class MLPClassifier:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -767,8 +786,14 @@ class PassiveAggressive:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -870,8 +895,14 @@ class RandomForestClassifier:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -952,8 +983,14 @@ class SGDClassifier:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -1274,8 +1311,14 @@ class ExtraTreesRegressor:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -1425,8 +1468,14 @@ class HistGradientBoostingRegressor:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -1668,8 +1717,14 @@ class MLPRegressor:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -1746,8 +1801,14 @@ class RandomForestRegressor:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 
@@ -1828,8 +1889,14 @@ class SGDRegressor:
 
     def fit(self, X, y):
 
+        self._fit_iteration(X, y, n_iter=2)
+
+        # accelerate iteration process
+        iteration = 2
         while not self._fitted:
-            self._fit_iteration(X, y)
+            n_iter = int(2**iteration / 2)
+            self._fit_iteration(X, y, n_iter=n_iter)
+            iteration += 1
 
         return self
 

@@ -12,7 +12,7 @@ The project aims to create a AutoML package with special focus on insurance data
 
 System Requirements:
 
-- Linux (write and tested on Ubuntu 20.04)
+- Linux (write and tested on Ubuntu 20.04) and Windows (Windows is now compatible but may suffer from efficiency problems)
 
 - As all trials are running parallelized, more threads (correspondingly, more memory) will increase the training efficiency
 
@@ -35,14 +35,6 @@ cd My_AutoML
 
 ### 2. Install dependencies
 
-#### install by `requirements.txt`
-
-```console
-pip install -r requirements.txt
-```
-
-For neural network related support (need `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
-
 #### install by `setup.py`
 
 ```console
@@ -52,6 +44,18 @@ pip install -e .[normal]
 This method will use `setup.py` to install the dependencies, by default, if no GPU support, should install `normal` version. If GPU is supported, and you wish to test neural network related architectures, use `pip install -e .[nn]` for neural network installation; or, if you wish to use a lightweight, essential-only installation, use `pip install -e .[lightweight]`.
 
 At this moment, `normal` contains few more ML packages that allows testing on a larger model/hyperparameter space. The differences may becomes larger for later versions.
+
+#### install by `requirements.txt`
+
+> It's recommended to use above `setup.py` to install dependencies as it provides more flexibility to recognize your operating system and some optional packages.
+
+```console
+pip install -r requirements.txt
+```
+
+For neural network related support (need `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
+
+> NOTE: 1. For Windows, the installation of `rpy2` is not straightforward, so it may not actually useable, but it's in-built here in `requirements.txt`. If Windows user install through `setup.py`, it will not be included.
 
 ### 3. Put data in the folder and run for training/evaluation
 
@@ -97,13 +101,15 @@ One important issue I find now is that, `ray.tune` does not force to stop runnin
 
 ## Summary
 
-> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn, scikit-learn, lightgbm, xgboost, pygam, rpy2 $^{1}$, tensorflow $^{2}$, torch $^{3}$
+> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn $^{1}$, scikit-learn, lightgbm, xgboost, pygam, rpy2 $^{2}$, tensorflow $^{3}$, torch $^{4}$
 >
-> <sub><sup>1.</sup></sub> rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
+> <sub><sup>1.</sup></sub> auto-sklearn is a AutoML package, which provides some models for the pipeline. But it's only compatible with Linux system. So if you are using windows, this package should not be installed.
 >
-> <sub><sup>2.</sup></sub> tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
+> <sub><sup>2.</sup></sub> rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
 >
-> <sub><sup>3.</sup></sub> torch is required for neural network support.
+> <sub><sup>3.</sup></sub> tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
+>
+> <sub><sup>4.</sup></sub> torch is required for neural network support.
 
 Current Progress:
 
@@ -165,4 +171,4 @@ Other files in the repository:
 
 ## Future
 
-I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure AutoML for tabular tasks/NLP tasks. But no schedules for such progress can be made.
+I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure AutoML for tabular tasks/NLP tasks (it's available now for tabular tasks). But no schedules for such progress can be made.

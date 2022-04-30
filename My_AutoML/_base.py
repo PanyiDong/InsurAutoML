@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 12:15:11 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 12:44:43 pm
+Last Modified: Saturday, 30th April 2022 12:49:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
 import glob
 import numpy as np
 import pandas as pd
@@ -193,11 +194,13 @@ class load_data:
                 for _data_path in _csv_files + _data_files:
                     # in linux path, the path separator is '/'
                     # in windows path, the path separator is '\\'
-                    _filename = (
-                        _data_path.split("/")[-1]
-                        if "/" in _data_path
-                        else _data_path.split("\\")[-1]
-                    )
+                    # _filename = (
+                    #     _data_path.split("/")[-1]
+                    #     if "/" in _data_path
+                    #     else _data_path.split("\\")[-1]
+                    # )
+                    # use os.path.split for unify path separator
+                    _filename = os.path.split(_data_path)[-1]
                     self.database[_filename.split(".")[0]] = pd.read_csv(_data_path)
 
         # load .rda/.rdata files in the path
@@ -240,11 +243,13 @@ class load_data:
                     for _data_path in _rda_files + _rdata_files:
                         # in linux path, the path separator is '/'
                         # in windows path, the path separator is '\\'
-                        _filename = (
-                            _data_path.split("/")[-1]
-                            if "/" in _data_path
-                            else _data_path.split("\\")[-1]
-                        )
+                        # _filename = (
+                        #     _data_path.split("/")[-1]
+                        #     if "/" in _data_path
+                        #     else _data_path.split("\\")[-1]
+                        # )
+                        # use os.path.split for unify path separator
+                        _filename = os.path.split(_data_path)[-1]
                         ro.r('load("' + _data_path + '")')
                         ro.r("rdata = " + _filename.split(".")[0])
                         with localconverter(ro.default_converter + pandas2ri.converter):

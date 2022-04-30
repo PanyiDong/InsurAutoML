@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 11:01:57 am
+Last Modified: Saturday, 30th April 2022 2:44:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,46 +38,25 @@ SOFTWARE.
 
 from setuptools import setup, find_packages
 
-# from Cython.Build import cythonize
-
-# EXCLUDE_FILES = [
-#     "main.py",
-# ]
-
-
-# def get_ext_path(root_dir, exclude_files):
-
-#     """
-#     Get file paths needed compilation
-#     Exclude certain files
-#     """
-
-#     paths = []
-
-#     for root, dirs, files in os.walk(root_dir):
-#         for filename in files:
-#             if os.path.splitext(filename)[1] != ".py":
-#                 continue
-
-#             file_path = os.path.join(root, filename)
-#             if file_path in exclude_files:
-#                 continue
-
-#             paths.append(file_path)
-
-#     return paths
-
-
 setup(
     name="My_AutoML",
-    version="0.2.0",
+    version="0.2.1",
     author="Panyi Dong",
     url="https://github.com/PanyiDong/My_AutoML",
     author_email="panyid2@illinois.edu",
     description="Automated Machine Learning/AutoML pipeline.",
     license="MIT",
     packages=find_packages(
-        exclude=["tests", "example", "archive", "Appendix", "docs", "tests"]
+        exclude=[
+            "tests",
+            "example",
+            "archive",
+            "Appendix",
+            "docs",
+            ".github",
+            "build",
+            "dist",
+        ]
     ),
     package_dir={"My_AutoML": "My_AutoML"},
     include_package_data=True,
@@ -117,6 +96,7 @@ setup(
             "pygam",
             "torch",
             # "transformers",
+            # "datasets",
         ],
     },
 )
