@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:38:01 pm
+Last Modified: Friday, 29th April 2022 11:32:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -97,7 +97,7 @@ regressor_hyperparameter = [
         else tune.choice(["squared_error", "absolute_error"]),
         "ExtraTreesRegressor_min_samples_leaf": tune.qrandint(1, 20, 1),
         "ExtraTreesRegressor_min_samples_split": tune.qrandint(2, 20, 1),
-        "ExtraTreesRegressor_max_features": tune.uniform(0.1, 1.0),
+        "ExtraTreesRegressor_max_features": tune.uniform(0.0, 1.0),
         "ExtraTreesRegressor_bootstrap": tune.choice([True, False]),
         "ExtraTreesRegressor_max_leaf_nodes": tune.choice([None]),
         "ExtraTreesRegressor_max_depth": tune.choice([None]),

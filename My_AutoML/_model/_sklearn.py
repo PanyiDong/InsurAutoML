@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 2:14:42 pm
+Last Modified: Friday, 29th April 2022 11:36:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -227,7 +227,7 @@ class ExtraTreesClassifier:
                 max_leaf_nodes=self.max_leaf_nodes,
                 min_samples_leaf=self.min_samples_leaf,
                 min_samples_split=self.min_samples_split,
-                max_features=float(X.shape[1] ** self.max_features),
+                max_features=max(1, int(X.shape[1] ** self.max_features)),
                 bootstrap=self.bootstrap,
                 min_weight_fraction_leaf=self.min_weight_fraction_leaf,
                 min_impurity_decrease=self.min_impurity_decrease,
@@ -594,7 +594,7 @@ class MLPClassifier:
         self.validation_fraction = float(validation_fraction)
         self.tol = float(tol)
         self.solver = solver
-        self.batch_size = int(batch_size)
+        self.batch_size = batch_size
         self.shuffle = shuffle
         self.beta_1 = float(beta_1)
         self.beta_2 = float(beta_2)
@@ -1250,7 +1250,7 @@ class ExtraTreesRegressor:
                 max_leaf_nodes=self.max_leaf_nodes,
                 min_samples_leaf=self.min_samples_leaf,
                 min_samples_split=self.min_samples_split,
-                max_features=float(X.shape[1] ** self.max_features),
+                max_features=self.max_features,
                 bootstrap=self.bootstrap,
                 min_weight_fraction_leaf=self.min_weight_fraction_leaf,
                 min_impurity_decrease=self.min_impurity_decrease,

@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 28th April 2022 9:09:19 pm
+Last Modified: Friday, 29th April 2022 11:30:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -143,11 +143,14 @@ def test_feature_rounding():
 def test_timer():
 
     from My_AutoML._utils._base import Timer
+    import time
 
     timer = Timer()
     timer.start()
+    time.sleep(4)
     timer.stop()
     timer.start()
+    time.sleep(3)
     timer.stop()
 
     assert timer.sum() / timer.avg() == 2.0, "The timer is not correctly done."
