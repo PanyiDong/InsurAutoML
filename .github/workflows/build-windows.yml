@@ -1,4 +1,4 @@
-name: build-windows
+name: Windows
 on:
   - pull_request
   - push

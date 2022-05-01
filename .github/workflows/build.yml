@@ -1,4 +1,4 @@
-name: build
+name: Linux
 on:
   - pull_request
   - push
