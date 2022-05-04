@@ -2176,7 +2176,7 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
 class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor):
     def __init__(
         self,
-        loss="squared_error",
+        loss="ls" if sklearn_1_0_0 else "squared_error", # for default arguments
         learning_rate=0.1,
         n_estimators=100,
         subsample=1.0,
