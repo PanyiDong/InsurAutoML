@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 1st May 2022 11:38:55 am
+Last Modified: Wednesday, 4th May 2022 2:39:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1151,7 +1151,7 @@ class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
             criterion=self.criterion,
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_samples_split,
+            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
             max_depth=self.max_depth,
             min_impurity_decrease=self.min_impurity_decrease,
             max_features=self.max_features,
@@ -2216,7 +2216,7 @@ class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor):
             criterion=self.criterion,
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
-            min_weight_fraction_leaf=self.min_samples_split,
+            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
             max_depth=self.max_depth,
             min_impurity_decrease=self.min_impurity_decrease,
             max_features=self.max_features,
