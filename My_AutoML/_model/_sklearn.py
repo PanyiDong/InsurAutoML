@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 2:56:49 pm
+Last Modified: Sunday, 1st May 2022 11:38:55 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1108,6 +1108,74 @@ class ComplementNB(sklearn.naive_bayes.ComplementNB):
 #         return super().predict(X)
 
 
+class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
+    def __init__(
+        self,
+        loss="deviance",
+        learning_rate=0.1,
+        n_estimators=100,
+        subsample=1.0,
+        criterion="friedman_mse",
+        min_samples_split=2,
+        min_samples_leaf=1,
+        min_weight_fraction_leaf=0.0,
+        max_depth=3,
+        min_impurity_decrease=0.0,
+        max_features="auto",
+        max_leaf_nodes=31,
+        validation_fraction=0.1,
+        n_iter_no_change=10,
+        tol=1e-7,
+    ):
+        self.loss = loss
+        self.learning_rate = float(learning_rate)
+        self.n_estimators = int(n_estimators)
+        self.subsample = float(subsample)
+        self.criterion = criterion
+        self.min_samples_split = int(min_samples_split)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.min_impurity_decrease = float(min_impurity_decrease)
+        self.max_features = max_features
+        self.max_leaf_nodes = int(max_leaf_nodes)
+        self.validation_fraction = float(validation_fraction)
+        self.n_iter_no_change = int(n_iter_no_change)
+        self.tol = float(tol)
+
+        super().__init__(
+            loss=self.loss,
+            learning_rate=self.learning_rate,
+            n_estimators=self.n_estimators,
+            subsample=self.subsample,
+            criterion=self.criterion,
+            min_samples_split=self.min_samples_split,
+            min_samples_leaf=self.min_samples_leaf,
+            min_weight_fraction_leaf=self.min_samples_split,
+            max_depth=self.max_depth,
+            min_impurity_decrease=self.min_impurity_decrease,
+            max_features=self.max_features,
+            max_leaf_nodes=self.max_leaf_nodes,
+            validation_fraction=self.validation_fraction,
+            n_iter_no_change=self.n_iter_no_change,
+            tol=self.tol,
+        )
+
+        self._fitted = False  # whether the model is fitted
+
+    def fit(self, X, y):
+
+        super().fit(X, y)
+
+        self._fitted = True
+
+        return self
+
+    def predict(self, X):
+
+        return super().predict(X)
+
+
 ####################################################################################################################
 # regressors
 
@@ -2103,3 +2171,71 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
 #     def predict(self, X):
 
 #         return super().predict(X)
+
+
+class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor):
+    def __init__(
+        self,
+        loss="squared_error",
+        learning_rate=0.1,
+        n_estimators=100,
+        subsample=1.0,
+        criterion="friedman_mse",
+        min_samples_split=2,
+        min_samples_leaf=1,
+        min_weight_fraction_leaf=0.0,
+        max_depth=3,
+        min_impurity_decrease=0.0,
+        max_features="auto",
+        max_leaf_nodes=31,
+        validation_fraction=0.1,
+        n_iter_no_change=10,
+        tol=1e-7,
+    ):
+        self.loss = loss
+        self.learning_rate = float(learning_rate)
+        self.n_estimators = int(n_estimators)
+        self.subsample = float(subsample)
+        self.criterion = criterion
+        self.min_samples_split = int(min_samples_split)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.min_impurity_decrease = float(min_impurity_decrease)
+        self.max_features = max_features
+        self.max_leaf_nodes = int(max_leaf_nodes)
+        self.validation_fraction = float(validation_fraction)
+        self.n_iter_no_change = int(n_iter_no_change)
+        self.tol = float(tol)
+
+        super().__init__(
+            loss=self.loss,
+            learning_rate=self.learning_rate,
+            n_estimators=self.n_estimators,
+            subsample=self.subsample,
+            criterion=self.criterion,
+            min_samples_split=self.min_samples_split,
+            min_samples_leaf=self.min_samples_leaf,
+            min_weight_fraction_leaf=self.min_samples_split,
+            max_depth=self.max_depth,
+            min_impurity_decrease=self.min_impurity_decrease,
+            max_features=self.max_features,
+            max_leaf_nodes=self.max_leaf_nodes,
+            validation_fraction=self.validation_fraction,
+            n_iter_no_change=self.n_iter_no_change,
+            tol=self.tol,
+        )
+
+        self._fitted = False  # whether the model is fitted
+
+    def fit(self, X, y):
+
+        super().fit(X, y)
+
+        self._fitted = True
+
+        return self
+
+    def predict(self, X):
+
+        return super().predict(X)

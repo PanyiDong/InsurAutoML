@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:27:29 am
+Last Modified: Wednesday, 4th May 2022 2:25:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1049,6 +1049,7 @@ def get_algo(search_algo):
         from ray.tune.suggest.nevergrad import NevergradSearch
 
         algo = NevergradSearch
+    # default hyeprparameter space can not be easily converted
     # elif search_algo == "Optuna":
 
     #     # check whether optuna is installed

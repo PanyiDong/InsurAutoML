@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 2:10:04 pm
+Last Modified: Sunday, 1st May 2022 11:42:24 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -206,6 +206,7 @@ from ._sklearn import (
     LogisticRegression,
     # ComplementNB,
     # HistGradientBoostingClassifier,
+    GradientBoostingClassifier,
     # sklearn regressors
     LinearRegression,
     Lasso,
@@ -213,12 +214,14 @@ from ._sklearn import (
     ElasticNet,
     BayesianRidge,
     # HistGradientBoostingRegressor,
+    GradientBoostingRegressor,
 )
 
 # classification models from sklearn
 classifiers["LogisticRegression"] = LogisticRegression
 # classifiers["ComplementNB"] = ComplementNB
 # classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
+classifiers["GradientBoostingClassifier"] = GradientBoostingClassifier
 
 # regression models from sklearn
 regressors["LinearRegression"] = LinearRegression
@@ -227,6 +230,7 @@ regressors["RidgeRegression"] = Ridge
 regressors["ElasticNet"] = ElasticNet
 regressors["BayesianRidge"] = BayesianRidge
 # regressors["HistGradientBoostingRegressor"] = HistGradientBoostingRegressor # not well-supported by package conflicts
+regressors["GradientBoostingRegressor"] = GradientBoostingRegressor
 
 # check whether lightgbm installed
 # if installed, add lightgbm depended classifiers/regressors

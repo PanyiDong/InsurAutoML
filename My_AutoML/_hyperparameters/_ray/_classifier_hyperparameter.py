@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:33:20 pm
+Last Modified: Tuesday, 3rd May 2022 7:21:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -234,6 +234,28 @@ classifier_hyperparameter = [
     #     "HistGradientBoostingClassifier_l2_regularization": tune.uniform(0, 1),
     #     "HistGradientBoostingClassifier_tol": tune.loguniform(1e-5, 1e-1),
     # },
+    {
+        "model_19": "GradientBoostingClassifier",
+        "GradientBoostingClassifier_loss": tune.choice(["deviance", "exponential"]),
+        "GradientBoostingClassifier_learning_rate": tune.loguniform(0.01, 1),
+        "GradientBoostingClassifier_n_estimators": tune.qlograndint(10, 500, 1),
+        "GradientBoostingClassifier_subsample": tune.uniform(0.1, 1),
+        "GradientBoostingClassifier_criterion": tune.choice(["mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(["friedman_mse", "squared_error"]),
+        "GradientBoostingClassifier_min_samples_split": tune.qrandint(2, 20, 1),
+        "GradientBoostingClassifier_min_samples_leaf": tune.qlograndint(1, 200, 1),
+        "GradientBoostingClassifier_min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
+        "GradientBoostingClassifier_max_depth": tune.randint(1, 31),
+        "GradientBoostingClassifier_min_impurity_decrease": tune.uniform(0.0, 1.0),
+        "GradientBoostingClassifier_max_features": tune.choice(
+            ["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]
+        ),
+        "GradientBoostingClassifier_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
+        "GradientBoostingClassifier_validation_fraction": tune.uniform(0.01, 0.4),
+        "GradientBoostingClassifier_n_iter_no_change": tune.qrandint(1, 20, 1),
+        "GradientBoostingClassifier_tol": tune.choice([1e-7]),
+    },
     # self-defined models
     {
         "model_20": "MLP_Classifier",
