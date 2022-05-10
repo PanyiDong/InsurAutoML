@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 3:28:49 pm
+Last Modified: Tuesday, 10th May 2022 3:32:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,7 +69,7 @@ def setup_package():
         package_dir={"My_AutoML": "My_AutoML"},
         include_package_data=True,
         package_data={"My_AutoML": ["Appendix/*", "example/*"]},
-        platforms=["Linux"],
+        platforms=["Linux", "Windows", "MacOS"],
         python_requires=">=3.7",
         install_requires=[
             "numpy",

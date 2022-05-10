@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 10:06:01 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 5:50:41 pm
+Last Modified: Tuesday, 10th May 2022 3:44:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -191,7 +191,7 @@ feature_selection_hyperparameter = [
         "feature_selection_19": "select_percentile_classification",
         "select_percentile_classification_percentile": tune.qrandint(1, 99, 1),
         "select_percentile_classification_score_func": tune.choice(
-            ["chi2", "f_classif", "mutual_info"],
+            ["chi2", "f_classif", "mutual_info_classif"],
         ),
     },
     {
