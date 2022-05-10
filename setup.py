@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 2:44:40 pm
+Last Modified: Tuesday, 10th May 2022 3:28:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -36,67 +36,79 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import sys
+
 from setuptools import setup, find_packages
 
-setup(
-    name="My_AutoML",
-    version="0.2.1",
-    author="Panyi Dong",
-    url="https://github.com/PanyiDong/My_AutoML",
-    author_email="panyid2@illinois.edu",
-    description="Automated Machine Learning/AutoML pipeline.",
-    license="MIT",
-    packages=find_packages(
-        exclude=[
-            "tests",
-            "example",
-            "archive",
-            "Appendix",
-            "docs",
-            ".github",
-            "build",
-            "dist",
-        ]
-    ),
-    package_dir={"My_AutoML": "My_AutoML"},
-    include_package_data=True,
-    package_data={"My_AutoML": ["Appendix/*", "example/*"]},
-    platforms=["Linux"],
-    python_requires=">=3.7",
-    install_requires=[
-        "numpy",
-        "pandas",
-        "scipy",
-        "matplotlib",
-        "ray",
-        "ray[tune]",
-        "ray[rllib]",
-        "redis",
-        "tqdm==4.62.3",
-        "mlflow==1.21.0",
-        "tensorboardX",
-        "hyperopt==0.2.5",
-        "auto-sklearn==0.14.6;platform_system=='Linux'",
-        "scikit-learn==0.24.2;platform_system=='Linux'",
-        "scikit-learn>1.0.0;platform_system=='Windows'",
-        "scikit-learn>1.0.0;platform_system=='MacOS'",
-    ],
-    extras_require={
-        "lightweight": [],
-        "normal": [
-            "rpy2;platform_system=='Linux'",
-            "lightgbm",
-            "xgboost",
-            "pygam",
+if sys.version_info < (3, 7):
+    sys.exit("Python >= 3.7 is required for the pipeline!")
+
+
+def setup_package():
+
+    setup(
+        name="My_AutoML",
+        version="0.2.1",
+        author="Panyi Dong",
+        url="https://github.com/PanyiDong/My_AutoML",
+        author_email="panyid2@illinois.edu",
+        description="Automated Machine Learning/AutoML pipeline.",
+        license="MIT",
+        packages=find_packages(
+            exclude=[
+                "tests",
+                "example",
+                "archive",
+                "Appendix",
+                "docs",
+                ".github",
+                "build",
+                "dist",
+            ]
+        ),
+        package_dir={"My_AutoML": "My_AutoML"},
+        include_package_data=True,
+        package_data={"My_AutoML": ["Appendix/*", "example/*"]},
+        platforms=["Linux"],
+        python_requires=">=3.7",
+        install_requires=[
+            "numpy",
+            "pandas",
+            "scipy",
+            "matplotlib",
+            "ray",
+            # "ray[tune]",
+            # "ray[rllib]",
+            "redis;platform_system=='Windows'",
+            "tqdm==4.62.3",
+            "mlflow==1.21.0",
+            "tensorboardX",
+            "hyperopt==0.2.5",
+            "auto-sklearn==0.14.6;platform_system=='Linux'",
+            "scikit-learn==0.24.2;platform_system=='Linux'",
+            "scikit-learn>1.0.0;platform_system=='Windows'",
+            "scikit-learn>1.0.0;platform_system=='MacOS'",
         ],
-        "nn": [
-            "rpy2;platform_system=='Linux'",
-            "lightgbm",
-            "xgboost",
-            "pygam",
-            "torch",
-            # "transformers",
-            # "datasets",
-        ],
-    },
-)
+        extras_require={
+            "lightweight": [],
+            "normal": [
+                "rpy2;platform_system=='Linux'",
+                "lightgbm",
+                "xgboost",
+                "pygam",
+            ],
+            "nn": [
+                "rpy2;platform_system=='Linux'",
+                "lightgbm",
+                "xgboost",
+                "pygam",
+                "torch",
+                # "transformers",
+                # "datasets",
+            ],
+        },
+    )
+
+
+if __name__ == "__main__":
+    setup_package()

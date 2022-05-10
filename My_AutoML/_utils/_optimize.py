@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 4th May 2022 2:25:58 pm
+Last Modified: Tuesday, 10th May 2022 2:33:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -595,7 +595,7 @@ class TabularObjective(tune.Trainable):
                 f.write("Imputation finished, in scaling process.")
 
             # balancing
-            _X_obj = self.blc.fit_transform(_X_obj)
+            _X_obj, _y_obj = self.blc.fit_transform(_X_obj, _y_obj)
             # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
             with open("objective_process.txt", "w") as f:
                 f.write("Balancing finished, in feature selection process.")
