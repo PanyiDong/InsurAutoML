@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 3:04:56 pm
+Last Modified: Wednesday, 11th May 2022 3:07:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -974,7 +974,7 @@ class AutoTabularBase:
         self.n_estimators = int(min(self.n_estimators, self.max_evals))
 
         # at least one constraint of time/evaluations should be provided
-        if self.timout == -1 and self.max_evals == -1:
+        if self.timeout == -1 and self.max_evals == -1:
             warnings.warn(
                 "None of time or evaluation contraint is provided, will set time limit to 1 hour."
             )
