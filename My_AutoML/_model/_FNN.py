@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th April 2022 12:19:13 am
+Last Modified: Tuesday, 10th May 2022 7:17:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -386,6 +386,12 @@ class MLP_Classifier(MLP_Base):
         # need to wrap predict function to convert output format
         return assign_classes(super().predict(X))
 
+    def predict_proba(self, X):
+
+        # not need to use argmax to select the one class
+        # but to return full probability
+        return super().predict(X)
+
 
 # Multi-Layer Perceptron regressor
 class MLP_Regressor(MLP_Base):
@@ -483,3 +489,7 @@ class MLP_Regressor(MLP_Base):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return NotImplementedError("predict_proba is not implemented for regression.")

@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th April 2022 11:50:11 pm
+Last Modified: Tuesday, 10th May 2022 10:08:05 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -292,6 +292,9 @@ class formatting:
 
                 # refit dtype, for double checking
                 X[_column] = X[_column].astype(self.type_table[_column])
+
+        if not self.inplace:
+            return X
 
 
 def unify_nan(dataset, columns=[], nas=["novalue", "None", "none"], replace=False):
@@ -613,8 +616,22 @@ class ExtremeClass:
 
 # convert a (n_samples, n_classes) array to a (n_samples, 1) array
 # assign the class with the largest probability to the sample
-# common use of this function is to convert the prediction of the class 
+# common use of this function is to convert the prediction of the class
 # from neural network to actual predictions
-def assign_classes(list) :
-    
+def assign_classes(list):
+
     return np.array([np.argmax(item) for item in list])
+
+
+# softmax function that can handle 1d data
+def softmax(df):
+
+    if len(df.shape) == 1:
+        ppositive = 1 / (1 + np.exp(-df))
+        ppositive[ppositive > 0.999999] = 1
+        ppositive[ppositive < 0.0000001] = 0
+        return np.transpose(np.array((1 - ppositive, ppositive)))
+    else:
+        tmp = df - np.max(df, axis=1).reshape((-1, 1))
+        tmp = np.exp(tmp)
+        return tmp / np.sum(tmp, axis=1).reshape((-1, 1))

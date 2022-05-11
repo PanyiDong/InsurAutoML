@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 8:18:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 8:37:29 pm
+Last Modified: Tuesday, 10th May 2022 7:18:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -67,6 +67,10 @@ class GAM_Classifier:
 
         return self.model.predict(X)
 
+    def predict_proba(self, X):
+
+        return self.model.predict_proba(X)
+
 
 class GAM_Regressor:
     def __init__(
@@ -107,3 +111,7 @@ class GAM_Regressor:
     def predict(self, X):
 
         return self.model.predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")

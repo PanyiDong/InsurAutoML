@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 10:50:47 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 28th April 2022 10:10:51 pm
+Last Modified: Tuesday, 10th May 2022 9:01:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -124,6 +124,10 @@ class AdaboostClassifier(apcc.adaboost.AdaboostClassifier):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class BernoulliNB(apcc.bernoulli_nb.BernoulliNB):
     def __init__(
@@ -149,6 +153,10 @@ class BernoulliNB(apcc.bernoulli_nb.BernoulliNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class DecisionTreeClassifier(apcc.decision_tree.DecisionTree):
@@ -196,6 +204,10 @@ class DecisionTreeClassifier(apcc.decision_tree.DecisionTree):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class ExtraTreesClassifier(apcc.extra_trees.ExtraTreesClassifier):
@@ -247,6 +259,10 @@ class ExtraTreesClassifier(apcc.extra_trees.ExtraTreesClassifier):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class GaussianNB(apcc.gaussian_nb.GaussianNB):
     def __init__(
@@ -268,6 +284,10 @@ class GaussianNB(apcc.gaussian_nb.GaussianNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class HistGradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifier):
@@ -328,6 +348,10 @@ class HistGradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClas
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class KNearestNeighborsClassifier(apcc.k_nearest_neighbors.KNearestNeighborsClassifier):
     def __init__(
@@ -360,6 +384,10 @@ class KNearestNeighborsClassifier(apcc.k_nearest_neighbors.KNearestNeighborsClas
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class LDA(apcc.lda.LDA):
     def __init__(
@@ -391,6 +419,10 @@ class LDA(apcc.lda.LDA):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class LibLinear_SVC(apcc.liblinear_svc.LibLinear_SVC):
@@ -439,6 +471,10 @@ class LibLinear_SVC(apcc.liblinear_svc.LibLinear_SVC):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class LibSVM_SVC(apcc.libsvm_svc.LibSVM_SVC):
     def __init__(
@@ -485,6 +521,10 @@ class LibSVM_SVC(apcc.libsvm_svc.LibSVM_SVC):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class MLPClassifier(apcc.mlp.MLPClassifier):
@@ -554,6 +594,10 @@ class MLPClassifier(apcc.mlp.MLPClassifier):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class MultinomialNB(apcc.multinomial_nb.MultinomialNB):
     def __init__(
@@ -582,6 +626,10 @@ class MultinomialNB(apcc.multinomial_nb.MultinomialNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class PassiveAggressive(apcc.passive_aggressive.PassiveAggressive):
@@ -621,6 +669,10 @@ class PassiveAggressive(apcc.passive_aggressive.PassiveAggressive):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class QDA(apcc.qda.QDA):
     def __init__(
@@ -646,6 +698,10 @@ class QDA(apcc.qda.QDA):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class RandomForestClassifier(apcc.random_forest.RandomForest):
@@ -696,6 +752,10 @@ class RandomForestClassifier(apcc.random_forest.RandomForest):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class SGDClassifier(apcc.sgd.SGD):
@@ -753,6 +813,10 @@ class SGDClassifier(apcc.sgd.SGD):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 ####################################################################################################################
 # regressors
@@ -791,6 +855,10 @@ class AdaboostRegressor(apcr.adaboost.AdaboostRegressor):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ARDRegression(apcr.ard_regression.ARDRegression):
@@ -839,6 +907,10 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
     def __init__(
@@ -885,6 +957,10 @@ class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
@@ -936,6 +1012,10 @@ class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class GaussianProcess(apcr.gaussian_process.GaussianProcess):
     def __init__(
@@ -967,6 +1047,10 @@ class GaussianProcess(apcr.gaussian_process.GaussianProcess):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
@@ -1027,6 +1111,10 @@ class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegressor):
     def __init__(
@@ -1058,6 +1146,10 @@ class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegre
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
@@ -1102,6 +1194,10 @@ class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
@@ -1155,6 +1251,10 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class MLPRegressor(apcr.mlp.MLPRegressor):
@@ -1227,6 +1327,10 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class RandomForestRegressor(apcr.random_forest.RandomForest):
     def __init__(
@@ -1276,6 +1380,10 @@ class RandomForestRegressor(apcr.random_forest.RandomForest):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class SGDRegressor(apcr.sgd.SGD):
@@ -1335,3 +1443,7 @@ class SGDRegressor(apcr.sgd.SGD):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")

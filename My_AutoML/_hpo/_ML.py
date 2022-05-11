@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 1:21:39 pm
+Last Modified: Tuesday, 10th May 2022 11:31:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,6 +53,8 @@ class AutoTabularRegressor(AutoTabularBase):
 
     Parameters
     ----------
+    n_estimators: top k pipelines used to create the ensemble, default: 5
+    
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
@@ -158,6 +160,7 @@ class AutoTabularRegressor(AutoTabularBase):
 
     def __init__(
         self,
+        n_estimators=5,
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -188,6 +191,7 @@ class AutoTabularRegressor(AutoTabularBase):
         reset_index=True,
         seed=1,
     ):
+        self.n_estimators = n_estimators
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -222,6 +226,7 @@ class AutoTabularRegressor(AutoTabularBase):
 
         super().__init__(
             task_mode="regression",
+            n_estimators=self.n_estimators,
             timeout=self.timeout,
             max_evals=self.max_evals,
             allow_error_prop=self.allow_error_prop,
@@ -273,6 +278,8 @@ class AutoTabularClassifier(AutoTabularBase):
 
     Parameters
     ----------
+    n_estimators: top k pipelines used to create the ensemble, default: 5
+    
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
@@ -379,6 +386,7 @@ class AutoTabularClassifier(AutoTabularBase):
 
     def __init__(
         self,
+        n_estimators=5,
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -409,6 +417,7 @@ class AutoTabularClassifier(AutoTabularBase):
         reset_index=True,
         seed=1,
     ):
+        self.n_estimators = n_estimators
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -443,6 +452,7 @@ class AutoTabularClassifier(AutoTabularBase):
 
         super().__init__(
             task_mode="classification",
+            n_estimators=self.n_estimators,
             timeout=self.timeout,
             max_evals=self.max_evals,
             allow_error_prop=self.allow_error_prop,
@@ -494,6 +504,8 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
     Parameters
     ----------
+    n_estimators: top k pipelines used to create the ensemble, default: 5
+    
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
@@ -605,6 +617,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
     def __init__(
         self,
+        n_estimators=5,
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -635,6 +648,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         reset_index=True,
         seed=1,
     ):
+        self.n_estimators = n_estimators
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -676,6 +690,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         if self._type in ["binary", "multiclass"]:  # assign classification tasks
             self.model = AutoTabularClassifier(
+                n_estimators=self.n_estimators,
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 allow_error_prop=self.allow_error_prop,
@@ -708,6 +723,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             )
         elif self._type in ["integer", "continuous"]:  # assign regression tasks
             self.model = AutoTabularRegressor(
+                n_estimators=self.n_estimators,
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 allow_error_prop=self.allow_error_prop,

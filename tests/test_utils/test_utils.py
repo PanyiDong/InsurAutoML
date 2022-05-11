@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 12:31:37 pm
+Last Modified: Tuesday, 10th May 2022 8:10:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -675,3 +675,20 @@ def test_is_none():
 
     assert is_none(None) == True, "The is_none function is not correct."
     assert is_none("not none") == False, "The is_none function is not correct."
+
+
+def test_softmax():
+
+    from My_AutoML._utils._data import softmax
+
+    a = np.array([0.1, -0.1, 1])
+
+    assert (
+        softmax(a).sum(axis=1) == np.ones(3)
+    ).all(), "The softmax function is not correct."
+
+    a = np.array([[0.1, 0.2], [0.1, -0.2], [1, 0]])
+
+    assert (
+        softmax(a).sum(axis=1) == np.ones(3)
+    ).all(), "The softmax function is not correct."

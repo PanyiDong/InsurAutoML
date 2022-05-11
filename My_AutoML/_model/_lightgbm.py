@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:19:01 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:20:22 am
+Last Modified: Tuesday, 10th May 2022 7:15:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -54,53 +54,53 @@ from My_AutoML._constant import (
 # https://lightgbm.readthedocs.io/en/latest/Parameters-Tuning.html
 
 
-class LightGBM_Base :
-    
+class LightGBM_Base:
+
     """
     LightGBM Classification/Regression Wrapper
-    
+
     Parameters
     ----------
     task_type: task type, one of classification or regression, default = "classification"
-    
+
     objective: objective function (metric/loss) to evaluate model, default = "regression"
-        
+
     boosting: boosting method, default = "gbdt"
     support ["gbdt", "rf", "dart", "goss"]
-        
+
     n_estimators: number of estimators to build, default = 100
-    
+
     max_depth: max depth of trees built, default = -1
     -1 stands for no limitation
-    
+
     num_leaves: number of leaf nodes to build, default = 31
-    
+
     min_data_in_leaf: minimum number of data to generate a leaf node, default = 20
-    
+
     learning_rate: learning rate of the building process, default = 0.1
-    
+
     tree_learner: tree learner algorithm, default = "serial"
     support ["serial", "feature", "data", "voting"]
-    
+
     num_iterations: number of iterations for the algorithm, default = 100
-    
+
     seed: random seed, default = 1
     """
-    
+
     def __init__(
         self,
-        task_type = "classification",
-        objective = "regression",
-        boosting = "gbdt",
-        n_estimators = 100,
-        max_depth = -1,
-        num_leaves = 31,
-        min_data_in_leaf = 20,
-        learning_rate = 0.1,
-        tree_learner = "serial",
-        num_iterations = 100,
-        seed = 1,
-    ) :
+        task_type="classification",
+        objective="regression",
+        boosting="gbdt",
+        n_estimators=100,
+        max_depth=-1,
+        num_leaves=31,
+        min_data_in_leaf=20,
+        learning_rate=0.1,
+        tree_learner="serial",
+        num_iterations=100,
+        seed=1,
+    ):
         self.task_type = task_type
         self.objective = objective
         self.boosting = boosting
@@ -112,57 +112,69 @@ class LightGBM_Base :
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
         self.seed = seed
-        
+
         self._fitted = False
-    
-    def fit(self, X, y) :
-        
+
+    def fit(self, X, y):
+
         # get binary classification and multiclass classification
-        if self.task_type == "classification" :
-            if len(pd.unique(y)) == 2 :
+        if self.task_type == "classification":
+            if len(pd.unique(y)) == 2:
                 self.task_type = "binary"
-            else :
+            else:
                 self.task_type = "multiclass"
-                
+
         # check categorical hyperparameters in range
         # objective
-        if self.task_type == "binary" and self.objective not in LIGHTGBM_BINARY_CLASSIFICATION :
+        if (
+            self.task_type == "binary"
+            and self.objective not in LIGHTGBM_BINARY_CLASSIFICATION
+        ):
             raise AttributeError(
                 "For {} tasks, only accept objects: {}, get {}.".format(
-                    self.task_type, ", ".join(LIGHTGBM_BINARY_CLASSIFICATION), self.objective
+                    self.task_type,
+                    ", ".join(LIGHTGBM_BINARY_CLASSIFICATION),
+                    self.objective,
                 )
             )
-        elif self.task_type == "multiclass" and self.objective not in LIGHTGBM_MULTICLASS_CLASSIFICATION :
+        elif (
+            self.task_type == "multiclass"
+            and self.objective not in LIGHTGBM_MULTICLASS_CLASSIFICATION
+        ):
             raise AttributeError(
                 "For {} tasks, only accept objects: {}, get {}.".format(
-                    self.task_type, ", ".join(LIGHTGBM_MULTICLASS_CLASSIFICATION), self.objective
+                    self.task_type,
+                    ", ".join(LIGHTGBM_MULTICLASS_CLASSIFICATION),
+                    self.objective,
                 )
             )
-        elif self.task_type == "regression" and self.objective not in LIGHTGBM_REGRESSION :
+        elif (
+            self.task_type == "regression" and self.objective not in LIGHTGBM_REGRESSION
+        ):
             raise AttributeError(
                 "For {} tasks, only accept objects: {}, get {}.".format(
                     self.task_type, ", ".join(LIGHTGBM_REGRESSION), self.objective
                 )
             )
-            
+
         # boosting
-        if self.boosting not in LIGHTGBM_BOOSTING :
+        if self.boosting not in LIGHTGBM_BOOSTING:
             raise AttributeError(
                 "Expect one of {} boosting method, get {}.".format(
                     ", ".join(LIGHTGBM_BOOSTING), self.boosting
                 )
             )
-            
+
         # tree learner
-        if self.tree_learner not in LIGHTGBM_TREE_LEARNER :
+        if self.tree_learner not in LIGHTGBM_TREE_LEARNER:
             raise AttributeError(
                 "Expect one of {} tree learner, get {}.".format(
                     ", ".join(LIGHTGBM_TREE_LEARNER), self.tree_learner
                 )
             )
-        
+
         # model
-        if self.task_type in ["binary", "multiclass"] :
+        if self.task_type in ["binary", "multiclass"]:
             self.model = LGBMClassifier(
                 objective=self.objective,
                 boosting_type=self.boosting,
@@ -171,10 +183,10 @@ class LightGBM_Base :
                 num_leaves=self.num_leaves,
                 min_data_in_leaf=self.min_data_in_leaf,
                 learning_rate=self.learning_rate,
-                tree_learner = self.tree_learner,
-                num_iterations = self.num_iterations,
+                tree_learner=self.tree_learner,
+                num_iterations=self.num_iterations,
             )
-        elif self.task_type == "regression" :
+        elif self.task_type == "regression":
             self.model = LGBMRegressor(
                 objective=self.objective,
                 boosting_type=self.boosting,
@@ -183,64 +195,69 @@ class LightGBM_Base :
                 num_leaves=self.num_leaves,
                 min_data_in_leaf=self.min_data_in_leaf,
                 learning_rate=self.learning_rate,
-                tree_learner = self.tree_learner,
-                num_iterations = self.num_iterations,
+                tree_learner=self.tree_learner,
+                num_iterations=self.num_iterations,
             )
-            
+
         self.model.fit(X, y)
-        
+
         self._fitted = True
-        
+
         return self
-    
-    def predict(self, X) :
-        
+
+    def predict(self, X):
+
         return self.model.predict(X)
-    
-class LightGBM_Classifier(LightGBM_Base) :
-    
+
+    def predict_proba(self, X):
+
+        return self.model.predict_proba(X)
+
+
+class LightGBM_Classifier(LightGBM_Base):
+
     """
     LightGBM Classification Wrapper
-    
+
     Parameters
     ----------
     objective: objective function (metric/loss) to evaluate model, default = "multiclass"
-        
+
     boosting: boosting method, default = "gbdt"
     support ["gbdt", "rf", "dart", "goss"]
-        
+
     n_estimators: number of estimators to build, default = 100
-    
+
     max_depth: max depth of trees built, default = -1
     -1 stands for no limitation
-    
+
     num_leaves: number of leaf nodes to build, default = 31
-    
+
     min_data_in_leaf: minimum number of data to generate a leaf node, default = 20
-    
+
     learning_rate: learning rate of the building process, default = 0.1
-    
+
     tree_learner: tree learner algorithm, default = "serial"
     support ["serial", "feature", "data", "voting"]
-    
+
     num_iterations: number of iterations for the algorithm, default = 100
-    
+
     seed: random seed, default = 1
     """
-    
+
     def __init__(
         self,
-        objective = "multiclass",
-        boosting = "gbdt",
-        n_estimators = 100,
-        max_depth = -1,
-        num_leaves = 31,
-        min_data_in_leaf = 20,
-        learning_rate = 0.1,
-        tree_learner = "serial",
-        num_iterations = 100,
-        seed = 1,
-    ) :
+        objective="multiclass",
+        boosting="gbdt",
+        n_estimators=100,
+        max_depth=-1,
+        num_leaves=31,
+        min_data_in_leaf=20,
+        learning_rate=0.1,
+        tree_learner="serial",
+        num_iterations=100,
+        seed=1,
+    ):
         self.objective = objective
         self.boosting = boosting
         self.n_estimators = n_estimators
@@ -251,79 +268,84 @@ class LightGBM_Classifier(LightGBM_Base) :
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
         self.seed = seed
-        
+
         self._fitted = False
-        
+
         super().__init__(
-            task_type = "classification",
-            objective = self.objective,
-            boosting = self.boosting,
-            n_estimators = self.n_estimators,
-            max_depth = self.max_depth,
-            num_leaves = self.num_leaves,
-            min_data_in_leaf = self.min_data_in_leaf,
-            learning_rate = self.learning_rate,
-            tree_learner = self.tree_learner,
-            num_iterations = self.num_iterations,
-            seed = self.seed,
+            task_type="classification",
+            objective=self.objective,
+            boosting=self.boosting,
+            n_estimators=self.n_estimators,
+            max_depth=self.max_depth,
+            num_leaves=self.num_leaves,
+            min_data_in_leaf=self.min_data_in_leaf,
+            learning_rate=self.learning_rate,
+            tree_learner=self.tree_learner,
+            num_iterations=self.num_iterations,
+            seed=self.seed,
         )
-        
-    def fit(self, X, y) :
-        
+
+    def fit(self, X, y):
+
         super().fit(X, y)
-        
+
         self._fitted = True
-        
+
         return self
-    
+
     def predict(self, X):
-        
+
         return super().predict(X)
-    
-class LightGBM_Regressor(LightGBM_Base) :
-    
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
+
+class LightGBM_Regressor(LightGBM_Base):
+
     """
     LightGBM Regression Wrapper
-    
+
     Parameters
     ----------
     objective: objective function (metric/loss) to evaluate model, default = "regression"
-        
+
     boosting: boosting method, default = "gbdt"
     support ["gbdt", "rf", "dart", "goss"]
-        
+
     n_estimators: number of estimators to build, default = 100
-    
+
     max_depth: max depth of trees built, default = -1
     -1 stands for no limitation
-    
+
     num_leaves: number of leaf nodes to build, default = 31
-    
+
     min_data_in_leaf: minimum number of data to generate a leaf node, default = 20
-    
+
     learning_rate: learning rate of the building process, default = 0.1
-    
+
     tree_learner: tree learner algorithm, default = "serial"
     support ["serial", "feature", "data", "voting"]
-    
+
     num_iterations: number of iterations for the algorithm, default = 100
-    
+
     seed: random seed, default = 1
     """
-    
+
     def __init__(
         self,
-        objective = "regression",
-        boosting = "gbdt",
-        n_estimators = 100,
-        max_depth = -1,
-        num_leaves = 31,
-        min_data_in_leaf = 20,
-        learning_rate = 0.1,
-        tree_learner = "serial",
-        num_iterations = 100,
-        seed = 1,
-    ) :
+        objective="regression",
+        boosting="gbdt",
+        n_estimators=100,
+        max_depth=-1,
+        num_leaves=31,
+        min_data_in_leaf=20,
+        learning_rate=0.1,
+        tree_learner="serial",
+        num_iterations=100,
+        seed=1,
+    ):
         self.objective = objective
         self.boosting = boosting
         self.n_estimators = n_estimators
@@ -334,31 +356,35 @@ class LightGBM_Regressor(LightGBM_Base) :
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
         self.seed = seed
-        
+
         self._fitted = False
-        
+
         super().__init__(
-            task_type = "regression",
-            objective = self.objective,
-            boosting = self.boosting,
-            n_estimators = self.n_estimators,
-            max_depth = self.max_depth,
-            num_leaves = self.num_leaves,
-            min_data_in_leaf = self.min_data_in_leaf,
-            learning_rate = self.learning_rate,
-            tree_learner = self.tree_learner,
-            num_iterations = self.num_iterations,
-            seed = self.seed,
+            task_type="regression",
+            objective=self.objective,
+            boosting=self.boosting,
+            n_estimators=self.n_estimators,
+            max_depth=self.max_depth,
+            num_leaves=self.num_leaves,
+            min_data_in_leaf=self.min_data_in_leaf,
+            learning_rate=self.learning_rate,
+            tree_learner=self.tree_learner,
+            num_iterations=self.num_iterations,
+            seed=self.seed,
         )
-        
-    def fit(self, X, y) :
-        
-        super().fit(X, y)
-        
-        self._fitted = True
-        
-        return self
+
+    def fit(self, X, y):
     
+        super().fit(X, y)
+
+        self._fitted = True
+
+        return self
+
     def predict(self, X):
-        
+
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")

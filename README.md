@@ -101,7 +101,7 @@ One important issue I find now is that, `ray.tune` does not force to stop runnin
 
 ## Summary
 
-> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn $^{1}$, scikit-learn, lightgbm, xgboost, pygam, rpy2 $^{2}$, tensorflow $^{3}$, torch $^{4}$
+> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn $^{1}$, scikit-learn, lightgbm, xgboost, pygam, rpy2 $^{2}$, tensorflow $^{3}$, pytorch $^{4}$
 >
 > <sub><sup>1.</sup></sub> auto-sklearn is a AutoML package, which provides some models for the pipeline. But it's only compatible with Linux system. So if you are using windows, this package should not be installed.
 >
@@ -109,7 +109,7 @@ One important issue I find now is that, `ray.tune` does not force to stop runnin
 >
 > <sub><sup>3.</sup></sub> tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
 >
-> <sub><sup>4.</sup></sub> torch is required for neural network support.
+> <sub><sup>4.</sup></sub> pytorch is required for neural network support.
 
 Current Progress:
 

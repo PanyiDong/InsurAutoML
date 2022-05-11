@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th April 2022 12:09:06 am
+Last Modified: Tuesday, 10th May 2022 11:32:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -77,6 +77,12 @@ parser.add_argument(
     help="task_type: auto, regression, classification",
 )
 parser.add_argument(
+    "--n_estimators",
+    default=5,
+    type=int,
+    help="number of pipelines used to build ensemble",
+)
+parser.add_argument(
     "--timeout", default=360, type=int, help="total time allowed for the task"
 )
 parser.add_argument(
@@ -105,37 +111,43 @@ parser.add_argument(
 )
 parser.add_argument(
     "--encoder",
-    default="auto", nargs="+", 
+    default="auto",
+    nargs="+",
     type=str or list,
     help="encoders for the tasks, auto or a list of encoders",
 )
 parser.add_argument(
     "--imputer",
-    default="auto", nargs="+", 
+    default="auto",
+    nargs="+",
     type=str or list,
     help="imputers for the tasks, auto or a list of imputers",
 )
 parser.add_argument(
     "--balancing",
-    default="auto", nargs="+", 
+    default="auto",
+    nargs="+",
     type=str or list,
     help="balancings for the tasks, auto or a list of balancings",
 )
 parser.add_argument(
     "--scaling",
-    default="auto", nargs="+", 
+    default="auto",
+    nargs="+",
     type=str or list,
     help="scalings for the tasks, auto or a list of scalings",
 )
 parser.add_argument(
     "--feature_selection",
-    default="auto", nargs="+", 
+    default="auto",
+    nargs="+",
     type=str or list,
     help="feature_selections for the tasks, auto or a list of feature_selections",
 )
 parser.add_argument(
     "--models",
-    default="auto", nargs="+", 
+    default="auto",
+    nargs="+",
     type=str or list,
     help="models for the tasks, auto or a list of models",
 )
@@ -159,7 +171,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--search_algo_settings",
-    default = {},
+    default={},
     type=dict,
     help="model selection/hyperparameter optimization search algorithm",
 )
@@ -186,6 +198,7 @@ args = parser.parse_args()
 
 # convert arguments to parameters
 MODEL = model_dict[args.task_type]
+N_ESTIMATORS = args.n_estimators
 TIMEOUT = args.timeout
 MAX_EVALS = args.max_evals
 TEMP_DIRECTORY = args.temp_directory
@@ -244,6 +257,7 @@ if __name__ == "__main__":
     print("Training:")
     # construct the model by parameters
     model = MODEL(
+        n_estimators=N_ESTIMATORS,
         timeout=TIMEOUT,
         max_evals=MAX_EVALS,
         temp_directory=TEMP_DIRECTORY,
@@ -261,7 +275,7 @@ if __name__ == "__main__":
         valid_size=VALID_SIZE,
         objective=OBJECTIVE,
         search_algo=SEARCH_ALGO,
-        search_algo_settings = SEARCH_ALGO_SETTINGS,
+        search_algo_settings=SEARCH_ALGO_SETTINGS,
         search_scheduler=SEARCH_SCHEDULER,
         progress_reporter=PROGRESS_REPORTER,
         full_status=FULL_STATUS,

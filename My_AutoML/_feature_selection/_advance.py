@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:27:54 am
+Last Modified: Tuesday, 10th May 2022 11:53:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -623,7 +623,7 @@ class GeneticAlgorithm:
 
             return self.fitness_weight * _accuracy_score + (
                 1 - self.fitness_weight
-            ) / sum(selection)
+            ) / max(sum(selection), 1)
         else:
             return self.fitness_func(X, y, selection)
 
