@@ -15,14 +15,17 @@ RUN apt-get -y upgrade
 RUN apt-get -y install git
 
 # Install pip requirements
-COPY requirements.txt .
-RUN python -m pip install -r requirements.txt
+# COPY requirements.txt .
+# RUN python -m pip install -r requirements.txt
 
 WORKDIR /app
 COPY . /app
 
 # Clone AutoML from git to workspace
 RUN git clone https://github.com/PanyiDong/My_AutoML.git /app/My_AutoML
+RUN cd /app/My_AutoML
+# Install dependencies
+RUN pip install -e .[normal]
 
 # Creates a non-root user with an explicit UID and adds permission to access the /app folder
 # For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers

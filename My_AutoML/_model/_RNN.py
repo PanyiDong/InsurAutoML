@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th April 2022 7:22:37 pm
+Last Modified: Tuesday, 10th May 2022 7:20:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -483,6 +483,12 @@ class RNN_Classifier(RNN_Base):
         # need to assign prediction to classes
         return assign_classes(super().predict(X))
 
+    def predict_proba(self, X):
+
+        # not need to use argmax to select the one class
+        # but to return full probability
+        return super().predict(X)
+
 
 class RNN_Regressor(RNN_Base):
 
@@ -600,3 +606,7 @@ class RNN_Regressor(RNN_Base):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")

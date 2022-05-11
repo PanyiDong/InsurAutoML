@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 2:55:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:52:32 am
+Last Modified: Tuesday, 10th May 2022 11:45:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -497,7 +497,10 @@ class select_rates_classification(
     ):
         super().__init__(
             alpha=alpha,
-            score_func=score_func,
+            score_func="mutual_info_classif"
+            if score_func == "mutual_info"
+            else score_func,
+            # deal with sklearn/autosklearn incosistency
             mode=mode,
         )
 

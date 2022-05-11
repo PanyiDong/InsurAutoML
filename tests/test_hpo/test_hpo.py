@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 11:28:00 pm
+Last Modified: Wednesday, 11th May 2022 9:45:00 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -71,7 +71,7 @@ from My_AutoML import load_data
 
 def test_objective_1():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -150,7 +150,7 @@ def test_objective_1():
 
 def test_objective_2():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -229,7 +229,7 @@ def test_objective_2():
 
 def test_objective_3():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -305,7 +305,7 @@ def test_objective_3():
 
 def test_objective_4():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -381,7 +381,7 @@ def test_objective_4():
 
 def test_objective_5():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -460,7 +460,7 @@ def test_objective_5():
 
 def test_objective_6():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -539,7 +539,7 @@ def test_objective_6():
 
 def test_objective_7():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -618,7 +618,7 @@ def test_objective_7():
 
 def test_objective_8():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing
@@ -694,7 +694,7 @@ def test_objective_8():
 
 def test_objective_9():
 
-    from My_AutoML._utils._optimize import TabularObjective
+    from My_AutoML._hpo._utils import TabularObjective
     from My_AutoML._encoding import DataEncoding
     from My_AutoML._imputation import SimpleImputer
     from My_AutoML._base import no_processing

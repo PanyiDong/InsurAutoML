@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 10:06:01 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 24th April 2022 5:50:41 pm
+Last Modified: Wednesday, 11th May 2022 9:32:58 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,7 +65,7 @@ feature_selection_hyperparameter = [
         ),
         "GeneticAlgorithm_n_initial": tune.qrandint(5, 15),
         "GeneticAlgorithm_fitness_fit": tune.choice(
-            ["Linear", "Logistic", "Random Forest", "SVM"]
+            ["Linear", "Decision Tree", "Random Forest", "SVM"]
         ),
         "GeneticAlgorithm_p_crossover": tune.uniform(0.8, 1),
         "GeneticAlgorithm_p_mutation": tune.loguniform(1e-5, 1),
@@ -205,7 +205,7 @@ feature_selection_hyperparameter = [
         "feature_selection_21": "select_rates_classification",
         "select_rates_classification_alpha": tune.uniform(0.01, 0.5),
         "select_rates_classification_score_func": tune.choice(
-            ["chi2", "f_classif", "mutual_info_classif"],
+            ["chi2", "f_classif", "mutual_info"],
         ),
         "select_rates_classification_mode": tune.choice(["fpr", "fdr", "fwe"]),
     },

@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 9:04:05 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 3:22:30 pm
+Last Modified: Tuesday, 3rd May 2022 7:21:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -277,6 +277,32 @@ regressor_hyperparameter = [
     #     "HistGradientBoostingRegressor_l2_regularization": tune.uniform(0, 1),
     #     "HistGradientBoostingRegressor_tol": tune.loguniform(1e-5, 1e-1),
     # },
+    {
+        "model_18": "GradientBoostingRegressor",
+        "GradientBoostingRegressor_loss": tune.choice(
+            ["ls", "lad", "huber", "quantile"]
+        )
+        if sklearn_1_0_0
+        else tune.choice(["squared_error", "absolute_error", "huber", "quantile"]),
+        "GradientBoostingRegressor_learning_rate": tune.loguniform(0.01, 1),
+        "GradientBoostingRegressor_n_estimators": tune.qlograndint(10, 500, 1),
+        "GradientBoostingRegressor_subsample": tune.uniform(0.1, 1),
+        "GradientBoostingRegressor_criterion": tune.choice(["mse", "mae"])
+        if sklearn_1_0_0
+        else tune.choice(["friedman_mse", "squared_error"]),
+        "GradientBoostingRegressor_min_samples_split": tune.qrandint(2, 20, 1),
+        "GradientBoostingRegressor_min_samples_leaf": tune.qlograndint(1, 200, 1),
+        "GradientBoostingRegressor_min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
+        "GradientBoostingRegressor_max_depth": tune.randint(1, 31),
+        "GradientBoostingRegressor_min_impurity_decrease": tune.uniform(0.0, 1.0),
+        "GradientBoostingRegressor_max_features": tune.choice(
+            ["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]
+        ),
+        "GradientBoostingRegressor_max_leaf_nodes": tune.qlograndint(3, 2047, 1),
+        "GradientBoostingRegressor_validation_fraction": tune.uniform(0.01, 0.4),
+        "GradientBoostingRegressor_n_iter_no_change": tune.qrandint(1, 20, 1),
+        "GradientBoostingRegressor_tol": tune.choice([1e-7]),
+    },
     # self-defined models
     {
         "model_19": "MLP_Regressor",

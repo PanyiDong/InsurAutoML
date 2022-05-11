@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 2:56:49 pm
+Last Modified: Tuesday, 10th May 2022 8:23:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -50,6 +50,7 @@ import sklearn.discriminant_analysis
 import sklearn.ensemble
 import sklearn.gaussian_process
 import sklearn.neural_network
+import sklearn.calibration
 
 # need to enable hist gradient boosting features first
 # no need for sklearn version >= 1.0.0
@@ -59,6 +60,7 @@ if sklearn_1_0_0:
 
 from My_AutoML._constant import MAX_ITER
 from My_AutoML._utils._base import is_none
+from My_AutoML._utils._data import softmax
 
 ####################################################################################################################
 # models from sklearn
@@ -104,6 +106,10 @@ class AdaboostClassifier(sklearn.ensemble.AdaBoostClassifier):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class BernoulliNB(sklearn.naive_bayes.BernoulliNB):
     def __init__(
@@ -132,6 +138,10 @@ class BernoulliNB(sklearn.naive_bayes.BernoulliNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class DecisionTreeClassifier(sklearn.tree.DecisionTreeClassifier):
@@ -181,6 +191,10 @@ class DecisionTreeClassifier(sklearn.tree.DecisionTreeClassifier):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class ExtraTreesClassifier:
@@ -266,6 +280,10 @@ class ExtraTreesClassifier:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
+
 
 class GaussianNB(sklearn.naive_bayes.GaussianNB):
     def __init__(
@@ -286,6 +304,10 @@ class GaussianNB(sklearn.naive_bayes.GaussianNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class HistGradientBoostingClassifier:
@@ -403,6 +425,10 @@ class HistGradientBoostingClassifier:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
+
 
 class KNearestNeighborsClassifier(sklearn.neighbors.KNeighborsClassifier):
     def __init__(
@@ -434,6 +460,10 @@ class KNearestNeighborsClassifier(sklearn.neighbors.KNeighborsClassifier):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
@@ -480,8 +510,12 @@ class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
     def predict(self, X):
         return super().predict(X)
 
+    def predict_proba(self, X):
 
-class LibLinear_SVC(sklearn.svm.LinearSVC):
+        return super().predict_proba(X)
+
+
+class LibLinear_SVC:
     def __init__(
         self,
         penalty="l2",
@@ -502,7 +536,10 @@ class LibLinear_SVC(sklearn.svm.LinearSVC):
         self.fit_intercept = fit_intercept
         self.intercept_scaling = float(intercept_scaling)
 
-        super().__init__(
+        from sklearn.svm import LinearSVC
+        from sklearn.calibration import CalibratedClassifierCV
+
+        base_estimator = LinearSVC(
             penalty=self.penalty,
             loss=self.loss,
             dual=self.dual,
@@ -513,11 +550,14 @@ class LibLinear_SVC(sklearn.svm.LinearSVC):
             intercept_scaling=self.intercept_scaling,
         )
 
+        # wrap the base estimator to make predict_proba available
+        self.estimator = CalibratedClassifierCV(base_estimator)
+
         self._fitted = False  # whether the model is fitted
 
     def fit(self, X, y):
 
-        super().fit(X, y)
+        self.estimator.fit(X, y)
 
         self._fitted = True
 
@@ -525,10 +565,14 @@ class LibLinear_SVC(sklearn.svm.LinearSVC):
 
     def predict(self, X):
 
-        return super().predict(X)
+        return self.estimator.predict(X)
+
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
 
 
-class LibSVM_SVC(sklearn.svm.SVC):
+class LibSVM_SVC:
     def __init__(
         self,
         C=1.0,
@@ -549,7 +593,10 @@ class LibSVM_SVC(sklearn.svm.SVC):
         self.tol = float(tol)
         self.max_iter = float(max_iter)
 
-        super().__init__(
+        from sklearn.svm import SVC
+        from sklearn.calibration import CalibratedClassifierCV
+
+        base_estimator = SVC(
             C=self.C,
             kernel=self.kernel,
             degree=self.degree,
@@ -560,11 +607,14 @@ class LibSVM_SVC(sklearn.svm.SVC):
             max_iter=self.max_iter,
         )
 
+        # wrap the base estimator to make predict_proba available
+        self.estimator = CalibratedClassifierCV(base_estimator)
+
         self._fitted = False  # whether the model is fitted
 
     def fit(self, X, y):
 
-        super().fit(X, y)
+        self.estimator.fit(X, y)
 
         self._fitted = True
 
@@ -572,7 +622,11 @@ class LibSVM_SVC(sklearn.svm.SVC):
 
     def predict(self, X):
 
-        return super().predict(X)
+        return self.estimator.predict(X)
+
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
 
 
 class MLPClassifier:
@@ -698,6 +752,10 @@ class MLPClassifier:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
+
 
 class MultinomialNB(sklearn.naive_bayes.MultinomialNB):
     def __init__(self, alpha=1, fit_prior=True):
@@ -728,6 +786,10 @@ class MultinomialNB(sklearn.naive_bayes.MultinomialNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class PassiveAggressive:
@@ -801,6 +863,10 @@ class PassiveAggressive:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        return softmax(self.estimator.decision_function(X))
+
 
 class QDA(sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis):
     def __init__(
@@ -825,6 +891,10 @@ class QDA(sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis):
 
     def predict(self, X):
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 class RandomForestClassifier:
@@ -909,6 +979,10 @@ class RandomForestClassifier:
     def predict(self, X):
 
         return self.estimator.predict(X)
+
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
 
 
 class SGDClassifier:
@@ -998,6 +1072,10 @@ class SGDClassifier:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        return self.estimator.predict_proba(X)
+
 
 class LogisticRegression(sklearn.linear_model.LogisticRegression):
     def __init__(
@@ -1030,6 +1108,10 @@ class LogisticRegression(sklearn.linear_model.LogisticRegression):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
 
 class ComplementNB(sklearn.naive_bayes.ComplementNB):
     def __init__(
@@ -1061,6 +1143,10 @@ class ComplementNB(sklearn.naive_bayes.ComplementNB):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
 
 
 # combined with autosklearn version, thus deprecated here
@@ -1108,6 +1194,78 @@ class ComplementNB(sklearn.naive_bayes.ComplementNB):
 #         return super().predict(X)
 
 
+class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
+    def __init__(
+        self,
+        loss="deviance",
+        learning_rate=0.1,
+        n_estimators=100,
+        subsample=1.0,
+        criterion="friedman_mse",
+        min_samples_split=2,
+        min_samples_leaf=1,
+        min_weight_fraction_leaf=0.0,
+        max_depth=3,
+        min_impurity_decrease=0.0,
+        max_features="auto",
+        max_leaf_nodes=31,
+        validation_fraction=0.1,
+        n_iter_no_change=10,
+        tol=1e-7,
+    ):
+        self.loss = loss
+        self.learning_rate = float(learning_rate)
+        self.n_estimators = int(n_estimators)
+        self.subsample = float(subsample)
+        self.criterion = criterion
+        self.min_samples_split = int(min_samples_split)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.min_impurity_decrease = float(min_impurity_decrease)
+        self.max_features = max_features
+        self.max_leaf_nodes = int(max_leaf_nodes)
+        self.validation_fraction = float(validation_fraction)
+        self.n_iter_no_change = int(n_iter_no_change)
+        self.tol = float(tol)
+
+        super().__init__(
+            loss=self.loss,
+            learning_rate=self.learning_rate,
+            n_estimators=self.n_estimators,
+            subsample=self.subsample,
+            criterion=self.criterion,
+            min_samples_split=self.min_samples_split,
+            min_samples_leaf=self.min_samples_leaf,
+            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+            max_depth=self.max_depth,
+            min_impurity_decrease=self.min_impurity_decrease,
+            max_features=self.max_features,
+            max_leaf_nodes=self.max_leaf_nodes,
+            validation_fraction=self.validation_fraction,
+            n_iter_no_change=self.n_iter_no_change,
+            tol=self.tol,
+        )
+
+        self._fitted = False  # whether the model is fitted
+
+    def fit(self, X, y):
+
+        super().fit(X, y)
+
+        self._fitted = True
+
+        return self
+
+    def predict(self, X):
+
+        return super().predict(X)
+
+    def predict_proba(self, X):
+
+        return super().predict_proba(X)
+
+
 ####################################################################################################################
 # regressors
 
@@ -1147,6 +1305,10 @@ class AdaboostRegressor(sklearn.ensemble.AdaBoostRegressor):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ARDRegression(sklearn.linear_model.ARDRegression):
@@ -1195,6 +1357,10 @@ class ARDRegression(sklearn.linear_model.ARDRegression):
 
         return super().predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
     def __init__(
@@ -1241,6 +1407,10 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ExtraTreesRegressor:
@@ -1326,6 +1496,10 @@ class ExtraTreesRegressor:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor):
     def __init__(
@@ -1366,6 +1540,10 @@ class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class HistGradientBoostingRegressor:
@@ -1483,6 +1661,10 @@ class HistGradientBoostingRegressor:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
     def __init__(
@@ -1514,6 +1696,10 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class LibLinear_SVR(sklearn.svm.LinearSVR):
@@ -1558,6 +1744,10 @@ class LibLinear_SVR(sklearn.svm.LinearSVR):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class LibSVM_SVR(sklearn.svm.SVR):
@@ -1607,6 +1797,10 @@ class LibSVM_SVR(sklearn.svm.SVR):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class MLPRegressor:
@@ -1732,6 +1926,10 @@ class MLPRegressor:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class RandomForestRegressor:
     def __init__(
@@ -1815,6 +2013,10 @@ class RandomForestRegressor:
     def predict(self, X):
 
         return self.estimator.predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class SGDRegressor:
@@ -1904,6 +2106,10 @@ class SGDRegressor:
 
         return self.estimator.predict(X)
 
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
+
 
 class LinearRegression(sklearn.linear_model.LinearRegression):
     def __init__(
@@ -1924,6 +2130,10 @@ class LinearRegression(sklearn.linear_model.LinearRegression):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class Lasso(sklearn.linear_model.Lasso):
@@ -1953,6 +2163,10 @@ class Lasso(sklearn.linear_model.Lasso):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class Ridge(sklearn.linear_model.Ridge):
@@ -1985,6 +2199,10 @@ class Ridge(sklearn.linear_model.Ridge):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ElasticNet(sklearn.linear_model.ElasticNet):
@@ -2020,6 +2238,10 @@ class ElasticNet(sklearn.linear_model.ElasticNet):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class BayesianRidge(sklearn.linear_model.BayesianRidge):
@@ -2058,6 +2280,10 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
     def predict(self, X):
 
         return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 # combined with autosklearn version, thus deprecated here
@@ -2103,3 +2329,75 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
 #     def predict(self, X):
 
 #         return super().predict(X)
+
+
+class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor):
+    def __init__(
+        self,
+        loss="ls" if sklearn_1_0_0 else "squared_error",  # for default arguments
+        learning_rate=0.1,
+        n_estimators=100,
+        subsample=1.0,
+        criterion="friedman_mse",
+        min_samples_split=2,
+        min_samples_leaf=1,
+        min_weight_fraction_leaf=0.0,
+        max_depth=3,
+        min_impurity_decrease=0.0,
+        max_features="auto",
+        max_leaf_nodes=31,
+        validation_fraction=0.1,
+        n_iter_no_change=10,
+        tol=1e-7,
+    ):
+        self.loss = loss
+        self.learning_rate = float(learning_rate)
+        self.n_estimators = int(n_estimators)
+        self.subsample = float(subsample)
+        self.criterion = criterion
+        self.min_samples_split = int(min_samples_split)
+        self.min_samples_leaf = int(min_samples_leaf)
+        self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
+        self.max_depth = None if is_none(max_depth) else int(max_depth)
+        self.min_impurity_decrease = float(min_impurity_decrease)
+        self.max_features = max_features
+        self.max_leaf_nodes = int(max_leaf_nodes)
+        self.validation_fraction = float(validation_fraction)
+        self.n_iter_no_change = int(n_iter_no_change)
+        self.tol = float(tol)
+
+        super().__init__(
+            loss=self.loss,
+            learning_rate=self.learning_rate,
+            n_estimators=self.n_estimators,
+            subsample=self.subsample,
+            criterion=self.criterion,
+            min_samples_split=self.min_samples_split,
+            min_samples_leaf=self.min_samples_leaf,
+            min_weight_fraction_leaf=self.min_weight_fraction_leaf,
+            max_depth=self.max_depth,
+            min_impurity_decrease=self.min_impurity_decrease,
+            max_features=self.max_features,
+            max_leaf_nodes=self.max_leaf_nodes,
+            validation_fraction=self.validation_fraction,
+            n_iter_no_change=self.n_iter_no_change,
+            tol=self.tol,
+        )
+
+        self._fitted = False  # whether the model is fitted
+
+    def fit(self, X, y):
+
+        super().fit(X, y)
+
+        self._fitted = True
+
+        return self
+
+    def predict(self, X):
+
+        return super().predict(X)
+
+    def predict_proba(self, X):
+
+        raise NotImplementedError("predict_proba is not implemented for regression.")

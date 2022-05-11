@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 23rd April 2022 10:42:33 pm
+Last Modified: Wednesday, 11th May 2022 9:42:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -51,6 +51,12 @@ import random
 import numpy as np
 import pandas as pd
 
+from My_AutoML._hpo._utils import (
+    TabularObjective,
+    Pipeline,
+    ClassifierEnsemble,
+    RegressorEnsemble,
+)
 from My_AutoML._constant import UNI_CLASS
 from My_AutoML._base import no_processing
 from My_AutoML._utils._base import type_of_script
@@ -64,7 +70,6 @@ from My_AutoML._utils._data import (
     str2dict,
 )
 from My_AutoML._utils._optimize import (
-    TabularObjective,
     get_algo,
     get_scheduler,
     get_logger,
@@ -110,6 +115,8 @@ class AutoTabularBase:
     when called by AutoTabularClassification/AutoTabularRegression,
     task mode will be determined without reading data
     support ("classification", "regression")
+
+    n_estimators: top k pipelines used to create the ensemble, default: 5
 
     timeout: Total time limit for the job in seconds, default = 360
 
@@ -224,6 +231,7 @@ class AutoTabularBase:
     def __init__(
         self,
         task_mode="classification",
+        n_estimators=5,
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -255,6 +263,7 @@ class AutoTabularBase:
         seed=1,
     ):
         self.task_mode = task_mode
+        self.n_estimators = n_estimators
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -411,7 +420,7 @@ class AutoTabularBase:
             del self._all_feature_selection["select_percentile_classification"]
             del self._all_feature_selection["select_rates_classification"]
 
-        if X.shape[0] * X.shape[1] > 10000:
+        if X.shape[0] * X.shape[1] > 10000 or self.task_mode == "regression":
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # get default feature selection methods space
@@ -684,7 +693,7 @@ class AutoTabularBase:
     #     return self
 
     # select optimal settings and fit on optimal hyperparameters
-    def _fit_optimal(self, optimal_point, best_path):
+    def _fit_optimal(self, idx, optimal_point, best_path):
 
         # optimal encoder
         optimal_encoder_hyperparameters = optimal_point["encoder"]
@@ -782,11 +791,19 @@ class AutoTabularBase:
             for k in optimal_model_hyperparameters
         }
 
+        # if already exists, use append mode
+        # else, write mode
+        if not os.path.exists("optimal_setting.txt"):
+            write_type = "w"
+        else:
+            write_type = "a"
+
         # record optimal settings
         with open(
             os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt"),
-            "w",
+            write_type,
         ) as f:
+            f.write("For pipeline {}:\n".format(idx + 1))
             f.write("Optimal encoding method is: {}\n".format(optimal_encoder))
             f.write("Optimal encoding hyperparameters:")
             print(optimal_encoder_hyperparameters, file=f, end="\n\n")
@@ -853,44 +870,76 @@ class AutoTabularBase:
         # self._fit_model.fit(_X, _y.values.ravel())
 
         (
-            self._fit_encoder,
-            self._fit_imputer,
-            self._fit_balancing,
-            self._fit_scaling,
-            self._fit_feature_selection,
-            self._fit_model,
+            _fit_encoder,
+            _fit_imputer,
+            _fit_balancing,
+            _fit_scaling,
+            _fit_feature_selection,
+            _fit_model,
         ) = load_methods(best_path)
 
-        # save the model
-        if self.save:
-            # save_model(
-            #     self.optimal_encoder,
-            #     self.optimal_encoder_hyperparameters,
-            #     self.optimal_imputer,
-            #     self.optimal_imputer_hyperparameters,
-            #     self.optimal_balancing,
-            #     self.optimal_balancing_hyperparameters,
-            #     self.optimal_scaling,
-            #     self.optimal_scaling_hyperparameters,
-            #     self.optimal_feature_selection,
-            #     self.optimal_feature_selection_hyperparameters,
-            #     self.optimal_model,
-            #     self.optimal_model_hyperparameters,
-            #     self.model_name,
-            # )
-            save_methods(
-                self.model_name,
-                [
-                    self._fit_encoder,
-                    self._fit_imputer,
-                    self._fit_balancing,
-                    self._fit_scaling,
-                    self._fit_feature_selection,
-                    self._fit_model,
-                ],
-            )
+        # # save the model
+        # if self.save:
+        #     # save_model(
+        #     #     self.optimal_encoder,
+        #     #     self.optimal_encoder_hyperparameters,
+        #     #     self.optimal_imputer,
+        #     #     self.optimal_imputer_hyperparameters,
+        #     #     self.optimal_balancing,
+        #     #     self.optimal_balancing_hyperparameters,
+        #     #     self.optimal_scaling,
+        #     #     self.optimal_scaling_hyperparameters,
+        #     #     self.optimal_feature_selection,
+        #     #     self.optimal_feature_selection_hyperparameters,
+        #     #     self.optimal_model,
+        #     #     self.optimal_model_hyperparameters,
+        #     #     self.model_name,
+        #     # )
+        #     save_methods(
+        #         self.model_name,
+        #         [
+        #             self._fit_encoder,
+        #             self._fit_imputer,
+        #             self._fit_balancing,
+        #             self._fit_scaling,
+        #             self._fit_feature_selection,
+        #             self._fit_model,
+        #         ],
+        #     )
 
-        return self
+        # create a pipeline using loaded methods
+        pip_setting = {
+            "encoder": _fit_encoder,
+            "imputer": _fit_imputer,
+            "balancing": _fit_balancing,
+            "scaling": _fit_scaling,
+            "feature_selection": _fit_feature_selection,
+            "model": _fit_model,
+        }
+
+        return ("pipe_" + str(idx + 1), Pipeline(**pip_setting))
+
+    def _fit_ensemble(self, trial_id, config):
+
+        # initialize ensemble list
+        ensemble_list = []
+
+        # loop through all configs, trial_id, get model ensemble
+        for idx, (trial_id, config) in enumerate(zip(trial_id, config)):
+
+            # find the exact path
+            _path = find_exact_path(
+                os.path.join(self.temp_directory, self.model_name), "id_" + trial_id
+            )
+            _path = os.path.join(_path, self.model_name)
+
+            ensemble_list.append(self._fit_optimal(idx, config, _path))
+
+        # wrap pipelines into ensemble
+        if self.task_mode == "classification":
+            self._ensemble = ClassifierEnsemble(estimators=ensemble_list)
+        elif self.task_mode == "regression":
+            self._ensemble = RegressorEnsemble(estimators=ensemble_list)
 
     def fit(self, X, y):
 
@@ -920,6 +969,9 @@ class AutoTabularBase:
                 "You have no GPU available, but you have set use_gpu to True. \
                 Please check your GPU availability."
             )
+
+        # make sure n_estimators is a integer smaller than max_evals
+        self.n_estimators = int(min(self.n_estimators, self.max_evals))
 
         # get progress report from environment
         # if specified, use specified progress report
@@ -979,14 +1031,15 @@ class AutoTabularBase:
 
             print("Stored model found, load previous model.")
             # self.load_model(_X, _y)
-            (
-                self._fit_encoder,
-                self._fit_imputer,
-                self._fit_balancing,
-                self._fit_scaling,
-                self._fit_feature_selection,
-                self._fit_model,
-            ) = load_methods(self.model_name)
+            # (
+            #     self._fit_encoder,
+            #     self._fit_imputer,
+            #     self._fit_balancing,
+            #     self._fit_scaling,
+            #     self._fit_feature_selection,
+            #     self._fit_model,
+            # ) = load_methods(self.model_name)
+            [self._ensemble] = load_methods(self.model_name)
 
             self._fitted = True  # successfully fitted the model
 
@@ -1138,18 +1191,49 @@ class AutoTabularBase:
         # check if ray is shutdown
         assert ray.is_initialized() == False, "Ray is not shutdown."
 
-        # get the best config settings
-        best_trial_id = str(
-            fit_analysis.get_best_trial(metric="loss", mode="min", scope="all").trial_id
-        )
-        # find the exact path
-        best_path = find_exact_path(
-            os.path.join(self.temp_directory, self.model_name), "id_" + best_trial_id
-        )
-        best_path = os.path.join(best_path, self.model_name)
+        # # get the best config settings
+        # best_trial_id = str(
+        #     fit_analysis.get_best_trial(metric="loss", mode="min", scope="all").trial_id
+        # )
+        # # find the exact path
+        # best_path = find_exact_path(
+        #     os.path.join(self.temp_directory, self.model_name), "id_" + best_trial_id
+        # )
+        # best_path = os.path.join(best_path, self.model_name)
 
-        # select optimal settings and fit optimal pipeline
-        self._fit_optimal(fit_analysis.best_config, best_path)
+        # # select optimal settings and fit optimal pipeline
+        # self._fit_optimal(fit_analysis.best_config, best_path)
+
+        # get all configs, trial_id
+        analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
+
+        # reformat config to dict
+        analysis_df["config"] = analysis_df.apply(
+            lambda x: {
+                "encoder": x["config/encoder"],
+                "imputer": x["config/imputer"],
+                "balancing": x["config/balancing"],
+                "scaling": x["config/scaling"],
+                "feature_selection": x["config/feature_selection"],
+                "model": x["config/model"],
+            },
+            axis=1,
+        )
+        # sort by loss and get top configs
+        analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
+            self.n_estimators
+        )
+
+        # select optimal settings and create the ensemble of pipeline
+        self._fit_ensemble(analysis_df.trial_id, analysis_df.config)
+
+        # make sure the ensemble is fitted
+        # usually, most of the methods are already fitted
+        self._ensemble.fit(_X, _y)
+
+        # if need to save the ensemble
+        if self.save:
+            save_methods(self.model_name, [self._ensemble])
 
         # whether to retain temp files
         if self.delete_temp_after_terminate:
@@ -1169,23 +1253,26 @@ class AutoTabularBase:
 
         # may need preprocessing for test data, the preprocessing should be the same as in fit part
         # Encoding
-        # convert string types to numerical type
-        _X = self._fit_encoder.refit(_X)
+        # # convert string types to numerical type
+        # _X = self._fit_encoder.refit(_X)
 
-        # Imputer
-        # fill missing values
-        _X = self._fit_imputer.fill(_X)
+        # # Imputer
+        # # fill missing values
+        # _X = self._fit_imputer.fill(_X)
 
-        # Balancing
-        # deal with imbalanced dataset, using over-/under-sampling methods
-        # No need to balance on test data
+        # # Balancing
+        # # deal with imbalanced dataset, using over-/under-sampling methods
+        # # No need to balance on test data
 
-        # Scaling
-        _X = self._fit_scaling.transform(_X)
+        # # Scaling
+        # _X = self._fit_scaling.transform(_X)
 
-        # Feature selection
-        # Remove redundant features, reduce dimensionality
-        _X = self._fit_feature_selection.transform(_X)
+        # # Feature selection
+        # # Remove redundant features, reduce dimensionality
+        # _X = self._fit_feature_selection.transform(_X)
 
-        # use model to predict
-        return self._fit_model.predict(_X)
+        # # use model to predict
+        # return self._fit_model.predict(_X)
+
+        # since use ensemble to predict, all are wrapped in the ensemble
+        return self._ensemble.predict(_X)

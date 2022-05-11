@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:27:54 am
+Last Modified: Wednesday, 11th May 2022 9:57:27 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -62,6 +62,7 @@ from My_AutoML._utils._optimize import (
     get_estimator,
     get_metrics,
 )
+from My_AutoML._constant import UNI_CLASS
 
 
 class FeatureFilter:
@@ -565,10 +566,18 @@ class GeneticAlgorithm:
     def _SVM_RFE(self, X, y, n):
 
         from sklearn.feature_selection import RFE
-        from sklearn.svm import SVC
+
+        # make a difference when fitting regression/classification models
+        if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
+            from sklearn.svm import SVC
+
+            _estimator = SVC(kernel="linear")
+        else:
+            from sklearn.svm import SVR
+
+            _estimator = SVR(kernel="linear")
 
         # using sklearn RFE to recursively remove one feature using SVR, until n_components left
-        _estimator = SVC(kernel="linear")
         _selector = RFE(_estimator, n_features_to_select=n, step=1)
         _selector = _selector.fit(X.values, y.values.ravel())
 
@@ -581,33 +590,62 @@ class GeneticAlgorithm:
 
     def _cal_fitness(self, X, y, selection):
 
-        from sklearn.metrics import mean_squared_error
-
         if not self.fitness_func:  # fit selected features and calcualte accuracy score
             if self.fitness_fit == "Linear":
-                from sklearn.linear_model import LinearRegression
+                if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
+                    from sklearn.linear_model import LogisticRegression
+                    from sklearn.metrics import accuracy_score
 
-                model = LinearRegression()
-            elif self.fitness_fit == "Logistic":
-                from sklearn.linear_model import LogisticRegression
+                    model = LogisticRegression()
+                    metric = accuracy_score
+                else:
+                    from sklearn.linear_model import LinearRegression
+                    from sklearn.metrics import mean_squared_error
 
-                model = LogisticRegression()
+                    model = LinearRegression()
+                    metric = mean_squared_error
+            elif self.fitness_fit == "Decision Tree":
+                if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
+                    from sklearn.tree import DecisionTreeClassifier
+                    from sklearn.metrics import accuracy_score
+
+                    model = DecisionTreeClassifier()
+                    metric = accuracy_score
+                else:
+                    from sklearn.tree import DecisionTreeRegressor
+                    from sklearn.metrics import mean_squared_error
+
+                    model = DecisionTreeRegressor()
+                    metric = mean_squared_error
             elif self.fitness_fit == "Random Forest":
-                from sklearn.ensemble import RandomForestRegressor
+                if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
+                    from sklearn.ensemble import RandomForestClassifier
+                    from sklearn.metrics import accuracy_score
 
-                model = RandomForestRegressor()
+                    model = RandomForestClassifier()
+                    metric = accuracy_score
+                else:
+                    from sklearn.ensemble import RandomForestRegressor
+                    from sklearn.metrics import mean_squared_error
+
+                    model = RandomForestRegressor()
+                    metric = mean_squared_error
             elif self.fitness_fit == "SVM":  # select by y using SVC and SVR
-                if len(pd.unique(y.values.ravel())) <= 30:
+                if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
                     from sklearn.svm import SVC
+                    from sklearn.metrics import accuracy_score
 
                     model = SVC()
+                    metric = accuracy_score
                 else:
                     from sklearn.svm import SVR
+                    from sklearn.metrics import mean_squared_error
 
                     model = SVR()
+                    metric = mean_squared_error
             else:
                 raise ValueError(
-                    'Only support ["Linear", "Logistic", "Random Forest", "SVM"], get {}'.format(
+                    'Only support ["Linear", "Decision Tree", "Random Forest", "SVM"], get {}'.format(
                         self.fitness_fit
                     )
                 )
@@ -619,11 +657,11 @@ class GeneticAlgorithm:
             else:
                 model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
                 y_pred = model.predict(X.iloc[:, True_index(selection)])
-            _accuracy_score = mean_squared_error(y, y_pred)
+            _accuracy_score = metric(y, y_pred)
 
             return self.fitness_weight * _accuracy_score + (
                 1 - self.fitness_weight
-            ) / sum(selection)
+            ) / max(sum(selection), 1)
         else:
             return self.fitness_func(X, y, selection)
 
