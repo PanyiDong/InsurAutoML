@@ -167,6 +167,10 @@ UNI_CLASS = 31
 # maximum iteration allowed for the algorithm
 MAX_ITER = 1024
 
+# maximum time budge allowed per run (in seconds)
+# set at 3 days
+MAX_TIME = 259200
+
 # LightGBM default object (metric/loss)
 # binary classification
 LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross_entropy"]

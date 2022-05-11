@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 9:42:54 am
+Last Modified: Wednesday, 11th May 2022 3:04:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,7 +57,7 @@ from My_AutoML._hpo._utils import (
     ClassifierEnsemble,
     RegressorEnsemble,
 )
-from My_AutoML._constant import UNI_CLASS
+from My_AutoML._constant import UNI_CLASS, MAX_TIME
 from My_AutoML._base import no_processing
 from My_AutoML._utils._base import type_of_script
 from My_AutoML._utils._file import (
@@ -973,6 +973,25 @@ class AutoTabularBase:
         # make sure n_estimators is a integer smaller than max_evals
         self.n_estimators = int(min(self.n_estimators, self.max_evals))
 
+        # at least one constraint of time/evaluations should be provided
+        if self.timout == -1 and self.max_evals == -1:
+            warnings.warn(
+                "None of time or evaluation contraint is provided, will set time limit to 1 hour."
+            )
+            self.timeout = 3600
+
+        # make sure time budgets are controlled
+        if self.timeout == -1:
+            self.timeout = MAX_TIME
+        else:
+            if self.timeout > MAX_TIME:
+                warnings.warn(
+                    "Time budget is too long, will set time limit to {} seconds.".format(
+                        MAX_TIME
+                    )
+                )
+            self.timeout = min(self.timeout, MAX_TIME)
+
         # get progress report from environment
         # if specified, use specified progress report
         self.progress_reporter = (
@@ -1173,6 +1192,7 @@ class AutoTabularBase:
             search_alg=algo(**self.search_algo_settings),
             scheduler=scheduler(**self.search_scheduler_settings),
             reuse_actors=True,
+            raise_on_failed_trial=False,
             metric="loss",
             num_samples=self.max_evals,
             max_failures=self.max_error,
