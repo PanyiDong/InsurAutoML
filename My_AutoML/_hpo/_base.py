@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 12:35:25 am
+Last Modified: Wednesday, 11th May 2022 9:42:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1206,7 +1206,19 @@ class AutoTabularBase:
 
         # get all configs, trial_id
         analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
-        analysis_df["config"] = fit_analysis.get_all_configs().values()
+
+        # reformat config to dict
+        analysis_df["config"] = analysis_df.apply(
+            lambda x: {
+                "encoder": x["config/encoder"],
+                "imputer": x["config/imputer"],
+                "balancing": x["config/balancing"],
+                "scaling": x["config/scaling"],
+                "feature_selection": x["config/feature_selection"],
+                "model": x["config/model"],
+            },
+            axis=1,
+        )
         # sort by loss and get top configs
         analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
             self.n_estimators
