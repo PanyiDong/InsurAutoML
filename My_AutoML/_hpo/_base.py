@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 11:59:00 pm
+Last Modified: Wednesday, 11th May 2022 12:35:25 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -420,7 +420,7 @@ class AutoTabularBase:
             del self._all_feature_selection["select_percentile_classification"]
             del self._all_feature_selection["select_rates_classification"]
 
-        if X.shape[0] * X.shape[1] > 10000:
+        if X.shape[0] * X.shape[1] > 10000 or self.task_mode == "regression":
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
         # get default feature selection methods space
