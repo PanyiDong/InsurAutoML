@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:36:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 9:37:23 am
+Last Modified: Wednesday, 11th May 2022 9:57:27 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -645,7 +645,7 @@ class GeneticAlgorithm:
                     metric = mean_squared_error
             else:
                 raise ValueError(
-                    'Only support ["Linear", "Logistic", "Random Forest", "SVM"], get {}'.format(
+                    'Only support ["Linear", "Decision Tree", "Random Forest", "SVM"], get {}'.format(
                         self.fitness_fit
                     )
                 )

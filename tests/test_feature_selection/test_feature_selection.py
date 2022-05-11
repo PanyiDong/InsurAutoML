@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 3:05:15 pm
+Last Modified: Wednesday, 11th May 2022 9:57:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -212,7 +212,7 @@ def test_GA():
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection=["Entropy"], fitness_fit="Logistic"
+        n_components=5, feature_selection=["Entropy"], fitness_fit="Decision Tree"
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
