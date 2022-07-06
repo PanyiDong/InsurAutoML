@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 3:07:12 pm
+Last Modified: Wednesday, 6th July 2022 4:52:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from re import L
 import ray
 from ray import tune
 
@@ -576,9 +575,7 @@ class AutoTabularBase:
                 if "LightGBM_Classifier" in item.values():
                     # flatten to 1d
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
-                        from My_AutoML._constant import (
-                            LIGHTGBM_BINARY_CLASSIFICATION,
-                        )
+                        from My_AutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
 
                         item["LightGBM_Classifier_objective"] = tune.choice(
                             LIGHTGBM_BINARY_CLASSIFICATION
@@ -1145,9 +1142,7 @@ class AutoTabularBase:
 
         # get progress reporter
         progress_reporter = get_progress_reporter(
-            self.progress_reporter,
-            self.max_evals,
-            self.max_error,
+            self.progress_reporter, self.max_evals, self.max_error,
         )
 
         # initialize stopper

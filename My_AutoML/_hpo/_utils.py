@@ -11,7 +11,7 @@ File Created: Tuesday, 10th May 2022 10:27:56 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 12:14:37 am
+Last Modified: Wednesday, 6th July 2022 4:51:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -453,7 +453,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._encoder = self._encoder_hyper[_encoder_key]
         del self._encoder_hyper[_encoder_key]
-        # remvoe indcations
+        # remove indications
         self._encoder_hyper = {
             k.replace(self._encoder + "_", ""): self._encoder_hyper[k]
             for k in self._encoder_hyper
@@ -469,7 +469,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._imputer = self._imputer_hyper[_imputer_key]
         del self._imputer_hyper[_imputer_key]
-        # remvoe indcations
+        # remove indications
         self._imputer_hyper = {
             k.replace(self._imputer + "_", ""): self._imputer_hyper[k]
             for k in self._imputer_hyper
@@ -486,7 +486,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._balancing = self._balancing_hyper[_balancing_key]
         del self._balancing_hyper[_balancing_key]
-        # remvoe indcations
+        # remove indications
         self._balancing_hyper = {
             k.replace(self._balancing + "_", ""): self._balancing_hyper[k]
             for k in self._balancing_hyper
@@ -503,7 +503,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._scaling = self._scaling_hyper[_scaling_key]
         del self._scaling_hyper[_scaling_key]
-        # remvoe indcations
+        # remove indications
         self._scaling_hyper = {
             k.replace(self._scaling + "_", ""): self._scaling_hyper[k]
             for k in self._scaling_hyper
@@ -520,7 +520,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._feature_selection = self._feature_selection_hyper[_feature_selection_key]
         del self._feature_selection_hyper[_feature_selection_key]
-        # remvoe indcations
+        # remove indications
         self._feature_selection_hyper = {
             k.replace(self._feature_selection + "_", ""): self._feature_selection_hyper[
                 k
@@ -541,7 +541,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._model = self._model_hyper[_model_key]
         del self._model_hyper[_model_key]
-        # remvoe indcations
+        # remove indications
         self._model_hyper = {
             k.replace(self._model + "_", ""): self._model_hyper[k]
             for k in self._model_hyper
