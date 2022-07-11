@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 8:23:59 pm
+Last Modified: Monday, 11th July 2022 5:53:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1383,9 +1383,15 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
         self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
+        self._fitted = False  # whether the model is fitted
+
+    def fit(self, X, y):
+
         super().__init__(
             criterion=self.criterion,
-            max_depth=self.max_depth_factor,
+            max_depth=None
+            if is_none(self.max_depth_factor)
+            else max(int(self.max_depth_factor * X.shape[1]), 1),
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,
@@ -1393,10 +1399,6 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
             max_leaf_nodes=self.max_leaf_nodes,
             min_impurity_decrease=self.min_impurity_decrease,
         )
-
-        self._fitted = False  # whether the model is fitted
-
-    def fit(self, X, y):
 
         super().fit(X, y)
 
