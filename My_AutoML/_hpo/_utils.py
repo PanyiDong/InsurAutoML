@@ -11,7 +11,7 @@ File Created: Tuesday, 10th May 2022 10:27:56 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th July 2022 2:13:59 pm
+Last Modified: Monday, 11th July 2022 5:27:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,7 +40,6 @@ SOFTWARE.
 
 import warnings
 from typing import Callable
-from inspect import getfullargspec
 import scipy
 import numpy as np
 import pandas as pd
@@ -174,7 +173,14 @@ class ClassifierEnsemble(formatting):
     Ensemble of classifiers for classification.
     """
 
-    def __init__(self, estimators, voting="hard", weights=None, features=None, strategy = "stacking",):
+    def __init__(
+        self,
+        estimators,
+        voting="hard",
+        weights=None,
+        features=None,
+        strategy="stacking",
+    ):
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
@@ -200,7 +206,7 @@ class ClassifierEnsemble(formatting):
             if self.weights is not None
             else None
         )
-        
+
         # if bagging, features much be provided
         if self.strategy == "bagging" and len(self.features) == 0:
             raise ValueError("features must be provided for bagging ensemble")
@@ -261,7 +267,7 @@ class ClassifierEnsemble(formatting):
                     axis=1,
                     arr=pred_list,
                 )
-            elif self.strategy == "boosting" :
+            elif self.strategy == "boosting":
                 pred = np.apply_along_axis(
                     lambda x: np.sum(np.bincount(x, weights=self.weights)),
                     axis=1,
@@ -281,7 +287,7 @@ class ClassifierEnsemble(formatting):
                 pred = np.argmax(
                     np.average(prob_list, axis=0, weights=self.weights), axis=1
                 )
-            elif self.strategy == "boosting" :
+            elif self.strategy == "boosting":
                 pred = np.sum(
                     np.average(prob_list, axis=0, weights=self.weights), axis=1
                 )
@@ -308,7 +314,7 @@ class RegressorEnsemble(formatting):
         voting="mean",
         weights=None,
         features=None,
-        strategy = "stacking",
+        strategy="stacking",
     ):
         self.estimators = estimators
         self.voting = voting
@@ -343,15 +349,15 @@ class RegressorEnsemble(formatting):
             if self.weights is not None
             else None
         )
-        
+
         # if bagging, features much be provided
         if self.strategy == "bagging" and len(self.features) == 0:
             raise ValueError("features must be provided for bagging ensemble")
 
         # initialize the feature list if not given
         # by full feature list
-        if self.features is None:
-            self.features = [X.columns for _ in len(self.estimators)]
+        if len(self.features) == 0:
+            self.features = [X.columns for _ in range(len(self.estimators))]
 
         # check for estimators type
         if not isinstance(self.estimators, list):
@@ -386,18 +392,19 @@ class RegressorEnsemble(formatting):
                 )
             ]
         ).T
-         
+
         if self.strategy == "stacking" or self.strategy == "bagging":
             # if weights not included, not use weights
-            if "weights" in getfullargspec(self.voting).args:
+            try:
                 return self.voting(pred_list, axis=1, weights=self.weights)
-            else:
+            except:
                 # if weights included, but not available in voting function, warn users
                 if self.weights is not None:
                     warnings.warn("weights are not used in voting method")
                 return self.voting(pred_list, axis=1)
-        elif self.strategy == "boosting" :
+        elif self.strategy == "boosting":
             return np.sum(pred_list, axis=1)
+
 
 class TabularObjective(tune.Trainable):
     def setup(
