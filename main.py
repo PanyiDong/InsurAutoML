@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 11:32:45 pm
+Last Modified: Monday, 11th July 2022 11:19:36 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -81,6 +81,12 @@ parser.add_argument(
     default=5,
     type=int,
     help="number of pipelines used to build ensemble",
+)
+parser.add_argument(
+    "--ensemble_strategy",
+    default="stacking",
+    type=str,
+    help="type of ensemble strategy: stacking, bagging, boosting",
 )
 parser.add_argument(
     "--timeout", default=360, type=int, help="total time allowed for the task"
@@ -198,6 +204,7 @@ args = parser.parse_args()
 
 # convert arguments to parameters
 MODEL = model_dict[args.task_type]
+ENSEMBLE_STRATEGY = args.ensemble_strategy
 N_ESTIMATORS = args.n_estimators
 TIMEOUT = args.timeout
 MAX_EVALS = args.max_evals
@@ -258,6 +265,7 @@ if __name__ == "__main__":
     # construct the model by parameters
     model = MODEL(
         n_estimators=N_ESTIMATORS,
+        ensemble_strategy=ENSEMBLE_STRATEGY,
         timeout=TIMEOUT,
         max_evals=MAX_EVALS,
         temp_directory=TEMP_DIRECTORY,

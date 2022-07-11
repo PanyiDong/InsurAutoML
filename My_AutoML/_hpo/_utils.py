@@ -11,7 +11,7 @@ File Created: Tuesday, 10th May 2022 10:27:56 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 12:14:37 am
+Last Modified: Monday, 11th July 2022 2:13:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -162,21 +162,24 @@ class Pipeline:
         return self.model.predict_proba(X)
 
 
+# ensemble methods:
+# 1. Stacking Ensemble
+# 2. Boosting Ensemble
+# 3. Bagging Ensemble
+
+
 class ClassifierEnsemble(formatting):
 
     """
     Ensemble of classifiers for classification.
     """
 
-    def __init__(
-        self,
-        estimators,
-        voting="hard",
-        weights=None,
-    ):
+    def __init__(self, estimators, voting="hard", weights=None, features=None, strategy = "stacking",):
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
+        self.features = features
+        self.strategy = strategy
 
         # initialize the formatting
         super(ClassifierEnsemble, self).__init__(
@@ -197,6 +200,15 @@ class ClassifierEnsemble(formatting):
             if self.weights is not None
             else None
         )
+        
+        # if bagging, features much be provided
+        if self.strategy == "bagging" and len(self.features) == 0:
+            raise ValueError("features must be provided for bagging ensemble")
+
+        # initialize the feature list if not given
+        # by full feature list
+        if len(self.features) == 0:
+            self.features = [X.columns for _ in range(len(self.estimators))]
 
         # remember all unique labels
         super(ClassifierEnsemble, self).fit(y)
@@ -212,7 +224,7 @@ class ClassifierEnsemble(formatting):
         # check for estimators type
         if not isinstance(self.estimators, list):
             raise TypeError("estimators must be a list")
-        for item in self.estimators:
+        for item, feature_subset in zip(self.estimators, self.features):
             if not isinstance(item, tuple):
                 raise TypeError("estimators must be a list of tuples.")
             if not isinstance(item[1], Pipeline):
@@ -222,7 +234,7 @@ class ClassifierEnsemble(formatting):
 
             # make sure all estimators are fitted
             if not item[1]._fitted:
-                item[1].fit(X, y)
+                item[1].fit(X[feature_subset], y)
 
         self._fitted = True
 
@@ -236,21 +248,43 @@ class ClassifierEnsemble(formatting):
         if self.voting == "hard":
             # calculate predictions for all pipelines
             pred_list = np.asarray(
-                [pipeline.predict(X) for (name, pipeline) in self.estimators]
+                [
+                    pipeline.predict(X[feature_subset])
+                    for (name, pipeline), feature_subset in zip(
+                        self.estimators, self.features
+                    )
+                ]
             ).T
-            pred = np.apply_along_axis(
-                lambda x: np.argmax(np.bincount(x, weights=self.weights)),
-                axis=1,
-                arr=pred_list,
-            )
+            if self.strategy == "stacking" or self.strategy == "bagging":
+                pred = np.apply_along_axis(
+                    lambda x: np.argmax(np.bincount(x, weights=self.weights)),
+                    axis=1,
+                    arr=pred_list,
+                )
+            elif self.strategy == "boosting" :
+                pred = np.apply_along_axis(
+                    lambda x: np.sum(np.bincount(x, weights=self.weights)),
+                    axis=1,
+                    arr=pred_list,
+                )
         elif self.voting == "soft":
             # calculate probabilities for all pipelines
             prob_list = np.asarray(
-                [pipeline.predict_proba(X) for (name, pipeline) in self.estimators]
+                [
+                    pipeline.predict_proba(X[feature_subset])
+                    for (name, pipeline), feature_subset in zip(
+                        self.estimators, self.features
+                    )
+                ]
             )
-            pred = np.argmax(
-                np.average(prob_list, axis=0, weights=self.weights), axis=1
-            )
+            if self.strategy == "stacking" or self.strategy == "bagging":
+                pred = np.argmax(
+                    np.average(prob_list, axis=0, weights=self.weights), axis=1
+                )
+            elif self.strategy == "boosting" :
+                pred = np.sum(
+                    np.average(prob_list, axis=0, weights=self.weights), axis=1
+                )
 
         # make sure all predictions are seen
         if isinstance(pred, pd.DataFrame):
@@ -273,10 +307,14 @@ class RegressorEnsemble(formatting):
         estimators,
         voting="mean",
         weights=None,
+        features=None,
+        strategy = "stacking",
     ):
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
+        self.features = features
+        self.strategy = strategy
 
         self._fitted = False
 
@@ -305,11 +343,20 @@ class RegressorEnsemble(formatting):
             if self.weights is not None
             else None
         )
+        
+        # if bagging, features much be provided
+        if self.strategy == "bagging" and len(self.features) == 0:
+            raise ValueError("features must be provided for bagging ensemble")
+
+        # initialize the feature list if not given
+        # by full feature list
+        if self.features is None:
+            self.features = [X.columns for _ in len(self.estimators)]
 
         # check for estimators type
         if not isinstance(self.estimators, list):
             raise TypeError("estimators must be a list")
-        for item in self.estimators:
+        for item, feature_subset in zip(self.estimators, self.features):
             if not isinstance(item, tuple):
                 raise TypeError("estimators must be a list of tuples.")
             if not isinstance(item[1], Pipeline):
@@ -319,7 +366,7 @@ class RegressorEnsemble(formatting):
 
             # make sure all estimators are fitted
             if not item[1]._fitted:
-                item[1].fit(X, y)
+                item[1].fit(X[feature_subset], y)
 
         self._fitted = True
 
@@ -332,18 +379,25 @@ class RegressorEnsemble(formatting):
 
         # calculate predictions for all pipelines
         pred_list = np.asarray(
-            [pipeline.predict(X) for (name, pipeline) in self.estimators]
+            [
+                pipeline.predict(X[feature_subset])
+                for (name, pipeline), feature_subset in zip(
+                    self.estimators, self.features
+                )
+            ]
         ).T
-
-        # if weights not included, not use weights
-        if "weights" in getfullargspec(self.voting).args:
-            return self.voting(pred_list, axis=1, weights=self.weights)
-        else:
-            # if weights included, but not available in voting function, warn users
-            if self.weights is not None:
-                warnings.warn("weights are not used in voting method")
-            return self.voting(pred_list, axis=1)
-
+         
+        if self.strategy == "stacking" or self.strategy == "bagging":
+            # if weights not included, not use weights
+            if "weights" in getfullargspec(self.voting).args:
+                return self.voting(pred_list, axis=1, weights=self.weights)
+            else:
+                # if weights included, but not available in voting function, warn users
+                if self.weights is not None:
+                    warnings.warn("weights are not used in voting method")
+                return self.voting(pred_list, axis=1)
+        elif self.strategy == "boosting" :
+            return np.sum(pred_list, axis=1)
 
 class TabularObjective(tune.Trainable):
     def setup(
@@ -453,7 +507,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._encoder = self._encoder_hyper[_encoder_key]
         del self._encoder_hyper[_encoder_key]
-        # remvoe indcations
+        # remove indications
         self._encoder_hyper = {
             k.replace(self._encoder + "_", ""): self._encoder_hyper[k]
             for k in self._encoder_hyper
@@ -469,7 +523,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._imputer = self._imputer_hyper[_imputer_key]
         del self._imputer_hyper[_imputer_key]
-        # remvoe indcations
+        # remove indications
         self._imputer_hyper = {
             k.replace(self._imputer + "_", ""): self._imputer_hyper[k]
             for k in self._imputer_hyper
@@ -486,7 +540,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._balancing = self._balancing_hyper[_balancing_key]
         del self._balancing_hyper[_balancing_key]
-        # remvoe indcations
+        # remove indications
         self._balancing_hyper = {
             k.replace(self._balancing + "_", ""): self._balancing_hyper[k]
             for k in self._balancing_hyper
@@ -503,7 +557,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._scaling = self._scaling_hyper[_scaling_key]
         del self._scaling_hyper[_scaling_key]
-        # remvoe indcations
+        # remove indications
         self._scaling_hyper = {
             k.replace(self._scaling + "_", ""): self._scaling_hyper[k]
             for k in self._scaling_hyper
@@ -520,7 +574,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._feature_selection = self._feature_selection_hyper[_feature_selection_key]
         del self._feature_selection_hyper[_feature_selection_key]
-        # remvoe indcations
+        # remove indications
         self._feature_selection_hyper = {
             k.replace(self._feature_selection + "_", ""): self._feature_selection_hyper[
                 k
@@ -541,7 +595,7 @@ class TabularObjective(tune.Trainable):
                 break
         self._model = self._model_hyper[_model_key]
         del self._model_hyper[_model_key]
-        # remvoe indcations
+        # remove indications
         self._model_hyper = {
             k.replace(self._model + "_", ""): self._model_hyper[k]
             for k in self._model_hyper
