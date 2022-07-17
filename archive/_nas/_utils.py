@@ -1,17 +1,17 @@
 """
-File: _tensor.py
+File: _utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_tensor.py
-File Created: Tuesday, 12th April 2022 12:10:39 am
+Last Version: 0.2.1
+Relative Path: /My_AutoML/_utils/_nas/_utils.py
+File Created: Saturday, 16th July 2022 11:36:05 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th July 2022 10:43:27 am
+Last Modified: Saturday, 16th July 2022 11:39:36 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,36 +39,33 @@ SOFTWARE.
 """
 
 import torch
-from torch.utils.data import Dataset
+import torch.nn as nn
 
-# detach tensor from the computation graph
-def repackage_hidden(h):
-
-    if isinstance(h, torch.Tensor):
-        return h.detach()
-    else:
-        return tuple(repackage_hidden(v) for v in h)
+from ._ops import StdConvBN
 
 
-class CustomTensorDataset(Dataset):
-
+class ChannelCalibration(nn.Module) :
+    
     """
-    Custom Tensor Dataset
+    Reset channel size for concat
     """
-
+    
     def __init__(
         self,
-        inputs,
-        labels,
-    ):
-        self.inputs = inputs
-        self.labels = labels
-
-        if len(self.inputs) != len(self.labels):
-            raise ValueError("inputs and labels must have the same length")
-
-    def __len__(self):
-        return len(self.inputs)
-
-    def __getitem__(self, idx):
-        return {"text": self.inputs[idx], "label": self.labels[idx]}
+        in_channels,
+        out_channels,
+    ) :
+        super().__init__()
+        
+        self.need_calib = False
+        if in_channels != out_channels :
+            self.need_calib = True
+            self.module = StdConvBN(in_channels, out_channels)
+            
+    def forward(self, X) :
+        
+        if self.need_calib :
+            return self.module(X)
+        else :
+            return X
+        

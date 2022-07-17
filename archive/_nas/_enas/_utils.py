@@ -1,17 +1,17 @@
 """
-File: _tensor.py
+File: _utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_tensor.py
-File Created: Tuesday, 12th April 2022 12:10:39 am
+Last Version: 0.2.1
+Relative Path: /My_AutoML/_utils/_nas/_enas/_utils.py
+File Created: Saturday, 16th July 2022 10:34:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th July 2022 10:43:27 am
+Last Modified: Saturday, 16th July 2022 11:42:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,36 +39,21 @@ SOFTWARE.
 """
 
 import torch
-from torch.utils.data import Dataset
-
-# detach tensor from the computation graph
-def repackage_hidden(h):
-
-    if isinstance(h, torch.Tensor):
-        return h.detach()
-    else:
-        return tuple(repackage_hidden(v) for v in h)
 
 
-class CustomTensorDataset(Dataset):
+def decision_mask(n_nodes, n_activations):
 
     """
-    Custom Tensor Dataset
+    mask for decision nodes
     """
 
-    def __init__(
-        self,
-        inputs,
-        labels,
-    ):
-        self.inputs = inputs
-        self.labels = labels
+    dim_2 = max(n_nodes - 1, n_activations)
 
-        if len(self.inputs) != len(self.labels):
-            raise ValueError("inputs and labels must have the same length")
+    # initialize mask
+    mask = torch.ones(2 * n_nodes - 1, dim_2)
+    # set node masks for unavailable activations
+    mask[::2, n_activations:] = 0
+    # set connection masks for future connections
+    mask[1::2, :] = torch.tril(torch.ones(n_nodes - 1, dim_2), diagonal=0)
 
-    def __len__(self):
-        return len(self.inputs)
-
-    def __getitem__(self, idx):
-        return {"text": self.inputs[idx], "label": self.labels[idx]}
+    return mask
