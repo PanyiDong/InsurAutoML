@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File: _enas.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_nas/_nni/__init__.py
-File Created: Sunday, 17th July 2022 9:20:35 pm
+Relative Path: /My_AutoML/_nn/_nni/_nas/_enas.py
+File Created: Wednesday, 20th July 2022 2:48:16 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 7:47:20 pm
+Last Modified: Wednesday, 20th July 2022 2:48:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-
-from ._trainer import Trainer
-from ._baseSpace import MLPBaseSpace

@@ -11,7 +11,7 @@ File Created: Tuesday, 19th July 2022 2:04:35 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 8:21:13 pm
+Last Modified: Tuesday, 19th July 2022 11:37:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,6 @@ SOFTWARE.
 # pytorch-lightning version of evaluator
 
 import importlib
-from sched import scheduler
 
 pl_spec = importlib.util.find_spec("pytorch_lightning")
 # if pl not found, raise error

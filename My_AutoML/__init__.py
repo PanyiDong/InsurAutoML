@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 12:26:07 am
+Last Modified: Wednesday, 20th July 2022 2:50:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -66,7 +66,6 @@ from ._utils import (
     # unify_nan,
     # remove_index_columns,
     # get_missing_matrix,
-    _nas,
 )
 
 # from ._encoding import DataEncoding

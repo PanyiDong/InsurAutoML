@@ -6,12 +6,12 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_nas/_nni/_utils.py
-File Created: Tuesday, 19th July 2022 2:14:10 pm
+Relative Path: /My_AutoML/_utils/_nas/_utils.py
+File Created: Saturday, 16th July 2022 11:36:05 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 11:14:27 pm
+Last Modified: Wednesday, 20th July 2022 12:13:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 from collections import OrderedDict
 from typing import Callable
 import torch
@@ -46,6 +47,10 @@ import torch.optim as optim
 
 import nni.retiarii.strategy as strategy
 import nni.retiarii.nn.pytorch as nninn
+
+
+####################################################################################################################
+# Constant
 
 ACTIVATIONS = OrderedDict(
     [
@@ -63,6 +68,8 @@ RNN_TYPES = OrderedDict(
     ]
 )
 
+####################################################################################################################
+#utils
 
 def how_to_init(m, how="uniform"):
 
@@ -194,3 +201,5 @@ def get_strategy(strategyStr):
         return strategyStr()
     else:
         raise ValueError("Unrecognized strategy {}".format(strategyStr))
+    
+        

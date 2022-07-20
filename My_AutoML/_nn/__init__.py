@@ -6,12 +6,12 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_enas/__init__.py
-File Created: Friday, 15th July 2022 6:09:12 pm
+Relative Path: /My_AutoML/_nn/__init__.py
+File Created: Tuesday, 19th July 2022 11:30:18 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 7:47:49 pm
+Last Modified: Tuesday, 19th July 2022 11:37:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,5 +38,4 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
-from ._nni import Trainer, MLPBaseSpace
+from ._nni import Trainer

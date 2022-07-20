@@ -11,7 +11,7 @@ File Created: Friday, 15th July 2022 6:09:24 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th July 2022 2:02:58 pm
+Last Modified: Wednesday, 20th July 2022 12:16:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -66,12 +66,18 @@ class StdConvBN(nn.Module):
         in_channels,
         out_channels,
         kernel_size=1,
+        bias=False,
     ):
         super().__init__()
 
         self.module = nn.Sequential(
             nn.Conv2d(
-                in_channels, out_channels, kernel_size=kernel_size, stride=1, padding=0
+                in_channels,
+                out_channels,
+                kernel_size=kernel_size,
+                stride=1,
+                padding=0,
+                bias=bias,
             ),
             nn.BatchNorm2d(out_channels, affine=False),
             nn.ReLU(),
@@ -161,6 +167,61 @@ class FactorizedReduce(nn.Module):
 
 ################################################################################################################
 # combination components
+
+
+class ChannelCalibration(nn.Module):
+
+    """
+    Reset channel size for concat
+    """
+
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+    ):
+        super().__init__()
+
+        self.need_calib = False
+        if in_channels != out_channels:
+            self.need_calib = True
+            self.module = StdConvBN(in_channels, out_channels)
+
+    def forward(self, X):
+
+        if self.need_calib:
+            return self.module(X)
+        else:
+            return X
+
+
+class AuxiliaryHead(nn.Module):
+    def __init__(
+        self,
+        in_channels,
+        outputSize,
+    ):
+        super().__init__()
+        self.in_channels = in_channels
+        self.outputSize = outputSize
+
+        self.pooling = nn.Sequential(
+            nn.ReLU(), nn.AvgPool2d(kernel_size=5, stride=3, padding=2)
+        )
+        self.projection = nn.Sequential(
+            StdConvBN(in_channels, 128), StdConvBN(128, 768)
+        )
+        self.avgpool = nn.AdaptiveAvgPool2d(1)
+        self.linear = nn.Linear(768, outputSize, bias=False)
+
+    def forward(self, X):
+
+        b_size = X.size(0)
+        output = self.projection(self.pooling(X))
+        output = self.avgpool(output).view(b_size, -1)
+        output = self.linear(output)
+
+        return output
 
 
 class AvgPoolBN(nn.Module):
@@ -307,3 +368,20 @@ class FullConvBN(nn.Module):
     def forward(self, X):
 
         return self.module(X)
+
+
+class ReductionLayer(nn.Module):
+    def __init__(
+        self,
+        in_channels1,
+        in_channels2,
+        out_channels,
+    ):
+        super().__init__()
+
+        self.reduction1 = FactorizedReduce(in_channels1, out_channels, affine=False)
+        self.reduction2 = FactorizedReduce(in_channels2, out_channels, affine=False)
+
+    def forward(self, X):
+
+        return self.reduction1(X), self.reduction2(X)

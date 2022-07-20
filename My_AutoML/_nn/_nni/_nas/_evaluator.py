@@ -11,7 +11,7 @@ File Created: Sunday, 17th July 2022 9:40:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 7:50:22 pm
+Last Modified: Tuesday, 19th July 2022 11:37:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,12 +40,9 @@ SOFTWARE.
 
 import torch
 import torch.nn as nn
-import torch.optim as optim
 from torch.utils.data import DataLoader
 import nni
-import nni.retiarii.strategy as strategy
 from nni.retiarii.evaluator import FunctionalEvaluator
-from nni.retiarii.experiment.pytorch import RetiariiExperiment, RetiariiExeConfig
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
