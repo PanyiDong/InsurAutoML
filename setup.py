@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 3:32:31 pm
+Last Modified: Tuesday, 19th July 2022 8:00:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,6 +72,7 @@ def setup_package():
         platforms=["Linux", "Windows", "MacOS"],
         python_requires=">=3.7",
         install_requires=[
+            "setuptools==59.5.0",
             "numpy",
             "pandas",
             "scipy",
@@ -103,6 +104,7 @@ def setup_package():
                 "xgboost",
                 "pygam",
                 "torch",
+                "nni",
                 # "transformers",
                 # "datasets",
             ],

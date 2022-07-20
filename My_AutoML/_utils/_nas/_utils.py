@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File: _utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_enas/__init__.py
-File Created: Friday, 15th July 2022 6:09:12 pm
+Relative Path: /My_AutoML/_utils/_nas/_utils.py
+File Created: Saturday, 16th July 2022 11:36:05 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 15th July 2022 6:09:14 pm
+Last Modified: Tuesday, 19th July 2022 12:22:59 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,3 +37,35 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import torch
+import torch.nn as nn
+
+from ._ops import StdConvBN
+
+
+class ChannelCalibration(nn.Module) :
+    
+    """
+    Reset channel size for concat
+    """
+    
+    def __init__(
+        self,
+        in_channels,
+        out_channels,
+    ) :
+        super().__init__()
+        
+        self.need_calib = False
+        if in_channels != out_channels :
+            self.need_calib = True
+            self.module = StdConvBN(in_channels, out_channels)
+            
+    def forward(self, X) :
+        
+        if self.need_calib :
+            return self.module(X)
+        else :
+            return X
+        
