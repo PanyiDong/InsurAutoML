@@ -635,3 +635,45 @@ def softmax(df):
         tmp = df - np.max(df, axis=1).reshape((-1, 1))
         tmp = np.exp(tmp)
         return tmp / np.sum(tmp, axis=1).reshape((-1, 1))
+    
+def plotHighDimCluster(X, y, dim=2):
+
+    import matplotlib.pyplot as plt
+    from sklearn.decomposition import PCA
+
+    # check input shape:
+    # 1. X must be high dimensional data
+    # 2. y must be 1-dimensional labels
+    if X.shape[1] <= 3:
+        raise ValueError(
+            "X must be high dimensional data, dimension = {} have no need for this plotting".format(
+                X.shape[1]
+            )
+        )
+
+    if len(X) != len(y):
+        raise ValueError("X and y must have the same length")
+
+    # initiate PCA
+    pca = PCA(n_components=dim)
+    pca_result = pca.fit_transform(X)
+
+    # initiate storing dataframe
+    df = pd.DataFrame()
+    for _dim in range(dim):
+        df["PCA_" + str(_dim)] = pca_result[:, _dim]
+    df["y"] = y
+
+    if dim == 2:
+        fig, ax = plt.subplots()
+        ax.scatter(df["PCA_0"], df["PCA_1"], c=df["y"], cmap="RdYlBu", alpha=0.4)
+        ax.set_xlabel("PCA_1")
+        ax.set_ylabel("PCA_2")
+    if dim == 3:
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+        ax.scatter(df["PCA_0"], df["PCA_1"], df["PCA_2"], c=y, cmap="RdYlBu", alpha=0.4)
+        ax.set_xlabel("PCA_1")
+        ax.set_ylabel("PCA_2")
+        ax.set_zlabel("PCA_3")
+    plt.show()
