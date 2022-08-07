@@ -11,7 +11,7 @@ File Created: Friday, 15th July 2022 6:09:24 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 20th July 2022 12:16:54 pm
+Last Modified: Wednesday, 20th July 2022 3:11:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from turtle import forward
 import torch
 import torch.nn as nn
 
@@ -84,6 +85,36 @@ class StdConvBN(nn.Module):
         )
 
     def forward(self, X):
+        return self.module(X)
+    
+class AvgPool(nn.Module) :
+    
+    def __init__(
+        self,
+        kernel_size = 3,
+        stride = 1,
+        padding = 1,
+    ) :
+        super().__init__()
+        
+        self.module = nn.AvgPool2d(kernel_size, stride, padding, count_include_pad=False)
+    
+    def forward(self, X) :
+        return self.module(X)
+    
+class MaxPool(nn.Module) :
+    
+    def __init__(
+        self,
+        kernel_size = 3,
+        stride = 1,
+        padding = 1,
+    ) :
+        super().__init__()
+        
+        self.module = nn.MaxPool2d(kernel_size, stride, padding)
+    
+    def forward(self, X) :
         return self.module(X)
 
 
@@ -167,7 +198,6 @@ class FactorizedReduce(nn.Module):
 
 ################################################################################################################
 # combination components
-
 
 class ChannelCalibration(nn.Module):
 

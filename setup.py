@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 8:00:17 pm
+Last Modified: Sunday, 7th August 2022 11:50:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -77,6 +77,7 @@ def setup_package():
             "pandas",
             "scipy",
             "matplotlib",
+            "seaborn",
             "ray",
             # "ray[tune]",
             # "ray[rllib]",
@@ -100,6 +101,7 @@ def setup_package():
             ],
             "nn": [
                 "rpy2;platform_system=='Linux'",
+                "gensim",
                 "lightgbm",
                 "xgboost",
                 "pygam",

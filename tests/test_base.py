@@ -11,7 +11,7 @@ File Created: Sunday, 17th April 2022 6:46:02 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 30th April 2022 11:03:27 am
+Last Modified: Sunday, 7th August 2022 9:18:47 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,6 +57,8 @@ def test_load_data():
         "healthcare-dataset-stroke-data",
         "heart",
         "hurricanehist",
+        "HealthInsurance",
+        "ImbalancedInsurance",
         # "credit",
     ]
 

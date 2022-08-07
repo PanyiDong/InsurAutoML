@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 10:06:01 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:23:56 pm
+Last Modified: Sunday, 31st July 2022 8:19:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,5 +44,6 @@ from ray import tune
 encoder_hyperparameter = [
     {
         "encoder_1": "DataEncoding",
+        "DataEncoding_dummy_coding": tune.choice([True, False]),
     },
 ]

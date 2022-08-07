@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 10:08:05 pm
+Last Modified: Sunday, 7th August 2022 11:12:11 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,12 +38,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import re
 import ast
 import json
 import numpy as np
 import pandas as pd
 
 from ._base import random_index
+from My_AutoML._constant import UNI_CLASS
 
 # string list to list
 def str2list(item):
@@ -635,11 +637,12 @@ def softmax(df):
         tmp = df - np.max(df, axis=1).reshape((-1, 1))
         tmp = np.exp(tmp)
         return tmp / np.sum(tmp, axis=1).reshape((-1, 1))
-    
-def plotHighDimCluster(X, y, dim=2):
+
+
+# plot high dimensional data
+def plotHighDimCluster(X, y, method="PCA", dim=2):
 
     import matplotlib.pyplot as plt
-    from sklearn.decomposition import PCA
 
     # check input shape:
     # 1. X must be high dimensional data
@@ -654,19 +657,37 @@ def plotHighDimCluster(X, y, dim=2):
     if len(X) != len(y):
         raise ValueError("X and y must have the same length")
 
-    # initiate PCA
-    pca = PCA(n_components=dim)
-    pca_result = pca.fit_transform(X)
+    # method PCA
+    if method == "PCA":
+        from sklearn.decomposition import PCA
+
+        # initiate PCA
+        pca = PCA(n_components=dim)
+        project_result = pca.fit_transform(X)
+    elif method == "TSNE":
+        # if too many number of features, use PCA first to reduce computational cost
+        if X.shape[1] > 100:
+            from sklearn.decomposition import PCA
+            from sklearn.manifold import TSNE
+
+            pca = PCA(n_components=100)
+            tsne = TSNE(n_components=dim)
+            project_result = pca.fit_transform(X)
+            project_result = tsne.fit_transform(project_result)
+        else:
+            from sklearn.manifold import TSNE
+
+            tsne = TSNE(n_components=dim)
+            project_result = tsne.fit_transform(X)
 
     # initiate storing dataframe
     df = pd.DataFrame()
     for _dim in range(dim):
-        df["PCA_" + str(_dim)] = pca_result[:, _dim]
-    df["y"] = y
+        df["PCA_" + str(_dim)] = project_result[:, _dim]
 
     if dim == 2:
         fig, ax = plt.subplots()
-        ax.scatter(df["PCA_0"], df["PCA_1"], c=df["y"], cmap="RdYlBu", alpha=0.4)
+        ax.scatter(df["PCA_0"], df["PCA_1"], c=y, cmap="RdYlBu", alpha=0.4)
         ax.set_xlabel("PCA_1")
         ax.set_ylabel("PCA_2")
     if dim == 3:
@@ -677,3 +698,125 @@ def plotHighDimCluster(X, y, dim=2):
         ax.set_ylabel("PCA_2")
         ax.set_zlabel("PCA_3")
     plt.show()
+
+
+# distinguish from numerical categorical and numerical continuous
+def numerical_categorical_continuous(df):
+
+    if len(pd.unique(df)) <= min(UNI_CLASS, 0.1 * len(df)):
+        return "numerical_categorical"
+    else:
+        return "continuous"
+
+
+# distinguish the data type of each column between string categorical and text
+def string_categorical_text(df):
+
+    # # check if the input is a dataframe
+    # if not isinstance(df, pd.DataFrame):
+    #     try:
+    #         df = pd.DataFrame(df)
+    #     except:
+    #         raise ValueError("Input must be a dataframe or convertible to dataframe")
+
+    if len(pd.unique(df)) <= min(UNI_CLASS, 0.1 * len(df)):
+        return "string_categorical"
+    else:
+        return "text"
+
+
+# distinguish numerical and categorical features
+# one column at a time
+def feature_type(df):
+
+    if not df.dtype == "object":
+        return numerical_categorical_continuous(df)
+    else:
+        return string_categorical_text(df)
+
+
+# text preprocessing
+def text_preprocessing(text):
+
+    # remove anything inside brackets
+    extract_txt = re.sub("[\(\[].*?[\)\]]", "", text)
+    # get only alphabets and numerics info
+    use_txt = re.sub("[^a-zA-Z0-9]", " ", extract_txt)
+    # get tokens of the text
+    token_txt = use_txt.split(" ")
+    # get lower case of the tokens
+    lower_txt = [item.lower() for item in token_txt]
+
+    return [item for item in lower_txt if item != ""]
+
+
+# use word2vec to convert a text column to vector column
+def text2vec(
+    df, method="Word2Vec", pretrained=None, dim=100, how="sum", return_type="df"
+):
+
+    # method to combine the word (in sentences/phrases) vectors
+    how_dict = {
+        "sum": np.sum,
+        "mean": np.mean,
+    }
+
+    # pretrained word2vec model
+    pretrained_str = [
+        "fasttext-wiki-news-subwords-300",
+        "conceptnet-numberbatch-17-06-300",
+        "word2vec-ruscorpora-300",
+        "word2vec-google-news-300",
+        "glove-wiki-gigaword-50",
+        "glove-wiki-gigaword-100",
+        "glove-wiki-gigaword-200",
+        "glove-wiki-gigaword-300",
+        "glove-twitter-25",
+        "glove-twitter-50",
+        "glove-twitter-100",
+        "glove-twitter-200",
+    ]
+
+    # apply text preprocessing
+    preprocessed_df = df.apply(lambda x: text_preprocessing(x))
+
+    if method == "Word2Vec":
+        # if not pretrained, train the model
+        if pretrained is None:
+            # build word2vec model
+            from gensim.models import Word2Vec
+
+            model = Word2Vec(
+                preprocessed_df, vector_size=dim, window=5, min_count=1, workers=4
+            )
+            KeyVectors = model.wv
+        else:
+            # check if the pretrained model is valid
+            if pretrained not in pretrained_str:
+                raise ValueError(
+                    "Pretrained model must be one of {}, get {}.".format(
+                        pretrained_str, pretrained
+                    )
+                )
+
+            # load the pretrained model
+            import gensim.downloader
+
+            KeyVectors = gensim.downloader.load(pretrained)
+
+    # apply word2vec to convert text to vector
+    vectorized_df = preprocessed_df.apply(
+        lambda x: how_dict[how](KeyVectors[x], axis=0)
+    )
+
+    # expand the vector column to multiple columns by dimension
+    if return_type == "df":
+        return pd.DataFrame(
+            vectorized_df.values.tolist(),
+            index=vectorized_df.index,
+            columns=[df.columns[0] + "_" + str(i) for i in range(dim)],
+        )
+    elif return_type == "pt":
+        import torch
+
+        return torch.tensor(vectorized_df.values.tolist())
