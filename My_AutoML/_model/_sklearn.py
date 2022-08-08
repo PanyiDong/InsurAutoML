@@ -11,7 +11,7 @@ File Created: Monday, 18th April 2022 12:14:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th July 2022 5:53:53 pm
+Last Modified: Sunday, 7th August 2022 9:52:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1389,9 +1389,7 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
 
         super().__init__(
             criterion=self.criterion,
-            max_depth=None
-            if is_none(self.max_depth_factor)
-            else max(int(self.max_depth_factor * X.shape[1]), 1),
+            max_depth=max(int(self.max_depth_factor * X.shape[1]), 1),
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,
