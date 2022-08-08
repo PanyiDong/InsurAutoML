@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from re import L
 import ray
 from ray import tune
 
@@ -1168,6 +1167,12 @@ class AutoTabularBase:
 
         # get callback logger
         logger = get_logger(self.logger)
+
+
+        # get progress reporter
+        progress_reporter = get_progress_reporter(
+            self.progress_reporter, self.max_evals, self.max_error,
+        )
 
         # initialize stopper
         stopper = TimePlateauStopper(

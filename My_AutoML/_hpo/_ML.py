@@ -139,7 +139,7 @@ class AutoTabularRegressor(AutoTabularBase):
     logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
-    progress_reporter: progress reporter, default = "CLIReporter"
+    progress_reporter: progress reporter, default = None
     support ("CLIReporter", "JupyterNotebookReporter")
 
     full_status: whether to print full status, default = False
@@ -187,7 +187,7 @@ class AutoTabularRegressor(AutoTabularBase):
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
         logger=["Logger"],
-        progress_reporter="CLIReporter",
+        progress_reporter=None,
         full_status=False,
         verbose=1,
         cpu_threads=None,
@@ -371,7 +371,7 @@ class AutoTabularClassifier(AutoTabularBase):
     logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
-    progress_reporter: progress reporter, default = "CLIReporter"
+    progress_reporter: progress reporter, default = None
     support ("CLIReporter", "JupyterNotebookReporter")
 
     full_status: whether to print full status, default = False
@@ -419,7 +419,7 @@ class AutoTabularClassifier(AutoTabularBase):
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
         logger=["Logger"],
-        progress_reporter="CLIReporter",
+        progress_reporter=None,
         full_status=False,
         verbose=1,
         cpu_threads=None,
@@ -608,7 +608,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     logger: callback logger, default = ["Logger"]
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
-    progress_reporter: progress reporter, default = "CLIReporter"
+    progress_reporter: progress reporter, default = None
     support ("CLIReporter", "JupyterNotebookReporter")
 
     full_status: whether to print full status, default = False
@@ -656,7 +656,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         search_scheduler="FIFOScheduler",
         search_scheduler_settings={},
         logger = ["Logger"],
-        progress_reporter="CLIReporter",
+        progress_reporter=None,
         full_status=False,
         verbose=1,
         cpu_threads=None,

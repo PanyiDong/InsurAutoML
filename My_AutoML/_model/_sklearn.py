@@ -72,11 +72,7 @@ from My_AutoML._utils._data import softmax
 
 class AdaboostClassifier(sklearn.ensemble.AdaBoostClassifier):
     def __init__(
-        self,
-        n_estimators=50,
-        learning_rate=0.1,
-        algorithm="SAMME.R",
-        max_depth=1,
+        self, n_estimators=50, learning_rate=0.1, algorithm="SAMME.R", max_depth=1,
     ):
         self.n_estimators = int(n_estimators)
         self.learning_rate = float(learning_rate)
@@ -113,16 +109,13 @@ class AdaboostClassifier(sklearn.ensemble.AdaBoostClassifier):
 
 class BernoulliNB(sklearn.naive_bayes.BernoulliNB):
     def __init__(
-        self,
-        alpha=1,
-        fit_prior=True,
+        self, alpha=1, fit_prior=True,
     ):
         self.alpha = float(alpha)
         self.fit_prior = fit_prior
 
         super().__init__(
-            alpha=self.alpha,
-            fit_prior=self.fit_prior,
+            alpha=self.alpha, fit_prior=self.fit_prior,
         )
 
         self._fitted = False  # whether the model is fitted
@@ -270,7 +263,7 @@ class ExtraTreesClassifier:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -286,9 +279,7 @@ class ExtraTreesClassifier:
 
 
 class GaussianNB(sklearn.naive_bayes.GaussianNB):
-    def __init__(
-        self,
-    ):
+    def __init__(self,):
         super().__init__()
 
         self._fitted = False  # whether the model is fitted
@@ -415,7 +406,7 @@ class HistGradientBoostingClassifier:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -432,19 +423,14 @@ class HistGradientBoostingClassifier:
 
 class KNearestNeighborsClassifier(sklearn.neighbors.KNeighborsClassifier):
     def __init__(
-        self,
-        n_neighbors=5,
-        weights="uniform",
-        p=2,
+        self, n_neighbors=5, weights="uniform", p=2,
     ):
         self.n_neighbors = int(n_neighbors)
         self.weights = weights
         self.p = int(p)
 
         super().__init__(
-            n_neighbors=self.n_neighbors,
-            weights=self.weights,
-            p=self.p,
+            n_neighbors=self.n_neighbors, weights=self.weights, p=self.p,
         )
 
         self._fitted = False  # whether the model is fitted
@@ -468,10 +454,7 @@ class KNearestNeighborsClassifier(sklearn.neighbors.KNeighborsClassifier):
 
 class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
     def __init__(
-        self,
-        shrinkage="auto",
-        shrinkage_factor=0.5,
-        tol=1e-4,
+        self, shrinkage="auto", shrinkage_factor=0.5, tol=1e-4,
     ):
         self.shrinkage = shrinkage
         self.shrinkage_factor = float(shrinkage_factor)
@@ -496,9 +479,7 @@ class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
             )
 
         super().__init__(
-            shrinkage=self.shrinkage,
-            solver=solver,
-            tol=self.tol,
+            shrinkage=self.shrinkage, solver=solver, tol=self.tol,
         )
 
         super().fit(X, y)
@@ -742,7 +723,7 @@ class MLPClassifier:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -763,8 +744,7 @@ class MultinomialNB(sklearn.naive_bayes.MultinomialNB):
         self.fit_prior = fit_prior
 
         super().__init__(
-            alpha=self.alpha,
-            fit_prior=self.fit_prior,
+            alpha=self.alpha, fit_prior=self.fit_prior,
         )
 
         self._fitted = False  # whether the model is fitted
@@ -794,12 +774,7 @@ class MultinomialNB(sklearn.naive_bayes.MultinomialNB):
 
 class PassiveAggressive:
     def __init__(
-        self,
-        C=1.0,
-        fit_intercept=True,
-        average=False,
-        tol=1e-4,
-        loss="hinge",
+        self, C=1.0, fit_intercept=True, average=False, tol=1e-4, loss="hinge",
     ):
         self.C = float(C)
         self.fit_intercept = fit_intercept
@@ -853,7 +828,7 @@ class PassiveAggressive:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -870,14 +845,11 @@ class PassiveAggressive:
 
 class QDA(sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis):
     def __init__(
-        self,
-        reg_param=0.0,
+        self, reg_param=0.0,
     ):
         self.reg_param = float(reg_param)
 
-        super().__init__(
-            reg_param=self.reg_param,
-        )
+        super().__init__(reg_param=self.reg_param,)
 
         self._fitted = False  # whether the model is fitted
 
@@ -970,7 +942,7 @@ class RandomForestClassifier:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -1062,7 +1034,7 @@ class SGDClassifier:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -1079,19 +1051,14 @@ class SGDClassifier:
 
 class LogisticRegression(sklearn.linear_model.LogisticRegression):
     def __init__(
-        self,
-        penalty="l2",
-        tol=1e-4,
-        C=1.0,
+        self, penalty="l2", tol=1e-4, C=1.0,
     ):
         self.penalty = penalty
         self.tol = float(tol)
         self.C = float(C)
 
         super().__init__(
-            penalty=self.penalty,
-            tol=self.tol,
-            C=self.C,
+            penalty=self.penalty, tol=self.tol, C=self.C,
         )
 
         self._fitted = False
@@ -1115,19 +1082,14 @@ class LogisticRegression(sklearn.linear_model.LogisticRegression):
 
 class ComplementNB(sklearn.naive_bayes.ComplementNB):
     def __init__(
-        self,
-        alpha=1.0,
-        fit_prior=True,
-        norm=False,
+        self, alpha=1.0, fit_prior=True, norm=False,
     ):
         self.alpha = float(alpha)
         self.fit_prior = fit_prior
         self.norm = norm
 
         super().__init__(
-            alpha=self.alpha,
-            fit_prior=self.fit_prior,
-            norm=self.norm,
+            alpha=self.alpha, fit_prior=self.fit_prior, norm=self.norm,
         )
 
         self._fitted = False
@@ -1272,11 +1234,7 @@ class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
 
 class AdaboostRegressor(sklearn.ensemble.AdaBoostRegressor):
     def __init__(
-        self,
-        n_estimators=50,
-        learning_rate=0.1,
-        loss="linear",
-        max_depth=1,
+        self, n_estimators=50, learning_rate=0.1, loss="linear", max_depth=1,
     ):
         self.n_estimators = int(n_estimators)
         self.learning_rate = float(learning_rate)
@@ -1486,7 +1444,7 @@ class ExtraTreesRegressor:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -1503,10 +1461,7 @@ class ExtraTreesRegressor:
 
 class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor):
     def __init__(
-        self,
-        alpha=1e-8,
-        thetaL=1e-6,
-        thetaU=100000.0,
+        self, alpha=1e-8, thetaL=1e-6, thetaU=100000.0,
     ):
         self.alpha = float(alpha)
         self.thetaL = float(thetaL)
@@ -1651,7 +1606,7 @@ class HistGradientBoostingRegressor:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -1668,19 +1623,14 @@ class HistGradientBoostingRegressor:
 
 class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
     def __init__(
-        self,
-        n_neighbors=1,
-        weights="uniform",
-        p=2,
+        self, n_neighbors=1, weights="uniform", p=2,
     ):
         self.n_neighbors = int(n_neighbors)
         self.weights = weights
         self.p = int(p)
 
         super().__init__(
-            n_neighbors=self.n_neighbors,
-            weights=self.weights,
-            p=self.p,
+            n_neighbors=self.n_neighbors, weights=self.weights, p=self.p,
         )
 
         self._fitted = False  # whether the model is fitted
@@ -1916,7 +1866,7 @@ class MLPRegressor:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -2004,7 +1954,7 @@ class RandomForestRegressor:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -2096,7 +2046,7 @@ class SGDRegressor:
         # accelerate iteration process
         iteration = 2
         while not self._fitted:
-            n_iter = int(2**iteration / 2)
+            n_iter = int(2 ** iteration / 2)
             self._fit_iteration(X, y, n_iter=n_iter)
             iteration += 1
 
@@ -2112,9 +2062,7 @@ class SGDRegressor:
 
 
 class LinearRegression(sklearn.linear_model.LinearRegression):
-    def __init__(
-        self,
-    ):
+    def __init__(self,):
         super().__init__()
 
         self._fitted = False
@@ -2138,16 +2086,13 @@ class LinearRegression(sklearn.linear_model.LinearRegression):
 
 class Lasso(sklearn.linear_model.Lasso):
     def __init__(
-        self,
-        alpha=1.0,
-        tol=1e-4,
+        self, alpha=1.0, tol=1e-4,
     ):
         self.alpha = alpha
         self.tol = tol
 
         super().__init__(
-            alpha=self.alpha,
-            tol=self.tol,
+            alpha=self.alpha, tol=self.tol,
         )
 
         self._fitted = False
@@ -2171,19 +2116,14 @@ class Lasso(sklearn.linear_model.Lasso):
 
 class Ridge(sklearn.linear_model.Ridge):
     def __init__(
-        self,
-        alpha=1.0,
-        tol=1e-3,
-        solver="auto",
+        self, alpha=1.0, tol=1e-3, solver="auto",
     ):
         self.alpha = alpha
         self.tol = tol
         self.solver = solver
 
         super().__init__(
-            alpha=self.alpha,
-            tol=self.tol,
-            solver=self.solver,
+            alpha=self.alpha, tol=self.tol, solver=self.solver,
         )
 
         self._fitted = False
@@ -2207,11 +2147,7 @@ class Ridge(sklearn.linear_model.Ridge):
 
 class ElasticNet(sklearn.linear_model.ElasticNet):
     def __init__(
-        self,
-        alpha=1.0,
-        l1_ratio=0.5,
-        tol=1e-4,
-        selection="cyclic",
+        self, alpha=1.0, l1_ratio=0.5, tol=1e-4, selection="cyclic",
     ):
         self.alpha = alpha
         self.l1_ratio = l1_ratio
@@ -2246,12 +2182,7 @@ class ElasticNet(sklearn.linear_model.ElasticNet):
 
 class BayesianRidge(sklearn.linear_model.BayesianRidge):
     def __init__(
-        self,
-        tol=1e-3,
-        alpha_1=1e-6,
-        alpha_2=1e-6,
-        lambda_1=1e-6,
-        lambda_2=1e-6,
+        self, tol=1e-3, alpha_1=1e-6, alpha_2=1e-6, lambda_1=1e-6, lambda_2=1e-6,
     ):
         self.tol = float(tol)
         self.alpha_1 = float(alpha_1)
