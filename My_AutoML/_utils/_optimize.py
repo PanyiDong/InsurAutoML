@@ -11,7 +11,7 @@ File Created: Friday, 8th April 2022 11:55:13 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 10:33:14 pm
+Last Modified: Monday, 11th July 2022 9:54:57 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,6 +45,7 @@ import time
 from collections import defaultdict, deque
 import numpy as np
 import pandas as pd
+import ray
 from ray import tune
 from ray.tune import Stopper
 import importlib
@@ -861,3 +862,34 @@ def get_metrics(metric_str):
         return metric_str
     else:
         raise ValueError("Unrecognized criteria!")
+
+
+# ray initialization and shutdown
+class ray_status:
+    def __init__(
+        self,
+        cpu_threads,
+        gpu_count,
+    ):
+        self.cpu_threads = cpu_threads
+        self.gpu_count = gpu_count
+
+    def ray_init(self):
+
+        # initialize ray
+        # if already initialized, do nothing
+        if not ray.is_initialized():
+            ray.init(
+                # local_mode=True,
+                num_cpus=self.cpu_threads,
+                num_gpus=self.gpu_count,
+            )
+        # check if ray is initialized
+        assert ray.is_initialized() == True, "Ray is not initialized."
+
+    def ray_shutdown(self):
+
+        # shut down ray
+        ray.shutdown()
+        # check if ray is shutdown
+        assert ray.is_initialized() == False, "Ray is not shutdown."

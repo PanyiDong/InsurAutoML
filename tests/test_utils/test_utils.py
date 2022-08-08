@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 8:10:40 pm
+Last Modified: Monday, 8th August 2022 3:29:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -692,3 +692,69 @@ def test_softmax():
     assert (
         softmax(a).sum(axis=1) == np.ones(3)
     ).all(), "The softmax function is not correct."
+
+
+def test_EDA():
+
+    from My_AutoML._utils._eda import EDA
+    from My_AutoML._datasets import PROD, HEART
+
+    features, label = PROD(split="train")
+
+    EDA(features, plot=False)
+
+    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
+
+    features, label = HEART()
+
+    EDA(features, label, plot=False)
+
+    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
+
+
+def test_feature_type():
+
+    from My_AutoML._utils._data import feature_type
+    from My_AutoML._datasets import PROD, HEART
+
+    data, label = PROD(split="test")
+    data_type = {}
+    for column in data.columns:
+        data_type[column] = feature_type(data[column])
+
+    assert isinstance(data_type, dict), "The feature_type function is not correct."
+
+    data, label = HEART()
+    data_type = {}
+    for column in data.columns:
+        data_type[column] = feature_type(data[column])
+
+    assert isinstance(data_type, dict), "The feature_type function is not correct."
+
+
+def test_plotHighDimCluster():
+
+    from My_AutoML._utils._data import plotHighDimCluster
+
+    X = np.random.randint(0, 100, size=(1000, 200))
+    y = np.random.randint(0, 5, size=(1000,))
+
+    plotHighDimCluster(X, y, plot=False, method="PCA", dim=2, save=True)
+
+    plotHighDimCluster(X, y, plot=False, method="TSNE", dim=3, save=True)
+
+    assert True, "The plotHighDimCluster function is not correct."
+
+
+def test_word2vec():
+
+    from My_AutoML._datasets import PROD
+    from My_AutoML._utils._data import text2vec
+
+    features, labels = PROD(split="test")
+    features = features["Product_Description"]
+    vec_df = text2vec(features, method="Word2Vec", dim=20)
+
+    assert vec_df.shape[1] == 20, "The word2vec function is not correct."

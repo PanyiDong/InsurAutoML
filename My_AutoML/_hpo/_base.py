@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 6th July 2022 4:52:01 pm
+Last Modified: Monday, 11th July 2022 2:14:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -74,6 +74,7 @@ from My_AutoML._utils._optimize import (
     get_logger,
     get_progress_reporter,
     TimePlateauStopper,
+    ray_status,
 )
 
 # filter certain warnings
@@ -116,6 +117,9 @@ class AutoTabularBase:
     support ("classification", "regression")
 
     n_estimators: top k pipelines used to create the ensemble, default: 5
+
+    ensemble_strategy: strategy of ensemble, default: "stacking"
+    support ("stacking", "bagging", "boosting")
 
     timeout: Total time limit for the job in seconds, default = 360
 
@@ -231,6 +235,7 @@ class AutoTabularBase:
         self,
         task_mode="classification",
         n_estimators=5,
+        ensemble_strategy="stacking",
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -263,6 +268,7 @@ class AutoTabularBase:
     ):
         self.task_mode = task_mode
         self.n_estimators = n_estimators
+        self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -508,7 +514,7 @@ class AutoTabularBase:
         # # initialize encoders hyperparameter space
         # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
 
-        # all hyperparemeters for imputers
+        # all hyperparameters for imputers
         # _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
 
         # # initialize imputers hyperparameter space
@@ -701,7 +707,7 @@ class AutoTabularBase:
                 break
         optimal_encoder = optimal_encoder_hyperparameters[_encoder_key]
         del optimal_encoder_hyperparameters[_encoder_key]
-        # remvoe indcations
+        # remove indications
         optimal_encoder_hyperparameters = {
             k.replace(optimal_encoder + "_", ""): optimal_encoder_hyperparameters[k]
             for k in optimal_encoder_hyperparameters
@@ -716,7 +722,7 @@ class AutoTabularBase:
                 break
         optimal_imputer = optimal_imputer_hyperparameters[_imputer_key]
         del optimal_imputer_hyperparameters[_imputer_key]
-        # remvoe indcations
+        # remove indications
         optimal_imputer_hyperparameters = {
             k.replace(optimal_imputer + "_", ""): optimal_imputer_hyperparameters[k]
             for k in optimal_imputer_hyperparameters
@@ -731,7 +737,7 @@ class AutoTabularBase:
                 break
         optimal_balancing = optimal_balancing_hyperparameters[_balancing_key]
         del optimal_balancing_hyperparameters[_balancing_key]
-        # remvoe indcations
+        # remove indications
         optimal_balancing_hyperparameters = {
             k.replace(optimal_balancing + "_", ""): optimal_balancing_hyperparameters[k]
             for k in optimal_balancing_hyperparameters
@@ -746,7 +752,7 @@ class AutoTabularBase:
                 break
         optimal_scaling = optimal_scaling_hyperparameters[_scaling_key]
         del optimal_scaling_hyperparameters[_scaling_key]
-        # remvoe indcations
+        # remove indications
         optimal_scaling_hyperparameters = {
             k.replace(optimal_scaling + "_", ""): optimal_scaling_hyperparameters[k]
             for k in optimal_scaling_hyperparameters
@@ -763,7 +769,7 @@ class AutoTabularBase:
             _feature_selection_key
         ]
         del optimal_feature_selection_hyperparameters[_feature_selection_key]
-        # remvoe indcations
+        # remove indications
         optimal_feature_selection_hyperparameters = {
             k.replace(
                 optimal_feature_selection + "_", ""
@@ -782,7 +788,7 @@ class AutoTabularBase:
             _model_key
         ]  # optimal hyperparameter settings selected
         del optimal_model_hyperparameters[_model_key]
-        # remvoe indcations
+        # remove indications
         optimal_model_hyperparameters = {
             k.replace(optimal_model + "_", ""): optimal_model_hyperparameters[k]
             for k in optimal_model_hyperparameters
@@ -790,7 +796,9 @@ class AutoTabularBase:
 
         # if already exists, use append mode
         # else, write mode
-        if not os.path.exists("optimal_setting.txt"):
+        if not os.path.exists(
+            os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt")
+        ):
             write_type = "w"
         else:
             write_type = "a"
@@ -808,7 +816,7 @@ class AutoTabularBase:
             f.write("Optimal imputation hyperparameters:")
             print(optimal_imputer_hyperparameters, file=f, end="\n\n")
             f.write("Optimal balancing method is: {}\n".format(optimal_balancing))
-            f.write("Optimal balancing hyperparamters:")
+            f.write("Optimal balancing hyperparameters:")
             print(optimal_balancing_hyperparameters, file=f, end="\n\n")
             f.write("Optimal scaling method is: {}\n".format(optimal_scaling))
             f.write("Optimal scaling hyperparameters:")
@@ -916,27 +924,70 @@ class AutoTabularBase:
 
         return ("pipe_" + str(idx + 1), Pipeline(**pip_setting))
 
-    def _fit_ensemble(self, trial_id, config):
+    def _fit_ensemble(self, trial_id, config, iter=None, features=None):
 
         # initialize ensemble list
-        ensemble_list = []
+        try:
+            # if ensemble list exists, append to it
+            if len(ensemble_list) > 0 or len(feature_list) > 0:
+                pass
+        except:
+            # else, initialize the list
+            ensemble_list = []
+            feature_list = []
+
+        # if only one optimal input, need to convert to iterable
+        if not isinstance(trial_id, pd.Series) or not isinstance(config, pd.Series):
+            trial_id = [trial_id]
+            config = [config]
 
         # loop through all configs, trial_id, get model ensemble
         for idx, (trial_id, config) in enumerate(zip(trial_id, config)):
-
             # find the exact path
-            _path = find_exact_path(
-                os.path.join(self.temp_directory, self.model_name), "id_" + trial_id
-            )
-            _path = os.path.join(_path, self.model_name)
+            if iter is None:
+                _path = find_exact_path(
+                    os.path.join(
+                        self.sub_directory,
+                        self.model_name,
+                    ),
+                    "id_" + trial_id,
+                )
+                _path = os.path.join(_path, self.model_name)
 
-            ensemble_list.append(self._fit_optimal(idx, config, _path))
+                ensemble_list.append(self._fit_optimal(idx, config, _path))
+            else:
+                _path = find_exact_path(
+                    os.path.join(
+                        self.sub_directory,
+                        self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(iter + 1),
+                    ),
+                    "id_" + trial_id,
+                )
+                _path = os.path.join(_path, self.model_name)
+
+                ensemble_list.append(self._fit_optimal(iter, config, _path))
+            if (
+                features is not None
+            ):  # if feature subset is provided, save the feature subsets
+                feature_list.append(features)
 
         # wrap pipelines into ensemble
         if self.task_mode == "classification":
-            self._ensemble = ClassifierEnsemble(estimators=ensemble_list)
+            self._ensemble = ClassifierEnsemble(
+                estimators=ensemble_list,
+                features=feature_list,
+                strategy=self.ensemble_strategy,
+            )
         elif self.task_mode == "regression":
-            self._ensemble = RegressorEnsemble(estimators=ensemble_list)
+            self._ensemble = RegressorEnsemble(
+                estimators=ensemble_list,
+                features=feature_list,
+                strategy=self.ensemble_strategy,
+            )
 
     def fit(self, X, y):
 
@@ -973,7 +1024,7 @@ class AutoTabularBase:
         # at least one constraint of time/evaluations should be provided
         if self.timeout == -1 and self.max_evals == -1:
             warnings.warn(
-                "None of time or evaluation contraint is provided, will set time limit to 1 hour."
+                "None of time or evaluation constraint is provided, will set time limit to 1 hour."
             )
             self.timeout = 3600
 
@@ -1111,34 +1162,12 @@ class AutoTabularBase:
             #     Example: self.search_algo_settings = {'optimizer': nevergrad.optimizers.NGOpt}."
             # )
 
-        # set trainable
-        trainer = tune.with_parameters(
-            TabularObjective,
-            _X=_X,
-            _y=_y,
-            encoder=encoder,
-            imputer=imputer,
-            balancing=balancing,
-            scaling=scaling,
-            feature_selection=feature_selection,
-            models=models,
-            model_name=self.model_name,
-            task_mode=self.task_mode,
-            objective=self.objective,
-            validation=self.validation,
-            valid_size=self.valid_size,
-            full_status=self.full_status,
-            reset_index=self.reset_index,
-            timeout=self.timeout / 100,
-            _iter=self._iter,
-            seed=self.seed,
-        )
-
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
 
         # get callback logger
         logger = get_logger(self.logger)
+
 
         # get progress reporter
         progress_reporter = get_progress_reporter(
@@ -1155,95 +1184,427 @@ class AutoTabularBase:
             mode="min",
         )
 
-        # initialize ray
-        # if already initialized, do nothing
-        if not ray.is_initialized():
-            ray.init(
-                # local_mode=True,
-                num_cpus=self.cpu_threads,
-                num_gpus=self.gpu_count,
-            )
-        # check if ray is initialized
-        assert ray.is_initialized() == True, "Ray is not initialized."
-
         # trial directory name
         def trial_str_creator(trial):
             trialname = "iter_{}_id_{}".format(self._iter + 1, trial.trial_id)
             self._iter += 1
             return trialname
 
-        # optimization process
-        # partially activated objective function
-        fit_analysis = tune.run(
-            trainer,
-            config=hyperparameter_space,
-            name=self.model_name,  # name of the tuning process, use model_name
-            resume="AUTO",
-            checkpoint_freq=8,  # disable checkpoint
-            checkpoint_at_end=True,
-            keep_checkpoints_num=4,
-            checkpoint_score_attr="loss",
-            mode="min",  # always call a minimization process
-            search_alg=algo(**self.search_algo_settings),
-            scheduler=scheduler(**self.search_scheduler_settings),
-            reuse_actors=True,
-            raise_on_failed_trial=False,
-            metric="loss",
-            num_samples=self.max_evals,
-            max_failures=self.max_error,
-            stop=stopper,  # use stopper
-            callbacks=logger,
-            # time_budget_s=self.timeout,  # included in stopper
-            progress_reporter=progress_reporter,
-            verbose=self.verbose,
-            trial_dirname_creator=trial_str_creator,
-            local_dir=self.temp_directory,
-            log_to_file=True,
+        # set ray status
+        rayStatus = ray_status(
+            cpu_threads=self.cpu_threads,
+            gpu_count=self.gpu_count,
         )
 
-        # shut down ray
-        ray.shutdown()
-        # check if ray is shutdown
-        assert ray.is_initialized() == False, "Ray is not shutdown."
+        # ensemble settings
+        if self.n_estimators == 1:
+            warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
-        # # get the best config settings
-        # best_trial_id = str(
-        #     fit_analysis.get_best_trial(metric="loss", mode="min", scope="all").trial_id
-        # )
-        # # find the exact path
-        # best_path = find_exact_path(
-        #     os.path.join(self.temp_directory, self.model_name), "id_" + best_trial_id
-        # )
-        # best_path = os.path.join(best_path, self.model_name)
+            # get progress reporter
+            progress_reporter = get_progress_reporter(
+                self.progress_reporter,
+                self.max_evals,
+                self.max_error,
+            )
 
-        # # select optimal settings and fit optimal pipeline
-        # self._fit_optimal(fit_analysis.best_config, best_path)
+            # set trainable
+            trainer = tune.with_parameters(
+                TabularObjective,
+                _X=_X,
+                _y=_y,
+                encoder=encoder,
+                imputer=imputer,
+                balancing=balancing,
+                scaling=scaling,
+                feature_selection=feature_selection,
+                models=models,
+                model_name=self.model_name,
+                task_mode=self.task_mode,
+                objective=self.objective,
+                validation=self.validation,
+                valid_size=self.valid_size,
+                full_status=self.full_status,
+                reset_index=self.reset_index,
+                # timeout=self.timeout, # specified in stopper
+                _iter=self._iter,
+                seed=self.seed,
+            )
 
-        # get all configs, trial_id
-        analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
+            # initialize ray
+            # # if already initialized, do nothing
+            # if not ray.is_initialized():
+            #     ray.init(
+            #         # local_mode=True,
+            #         num_cpus=self.cpu_threads,
+            #         num_gpus=self.gpu_count,
+            #     )
+            # # check if ray is initialized
+            # assert ray.is_initialized() == True, "Ray is not initialized."
+            rayStatus.ray_init()
 
-        # reformat config to dict
-        analysis_df["config"] = analysis_df.apply(
-            lambda x: {
-                "encoder": x["config/encoder"],
-                "imputer": x["config/imputer"],
-                "balancing": x["config/balancing"],
-                "scaling": x["config/scaling"],
-                "feature_selection": x["config/feature_selection"],
-                "model": x["config/model"],
-            },
-            axis=1,
-        )
-        # sort by loss and get top configs
-        analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
-            self.n_estimators
-        )
+            # subtrial directory
+            self.sub_directory = self.temp_directory
 
-        # select optimal settings and create the ensemble of pipeline
-        self._fit_ensemble(analysis_df.trial_id, analysis_df.config)
+            # optimization process
+            # partially activated objective function
+            fit_analysis = tune.run(
+                trainer,
+                config=hyperparameter_space,
+                name=self.model_name,  # name of the tuning process, use model_name
+                resume="AUTO",
+                checkpoint_freq=8,  # disable checkpoint
+                checkpoint_at_end=True,
+                keep_checkpoints_num=4,
+                checkpoint_score_attr="loss",
+                mode="min",  # always call a minimization process
+                search_alg=algo(**self.search_algo_settings),
+                scheduler=scheduler(**self.search_scheduler_settings),
+                reuse_actors=True,
+                raise_on_failed_trial=False,
+                metric="loss",
+                num_samples=self.max_evals,
+                max_failures=self.max_error,
+                stop=stopper,  # use stopper
+                callbacks=logger,
+                # time_budget_s=self.timeout,  # included in stopper
+                progress_reporter=progress_reporter,
+                verbose=self.verbose,
+                trial_dirname_creator=trial_str_creator,
+                local_dir=self.sub_directory,
+                log_to_file=True,
+            )
+
+            # shut down ray
+            # ray.shutdown()
+            # # check if ray is shutdown
+            # assert ray.is_initialized() == False, "Ray is not shutdown."
+            rayStatus.ray_shutdown()
+
+            # get the best config settings
+            best_trial_id = str(
+                fit_analysis.get_best_trial(
+                    metric="loss", mode="min", scope="all"
+                ).trial_id
+            )
+            # # find the exact path
+            # best_path = find_exact_path(
+            #     os.path.join(self.temp_directory, self.model_name), "id_" + best_trial_id
+            # )
+            # best_path = os.path.join(best_path, self.model_name)
+
+            # select optimal settings and fit optimal pipeline
+            self._fit_ensemble(best_trial_id, fit_analysis.best_config)
+        # Stacking ensemble
+        elif self.ensemble_strategy == "stacking":
+
+            # get progress reporter
+            progress_reporter = get_progress_reporter(
+                self.progress_reporter,
+                self.max_evals,
+                self.max_error,
+            )
+
+            # set trainable
+            trainer = tune.with_parameters(
+                TabularObjective,
+                _X=_X,
+                _y=_y,
+                encoder=encoder,
+                imputer=imputer,
+                balancing=balancing,
+                scaling=scaling,
+                feature_selection=feature_selection,
+                models=models,
+                model_name=self.model_name,
+                task_mode=self.task_mode,
+                objective=self.objective,
+                validation=self.validation,
+                valid_size=self.valid_size,
+                full_status=self.full_status,
+                reset_index=self.reset_index,
+                # timeout=self.timeout, # specified in stopper
+                _iter=self._iter,
+                seed=self.seed,
+            )
+
+            # initialize ray
+            rayStatus.ray_init()
+
+            # subtrial directory
+            self.sub_directory = self.temp_directory
+
+            # optimization process
+            # partially activated objective function
+            fit_analysis = tune.run(
+                trainer,
+                config=hyperparameter_space,
+                name=self.model_name,  # name of the tuning process, use model_name
+                resume="AUTO",
+                checkpoint_freq=8,  # disable checkpoint
+                checkpoint_at_end=True,
+                keep_checkpoints_num=4,
+                checkpoint_score_attr="loss",
+                mode="min",  # always call a minimization process
+                search_alg=algo(**self.search_algo_settings),
+                scheduler=scheduler(**self.search_scheduler_settings),
+                reuse_actors=True,
+                raise_on_failed_trial=False,
+                metric="loss",
+                num_samples=self.max_evals,
+                max_failures=self.max_error,
+                stop=stopper,  # use stopper
+                callbacks=logger,
+                # time_budget_s=self.timeout,  # included in stopper
+                progress_reporter=progress_reporter,
+                verbose=self.verbose,
+                trial_dirname_creator=trial_str_creator,
+                local_dir=self.sub_directory,
+                log_to_file=True,
+            )
+
+            # shut down ray
+            rayStatus.ray_shutdown()
+
+            # get all configs, trial_id
+            analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
+
+            # reformat config to dict
+            analysis_df["config"] = analysis_df.apply(
+                lambda x: {
+                    "encoder": x["config/encoder"],
+                    "imputer": x["config/imputer"],
+                    "balancing": x["config/balancing"],
+                    "scaling": x["config/scaling"],
+                    "feature_selection": x["config/feature_selection"],
+                    "model": x["config/model"],
+                },
+                axis=1,
+            )
+            # sort by loss and get top configs
+            analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
+                self.n_estimators
+            )
+
+            # select optimal settings and create the ensemble of pipeline
+            self._fit_ensemble(analysis_df.trial_id, analysis_df.config)
+        # Bagging ensemble
+        elif self.ensemble_strategy == "bagging":
+            # create a list of feature subsets
+            feature_list = [
+                np.random.choice(
+                    _X.columns,
+                    size=2 * len(_X.columns) // self.n_estimators,
+                    replace=False,
+                )
+                for _ in range(self.n_estimators)
+            ]
+
+            # loop through feature_list
+            for _n, feature_subset in enumerate(feature_list):
+                # get n_trials for the subsets
+                sub_n_trials = (
+                    (self.max_evals // self.n_estimators + 1)
+                    if _n < self.max_evals % self.n_estimators
+                    else (self.max_evals // self.n_estimators)
+                )
+
+                # get progress reporter
+                progress_reporter = get_progress_reporter(
+                    self.progress_reporter,
+                    self.max_evals,
+                    self.max_error,
+                )
+
+                # set trainable
+                trainer = tune.with_parameters(
+                    TabularObjective,
+                    _X=_X[feature_subset],
+                    _y=_y,
+                    encoder=encoder,
+                    imputer=imputer,
+                    balancing=balancing,
+                    scaling=scaling,
+                    feature_selection=feature_selection,
+                    models=models,
+                    model_name=self.model_name,
+                    task_mode=self.task_mode,
+                    objective=self.objective,
+                    validation=self.validation,
+                    valid_size=self.valid_size,
+                    full_status=self.full_status,
+                    reset_index=self.reset_index,
+                    # timeout=self.timeout, # specified in stopper
+                    _iter=self._iter,
+                    seed=self.seed,
+                )
+
+                # initialize ray
+                rayStatus.ray_init()
+
+                # subtrial directory
+                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
+
+                # optimization process
+                # partially activated objective function
+                fit_analysis = tune.run(
+                    trainer,
+                    config=hyperparameter_space,
+                    name=self.model_name
+                    + "_"
+                    + self.ensemble_strategy
+                    + "_"
+                    + str(_n + 1),  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(**self.search_algo_settings),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
+
+                # shut down ray
+                rayStatus.ray_shutdown()
+
+                # get the best config settings
+                best_trial_id = str(
+                    fit_analysis.get_best_trial(
+                        metric="loss", mode="min", scope="all"
+                    ).trial_id
+                )
+
+                # select optimal settings and fit optimal pipeline
+                self._fit_ensemble(
+                    best_trial_id,
+                    fit_analysis.best_config,
+                    iter=_n,
+                    features=feature_subset,
+                )
+
+        # Boosting ensemble
+        elif self.ensemble_strategy == "boosting":
+            # loop through n_estimators
+            for _n in range(self.n_estimators):
+                sub_n_trials = (
+                    (self.max_evals // self.n_estimators + 1)
+                    if _n < self.max_evals % self.n_estimators
+                    else (self.max_evals // self.n_estimators)
+                )
+
+                try:
+                    # if fitted before, use pred for residuals
+                    _y_resid -= _y_pred
+                except:
+                    # if not, use y as residuals
+                    _y_resid = _y
+
+                # get progress reporter
+                progress_reporter = get_progress_reporter(
+                    self.progress_reporter,
+                    self.max_evals,
+                    self.max_error,
+                )
+
+                # set trainable
+                trainer = tune.with_parameters(
+                    TabularObjective,
+                    _X=_X,
+                    _y=_y_resid,
+                    encoder=encoder,
+                    imputer=imputer,
+                    balancing=balancing,
+                    scaling=scaling,
+                    feature_selection=feature_selection,
+                    models=models,
+                    model_name=self.model_name,
+                    task_mode=self.task_mode,
+                    objective=self.objective,
+                    validation=self.validation,
+                    valid_size=self.valid_size,
+                    full_status=self.full_status,
+                    reset_index=self.reset_index,
+                    # timeout=self.timeout, # specified in stopper
+                    _iter=self._iter,
+                    seed=self.seed,
+                )
+
+                # initialize ray
+                rayStatus.ray_init()
+
+                # subtrial directory
+                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
+
+                # optimization process
+                # partially activated objective function
+                fit_analysis = tune.run(
+                    trainer,
+                    config=hyperparameter_space,
+                    name=self.model_name
+                    + "_"
+                    + self.ensemble_strategy
+                    + "_"
+                    + str(_n + 1),  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(**self.search_algo_settings),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
+
+                # shut down ray
+                rayStatus.ray_shutdown()
+
+                # get the best config settings
+                best_trial_id = str(
+                    fit_analysis.get_best_trial(
+                        metric="loss", mode="min", scope="all"
+                    ).trial_id
+                )
+
+                # select optimal settings and fit optimal pipeline
+                self._fit_ensemble(best_trial_id, fit_analysis.best_config, iter=_n)
+
+                # make sure the ensemble is fitted
+                # usually, most of the methods are already fitted
+                self._ensemble.fit(_X, _y)
+
+                # get predictions on the residuals
+                # only use the last/latest pipeline
+                _y_pred = self._ensemble.estimators[-1][1].predict(_X)
 
         # make sure the ensemble is fitted
         # usually, most of the methods are already fitted
+        # but all pipelines need to be checked and set to fitted
         self._ensemble.fit(_X, _y)
 
         # if need to save the ensemble

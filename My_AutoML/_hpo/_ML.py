@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:50:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 11:31:28 pm
+Last Modified: Monday, 11th July 2022 11:17:30 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -54,6 +54,9 @@ class AutoTabularRegressor(AutoTabularBase):
     Parameters
     ----------
     n_estimators: top k pipelines used to create the ensemble, default: 5
+    
+    ensemble_strategy: strategy of ensemble, default: "stacking"
+    support ("stacking", "bagging", "boosting")
     
     timeout: Total time limit for the job in seconds, default = 360
 
@@ -161,6 +164,7 @@ class AutoTabularRegressor(AutoTabularBase):
     def __init__(
         self,
         n_estimators=5,
+        ensemble_strategy="stacking",
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -192,6 +196,7 @@ class AutoTabularRegressor(AutoTabularBase):
         seed=1,
     ):
         self.n_estimators = n_estimators
+        self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -227,6 +232,7 @@ class AutoTabularRegressor(AutoTabularBase):
         super().__init__(
             task_mode="regression",
             n_estimators=self.n_estimators,
+            ensemble_strategy=self.ensemble_strategy,
             timeout=self.timeout,
             max_evals=self.max_evals,
             allow_error_prop=self.allow_error_prop,
@@ -280,6 +286,9 @@ class AutoTabularClassifier(AutoTabularBase):
     ----------
     n_estimators: top k pipelines used to create the ensemble, default: 5
     
+    ensemble_strategy: strategy of ensemble, default: "stacking"
+    support ("stacking", "bagging", "boosting")
+    
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
@@ -387,6 +396,7 @@ class AutoTabularClassifier(AutoTabularBase):
     def __init__(
         self,
         n_estimators=5,
+        ensemble_strategy="stacking",
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -418,6 +428,7 @@ class AutoTabularClassifier(AutoTabularBase):
         seed=1,
     ):
         self.n_estimators = n_estimators
+        self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -453,6 +464,7 @@ class AutoTabularClassifier(AutoTabularBase):
         super().__init__(
             task_mode="classification",
             n_estimators=self.n_estimators,
+            ensemble_strategy=self.ensemble_strategy,
             timeout=self.timeout,
             max_evals=self.max_evals,
             allow_error_prop=self.allow_error_prop,
@@ -505,6 +517,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     Parameters
     ----------
     n_estimators: top k pipelines used to create the ensemble, default: 5
+    
+    ensemble_strategy: strategy of ensemble, default: "stacking"
+    support ("stacking", "bagging", "boosting")
     
     timeout: Total time limit for the job in seconds, default = 360
 
@@ -618,6 +633,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     def __init__(
         self,
         n_estimators=5,
+        ensemble_strategy="stacking",
         timeout=360,
         max_evals=64,
         allow_error_prop=0.1,
@@ -649,6 +665,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         seed=1,
     ):
         self.n_estimators = n_estimators
+        self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
         self.allow_error_prop = allow_error_prop
@@ -691,6 +708,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         if self._type in ["binary", "multiclass"]:  # assign classification tasks
             self.model = AutoTabularClassifier(
                 n_estimators=self.n_estimators,
+                ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 allow_error_prop=self.allow_error_prop,
@@ -724,6 +742,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         elif self._type in ["integer", "continuous"]:  # assign regression tasks
             self.model = AutoTabularRegressor(
                 n_estimators=self.n_estimators,
+                ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
                 max_evals=self.max_evals,
                 allow_error_prop=self.allow_error_prop,

@@ -4,6 +4,7 @@
 numpy 
 pandas
 scipy
+seaborn
 matplotlib
 ray
 ray[tune]

@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:00:12 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 7:42:02 pm
+Last Modified: Sunday, 7th August 2022 11:00:37 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -74,3 +74,5 @@ from ._stat import (
 #     text_preprocessing_torchtext,
 #     text_preprocessing_transformers,
 # )
+
+from ._eda import EDA

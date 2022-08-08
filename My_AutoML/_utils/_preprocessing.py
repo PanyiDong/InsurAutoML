@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:04:44 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:27:33 pm
+Last Modified: Sunday, 17th July 2022 10:44:33 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import importlib
+import pandas as pd
 
 pytorch_spec = importlib.util.find_spec("torch")
 if pytorch_spec is not None:
@@ -54,6 +55,11 @@ transformers_spec = importlib.util.find_spec("transformers")
 if transformers_spec is not None:
     import transformers
     from transformers import AutoTokenizer
+
+datasets_spec = importlib.util.find_spec("datasets")
+if datasets_spec is not None:
+    import datasets
+    from datasets import Dataset
 
 # text preprocessing
 # build a vocabulary from text using torchtext methods
@@ -134,6 +140,37 @@ def text_preprocessing_transformers(
     return_tensors="pt",
 ):
 
+    """
+    Parameters
+    ----------
+    data: expect data as: train set:
+                            1. dict  with format: {"text": [texts], "label": [labels]}
+                            2. dataframe with columns "text" and "label"
+                          test set:
+                            1. dict with format: {"text": [texts]}
+                            2. dataframe with columns "text"
+
+    batch_size: batch size for DataLoader
+
+    tokenizer_model: pre-trained tokenizer models, default = "bert-base-uncased"
+    common pre-trained model tokenizer
+    1. ALBERT:   albert-base-v2
+    2. BERT:     bert-base-uncased
+    3. DeBERTa:  microsoft/deberta-v2-xlarge
+    4. GPT2:     gpt2
+    5. RoBERTa:  roberta-base
+    6. T5:       t5-small
+    7. XLNet:    xlnet-base-cased
+
+    max_len: max length of sequence after tokenization, default = 512
+
+    return_attention_mask: return attention mask or not, default = False
+
+    return_token_type_ids: return token type ids or not, default = False
+
+    return_tensors: return tensors type, default = "pt"
+    """
+
     # load tokenizer
     tokenizer = AutoTokenizer.from_pretrained(tokenizer_model)
 
@@ -155,19 +192,53 @@ def text_preprocessing_transformers(
             return_tensors=return_tensors,
         )
 
+    # if dataframe, convert format
+    if isinstance(data, pd.DataFrame):
+        # check whether contains text and label columns
+        if "text" not in data.columns:
+            raise ValueError("dataframe must contain columns 'text'")
+        elif "label" not in data.columns:
+            mode = "test"
+        else:
+            mode = "train"
+        data = Dataset.from_pandas(data)
+    elif isinstance(data, dict):
+        # check whether contains text and label keys
+        if "text" not in data.keys():
+            raise ValueError("dict must contain keys 'text'")
+        elif "label" not in data.keys():
+            mode = "test"
+        else:
+            mode = "train"
+        data = Dataset.from_dict(data)
+
     # apply mapping tokenization method to data examples
     tokenized_data = data.map(mapping_tokenizer)
 
-    # limit data parts to use
-    selected_data = tokenized_data.set_format(type="torch", columns=["inputs", "label"])
+    if mode == "train":
+        # limit data parts to use
+        selected_data = tokenized_data.set_format(
+            type="torch", columns=["input_ids", "label"]
+        )
 
-    # load data to DataLoader
-    train_tensor = TensorDataset(
-        torch.as_tensor(selected_data["input_ids"]),
-        torch.as_tensor(selected_data["label"]),
-    )
-    train_loader = DataLoader(
-        train_tensor, batch_size=batch_size, shuffle=True, drop_last=True
-    )
+        # load data to DataLoader
+        train_tensor = TensorDataset(
+            torch.as_tensor(selected_data["input_ids"]),
+            torch.as_tensor(selected_data["label"]),
+        )
+        train_loader = DataLoader(
+            train_tensor, batch_size=batch_size, shuffle=True, drop_last=True
+        )
 
-    return train_loader
+        return train_loader
+    elif mode == "test":
+        # limit data parts to use
+        selected_data = tokenized_data.set_format(type="torch", columns=["input_ids"])
+
+        # load data to DataLoader
+        test_tensor = TensorDataset(torch.as_tensor(selected_data["input_ids"]))
+        test_loader = DataLoader(
+            test_tensor, batch_size=batch_size, shuffle=False, drop_last=True
+        )
+
+        return test_loader

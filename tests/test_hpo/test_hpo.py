@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 9:45:00 am
+Last Modified: Monday, 8th August 2022 12:10:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -926,3 +926,87 @@ def test_stroke_with_limit():
     mol.fit(data[features], data[response])
 
     assert mol._fitted == True, "AutoTabular with limited space failed to fit."
+
+
+def test_single():
+
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
+
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
+
+    mol = My_AutoML.AutoTabular(
+        n_estimators=1,
+        model_name="insurance",
+        objective="MAE",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
+
+    assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
+
+
+def test_bagging():
+
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
+
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
+
+    mol = My_AutoML.AutoTabular(
+        ensemble_strategy="bagging",
+        model_name="insurance",
+        objective="MAE",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
+
+    assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
+
+
+def test_boosting():
+
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
+
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
+
+    mol = My_AutoML.AutoTabular(
+        ensemble_strategy="boosting",
+        model_name="insurance",
+        objective="MAE",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
+
+    assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."

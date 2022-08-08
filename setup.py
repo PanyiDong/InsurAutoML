@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 3:32:31 pm
+Last Modified: Monday, 8th August 2022 2:55:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,11 +72,16 @@ def setup_package():
         platforms=["Linux", "Windows", "MacOS"],
         python_requires=">=3.7",
         install_requires=[
+            "setuptools==59.5.0",
             "numpy",
             "pandas",
             "scipy",
+            "pyarrow",
+            "fastparquet",
             "matplotlib",
+            "seaborn>=0.11.0",
             "ray",
+            "gensim",
             # "ray[tune]",
             # "ray[rllib]",
             "redis;platform_system=='Windows'",
@@ -99,10 +104,12 @@ def setup_package():
             ],
             "nn": [
                 "rpy2;platform_system=='Linux'",
+                "gensim",
                 "lightgbm",
                 "xgboost",
                 "pygam",
                 "torch",
+                "nni",
                 # "transformers",
                 # "datasets",
             ],
