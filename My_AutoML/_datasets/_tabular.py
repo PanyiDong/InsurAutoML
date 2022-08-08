@@ -11,7 +11,7 @@ File Created: Saturday, 6th August 2022 10:49:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 8:26:28 am
+Last Modified: Monday, 8th August 2022 8:37:40 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -70,7 +70,7 @@ class BaseTabularDataset:
         else:
             # get the file url
             dataset_url = os.path.join(
-                URL_PREFIX, self.data_name, self.data_name, self.data_name + SUFFIX
+                URL_PREFIX, self.data_name, self.data_name + SUFFIX
             ).replace("\\", "/")
 
             # check if the dataset exists
