@@ -11,7 +11,7 @@ File Created: Saturday, 6th August 2022 10:49:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:44:24 pm
+Last Modified: Sunday, 7th August 2022 11:55:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1133,7 +1133,6 @@ def MERCARI100K(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
@@ -1159,8 +1158,6 @@ def MERCARI100K(split="train", save=True, data_path="tmp"):
                 )
         return dataset.loc[:, dataset.columns != "price"], dataset["price"]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
