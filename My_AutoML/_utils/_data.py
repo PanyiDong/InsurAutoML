@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:09:29 pm
+Last Modified: Monday, 8th August 2022 10:11:49 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
 import re
 import ast
 import json
@@ -640,7 +641,7 @@ def softmax(df):
 
 
 # plot high dimensional data
-def plotHighDimCluster(X, y, method="PCA", dim=2):
+def plotHighDimCluster(X, y, method="PCA", dim=2, save=False, path="tmp"):
 
     import matplotlib.pyplot as plt
 
@@ -697,7 +698,14 @@ def plotHighDimCluster(X, y, method="PCA", dim=2):
         ax.set_xlabel("PCA_1")
         ax.set_ylabel("PCA_2")
         ax.set_zlabel("PCA_3")
+
     plt.show()
+
+    if save:
+        if not os.path.exists(path):
+            os.makedirs(path)
+        plt.savefig(os.path.join(path, "HighDim.png").replace("\\", "/"))
+    plt.close()
 
 
 # distinguish from numerical categorical and numerical continuous
@@ -759,7 +767,7 @@ def text2vec(
         prefix = df.columns[0]
     elif isinstance(df, pd.Series):
         prefix = df.name
-    
+
     # method to combine the word (in sentences/phrases) vectors
     how_dict = {
         "sum": np.sum,
