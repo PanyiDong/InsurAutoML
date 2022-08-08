@@ -11,7 +11,7 @@ File Created: Saturday, 6th August 2022 10:49:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 10:05:06 pm
+Last Modified: Sunday, 7th August 2022 10:46:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -59,13 +59,15 @@ class BaseTabularDataset:
 
     def get_data(self):
 
-        if os.path.exists(os.path.join(self.data_path, self.data_name + ".csv")):
+        if os.path.exists(
+            os.path.join(self.data_path, self.data_name + ".csv").replace("\\", "/")
+        ):
             dataset = pd.read_csv(os.path.join(self.data_path, self.data_name + ".csv"))
         else:
             # get the file url
             dataset_url = os.path.join(
                 URL_PREFIX, self.data_name, self.data_name + SUFFIX
-            )
+            ).replace("\\", "/")
 
             # check if the dataset exists
             re = requests.get(dataset_url)
@@ -76,7 +78,10 @@ class BaseTabularDataset:
             dataset = pd.read_csv(dataset_url, sep="\t", compression="gzip")
             if self.download:
                 dataset.to_csv(
-                    os.path.join(self.data_path, self.data_name + ".csv"), index=False
+                    os.path.join(self.data_path, self.data_name + ".csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return dataset.iloc[:, :-1], dataset.iloc[:, -1]
@@ -227,18 +232,27 @@ def PROD(split="train", save=True, data_path="tmp"):
     if isinstance(split, str):
         split = "dev" if split == "test" else split
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
         return dataset.iloc[:, :-1], dataset.iloc[:, -1]
     elif isinstance(split, list):
@@ -248,24 +262,38 @@ def PROD(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (dataset[key].iloc[:, :-1], dataset[key].iloc[:, -1])
             for key in dataset.keys()
         }
+
 
 # Jigsaw unintended bias in toxicity classification dataset
 def JIGSAW(split="train", save=True, data_path="tmp"):
@@ -278,18 +306,27 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
     if isinstance(split, str):
         split = "dev" if split == "test" else split
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+        ):
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
         return dataset.loc[:, dataset.columns != "target"], dataset["target"]
     elif isinstance(split, list):
@@ -299,19 +336,30 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
-                        os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.pq").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -333,18 +381,27 @@ def JIGSAW100K(split="train", save=True, data_path="tmp"):
     if isinstance(split, str):
         split = "dev" if split == "test" else split
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+        ):
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
         return dataset.loc[:, dataset.columns != "target"], dataset["target"]
     elif isinstance(split, list):
@@ -354,19 +411,30 @@ def JIGSAW100K(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
-                        os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.pq").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -388,17 +456,24 @@ def AIRBNB(split="train", save=True, data_path="tmp"):
     if isinstance(split, str):
         # if file exists, read it
         if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
 
         return dataset.loc[:, dataset.columns != "price_label"], dataset["price_label"]
@@ -407,19 +482,30 @@ def AIRBNB(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
-                        os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.pq").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -440,18 +526,27 @@ def IMDBGenre(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -462,19 +557,32 @@ def IMDBGenre(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -495,18 +603,27 @@ def FakeJob(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -517,19 +634,32 @@ def FakeJob(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -550,18 +680,27 @@ def FakeJob2(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -572,19 +711,32 @@ def FakeJob2(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -605,18 +757,27 @@ def KickStarter(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -627,19 +788,32 @@ def KickStarter(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -660,18 +834,27 @@ def WINEReview(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -682,19 +865,32 @@ def WINEReview(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -715,18 +911,27 @@ def NewsChannel(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -737,19 +942,32 @@ def NewsChannel(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -772,18 +990,27 @@ def WomenCloth(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+        ):
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
         return dataset.loc[:, dataset.columns != "Rating"], dataset["Rating"]
     elif isinstance(split, list):
@@ -791,19 +1018,30 @@ def WomenCloth(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
-                        os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.pq").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -825,18 +1063,27 @@ def MERCARI(split="train", save=True, data_path="tmp"):
     if isinstance(split, str):
         split = "dev" if split == "test" else split
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+        ):
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
         return dataset.loc[:, dataset.columns != "price"], dataset["price"]
     elif isinstance(split, list):
@@ -846,19 +1093,30 @@ def MERCARI(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
-                        os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.pq").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -880,18 +1138,27 @@ def MERCARI100K(split="train", save=True, data_path="tmp"):
     if isinstance(split, str):
         split = "dev" if split == "test" else split
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+        ):
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
         return dataset.loc[:, dataset.columns != "price"], dataset["price"]
     elif isinstance(split, list):
@@ -901,19 +1168,30 @@ def MERCARI100K(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
-                        os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.pq").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -934,35 +1212,52 @@ def AE(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.pq")):
-            dataset = pd.read_parquet(os.path.join(data_path, DATANAME, f"{split}.pq"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+        ):
+            dataset = pd.read_parquet(
+                os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_parquet(os.path.join(URL, f"{split}.pq"))
+            dataset = pd.read_parquet(
+                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_parquet(
-                    os.path.join(data_path, DATANAME, f"{split}.pq"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/"),
+                    index=False,
                 )
         return dataset.loc[:, dataset.columns != "price"], dataset["price"]
     elif isinstance(split, list):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.pq")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(data_path, DATANAME, f"{_split}.pq")
+                    os.path.join(data_path, DATANAME, f"{_split}.pq").replace("\\", "/")
                 )
             else:
-                dataset[_split] = pd.read_parquet(os.path.join(URL, f"{_split}.pq"))
+                dataset[_split] = pd.read_parquet(
+                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_parquet(
                         os.path.join(data_path, DATANAME, f"{_split}.pq"), index=False
                     )
@@ -985,18 +1280,27 @@ def JCPenney(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -1007,19 +1311,32 @@ def JCPenney(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -1040,18 +1357,27 @@ def NewsPopularity(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -1062,19 +1388,32 @@ def NewsPopularity(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -1095,18 +1434,27 @@ def NewsPopularity2(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -1117,19 +1465,32 @@ def NewsPopularity2(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -1150,18 +1511,27 @@ def BookPrice(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -1172,19 +1542,32 @@ def BookPrice(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -1205,18 +1588,27 @@ def DSSalary(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -1227,19 +1619,32 @@ def DSSalary(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (
@@ -1260,18 +1665,27 @@ def CAHousePrice(split="train", save=True, data_path="tmp"):
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
-        if os.path.exists(os.path.join(data_path, DATANAME, f"{split}.csv")):
-            dataset = pd.read_csv(os.path.join(data_path, DATANAME, f"{split}.csv"))
+        if os.path.exists(
+            os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+        ):
+            dataset = pd.read_csv(
+                os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
+            )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv"))
+            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
             # whether need to save
             if save:
                 # if folder not exists, create it
-                if not os.path.exists(os.path.join(data_path, DATANAME)):
-                    os.makedirs(os.path.join(data_path, DATANAME))
+                if not os.path.exists(
+                    os.path.join(data_path, DATANAME).replace("\\", "/")
+                ):
+                    os.makedirs(os.path.join(data_path, DATANAME).replace("\\", "/"))
                 dataset.to_csv(
-                    os.path.join(data_path, DATANAME, f"{split}.csv"), index=False
+                    os.path.join(data_path, DATANAME, f"{split}.csv").replace(
+                        "\\", "/"
+                    ),
+                    index=False,
                 )
 
         return (
@@ -1282,19 +1696,32 @@ def CAHousePrice(split="train", save=True, data_path="tmp"):
         dataset = {}
         # if file exists, read it
         for _split in split:
-            if os.path.exists(os.path.join(data_path, DATANAME, f"{_split}.csv")):
+            if os.path.exists(
+                os.path.join(data_path, DATANAME, f"{_split}.csv").replace("\\", "/")
+            ):
                 dataset[_split] = pd.read_csv(
-                    os.path.join(data_path, DATANAME, f"{_split}.csv")
+                    os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                        "\\", "/"
+                    )
                 )
             else:
-                dataset[_split] = pd.read_csv(os.path.join(URL, f"{_split}.csv"))
+                dataset[_split] = pd.read_csv(
+                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                )
                 # whether need to save
                 if save:
                     # if folder not exists, create it
-                    if not os.path.exists(os.path.join(data_path, DATANAME)):
-                        os.makedirs(os.path.join(data_path, DATANAME))
+                    if not os.path.exists(
+                        os.path.join(data_path, DATANAME).replace("\\", "/")
+                    ):
+                        os.makedirs(
+                            os.path.join(data_path, DATANAME).replace("\\", "/")
+                        )
                     dataset[_split].to_csv(
-                        os.path.join(data_path, DATANAME, f"{_split}.csv"), index=False
+                        os.path.join(data_path, DATANAME, f"{_split}.csv").replace(
+                            "\\", "/"
+                        ),
+                        index=False,
                     )
         return {
             key: (

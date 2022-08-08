@@ -11,7 +11,7 @@ File Created: Sunday, 7th August 2022 9:38:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 9:42:11 pm
+Last Modified: Sunday, 7th August 2022 10:29:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,96 +38,113 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# storage heavy, no need to test
+import pandas as pd
+import shutil
 
-# import pandas as pd
+def test_datasets() :
 
-# def test_datasets() :
+    from My_AutoML._datasets import (
+        ADULT,  # Classification
+        AUTO,
+        BREAST,
+        CAR_EVALUATION,
+        NURSERY,
+        PAGE_BLOCKS,
+        HEART,
+        EMPLOYEE,
+        STROKE,
+        HEART2020,
+        TRAVEL_INSURANCE,
+        IMBALANCED_INSURANCE,
+        HEALTH_INSURANCE,
+        CPU_ACT,  # Regression
+        WIND,
+        HOUSES,
+        INSURANCE,
+        MEDICAL_PREMIUM,
+        PROD,  # Classification with text
+        JIGSAW,
+        JIGSAW100K,
+        AIRBNB,
+        IMDBGenre,
+        FakeJob,
+        FakeJob2,
+        KickStarter,
+        WINEReview,
+        NewsChannel,
+        WomenCloth,  # Regression with text
+        MERCARI,
+        MERCARI100K,
+        AE,
+        JCPenney,
+        NewsPopularity,
+        NewsPopularity2,
+        BookPrice,
+        DSSalary,
+        CAHousePrice,
+    )
 
-#     from My_AutoML._datasets import (
-#         ADULT,  # Classification
-#         AUTO,
-#         BREAST,
-#         CAR_EVALUATION,
-#         NURSERY,
-#         PAGE_BLOCKS,
-#         HEART,
-#         EMPLOYEE,
-#         STROKE,
-#         HEART2020,
-#         TRAVEL_INSURANCE,
-#         IMBALANCED_INSURANCE,
-#         HEALTH_INSURANCE,
-#         CPU_ACT,  # Regression
-#         WIND,
-#         HOUSES,
-#         INSURANCE,
-#         MEDICAL_PREMIUM,
-#         PROD,  # Classification with text
-#         JIGSAW,
-#         JIGSAW100K,
-#         AIRBNB,
-#         IMDBGenre,
-#         FakeJob,
-#         FakeJob2,
-#         KickStarter,
-#         WINEReview,
-#         NewsChannel,
-#         WomenCloth,  # Regression with text
-#         MERCARI,
-#         MERCARI100K,
-#         AE,
-#         JCPenney,
-#         NewsPopularity,
-#         NewsPopularity2,
-#         BookPrice,
-#         DSSalary,
-#         CAHousePrice,
-#     )
+    datasets = [
+        ADULT,  # Classification
+        AUTO,
+        BREAST,
+        CAR_EVALUATION,
+        NURSERY,
+        PAGE_BLOCKS,
+        HEART,
+        EMPLOYEE,
+        STROKE,
+        HEART2020,
+        TRAVEL_INSURANCE,
+        IMBALANCED_INSURANCE,
+        HEALTH_INSURANCE,
+        CPU_ACT,  # Regression
+        WIND,
+        HOUSES,
+        INSURANCE,
+        MEDICAL_PREMIUM,
+    ]
+    
+    for dataset in datasets :
+    
+        data = dataset()
 
-#     datasets = [
-#         ADULT,  # Classification
-#         AUTO,
-#         BREAST,
-#         CAR_EVALUATION,
-#         NURSERY,
-#         PAGE_BLOCKS,
-#         HEART,
-#         EMPLOYEE,
-#         STROKE,
-#         HEART2020,
-#         TRAVEL_INSURANCE,
-#         IMBALANCED_INSURANCE,
-#         HEALTH_INSURANCE,
-#         CPU_ACT,  # Regression
-#         WIND,
-#         HOUSES,
-#         INSURANCE,
-#         MEDICAL_PREMIUM,
-#         PROD,  # Classification with text
-#         JIGSAW,
-#         JIGSAW100K,
-#         AIRBNB,
-#         IMDBGenre,
-#         FakeJob,
-#         FakeJob2,
-#         KickStarter,
-#         WINEReview,
-#         NewsChannel,
-#         WomenCloth,  # Regression with text
-#         MERCARI,
-#         MERCARI100K,
-#         AE,
-#         JCPenney,
-#         NewsPopularity,
-#         NewsPopularity2,
-#         BookPrice,
-#         DSSalary,
-#         CAHousePrice,
-#     ]
+        assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
 
-#     for dataset in datasets :
+    datasets = [
+        PROD,  # Classification with text
+        JIGSAW,
+        JIGSAW100K,
+        AIRBNB,
+        IMDBGenre,
+        FakeJob,
+        FakeJob2,
+        KickStarter,
+        WINEReview,
+        NewsChannel,
+        WomenCloth,  # Regression with text
+        MERCARI,
+        MERCARI100K,
+        AE,
+        JCPenney,
+        NewsPopularity,
+        NewsPopularity2,
+        BookPrice,
+        DSSalary,
+        CAHousePrice,
+    ]
+    
+    for dataset in datasets :
+        
+        data = dataset(split = "test")
 
-#         data = dataset()
+        assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
+        
+        data = dataset(split = ["test"])
 
-#         assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
+        assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
+        
+    # clear data storage
+    shutil.rmtree("tmp")
+        
+    
