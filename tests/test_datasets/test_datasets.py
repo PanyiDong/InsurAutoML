@@ -11,7 +11,7 @@ File Created: Sunday, 7th August 2022 9:38:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 8:25:18 am
+Last Modified: Monday, 8th August 2022 9:12:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -144,6 +144,17 @@ def test_datasets():
         data = dataset(split="test")
 
         assert isinstance(data, tuple), "Datasets not loaded correctly."
+
+        data = dataset(split="test")
+
+        assert isinstance(data, tuple), "Datasets not loaded correctly."
+
+        # clear data storage
+        shutil.rmtree("tmp")
+
+        data = dataset(split=["test"])
+
+        assert isinstance(data, dict), "Datasets not loaded correctly."
 
         data = dataset(split=["test"])
 

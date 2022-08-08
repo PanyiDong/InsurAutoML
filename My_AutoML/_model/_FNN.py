@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 7:17:37 pm
+Last Modified: Monday, 8th August 2022 9:17:20 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -204,6 +204,8 @@ class MLP_Base:
         self.is_cuda = is_cuda
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y):
 
         # set seed
@@ -266,6 +268,8 @@ class MLP_Base:
                 loss = criteria(output, target)  # calculate loss
                 loss.backward()  # backpropagation
                 optimizer.step()  # update parameters
+
+        self._fitted = True
 
         return self
 
@@ -346,6 +350,8 @@ class MLP_Classifier(MLP_Base):
         self.is_cuda = is_cuda
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y):
 
         self.input_size = X.shape[1]  # number of features as input size
@@ -378,6 +384,8 @@ class MLP_Classifier(MLP_Base):
         y = torch.as_tensor(
             y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
         )
+
+        self._fitted = True
 
         return super().fit(X, y)
 
@@ -451,6 +459,8 @@ class MLP_Regressor(MLP_Base):
         self.is_cuda = is_cuda
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y):
 
         self.input_size = X.shape[1]  # number of features as input size
@@ -483,6 +493,8 @@ class MLP_Regressor(MLP_Base):
         y = torch.as_tensor(
             y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.float
         )
+
+        self._fitted = True
 
         return super().fit(X, y)
 

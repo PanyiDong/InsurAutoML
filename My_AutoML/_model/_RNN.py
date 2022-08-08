@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:46:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 7:20:10 pm
+Last Modified: Monday, 8th August 2022 9:18:22 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -258,6 +258,8 @@ class RNN_Base:
         self.is_cuda = is_cuda
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y):
 
         # set seed
@@ -337,6 +339,8 @@ class RNN_Base:
                 loss = criteria(output[:, -1, :], target)  # calculate loss
                 loss.backward()  # backpropagation
                 optimizer.step()  # update parameters
+
+        self._fitted = True
 
         return self
 
@@ -442,6 +446,8 @@ class RNN_Classifier(RNN_Base):
         self.is_cuda = is_cuda
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y):
 
         # get unique classes
@@ -475,6 +481,8 @@ class RNN_Classifier(RNN_Base):
             is_cuda=self.is_cuda,
             seed=self.seed,
         )
+
+        self._fitted = True
 
         return super().fit(X, y)
 
@@ -567,6 +575,8 @@ class RNN_Regressor(RNN_Base):
         self.is_cuda = is_cuda
         self.seed = seed
 
+        self._fitted = False
+
     def fit(self, X, y):
 
         # get unique classes
@@ -600,6 +610,8 @@ class RNN_Regressor(RNN_Base):
             is_cuda=self.is_cuda,
             seed=self.seed,
         )
+
+        self._fitted = True
 
         return super().fit(X, y)
 
