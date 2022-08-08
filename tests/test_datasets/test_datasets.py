@@ -11,7 +11,7 @@ File Created: Sunday, 7th August 2022 9:38:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 10:29:52 pm
+Last Modified: Sunday, 7th August 2022 11:04:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,10 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import pandas as pd
 import shutil
 
-def test_datasets() :
+
+def test_datasets():
 
     from My_AutoML._datasets import (
         ADULT,  # Classification
@@ -104,12 +104,12 @@ def test_datasets() :
         INSURANCE,
         MEDICAL_PREMIUM,
     ]
-    
-    for dataset in datasets :
-    
+
+    for dataset in datasets:
+
         data = dataset()
 
-        assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
+        assert isinstance(data, tuple), "Datasets not loaded correctly."
 
     datasets = [
         PROD,  # Classification with text
@@ -133,18 +133,17 @@ def test_datasets() :
         DSSalary,
         CAHousePrice,
     ]
-    
-    for dataset in datasets :
-        
-        data = dataset(split = "test")
 
-        assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
-        
-        data = dataset(split = ["test"])
+    for dataset in datasets:
 
-        assert isinstance(data, pd.DataFrame), "Datasets not loaded correctly."
-        
+        data = dataset(split="test")
+
+        assert isinstance(data, tuple), "Datasets not loaded correctly."
+
+        data = dataset(split=["test"])
+
+        assert isinstance(data, dict), "Datasets not loaded correctly."
+
     # clear data storage
     shutil.rmtree("tmp")
-        
-    
+

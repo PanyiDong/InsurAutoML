@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:12:11 am
+Last Modified: Sunday, 7th August 2022 11:09:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -754,7 +754,12 @@ def text_preprocessing(text):
 def text2vec(
     df, method="Word2Vec", pretrained=None, dim=100, how="sum", return_type="df"
 ):
-
+    # get prefix
+    if isinstance(df, pd.DataFrame):
+        prefix = df.columns[0]
+    elif isinstance(df, pd.Series):
+        prefix = df.name
+    
     # method to combine the word (in sentences/phrases) vectors
     how_dict = {
         "sum": np.sum,
@@ -790,6 +795,7 @@ def text2vec(
                 preprocessed_df, vector_size=dim, window=5, min_count=1, workers=4
             )
             KeyVectors = model.wv
+            print(KeyVectors)
         else:
             # check if the pretrained model is valid
             if pretrained not in pretrained_str:
@@ -814,7 +820,7 @@ def text2vec(
         return pd.DataFrame(
             vectorized_df.values.tolist(),
             index=vectorized_df.index,
-            columns=[df.columns[0] + "_" + str(i) for i in range(dim)],
+            columns=[prefix + "_" + str(i) for i in range(dim)],
         )
     elif return_type == "pt":
         import torch
