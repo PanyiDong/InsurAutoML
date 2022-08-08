@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:50:51 am
+Last Modified: Sunday, 7th August 2022 11:28:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -76,9 +76,12 @@ def setup_package():
             "numpy",
             "pandas",
             "scipy",
+            "pyarrow",
+            "fastparquet",
             "matplotlib",
             "seaborn",
             "ray",
+            "gensim",
             # "ray[tune]",
             # "ray[rllib]",
             "redis;platform_system=='Windows'",
