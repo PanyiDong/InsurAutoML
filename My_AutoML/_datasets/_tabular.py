@@ -11,7 +11,7 @@ File Created: Saturday, 6th August 2022 10:49:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 8:37:40 am
+Last Modified: Monday, 8th August 2022 8:49:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -81,6 +81,15 @@ class BaseTabularDataset:
             # retrieve the dataset
             dataset = pd.read_csv(dataset_url, sep="\t", compression="gzip")
             if self.download:
+
+                # make sure folder exists
+                if not os.path.exists(
+                    os.path.join(self.data_path, self.data_name).replace("\\", "/")
+                ):
+                    os.makedirs(
+                        os.path.join(self.data_path, self.data_name).replace("\\", "/")
+                    )
+
                 dataset.to_csv(
                     os.path.join(
                         self.data_path, self.data_name, self.data_name + ".csv"
