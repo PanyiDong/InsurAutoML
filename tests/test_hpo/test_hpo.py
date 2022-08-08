@@ -11,7 +11,7 @@ File Created: Sunday, 10th April 2022 12:00:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th July 2022 5:12:46 pm
+Last Modified: Monday, 8th August 2022 12:10:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1010,6 +1010,3 @@ def test_boosting():
     assert (
         os.path.exists("tmp/insurance/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
-
-
-test_single()
