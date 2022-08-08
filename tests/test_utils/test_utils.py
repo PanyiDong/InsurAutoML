@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 8:10:40 pm
+Last Modified: Sunday, 7th August 2022 9:37:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -692,3 +692,21 @@ def test_softmax():
     assert (
         softmax(a).sum(axis=1) == np.ones(3)
     ).all(), "The softmax function is not correct."
+
+
+def test_EDA():
+
+    from My_AutoML._utils._eda import EDA
+    from My_AutoML._datasets import AE
+
+    features, label = AE(split="train")
+
+    EDA(features)
+
+    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
+
+    EDA(features, label)
+
+    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
