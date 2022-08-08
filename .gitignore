@@ -12,3 +12,4 @@ My_AutoML.egg-info/
 htmlcov/*
 .ipynb_checkpoints/
 .pytest_cache/
+test.py

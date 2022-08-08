@@ -11,7 +11,7 @@ File Created: Tuesday, 19th July 2022 2:06:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 9:22:03 pm
+Last Modified: Sunday, 7th August 2022 8:33:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,12 +39,13 @@ SOFTWARE.
 """
 
 import json
+import pandas as pd
 import torch
 import nni
 from nni.retiarii import fixed_arch
 from nni.retiarii.experiment.pytorch import RetiariiExperiment, RetiariiExeConfig
 
-from My_AutoML._utils._nas._nni._utils import get_strategy, get_search_space
+from My_AutoML._nn._nni._nas._utils import get_strategy, get_search_space
 from My_AutoML._utils._tensor import CustomTensorDataset
 
 
@@ -76,27 +77,39 @@ class Trainer(object):
         self.batch_size = batch_size
         self.num_epoch = num_epoch
 
-    @nni.trace
-    def _prep_loader(data, batch_size=32, mode="train"):
-
-        from torch.utils.data import DataLoader
-
-        if mode == "train":
-            return DataLoader(data, batch_size=batch_size, shuffle=True, drop_last=True)
-        elif mode == "test":
-            return DataLoader(data, batch_size=batch_size)
-
-    @nni.trace
-    def _prep_dataset(X, y):
-
-        # format to tensor
-        if not isinstance(X, torch.Tensor) or not isinstance(y, torch.Tensor):
-            X = torch.as_tensor(X)
-            y = torch.as_tensor(y)
-
-        return CustomTensorDataset(X, y, format="tuple")
-
     def train(self, train, test):
+
+        # must use function to wrap the dataset for serialization
+        @nni.trace
+        def _prep_dataset(X, y):
+            # format to tensor
+            if not isinstance(X, torch.Tensor) or not isinstance(y, torch.Tensor):
+                # dataframe cannot be directly converted to tensor
+                if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
+                    X = torch.tensor(X.values, dtype=torch.float32)
+                    y = torch.tensor(y.values)
+                else:
+                    X = torch.tensor(X, dtype=torch.float32)
+                    y = torch.tensor(y)
+
+            return CustomTensorDataset(X, y, format="tuple")
+
+        @nni.trace
+        def _prep_loader(data, batch_size=32, mode="train"):
+
+            from torch.utils.data import DataLoader
+
+            if mode == "train":
+                return DataLoader(
+                    data, batch_size=batch_size, shuffle=True, drop_last=True
+                )
+            elif mode == "test":
+                return DataLoader(data, batch_size=batch_size)
+
+        # unpack data
+        (X_train, y_train), (X_test, y_test) = train, test
+        inputSize = X_train.shape[1]
+        outputSize = len(pd.unique(y_train))
 
         # get evaluator
         # base form evaluator
@@ -105,8 +118,8 @@ class Trainer(object):
             from ._evaluator import get_evaluator
 
             self.evaluator = get_evaluator(
-                trainset=train,
-                testset=test,
+                trainset=nni.trace(_prep_dataset)(X_train, y_train),
+                testset=nni.trace(_prep_dataset)(X_test, y_test),
                 batchSize=self.batch_size,
                 optimizer=self.optimizer,
                 criterion=self.criterion,
@@ -117,9 +130,9 @@ class Trainer(object):
             from ._evaulatorPL import get_evaluator
 
             self.evaluator = get_evaluator(
-                model=self.search_space,
-                train_set=train,
-                test_set=test,
+                model=nni.trace(self.search_space)(inputSize, outputSize),
+                train_set=nni.trace(_prep_dataset)(X_train, y_train),
+                test_set=nni.trace(_prep_dataset)(X_test, y_test),
                 batchSize=self.batch_size,
                 criterion=self.criterion,
                 optimizer=self.optimizer,
@@ -129,7 +142,7 @@ class Trainer(object):
             )
 
         exp = RetiariiExperiment(
-            self.search_space,
+            nni.trace(self.search_space)(inputSize, outputSize),
             self.evaluator,
             [],
             self.search_strategy,
@@ -142,7 +155,7 @@ class Trainer(object):
         exp_config.trial_concurrency = 1
         exp_config.trial_gpu_number = torch.cuda.device_count()
         exp_config.training_service.use_active_gpu = True
-        exp.run(exp_config, wait_completion=True)
+        exp.run(exp_config)
         exp.export_data()
         exp.stop()
 
