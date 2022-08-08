@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:39:50 pm
+Last Modified: Monday, 8th August 2022 11:03:53 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -741,9 +741,9 @@ def test_plotHighDimCluster():
     X = np.random.randint(0, 100, size=(1000, 200))
     y = np.random.randint(0, 5, size=(1000,))
 
-    plotHighDimCluster(X, y, method="PCA", dim=2)
+    plotHighDimCluster(X, y, method="PCA", dim=2, save=True)
 
-    plotHighDimCluster(X, y, method="TSNE", dim=3)
+    plotHighDimCluster(X, y, method="TSNE", dim=3, save=True)
 
     assert True, "The plotHighDimCluster function is not correct."
 

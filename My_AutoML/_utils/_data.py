@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 10:11:49 am
+Last Modified: Monday, 8th August 2022 11:03:36 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -699,12 +699,12 @@ def plotHighDimCluster(X, y, method="PCA", dim=2, save=False, path="tmp"):
         ax.set_ylabel("PCA_2")
         ax.set_zlabel("PCA_3")
 
-    plt.show()
-
     if save:
         if not os.path.exists(path):
             os.makedirs(path)
         plt.savefig(os.path.join(path, "HighDim.png").replace("\\", "/"))
+        
+    plt.show()
     plt.close()
 
 
