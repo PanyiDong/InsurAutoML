@@ -11,7 +11,7 @@ File Created: Saturday, 6th August 2022 10:49:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:27:44 pm
+Last Modified: Sunday, 7th August 2022 11:44:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -379,7 +379,6 @@ def JIGSAW100K(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
@@ -405,8 +404,6 @@ def JIGSAW100K(split="train", save=True, data_path="tmp"):
                 )
         return dataset.loc[:, dataset.columns != "target"], dataset["target"]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it

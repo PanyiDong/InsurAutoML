@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:28:10 pm
+Last Modified: Sunday, 7th August 2022 11:39:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -722,14 +722,14 @@ def test_feature_type():
     data, label = PROD(split="test")
     data_type = {}
     for column in data.columns:
-        data_type[column] = feature_type(data[[column]])
+        data_type[column] = feature_type(data[column])
 
     assert isinstance(data_type, dict), "The feature_type function is not correct."
 
     data, label = HEART()
     data_type = {}
     for column in data.columns:
-        data_type[column] = feature_type(data[[column]])
+        data_type[column] = feature_type(data[column])
 
     assert isinstance(data_type, dict), "The feature_type function is not correct."
 
