@@ -11,7 +11,7 @@ File Created: Sunday, 7th August 2022 9:38:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:04:36 pm
+Last Modified: Monday, 8th August 2022 8:25:18 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
 import shutil
 
 
@@ -83,6 +84,10 @@ def test_datasets():
         DSSalary,
         CAHousePrice,
     )
+
+    # make sure path exists
+    if not os.path.exists("tmp"):
+        os.makedirs("tmp")
 
     datasets = [
         ADULT,  # Classification
@@ -146,4 +151,3 @@ def test_datasets():
 
     # clear data storage
     shutil.rmtree("tmp")
-

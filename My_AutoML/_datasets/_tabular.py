@@ -11,7 +11,7 @@ File Created: Saturday, 6th August 2022 10:49:36 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 11:55:34 pm
+Last Modified: Monday, 8th August 2022 8:26:28 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -60,13 +60,17 @@ class BaseTabularDataset:
     def get_data(self):
 
         if os.path.exists(
-            os.path.join(self.data_path, self.data_name + ".csv").replace("\\", "/")
+            os.path.join(
+                self.data_path, self.data_name, self.data_name + ".csv"
+            ).replace("\\", "/")
         ):
-            dataset = pd.read_csv(os.path.join(self.data_path, self.data_name + ".csv"))
+            dataset = pd.read_csv(
+                os.path.join(self.data_path, self.data_name, self.data_name + ".csv")
+            )
         else:
             # get the file url
             dataset_url = os.path.join(
-                URL_PREFIX, self.data_name, self.data_name + SUFFIX
+                URL_PREFIX, self.data_name, self.data_name, self.data_name + SUFFIX
             ).replace("\\", "/")
 
             # check if the dataset exists
@@ -78,9 +82,9 @@ class BaseTabularDataset:
             dataset = pd.read_csv(dataset_url, sep="\t", compression="gzip")
             if self.download:
                 dataset.to_csv(
-                    os.path.join(self.data_path, self.data_name + ".csv").replace(
-                        "\\", "/"
-                    ),
+                    os.path.join(
+                        self.data_path, self.data_name, self.data_name + ".csv"
+                    ).replace("\\", "/"),
                     index=False,
                 )
 
