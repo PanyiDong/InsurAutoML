@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:26 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 11:03:36 am
+Last Modified: Monday, 8th August 2022 3:27:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -641,7 +641,7 @@ def softmax(df):
 
 
 # plot high dimensional data
-def plotHighDimCluster(X, y, method="PCA", dim=2, save=False, path="tmp"):
+def plotHighDimCluster(X, y, plot=True, method="PCA", dim=2, save=False, path="tmp"):
 
     import matplotlib.pyplot as plt
 
@@ -687,10 +687,10 @@ def plotHighDimCluster(X, y, method="PCA", dim=2, save=False, path="tmp"):
         df["PCA_" + str(_dim)] = project_result[:, _dim]
 
     if dim == 2:
-        fig, ax = plt.subplots()
-        ax.scatter(df["PCA_0"], df["PCA_1"], c=y, cmap="RdYlBu", alpha=0.4)
-        ax.set_xlabel("PCA_1")
-        ax.set_ylabel("PCA_2")
+        plt.figure()
+        plt.scatter(df["PCA_0"], df["PCA_1"], c=y, cmap="RdYlBu", alpha=0.4)
+        plt.xlabel("PCA_1")
+        plt.ylabel("PCA_2")
     if dim == 3:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
@@ -703,8 +703,9 @@ def plotHighDimCluster(X, y, method="PCA", dim=2, save=False, path="tmp"):
         if not os.path.exists(path):
             os.makedirs(path)
         plt.savefig(os.path.join(path, "HighDim.png").replace("\\", "/"))
-        
-    plt.show()
+
+    if plot:
+        plt.show()
     plt.close()
 
 
