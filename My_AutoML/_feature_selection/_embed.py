@@ -1,17 +1,17 @@
 """
-File: _base.py
+File: _embed.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_feature_selection/_base.py
-File Created: Tuesday, 5th April 2022 11:33:04 pm
+Last Version: 0.2.1
+Relative Path: /My_AutoML/_feature_selection/_embed.py
+File Created: Monday, 8th August 2022 8:44:06 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 5:18:18 pm
+Last Modified: Monday, 8th August 2022 9:08:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,12 +41,13 @@ SOFTWARE.
 import time
 import numbers
 import numpy as np
-import pandas as pd
-import scipy
-import scipy.linalg
+
+# import pandas as pd
+# import scipy
+# import scipy.linalg
 from sklearn.utils.extmath import stable_cumsum, svd_flip
 
-from My_AutoML._utils import class_means, class_cov, empirical_covariance
+# from My_AutoML._utils import class_means, class_cov, empirical_covariance
 
 import warnings
 
