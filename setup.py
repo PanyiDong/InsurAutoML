@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:41:31 am
+Last Modified: Sunday, 25th September 2022 11:50:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,6 +43,7 @@ import logging
 import importlib
 
 from setuptools import setup, find_packages, Extension
+from setuptools.command import build_ext
 
 logging.basicConfig()
 log = logging.getLogger(__file__)
@@ -181,9 +182,28 @@ def build_torch_extensions():
     return torch_extensions
 
 
+# factory function
+def postp_build_ext(pars):
+    # import delayed:
+    from setuptools.command.build_ext import build_ext as _build_ext  #
+
+    # include_dirs adjusted:
+    class build_ext(_build_ext):
+        def finalize_options(self):
+            _build_ext.finalize_options(self)
+            # Prevent numpy from thinking it is still in its setup process:
+            __builtins__.__NUMPY_SETUP__ = False
+            import numpy
+
+            self.include_dirs.append(numpy.get_include())
+
+    # object returned:
+    return build_ext(pars)
+
+
 def build_cython_extensions():
 
-    import numpy
+    # import numpy
 
     c_ext = "pyx" if USING_CYTHON else "c"
     sources = glob.glob("**/*.{}".format(c_ext), recursive=True)
@@ -193,7 +213,7 @@ def build_cython_extensions():
             Extension(
                 name=source.split(".")[0].replace(os.path.sep, "."),
                 sources=[source],
-                include_dirs=[numpy.get_include()],
+                # include_dirs=[numpy.get_include()],
                 language="c++",
             )
             for source in sources
@@ -201,6 +221,7 @@ def build_cython_extensions():
     )
 
     # SETUP_ARGS["directives"] = {"linetrace": False, "language_level": 3}
+    SETUP_ARGS["cmdclass"] = {"build_ext": postp_build_ext}
 
     return cython_extensions
 
