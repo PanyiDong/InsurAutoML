@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:59:09 am
+Last Modified: Sunday, 25th September 2022 12:21:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -73,7 +73,7 @@ INSTALL_LIST = [
     "fastparquet",
     "matplotlib",
     "seaborn>=0.11.0",
-    "ray",
+    "ray<2.0.0",
     "gensim",
     # "ray[tune]",
     # "ray[rllib]",
