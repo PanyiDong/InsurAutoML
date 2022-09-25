@@ -11,7 +11,7 @@ File Created: Sunday, 7th August 2022 10:52:06 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 3:27:46 pm
+Last Modified: Saturday, 17th September 2022 11:19:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -196,8 +196,8 @@ def EDA(X, y=None, plot=True, save=True, path="tmp/EDA", skip=True):
                         f.write(str(summary) + "\n\n")
                 # plot the boxplot
                 plt.tight_layout()
-                sns.stripplot(X[column], y)
-                sns.boxplot(X[column], y)
+                sns.stripplot(x=X[column], y=y)
+                sns.boxplot(x=X[column], y=y)
                 plt.xlabel("{}".format(column))
                 plt.ylabel("{}".format(response))
                 plt.title("BoxPlot of {} ~ Column {}".format(response, column))

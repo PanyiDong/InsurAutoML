@@ -11,7 +11,7 @@ File Created: Monday, 8th August 2022 8:44:16 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 9:21:40 pm
+Last Modified: Sunday, 25th September 2022 10:00:10 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -686,7 +686,8 @@ class GeneticAlgorithm:
 """
 Below methods are compared in [1].
 
-[1]
+[1] Speiser, J. L., Miller, M. E., Tooze, J., & Ip, E. (2019). A comparison of random forest variable selection 
+methods for classification prediction modeling. Expert systems with applications, 134, 93-101.
 """
 
 
@@ -709,6 +710,43 @@ class SvetnikRF:
         self,
         cv=5,
         repeat=20,
+        seed=1,
     ):
         self.cv = cv
         self.repeat = repeat
+        # self.seed = seed
+        np.random.seed(seed)
+
+    def fit(self, X, y):
+
+        # check if X is a dataframe
+        # need to use index
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        # initialize the feature selection record
+        selection_record = {}
+
+        for _ in range(self.repeat):
+            index_split = np.array_split(np.random.choice(X.index), self.cv)
+            for i in range(self.cv):
+                test_index = index_split[i]
+                train_index = np.setdiff1d(X.index, test_index)
+                selected_features = list(X.columns)  # initialize the selected features
+                feature_importance = None
+
+                while len(selected_features) >= 3:
+                    from sklearn.ensemble import RandomForestClassifier
+
+                    mol = RandomForestClassifier(
+                        n_estimators=100,
+                    )
+                    mol.fit(
+                        X.loc[train_index, selected_features],
+                        y.loc[train_index, selected_features],
+                    )
+
+                    if feature_importance is None:
+                        feature_importance = mol.feature_importances_
+
+        raise NotImplementedError("Not implemented yet!")

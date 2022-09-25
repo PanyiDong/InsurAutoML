@@ -13,3 +13,4 @@ htmlcov/*
 .ipynb_checkpoints/
 .pytest_cache/
 test.py
+*.so
