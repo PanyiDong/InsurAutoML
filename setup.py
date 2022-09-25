@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:38:55 am
+Last Modified: Sunday, 25th September 2022 11:41:31 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -153,6 +153,7 @@ def setup_package():
         install_requires=INSTALL_LIST,
         extras_require=EXTRA_DICT,
         zip_safe=False,
+        setup_requires=["cython", "numpy"],
         **SETUP_ARGS,
     )
 
@@ -210,7 +211,7 @@ def main():
     # SETUP_ARGS["ext_modules"] += build_torch_extensions()
 
     # add cython extensions
-    # SETUP_ARGS["ext_modules"] += build_cython_extensions()
+    SETUP_ARGS["ext_modules"] += build_cython_extensions()
 
     # setup package
     setup_package()
