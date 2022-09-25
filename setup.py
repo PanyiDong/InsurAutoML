@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:50:12 am
+Last Modified: Sunday, 25th September 2022 11:59:09 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -61,10 +61,6 @@ except ImportError:
         from Cython.Build import cythonize
 
         return cythonize(*args, **kwargs)
-
-    USING_CYTHON = False
-else:
-    USING_CYTHON = True
 
 
 INSTALL_LIST = [
@@ -126,6 +122,12 @@ EXCLUDE_LIST = [
     "dist",
 ]
 
+SETUP_REQUIRES = [
+    "setuptools==59.5.0",
+    "cython",
+    "numpy",
+]
+
 SETUP_ARGS = {
     "name": "My_AutoML",
     "version": "0.2.1",
@@ -154,7 +156,7 @@ def setup_package():
         install_requires=INSTALL_LIST,
         extras_require=EXTRA_DICT,
         zip_safe=False,
-        setup_requires=["cython", "numpy"],
+        setup_requires=SETUP_REQUIRES,
         **SETUP_ARGS,
     )
 
@@ -183,14 +185,13 @@ def build_torch_extensions():
 
 
 # factory function
-def postp_build_ext(pars):
+def postp_cython_build_ext(pars):
     # import delayed:
-    from setuptools.command.build_ext import build_ext as _build_ext  #
 
     # include_dirs adjusted:
-    class build_ext(_build_ext):
+    class _build_ext(build_ext):
         def finalize_options(self):
-            _build_ext.finalize_options(self)
+            build_ext.finalize_options(self)
             # Prevent numpy from thinking it is still in its setup process:
             __builtins__.__NUMPY_SETUP__ = False
             import numpy
@@ -198,30 +199,45 @@ def postp_build_ext(pars):
             self.include_dirs.append(numpy.get_include())
 
     # object returned:
-    return build_ext(pars)
+    return _build_ext(pars)
+
+
+class CythonExt(Extension):
+    def init(self, *args, **kwargs):
+        self._include = []
+        super().init(*args, **kwargs)
+
+    @property
+    def include_dirs(self):
+        # defer import of numpy
+        import numpy
+
+        return self._include + [numpy.get_include()]
+
+    @include_dirs.setter
+    def include_dirs(self, dirs):
+        self._include = dirs
 
 
 def build_cython_extensions():
 
     # import numpy
 
-    c_ext = "pyx" if USING_CYTHON else "c"
+    c_ext = "pyx"  # if USING_CYTHON else "c"
     sources = glob.glob("**/*.{}".format(c_ext), recursive=True)
 
-    cython_extensions = cythonize(
-        [
-            Extension(
-                name=source.split(".")[0].replace(os.path.sep, "."),
-                sources=[source],
-                # include_dirs=[numpy.get_include()],
-                language="c++",
-            )
-            for source in sources
-        ]
-    )
+    cython_extensions = [
+        CythonExt(
+            name=source.split(".")[0].replace(os.path.sep, "."),
+            sources=[source],
+            # include_dirs=[numpy.get_include()],
+            language="c++",
+        )
+        for source in sources
+    ]
 
     # SETUP_ARGS["directives"] = {"linetrace": False, "language_level": 3}
-    SETUP_ARGS["cmdclass"] = {"build_ext": postp_build_ext}
+    # SETUP_ARGS["cmdclass"] = {"build_ext": postp_cython_build_ext}
 
     return cython_extensions
 
