@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 9:57:52 am
+Last Modified: Sunday, 25th September 2022 11:43:50 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 import numpy as np
 import pandas as pd
 from My_AutoML._feature_selection import feature_selections
-from My_AutoML._feature_selection._base import (
+from My_AutoML._feature_selection import (
     PCA_FeatureSelection,
     RBFSampler,
 )
