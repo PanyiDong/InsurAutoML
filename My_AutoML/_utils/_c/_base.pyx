@@ -11,7 +11,7 @@ File Created: Saturday, 24th September 2022 11:13:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 6:34:42 pm
+Last Modified: Sunday, 25th September 2022 7:31:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 import warnings
 import cython
 import numpy as np
@@ -47,6 +48,9 @@ cimport numpy as cnp
 
 cnp.import_array()
 
+ctypedef cnp.npy_float FLOAT
+ctypedef cnp.npy_intp INTP
+
 # cimport numpy as сnp
 # cdef сnp.ndarray[double, ndim=1] c_arr
 
@@ -54,7 +58,7 @@ cnp.import_array()
 # An object to be used in Python
 
 # set response to [0, 1] class, random guess at 0.5
-cpdef int random_guess(
+cdef int random_guess(
     float number, 
     int seed= 1,
 ):    
@@ -69,7 +73,7 @@ cpdef int random_guess(
     
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-cpdef cnp.ndarray random_index(
+cdef cnp.ndarray random_index(
     int n, 
     int total=0, 
     int seed=1
@@ -94,8 +98,8 @@ cpdef cnp.ndarray random_index(
     return output
 
 # Return randomly shuffle of a list (unique values only)
-cpdef cnp.ndarray random_list(
-    cnp.ndarray vlist, 
+cdef cnp.ndarray random_list(
+    cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist, 
     int seed=1
 ):
     if seed != None:
@@ -107,8 +111,8 @@ cpdef cnp.ndarray random_list(
     return output
 
 # Return location of minimum values
-cpdef int minloc(
-    cnp.ndarray vlist,
+cdef int minloc(
+    cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
 ):
     
     # make sure input is np.array
@@ -128,8 +132,8 @@ cpdef int minloc(
 
 
 # Return location of maximum values
-cpdef int maxloc(
-    cnp.ndarray vlist,                         
+cdef int maxloc(
+    cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,                         
 ):
     
     # make sure input is np.array
