@@ -11,7 +11,7 @@ File Created: Saturday, 24th September 2022 11:13:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:12:40 am
+Last Modified: Sunday, 25th September 2022 6:34:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,8 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import warnings
 import cython
 import numpy as np
+import pandas as pd
 
 cimport numpy as cnp
 
@@ -76,12 +78,71 @@ cpdef cnp.ndarray random_index(
         np.random.seed(seed)
     if total == 0:
         total = n
-    cdef cnp.ndarray output = np.zeros(total, dtype=float)
-    cdef cnp.ndarray vlist = np.array([i for i in range(total)])
-    for idx, _ in enumerate(range(n)):
-        # np.random.seed(int(datetime.now().strftime("%H%M%S")))
-        index = np.random.randint(0, high=len(vlist), size=1)[0]
-        output[idx] = vlist[index]
-        vlist = np.delete(vlist, index)
+    cdef cnp.ndarray output = np.zeros(total, dtype=int)
+    
+    if total > n:
+        raise ValueError(
+            "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
+        )
+    elif n == 0 :
+        raise ValueError(
+            "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
+        )
+    
+    output = np.random.choice(total, n, replace=False)
+    
+    return output
+
+# Return randomly shuffle of a list (unique values only)
+cpdef cnp.ndarray random_list(
+    cnp.ndarray vlist, 
+    int seed=1
+):
+    if seed != None:
+        np.random.seed(seed)
+    
+    cdef cnp.ndarray output = np.zeros(len(vlist), dtype=float)
+    output = np.random.permutation(vlist)
 
     return output
+
+# Return location of minimum values
+cpdef int minloc(
+    cnp.ndarray vlist,
+):
+    
+    # make sure input is np.array
+    if not isinstance(vlist, np.ndarray):
+        vlist = np.array(vlist)
+        
+    if len(vlist) == 0:
+        raise ValueError("Invalid List!")
+    else :
+        # check whether multi-dimensional array
+        if len((<object> vlist).shape) > 1:
+            warnings.warn(
+                "Input is multi-dimensional array, return min location of the first dimension."
+            )
+        
+        return np.argmin(vlist, axis=0)
+
+
+# Return location of maximum values
+cpdef int maxloc(
+    cnp.ndarray vlist,                         
+):
+    
+    # make sure input is np.array
+    if not isinstance(vlist, np.ndarray):
+        vlist = np.array(vlist)
+        
+    if len(vlist) == 0:
+        raise ValueError("Invalid List!")
+    else :
+        # check whether multi-dimensional array
+        if len((<object> vlist).shape) > 1:
+            warnings.warn(
+                "Input is multi-dimensional array, return max location of the first dimension."
+            )
+        
+        return np.argmax(vlist, axis=0)

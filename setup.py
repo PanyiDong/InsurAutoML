@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 12:21:42 pm
+Last Modified: Sunday, 25th September 2022 1:28:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -231,7 +231,7 @@ def build_cython_extensions():
             name=source.split(".")[0].replace(os.path.sep, "."),
             sources=[source],
             # include_dirs=[numpy.get_include()],
-            language="c++",
+            language="c",
         )
         for source in sources
     ]

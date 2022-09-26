@@ -1,4 +1,5 @@
 venv/
+.eggs/
 .vscode/
 __pycache__/
 *.py[cod]

@@ -12,13 +12,15 @@ The project aims to create a AutoML package with special focus on insurance data
 
 System Requirements:
 
-- Linux (write and tested on Ubuntu 20.04) and Windows (Windows is now compatible but may suffer from efficiency problems)
+- Linux (write and test on Ubuntu 20.04) and Windows (Windows is now compatible but may suffer from efficiency and system problems)
 
 - As all trials are running parallelized, more threads (correspondingly, more memory) will increase the training efficiency
 
+- `gcc` is required for compilation (write and test on 9.4.0)
+
 - `pip`, `git` is required for installation
   
-- Python version: should support version >= 3.7 (write and tested on `3.8` and `3.9`)
+- Python version: should support version >= 3.7 (write and test on `3.8` and `3.9`)
   
 - If neural network is required, please use GPU supported device
 
@@ -47,7 +49,7 @@ At this moment, `normal` contains few more ML packages that allows testing on a 
 
 #### install by `requirements.txt`
 
-> It's recommended to use above `setup.py` to install dependencies as it provides more flexibility to recognize your operating system and some optional packages.
+> It's recommended to use above `setup.py` to install dependencies as it provides more flexibility to recognize your operating system, compilation issues and some optional packages.
 
 ```console
 pip install -r requirements.txt
