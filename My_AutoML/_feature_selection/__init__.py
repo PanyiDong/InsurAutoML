@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:32:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 9:09:17 pm
+Last Modified: Sunday, 25th September 2022 11:19:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,6 +55,7 @@ Other methods are imported and only called here.
 from ._filter import (
     FeatureFilter,
     mRMR,
+    FOCI,
 )
 from ._wrapper import (
     # ExhaustiveFS,
@@ -85,6 +86,7 @@ feature_selections = {
     "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
+    "FOCI": FOCI,
 }
 
 import importlib

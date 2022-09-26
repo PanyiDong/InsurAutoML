@@ -11,7 +11,7 @@ File Created: Monday, 8th August 2022 8:43:53 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 8:11:03 pm
+Last Modified: Sunday, 25th September 2022 11:46:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,6 +47,7 @@ from My_AutoML._utils import (
     maxloc,
     Pearson_Corr,
     MI,
+    ACCC,
 )
 
 
@@ -209,3 +210,64 @@ class mRMR:
     def transform(self, X):
 
         return X.iloc[:, self.select_features]
+
+
+class FOCI:
+
+    """
+    Implementation of Feature Ordering by Conditional Independence (FOCI) introduced in [1].
+    Nonparametric feature selection method.
+
+    [1] Azadkia, M., & Chatterjee, S. (2021). A simple measure of conditional dependence.
+    The Annals of Statistics, 49(6), 3070-3102.
+    """
+
+    def __init__(
+        self,
+    ):
+        self._fitted = False
+
+    def fit(self, X, y=None):
+
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
+
+        features = list(X.columns)  # list of features
+
+        # initialize the selected/unselected features
+        selected_features = []
+        unselected_features = (
+            features.copy()
+        )  # copy of features, do not interfere with original features
+
+        while True:
+            tmp_ACCC_list = []  # CC list
+            for feature in unselected_features:
+                # at start, use unconditional ACCC
+                if len(selected_features) == 0:
+                    tmp_ACCC_list.append(ACCC(X[[feature]], y))
+                # at following steps, use conditional ACCC
+                else:
+                    tmp_ACCC_list.append(ACCC(X[[feature]], y, X[selected_features]))
+
+            tmp_feature = unselected_features[np.argmax(tmp_ACCC_list)]
+            tmp_max_ACCC = tmp_ACCC_list[np.argmax(tmp_ACCC_list)]
+
+            if tmp_max_ACCC > 0:
+                selected_features.append(tmp_feature)
+                unselected_features.remove(tmp_feature)
+            else:
+                break
+
+        # record selected features
+        self.select_features = selected_features
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, X):
+
+        return X[self.select_features]
