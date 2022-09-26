@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:20 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 28th April 2022 7:08:05 pm
+Last Modified: Sunday, 25th September 2022 7:51:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import warnings
 import time
 import numpy as np
 import pandas as pd
@@ -62,29 +63,48 @@ def random_index(n, total=None, seed=1):
         np.random.seed(seed)
     if total is None:
         total = n
-    output = []
-    vlist = [i for i in range(total)]
-    for _ in range(n):
-        # np.random.seed(int(datetime.now().strftime("%H%M%S")))
-        index = np.random.randint(0, high=len(vlist), size=1)[0]
-        output.append(vlist[index])
-        vlist.pop(index)
 
-    return output
+    # if number of samples is larger than limit, raise error
+    if total < n:
+        raise ValueError(
+            "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
+                total, n
+            )
+        )
+    # if number of samples is 0, raise error
+    elif n == 0:
+        raise ValueError(
+            "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
+        )
+
+    # NOTE: Sep. 25, 2022
+    # Use native numpy function to speed up. Original code is decrypted.
+    # output = []
+    # vlist = [i for i in range(total)]
+    # for _ in range(n):
+    #     # np.random.seed(int(datetime.now().strftime("%H%M%S")))
+    #     index = np.random.randint(0, high=len(vlist), size=1)[0]
+    #     output.append(vlist[index])
+    #     vlist.pop(index)
+
+    return np.random.choice(total, n, replace=False)
 
 
 # Return randomly shuffle of a list (unique values only)
 def random_list(vlist, seed=1):
     if seed != None:
         np.random.seed(seed)
-    output = []
-    for _ in range(len(vlist)):
-        # np.random.seed(int(datetime.now().strftime("%H%M%S")))
-        index = np.random.randint(0, high=len(vlist), size=1)[0]
-        output.append(vlist[index])
-        vlist.pop(index)
 
-    return output
+    # NOTE: Sep. 25, 2022
+    # Use native numpy function to speed up. Original code is decrypted.
+    # output = []
+    # for _ in range(len(vlist)):
+    #     # np.random.seed(int(datetime.now().strftime("%H%M%S")))
+    #     index = np.random.randint(0, high=len(vlist), size=1)[0]
+    #     output.append(vlist[index])
+    #     vlist.pop(index)
+
+    return np.random.permutation(vlist)
 
 
 # check if values in the dataframe is time string
@@ -124,34 +144,66 @@ def feature_rounding(X, uni_class=20):
 
 # Return location of minimum values
 def minloc(vlist):
+
+    # make sure input is np.array
+    if not isinstance(vlist, np.ndarray):
+        vlist = np.array(vlist)
+
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
-    elif len(vlist) == 1:
-        return 0
+    # NOTE: Sep. 25, 2022
+    # Use native numpy function to speed up. Original code is decrypted.
+    # elif len(vlist) == 1:
+    #     return 0
+    # else:
+    #     result = 0
+    #     for i in range(len(vlist) - 1):
+    #         if vlist[i + 1] < vlist[result]:
+    #             result = i + 1
+    #         else:
+    #             continue
+    #     return result
     else:
-        result = 0
-        for i in range(len(vlist) - 1):
-            if vlist[i + 1] < vlist[result]:
-                result = i + 1
-            else:
-                continue
-        return result
+
+        # check whether multi-dimensional array
+        if len(vlist.shape) > 1:
+            warnings.warn(
+                "Input is multi-dimensional array, return min location of the first dimension."
+            )
+
+        return np.argmin(vlist, axis=0)
 
 
 # Return location of maximum values
 def maxloc(vlist):
+
+    # make sure input is np.array
+    if not isinstance(vlist, np.ndarray):
+        vlist = np.array(vlist)
+
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
-    elif len(vlist) == 1:
-        return 0
+    # NOTE: Sep. 25, 2022
+    # Use native numpy function to speed up. Original code is decrypted.
+    # elif len(vlist) == 1:
+    #     return 0
+    # else:
+    #     result = 0
+    #     for i in range(len(vlist) - 1):
+    #         if vlist[i + 1] > vlist[result]:
+    #             result = i + 1
+    #         else:
+    #             continue
+    #     return result
     else:
-        result = 0
-        for i in range(len(vlist) - 1):
-            if vlist[i + 1] > vlist[result]:
-                result = i + 1
-            else:
-                continue
-        return result
+
+        # check whether multi-dimensional array
+        if len(vlist.shape) > 1:
+            warnings.warn(
+                "Input is multi-dimensional array, return max location of the first dimension."
+            )
+
+        return np.argmax(vlist, axis=0)
 
 
 # return the index of Boolean list or {0, 1} list

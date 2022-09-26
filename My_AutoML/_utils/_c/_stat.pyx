@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File: _stat.pyx
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/__init__.py
-File Created: Wednesday, 6th April 2022 12:00:12 am
+Last Version: 0.2.1
+Relative Path: /My_AutoML/_utils/_c/_stat.pyx
+File Created: Sunday, 25th September 2022 10:27:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:11:35 pm
+Last Modified: Sunday, 25th September 2022 10:27:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,62 +37,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
-try:
-    from ._c import (
-        random_guess,
-        random_index,
-        random_list,
-        minloc,
-        maxloc,
-    )
-except ImportError:
-    from ._base import (
-        random_guess,
-        random_index,
-        random_list,
-        minloc,
-        maxloc,
-    )
-# else:
-#     raise ImportError("Cannot import the C++ and Python extension.")
-
-from ._base import (
-    # random_guess,
-    # random_index,
-    # random_list,
-    # minloc,
-    # maxloc,
-    is_date,
-    feature_rounding,
-    True_index,
-    type_of_task,
-    Timer,
-)
-from ._data import (
-    train_test_split,
-    as_dataframe,
-    formatting,
-    unify_nan,
-    remove_index_columns,
-    get_missing_matrix,
-)
-from ._file import save_model
-from ._stat import (
-    nan_cov,
-    class_means,
-    empirical_covariance,
-    class_cov,
-    Pearson_Corr,
-    MI,
-    t_score,
-    ANOVA,
-    ACCC,
-)
-
-# from ._preprocessing import (
-#     text_preprocessing_torchtext,
-#     text_preprocessing_transformers,
-# )
-
-from ._eda import EDA

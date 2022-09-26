@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:02:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 23rd April 2022 10:15:51 pm
+Last Modified: Sunday, 25th September 2022 11:33:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -319,3 +319,103 @@ def neg_f1(y_true, y_pred):
     from sklearn.metrics import f1_score
 
     return -f1_score(y_true, y_pred)
+
+
+def ACCC(Z, y, X=None):
+
+    """
+    Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1]
+
+    if X is None:   correlation between Y (response) and Z (features);
+
+    T_{n}(Y, Z)=\dfrac{\sum_{i=1}^{n}(n\min{R_{i}, R_{M(i)}} - L_{i}^{2})}{\sum_{i=1}^{n}L_{i}(n-L_{i})}
+
+    if X not None:  conditional between Y and Z given X
+
+    T_{n}(Y,Z|X)=\dfrac{\sum_{i=1}^{n}(\min{R_{i}, R_{M(i)}} - \min{R_{i}, R_{N(i)}})}{\sum_{i}^{n}(R_{i}-\min{R_{i}, R_{N(i)}})}
+
+    where R_{i} is the rank of the ith observation in Y, L_{i} is the number of j such that Y_{j}>=Y_{i}, N_{i} be the index of j such that X_{j} is nearest neighbor of X_{i} and M_{i} be the index of j such that (X_{j}, Z_{j}) is the farthest neighbor of (X_{i}, Z_{i}).
+
+    [1] Azadkia, A., & Chatterjee, S. (2015). A new correlation coefficient. Journal of Statistical Theory and Practice, 9(2), 107-118.
+    """
+
+    # format data to dataframe
+    if not isinstance(Z, pd.DataFrame):
+        Z = pd.DataFrame(Z)
+    if not isinstance(y, pd.DataFrame):
+        y = pd.DataFrame(y)
+    if (X is not None) and not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+
+    # check shape
+    if not len(Z) == len(y):
+        raise ValueError(
+            "Z and y must have the same length, but Z has length %d and y has length %d"
+            % (len(Z), len(y))
+        )
+    if not (X is None) and not len(y) == len(X):
+        raise ValueError(
+            "X and y must have the same length, but X has length %d and y has length %d"
+            % (len(X), len(y))
+        )
+
+    from sklearn.neighbors import KNeighborsRegressor
+
+    # rank of response variable
+    y_rank = np.argsort(y.values.reshape(1, -1)[0])
+
+    # shape of features
+    n, p = Z.shape
+
+    if X is None:
+        # KNN for the ranking
+        # only need rank of y corresponding nearest neighbor of Z
+        knn_M = KNeighborsRegressor(
+            n_neighbors=2, p=2, metric="minkowski"
+        )  # standard Euclidean distance
+        knn_M.fit(Z, y_rank)
+        _, ind = knn_M.kneighbors(Z)
+        ind = ind[:, -1]  # get second closest since the closest will be itself
+        L = [(y >= item).sum().values for item in y.values]
+        L = np.concatenate(L).ravel()
+
+        nume = np.sum(
+            [
+                n * min(_y_rank, y_rank[_i]) - L[idx] ** 2
+                for idx, (_y_rank, _i) in enumerate(zip(y_rank, ind))
+            ]
+        )
+        denom = np.sum([L[i] * (n - L[i]) for i in range(n)])
+
+        return nume / denom
+    else:
+        # kNN for the ranking
+        # need rank of y corresponding nearest neighbor of Z and nearest neighbor of (X, Z)
+        knn_M = KNeighborsRegressor(
+            n_neighbors=2, p=2, metric="minkowski"
+        )  # standard Euclidean distance
+        knn_M.fit(pd.concat([X, Z], axis=1, ignore_index=True), y_rank)
+        _, ind_M = knn_M.kneighbors(pd.concat([X, Z], axis=1, ignore_index=True))
+        ind_M = ind_M[:, -1]  # get second closest since the closest will be itself
+
+        knn_N = KNeighborsRegressor(
+            n_neighbors=2, p=2, metric="minkowski"
+        )  # standard Euclidean distance
+        knn_N.fit(X, y_rank)
+        _, ind_N = knn_N.kneighbors(X)
+        ind_N = ind_N[:, -1]  # get second closest since the closest will be itself
+
+        nume = np.sum(
+            [
+                min(_y_rank, y_rank[_ind_M]) - min(_y_rank, y_rank[_ind_N])
+                for _y_rank, _ind_M, _ind_N in zip(y_rank, ind_M, ind_N)
+            ]
+        )
+        denom = np.sum(
+            [
+                _y_rank - min(_y_rank, y_rank[_ind_N])
+                for _y_rank, _ind_N in zip(y_rank, ind_N)
+            ]
+        )
+
+        return nume / denom

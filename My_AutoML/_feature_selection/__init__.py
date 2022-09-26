@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 11:32:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th April 2022 10:37:52 am
+Last Modified: Sunday, 25th September 2022 11:19:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,36 +38,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._base import PCA_FeatureSelection, RBFSampler
+"""
+Note: Aug. 8, 2022
+The feature selection methods are arranged more systematically, which uses the categories defined
+by Chandrashekar (2014):
+1. Filter: use some statistical measures to score and select features.
+2. Wrapper: use a machine learning model to score and select features.
+3. Embedded: embed feature importance in the model training to select features.
+4. Hybrid: combine the filter and wrapper method.
 
-# from ._imported import (
-#     Densifier,
-#     ExtraTreesPreprocessorClassification,
-#     ExtraTreesPreprocessorRegression,
-#     FastICA,
-#     FeatureAgglomeration,
-#     KernelPCA,
-#     RandomKitchenSinks,
-#     LibLinear_Preprocessor,
-#     Nystroem,
-#     PCA,
-#     PolynomialFeatures,
-#     RandomTreesEmbedding,
-#     SelectPercentileClassification,
-#     SelectPercentileRegression,
-#     SelectClassificationRates,
-#     SelectRegressionRates,
-#     TruncatedSVD,
-# )
-from ._advance import (
+Other methods are imported and only called here.
+
+[1] Chandrashekar, G., & Sahin, F. (2014). A survey on feature selection methods. Computers & Electrical Engineering, 40(1), 16-28.
+"""
+
+from ._filter import (
     FeatureFilter,
-    ASFFS,
-    GeneticAlgorithm,
+    mRMR,
+    FOCI,
+)
+from ._wrapper import (
     # ExhaustiveFS,
     SFS,
-    mRMR,
-    CBFS,
+    ASFFS,
 )
+from ._embed import (
+    PCA_FeatureSelection,
+    # LDASelection,
+    RBFSampler,
+)
+from ._hybrid import (
+    CBFS,
+    GeneticAlgorithm,
+)
+
 from My_AutoML._base import no_processing
 
 feature_selections = {
@@ -82,6 +86,7 @@ feature_selections = {
     "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
+    "FOCI": FOCI,
 }
 
 import importlib

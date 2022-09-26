@@ -1,4 +1,5 @@
 venv/
+.eggs/
 .vscode/
 __pycache__/
 *.py[cod]
@@ -13,3 +14,4 @@ htmlcov/*
 .ipynb_checkpoints/
 .pytest_cache/
 test.py
+*.so
