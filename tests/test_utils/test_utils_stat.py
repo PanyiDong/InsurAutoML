@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:36:29 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:42:06 pm
+Last Modified: Monday, 26th September 2022 9:31:27 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -112,7 +112,7 @@ def test_ACCC():
 
     Z = pd.DataFrame(np.random.normal(0, 2, size=(10, 2)), columns=["X_1", "X_2"])
     X = pd.DataFrame(np.random.normal(0, 2, size=(10, 2)), columns=["X_1", "X_2"])
-    y = pd.DataFrame(np.random.normal(0, 2, size=(10, 1)), columns=["y_1", "y_2"])
+    y = pd.DataFrame(np.random.normal(0, 2, size=(10, 1)), columns=["y"])
 
     accc = ACCC(Z, y)
     accc = ACCC(Z, y, Z)
