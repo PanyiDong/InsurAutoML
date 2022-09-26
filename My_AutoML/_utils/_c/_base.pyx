@@ -11,7 +11,7 @@ File Created: Saturday, 24th September 2022 11:13:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 7:31:08 pm
+Last Modified: Sunday, 25th September 2022 7:51:14 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -84,7 +84,7 @@ cdef cnp.ndarray random_index(
         total = n
     cdef cnp.ndarray output = np.zeros(total, dtype=int)
     
-    if total > n:
+    if total < n:
         raise ValueError(
             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
         )

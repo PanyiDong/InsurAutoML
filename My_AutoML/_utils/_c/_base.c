@@ -1824,7 +1824,7 @@ static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_permutation[] = "permutation";
 static const char __pyx_k_Invalid_List[] = "Invalid List!";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
-static const char __pyx_k_File__base_pyx_Author_Panyi_Don[] = "\nFile: _base.pyx\nAuthor: Panyi Dong\nGitHub: https://github.com/PanyiDong/\nMathematics Department, University of Illinois at Urbana-Champaign (UIUC)\n\nProject: My_AutoML\nLast Version: 0.2.1\nRelative Path: /My_AutoML/_utils/_base.pyx\nFile Created: Saturday, 24th September 2022 11:13:27 pm\nAuthor: Panyi Dong (panyid2@illinois.edu)\n\n-----\nLast Modified: Sunday, 25th September 2022 7:31:08 pm\nModified By: Panyi Dong (panyid2@illinois.edu)\n\n-----\nMIT License\n\nCopyright (c) 2022 - 2022, Panyi Dong\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
+static const char __pyx_k_File__base_pyx_Author_Panyi_Don[] = "\nFile: _base.pyx\nAuthor: Panyi Dong\nGitHub: https://github.com/PanyiDong/\nMathematics Department, University of Illinois at Urbana-Champaign (UIUC)\n\nProject: My_AutoML\nLast Version: 0.2.1\nRelative Path: /My_AutoML/_utils/_base.pyx\nFile Created: Saturday, 24th September 2022 11:13:27 pm\nAuthor: Panyi Dong (panyid2@illinois.edu)\n\n-----\nLast Modified: Sunday, 25th September 2022 7:51:14 pm\nModified By: Panyi Dong (panyid2@illinois.edu)\n\n-----\nMIT License\n\nCopyright (c) 2022 - 2022, Panyi Dong\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
 static const char __pyx_k_Total_number_of_samples_must_be[] = "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_Input_is_multi_dimensional_array[] = "Input is multi-dimensional array, return min location of the first dimension.";
@@ -2192,7 +2192,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  *         total = n
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)             # <<<<<<<<<<<<<<
  * 
- *     if total > n:
+ *     if total < n:
  */
   __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
@@ -2221,15 +2221,15 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   /* "My_AutoML/_utils/_c/_base.pyx":87
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)
  * 
- *     if total > n:             # <<<<<<<<<<<<<<
+ *     if total < n:             # <<<<<<<<<<<<<<
  *         raise ValueError(
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
  */
-  __pyx_t_3 = ((__pyx_v_total > __pyx_v_n) != 0);
+  __pyx_t_3 = ((__pyx_v_total < __pyx_v_n) != 0);
   if (unlikely(__pyx_t_3)) {
 
     /* "My_AutoML/_utils/_c/_base.pyx":89
- *     if total > n:
+ *     if total < n:
  *         raise ValueError(
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)             # <<<<<<<<<<<<<<
  *         )
@@ -2293,7 +2293,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
 
     /* "My_AutoML/_utils/_c/_base.pyx":88
  * 
- *     if total > n:
+ *     if total < n:
  *         raise ValueError(             # <<<<<<<<<<<<<<
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
  *         )
@@ -2308,7 +2308,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     /* "My_AutoML/_utils/_c/_base.pyx":87
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)
  * 
- *     if total > n:             # <<<<<<<<<<<<<<
+ *     if total < n:             # <<<<<<<<<<<<<<
  *         raise ValueError(
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
  */

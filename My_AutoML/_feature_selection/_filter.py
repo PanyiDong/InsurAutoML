@@ -11,7 +11,7 @@ File Created: Monday, 8th August 2022 8:43:53 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 8:59:43 pm
+Last Modified: Sunday, 25th September 2022 8:11:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 from itertools import combinations
+import warnings
 import numpy as np
 import pandas as pd
 
@@ -159,7 +160,7 @@ class mRMR:
         # initialize test results
         results = []
         for _comb in test_item:
-            dependency = MI(X.iloc[:, _comb[0]], y)
+            dependency = MI(X.iloc[:, _comb[0]], y)[0]
             if len(selected_features) > 0:
                 redundancy = np.mean(
                     [

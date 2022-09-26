@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:00:12 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 7:01:56 pm
+Last Modified: Sunday, 25th September 2022 7:52:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -58,6 +58,11 @@ except ImportError:
 #     raise ImportError("Cannot import the C++ and Python extension.")
 
 from ._base import (
+    # random_guess,
+    # random_index,
+    # random_list,
+    # minloc,
+    # maxloc,
     is_date,
     feature_rounding,
     True_index,

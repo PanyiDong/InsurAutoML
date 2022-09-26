@@ -11,7 +11,7 @@ File Created: Wednesday, 6th April 2022 12:01:20 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 5:37:56 pm
+Last Modified: Sunday, 25th September 2022 7:51:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,7 +65,7 @@ def random_index(n, total=None, seed=1):
         total = n
 
     # if number of samples is larger than limit, raise error
-    if total > n:
+    if total < n:
         raise ValueError(
             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
                 total, n
