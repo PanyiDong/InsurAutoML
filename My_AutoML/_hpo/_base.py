@@ -11,7 +11,7 @@ File Created: Tuesday, 5th April 2022 10:49:30 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th July 2022 2:14:23 pm
+Last Modified: Saturday, 1st October 2022 1:30:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,10 +38,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import ray
+# import ray
 from ray import tune
 
 import os
+import datetime
 import copy
 import shutil
 import importlib
@@ -311,8 +312,12 @@ class AutoTabularBase:
         # Encoding: convert string types to numerical type
         # all encoders available
         from My_AutoML._encoding import encoders
+        from additional import add_encoders
 
+        # include original encoders
         self._all_encoders = copy.deepcopy(encoders)
+        # include additional encoders
+        self._all_encoders.update(add_encoders)
 
         # get default encoder methods space
         if self.encoder == "auto":
@@ -332,8 +337,12 @@ class AutoTabularBase:
         # Imputer: fill missing values
         # all imputers available
         from My_AutoML._imputation import imputers
+        from additional import add_imputers
 
+        # include original imputers
         self._all_imputers = copy.deepcopy(imputers)
+        # include additional imputers
+        self._all_imputers.update(add_imputers)
 
         # special case: kNN imputer can not handle categorical data
         # remove kNN imputer from all imputers
@@ -368,8 +377,12 @@ class AutoTabularBase:
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
         from My_AutoML._balancing import balancings
+        from additional import add_balancings
 
+        # include original balancings
         self._all_balancings = copy.deepcopy(balancings)
+        # include additional balancings
+        self._all_balancings.update(add_balancings)
 
         # get default balancing methods space
         if self.balancing == "auto":
@@ -389,8 +402,12 @@ class AutoTabularBase:
         # Scaling
         # all scalings available
         from My_AutoML._scaling import scalings
+        from additional import add_scalings
 
+        # include original scalings
         self._all_scalings = copy.deepcopy(scalings)
+        # include additional scalings
+        self._all_scalings.update(add_scalings)
 
         # get default scaling methods space
         if self.scaling == "auto":
@@ -410,8 +427,13 @@ class AutoTabularBase:
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
         from My_AutoML._feature_selection import feature_selections
+        from additional import add_feature_selections
 
+        # include original feature selections
         self._all_feature_selection = copy.deepcopy(feature_selections)
+        # include additional feature selections
+        self._all_feature_selection.update(add_feature_selections)
+
         if self.task_mode == "classification":
             # special treatment, if classification
             # remove some feature selection for regression
@@ -456,12 +478,20 @@ class AutoTabularBase:
         # if mode is regression, use regression models
         if self.task_mode == "classification":
             from My_AutoML._model import classifiers
+            from additional import add_classifiers
 
+            # include original classifiers
             self._all_models = copy.deepcopy(classifiers)
+            # include additional classifiers
+            self._all_models.update(add_classifiers)
         elif self.task_mode == "regression":
             from My_AutoML._model import regressors
+            from additional import add_regressors
 
+            # include original regressors
             self._all_models = copy.deepcopy(regressors)
+            # include additional regressors
+            self._all_models.update(add_regressors)
 
         # special treatment, remove SVM methods when observations are large
         # SVM suffers from the complexity o(n_samples^2 * n_features),
@@ -506,28 +536,46 @@ class AutoTabularBase:
             regressor_hyperparameter,
         )
 
+        from additional import (
+            add_encoder_hyperparameter,
+            add_imputer_hyperparameter,
+            add_scaling_hyperparameter,
+            add_balancing_hyperparameter,
+            add_feature_selection_hyperparameter,
+            add_classifier_hyperparameter,
+            add_regressor_hyperparameter,
+        )
+
         # if needed, modify default hyperparameter space
         # like model hyperparameter space below
         # all hyperparameters for encoders
-        # _all_encoders_hyperparameters = copy.deepcopy(encoder_hyperparameter)
+        _all_encoders_hyperparameters = copy.deepcopy(encoder_hyperparameter)
+        # include additional hyperparameters
+        _all_encoders_hyperparameters += add_encoder_hyperparameter
 
         # # initialize encoders hyperparameter space
         # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
 
         # all hyperparameters for imputers
-        # _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
+        _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
+        # include additional hyperparameters
+        _all_imputers_hyperparameters += add_imputer_hyperparameter
 
         # # initialize imputers hyperparameter space
         # _all_imputers_hyperparameters = copy.deepcopy(self._all_imputers_hyperparameters)
 
         # all hyperparameters for balancing methods
-        # _all_balancings_hyperparameters = copy.deepcopy(balancing_hyperparameter)
+        _all_balancings_hyperparameters = copy.deepcopy(balancing_hyperparameter)
+        # include additional hyperparameters
+        _all_balancings_hyperparameters += add_balancing_hyperparameter
 
         # # initialize balancing hyperparameter space
         # _all_balancings_hyperparameters = copy.deepcopy(self._all_balancings_hyperparameters)
 
         # all hyperparameters for scalings
-        # _all_scalings_hyperparameters = copy.deepcopy(scaling_hyperparameter)
+        _all_scalings_hyperparameters = copy.deepcopy(scaling_hyperparameter)
+        # include additional hyperparameters
+        _all_scalings_hyperparameters += add_scaling_hyperparameter
 
         # # initialize scaling hyperparameter space
         # _all_scalings_hyperparameters = copy.deepcopy(self._all_scalings_hyperparameters)
@@ -536,6 +584,8 @@ class AutoTabularBase:
         _all_feature_selection_hyperparameters = copy.deepcopy(
             feature_selection_hyperparameter
         )
+        # include additional hyperparameters
+        _all_feature_selection_hyperparameters += add_feature_selection_hyperparameter
 
         # special treatment, for SFS hyperparameter space
         if self.task_mode == "classification":
@@ -569,8 +619,12 @@ class AutoTabularBase:
         # all hyperparameters for the models by mode
         if self.task_mode == "classification":
             _all_models_hyperparameters = copy.deepcopy(classifier_hyperparameter)
+            # include additional hyperparameters
+            _all_models_hyperparameters += add_classifier_hyperparameter
         elif self.task_mode == "regression":
             _all_models_hyperparameters = copy.deepcopy(regressor_hyperparameter)
+            # include additional hyperparameters
+            _all_models_hyperparameters += add_regressor_hyperparameter
 
         # special treatment, for LightGBM_Classifier
         # if binary classification, use LIGHTGBM_BINARY_CLASSIFICATION
@@ -598,13 +652,13 @@ class AutoTabularBase:
         # generate the hyperparameter space
         hyperparameter_space = _get_hyperparameter_space(
             X,
-            encoder_hyperparameter,
+            _all_encoders_hyperparameters,
             encoder,
-            imputer_hyperparameter,
+            _all_imputers_hyperparameters,
             imputer,
-            balancing_hyperparameter,
+            _all_balancings_hyperparameters,
             balancing,
-            scaling_hyperparameter,
+            _all_scalings_hyperparameters,
             scaling,
             _all_feature_selection_hyperparameters,
             feature_selection,
@@ -994,6 +1048,27 @@ class AutoTabularBase:
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
 
+        # convert to dataframe
+        if not isinstance(X, pd.DataFrame):
+            try:
+                X = pd.DataFrame(X)
+            except:
+                raise TypeError("Cannot convert X to dataframe, get {}".format(type(X)))
+        if not isinstance(y, pd.DataFrame):
+            try:
+                y = pd.DataFrame(y)
+            except:
+                raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
+
+        # get features and response names
+        if isinstance(X, pd.DataFrame):  # expect multiple features
+            self.features = list(X.columns)
+
+        if isinstance(y, pd.DataFrame):  # for the case of dataframe
+            self.response = list(y.columns)
+        elif isinstance(y, pd.Series):  # for the case of series
+            self.response = list(y.name)
+
         # get device info
         self.cpu_threads = (
             os.cpu_count() if self.cpu_threads is None else self.cpu_threads
@@ -1065,7 +1140,11 @@ class AutoTabularBase:
         else:
             try:
                 X = pd.DataFrame(X)
-                print("[INFO] X is not a dataframe, converted to dataframe.")
+                print(
+                    "[INFO] {} X is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+                    )
+                )
             except:
                 raise TypeError(
                     "X must be a dataframe! Can't convert {} to dataframe.".format(
@@ -1096,7 +1175,11 @@ class AutoTabularBase:
         # if the model is already trained, read the setting
         if os.path.exists(self.model_name):
 
-            print("Stored model found, load previous model.")
+            print(
+                "[INFO] {} Stored model found, load previous model.".format(
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+                )
+            )
             # self.load_model(_X, _y)
             # (
             #     self._fit_encoder,
@@ -1168,10 +1251,11 @@ class AutoTabularBase:
         # get callback logger
         logger = get_logger(self.logger)
 
-
         # get progress reporter
         progress_reporter = get_progress_reporter(
-            self.progress_reporter, self.max_evals, self.max_error,
+            self.progress_reporter,
+            self.max_evals,
+            self.max_error,
         )
 
         # initialize stopper
