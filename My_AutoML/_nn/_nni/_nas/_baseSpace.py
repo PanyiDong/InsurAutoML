@@ -11,7 +11,7 @@ File Created: Sunday, 17th July 2022 9:21:02 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 11:19:31 pm
+Last Modified: Tuesday, 11th October 2022 3:40:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,6 @@ from nni.retiarii import model_wrapper
 from ._utils import ACTIVATIONS, RNN_TYPES, how_to_init
 
 
-@nni.trace
 @model_wrapper
 class MLPBaseSpace(nninn.Module):
     def __init__(

@@ -11,7 +11,7 @@ File Created: Tuesday, 19th July 2022 2:04:35 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 11:37:57 pm
+Last Modified: Tuesday, 11th October 2022 3:43:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -82,7 +82,7 @@ class plEvaluator(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         input, label = batch  # parse the input batch
-        output = self.model(input)  # forward phasepip
+        output = self.model(input)  # forward phase
         loss = self.criterion(output, label)  # compute loss
         self.log("train_loss", loss)  # Logging to TensorBoard by default
 
@@ -91,7 +91,7 @@ class plEvaluator(pl.LightningModule):
     def validation_step(self, batch, batch_idx):
         input, label = batch  # parse the input batch
         output = self.model(input)  # forward phase
-        print(output, label)
+        # print(output, label)
         loss = self.criterion(output, label)  # compute loss
         self.log("val_loss", loss)  # Logging to TensorBoard by default
 
@@ -116,6 +116,7 @@ class plEvaluator(pl.LightningModule):
             nni.report_final_result(self.trainer.callback_metrics["val_loss"].item())
 
 
+@nni.trace
 def get_evaluator(
     model,
     train_set,
@@ -128,7 +129,7 @@ def get_evaluator(
     num_epochs=10,
 ):
     return pl.Lightning(
-        lightning_module=plEvaluator(
+        lightning_module=nni.trace(plEvaluator)(
             model=model,
             criterion=criterion,
             optimizer=optimizer,

@@ -189,6 +189,13 @@ parser.add_argument(
     help="search scheduler",
 )
 parser.add_argument(
+    "--logger",
+    default = ["Logger"],
+    type = str or list,
+    nargs="+",
+    help = "list of used loggers",
+)
+parser.add_argument(
     "--progress_reporter",
     default="CLIReporter",
     type=str,
@@ -226,6 +233,7 @@ OBJECTIVE = args.objective
 SEARCH_ALGO = args.search_algo
 SEARCH_ALGO_SETTINGS = args.search_algo_settings
 SEARCH_SCHEDULER = args.search_scheduler
+LOGGER = args.logger
 PROGRESS_REPORTER = args.progress_reporter
 FULL_STATUS = args.full_status
 SEED = args.seed
@@ -298,6 +306,7 @@ if __name__ == "__main__":
         search_algo=SEARCH_ALGO,
         search_algo_settings=SEARCH_ALGO_SETTINGS,
         search_scheduler=SEARCH_SCHEDULER,
+        logger = LOGGER,
         progress_reporter=PROGRESS_REPORTER,
         full_status=FULL_STATUS,
         seed=SEED,

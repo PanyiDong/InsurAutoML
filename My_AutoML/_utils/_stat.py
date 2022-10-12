@@ -158,13 +158,22 @@ def class_cov(X, y, priors):
 
 # return Pearson Correlation Coefficients
 def Pearson_Corr(X, y):
+    
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
 
     features = list(X.columns)
-    result = []
-    for _column in features:
-        result.append(
-            (nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
-        )
+    
+    result = [
+        (nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
+        for _column in features
+    ]
+    # Oct. 10 decrypted:
+    # result = []
+    # for _column in features:
+    #     result.append(
+    #         (nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
+    #     )
 
     return result
 

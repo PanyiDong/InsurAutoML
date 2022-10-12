@@ -1094,7 +1094,19 @@ class AutoTabularBase:
             )
 
         # make sure n_estimators is a integer smaller than max_evals
-        self.n_estimators = int(min(self.n_estimators, self.max_evals))
+        # Oct. 11, 2022 updates:
+        # if do not limit max_evals (=-1), then set n_estimators to pre-defined one
+        if self.max_evals > 0 :
+            self.n_estimators = int(self.n_estimators)
+        else :
+            # raise warnings if n_estimators set larger than max_evals
+            if self.max_evals < self.n_estimators :
+                warnings.warn(
+                    "n_estimators {} larger than max_evals {}, will be set to {}.".format(
+                        self.n_estimators, self.max_evals, self.max_evals
+                    )
+                )
+            self.n_estimators = int(min(self.n_estimators, self.max_evals))
 
         # at least one constraint of time/evaluations should be provided
         if self.timeout == -1 and self.max_evals == -1:
