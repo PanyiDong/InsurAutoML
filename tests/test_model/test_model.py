@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 11:13:40 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:31:27 pm
+Last Modified: Monday, 24th October 2022 10:52:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,12 +39,12 @@ SOFTWARE.
 """
 
 import pandas as pd
-from My_AutoML._utils import formatting
+from InsurAutoML._utils import formatting
 
 
 def test_classifiers():
 
-    from My_AutoML._model import classifiers
+    from InsurAutoML._model import classifiers
 
     for method_name, method in classifiers.items():
 
@@ -80,7 +80,7 @@ def test_classifiers():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is not None:
-        from My_AutoML._model._sklearn import (
+        from InsurAutoML._model._sklearn import (
             AdaboostClassifier,
             BernoulliNB,
             DecisionTreeClassifier,
@@ -141,7 +141,7 @@ def test_classifiers():
 
 def test_regressors():
 
-    from My_AutoML._model import regressors
+    from InsurAutoML._model import regressors
 
     for method_name, method in regressors.items():
 
@@ -180,7 +180,7 @@ def test_regressors():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is not None:
-        from My_AutoML._model._sklearn import (
+        from InsurAutoML._model._sklearn import (
             AdaboostRegressor,
             ARDRegression,
             DecisionTreeRegressor,

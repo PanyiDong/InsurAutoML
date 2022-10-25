@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 12:27:07 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:24:06 pm
+Last Modified: Monday, 24th October 2022 10:57:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,7 +40,7 @@ SOFTWARE.
 
 import numpy as np
 import pandas as pd
-from My_AutoML._feature_selection import feature_selections
+from InsurAutoML._feature_selection import feature_selections
 
 
 def test_feature_selection():
@@ -80,7 +80,7 @@ def test_feature_selection():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import (
+        from InsurAutoML._feature_selection._sklearn import (
             extra_trees_preproc_for_classification,
             extra_trees_preproc_for_regression,
             liblinear_svc_preprocessor,
@@ -117,7 +117,7 @@ def test_feature_selection():
 
 def test_FeatureFilter():
 
-    from My_AutoML._feature_selection import FeatureFilter
+    from InsurAutoML._feature_selection import FeatureFilter
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -146,7 +146,7 @@ def test_FeatureFilter():
 
 def test_ASFFS():
 
-    from My_AutoML._feature_selection import ASFFS
+    from InsurAutoML._feature_selection import ASFFS
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -182,8 +182,8 @@ def test_ASFFS():
 
 def test_GA():
 
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._feature_selection import GeneticAlgorithm
+    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML._feature_selection import GeneticAlgorithm
 
     data = pd.read_csv("Appendix/heart.csv")
     formatter = DataEncoding()

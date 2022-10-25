@@ -11,7 +11,7 @@ File Created: Friday, 15th April 2022 7:42:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:42:41 pm
+Last Modified: Monday, 24th October 2022 10:52:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import numpy as np
 
 def test_save_model():
 
-    from My_AutoML._utils._file import save_model
+    from InsurAutoML._utils._file import save_model
 
     save_model(
         "encoder",
@@ -67,8 +67,8 @@ def test_save_model():
 
 def test_EDA():
 
-    from My_AutoML._utils._eda import EDA
-    from My_AutoML._datasets import PROD, HEART
+    from InsurAutoML._utils._eda import EDA
+    from InsurAutoML._datasets import PROD, HEART
 
     features, label = PROD(split="train")
 
@@ -87,8 +87,8 @@ def test_EDA():
 
 def test_feature_type():
 
-    from My_AutoML._utils._data import feature_type
-    from My_AutoML._datasets import PROD, HEART
+    from InsurAutoML._utils._data import feature_type
+    from InsurAutoML._datasets import PROD, HEART
 
     data, label = PROD(split="test")
     data_type = {}
@@ -107,7 +107,7 @@ def test_feature_type():
 
 def test_plotHighDimCluster():
 
-    from My_AutoML._utils._data import plotHighDimCluster
+    from InsurAutoML._utils._data import plotHighDimCluster
 
     X = np.random.randint(0, 100, size=(1000, 200))
     y = np.random.randint(0, 5, size=(1000,))
@@ -121,8 +121,8 @@ def test_plotHighDimCluster():
 
 def test_word2vec():
 
-    from My_AutoML._datasets import PROD
-    from My_AutoML._utils._data import text2vec
+    from InsurAutoML._datasets import PROD
+    from InsurAutoML._utils._data import text2vec
 
     features, labels = PROD(split="test")
     features = features["Product_Description"]

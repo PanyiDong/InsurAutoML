@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 1:56:15 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 5:23:45 pm
+Last Modified: Monday, 24th October 2022 10:52:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from My_AutoML._scaling import scalings
+from InsurAutoML._scaling import scalings
 
 data_X = pd.DataFrame(
     {
@@ -88,7 +88,7 @@ class TestScaling(unittest.TestCase):
 
 def test_NoScaing():
 
-    from My_AutoML._scaling._scaling import NoScaling
+    from InsurAutoML._scaling._scaling import NoScaling
 
     method = NoScaling()
     method.fit(data_X, data_y)
@@ -104,7 +104,7 @@ def test_NoScaing():
 # test decrepted methods
 def test_feature_manipulation():
 
-    from My_AutoML._scaling import Feature_Manipulation
+    from InsurAutoML._scaling import Feature_Manipulation
 
     data = pd.DataFrame(
         np.arange(15).reshape(5, 3), columns=["column_" + str(i + 1) for i in range(3)]
@@ -128,7 +128,7 @@ def test_feature_manipulation():
 
 def test_feature_truncation():
 
-    from My_AutoML._scaling import Feature_Truncation
+    from InsurAutoML._scaling import Feature_Truncation
 
     data = pd.DataFrame(
         np.random.randint(0, 100, size=(100, 10)),

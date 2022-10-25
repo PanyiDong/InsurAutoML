@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:36:29 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 26th September 2022 9:31:27 am
+Last Modified: Monday, 24th October 2022 10:52:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import pandas as pd
 
 def test_nan_cov():
 
-    from My_AutoML._utils._stat import nan_cov
+    from InsurAutoML._utils._stat import nan_cov
 
     assert (
         nan_cov(pd.DataFrame([4, 5, 6, np.nan, 1, np.nan]))[0, 0] == 2.8
@@ -53,7 +53,7 @@ def test_nan_cov():
 
 def test_class_means():
 
-    from My_AutoML._utils._stat import class_means
+    from InsurAutoML._utils._stat import class_means
 
     X = pd.DataFrame(
         {
@@ -71,7 +71,7 @@ def test_class_means():
 
 def test_empirical_covariance():
 
-    from My_AutoML._utils import empirical_covariance
+    from InsurAutoML._utils import empirical_covariance
 
     cov = empirical_covariance(10 * np.random.random(size=(10, 10)))
 
@@ -82,7 +82,7 @@ def test_empirical_covariance():
 
 def test_class_cov():
 
-    from My_AutoML._utils._stat import class_cov
+    from InsurAutoML._utils._stat import class_cov
 
     X = np.arange(10)
     y = np.array([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
@@ -96,7 +96,7 @@ def test_class_cov():
 
 def test_MI():
 
-    from My_AutoML._utils._stat import MI
+    from InsurAutoML._utils._stat import MI
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
     y = pd.DataFrame(np.random.randint(0, 2, size=(10, 2)), columns=["y_1", "y_2"])
@@ -108,7 +108,7 @@ def test_MI():
 
 def test_ACCC():
 
-    from My_AutoML._utils._stat import ACCC
+    from InsurAutoML._utils._stat import ACCC
 
     Z = pd.DataFrame(np.random.normal(0, 2, size=(10, 2)), columns=["X_1", "X_2"])
     X = pd.DataFrame(np.random.normal(0, 2, size=(10, 2)), columns=["X_1", "X_2"])
@@ -124,7 +124,7 @@ def test_ACCC():
 
 def test_t_score():
 
-    from My_AutoML._utils._stat import t_score
+    from InsurAutoML._utils._stat import t_score
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
     y = pd.DataFrame(np.random.randint(0, 2, size=(10, 2)), columns=["y_1", "y_2"])
@@ -140,7 +140,7 @@ def test_t_score():
 
 def test_ANOVA():
 
-    from My_AutoML._utils._stat import ANOVA
+    from InsurAutoML._utils._stat import ANOVA
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
     y = pd.DataFrame(np.random.randint(0, 5, size=(10, 2)), columns=["y_1", "y_2"])
@@ -156,7 +156,7 @@ def test_ANOVA():
 
 def test_neg_metrics():
 
-    from My_AutoML._utils._stat import (
+    from InsurAutoML._utils._stat import (
         neg_R2,
         neg_accuracy,
         neg_precision,

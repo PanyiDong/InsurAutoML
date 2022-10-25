@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 11th July 2022 11:19:36 am
+Last Modified: Monday, 24th October 2022 10:48:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,9 +42,10 @@ import argparse
 from sqlite3 import DatabaseError
 
 import sklearn
-import My_AutoML
-from My_AutoML import load_data, train_test_split, type_of_task
-from My_AutoML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
+import datetime
+import InsurAutoML
+from InsurAutoML import load_data, train_test_split, type_of_task
+from InsurAutoML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
 
 model_dict = {
     "auto": AutoTabular,
@@ -188,6 +189,13 @@ parser.add_argument(
     help="search scheduler",
 )
 parser.add_argument(
+    "--logger",
+    default=["Logger"],
+    type=str or list,
+    nargs="+",
+    help="list of used loggers",
+)
+parser.add_argument(
     "--progress_reporter",
     default="CLIReporter",
     type=str,
@@ -225,18 +233,27 @@ OBJECTIVE = args.objective
 SEARCH_ALGO = args.search_algo
 SEARCH_ALGO_SETTINGS = args.search_algo_settings
 SEARCH_SCHEDULER = args.search_scheduler
+LOGGER = args.logger
 PROGRESS_REPORTER = args.progress_reporter
 FULL_STATUS = args.full_status
 SEED = args.seed
 
 if __name__ == "__main__":
 
-    print("Preprocessing:")
+    print(
+        "[INFO] {} Get task. Start preprocessing:".format(
+            datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+        )
+    )
     train = args.train_data
     test = args.test_data
     response = args.response
 
-    print("Train/Test identification.")
+    print(
+        "[INFO] {} Train/Test set identification.".format(
+            datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+        )
+    )
     # if test_data provided, use train/test data seperately
     if test != "":
         database = load_data().load(args.data_folder, [train, test])
@@ -261,7 +278,11 @@ if __name__ == "__main__":
             database[train][features], database[train][[response]]
         )
 
-    print("Training:")
+    print(
+        "[INFO] {} Start training:".format(
+            datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+        )
+    )
     # construct the model by parameters
     model = MODEL(
         n_estimators=N_ESTIMATORS,
@@ -285,6 +306,7 @@ if __name__ == "__main__":
         search_algo=SEARCH_ALGO,
         search_algo_settings=SEARCH_ALGO_SETTINGS,
         search_scheduler=SEARCH_SCHEDULER,
+        logger=LOGGER,
         progress_reporter=PROGRESS_REPORTER,
         full_status=FULL_STATUS,
         seed=SEED,
@@ -293,7 +315,11 @@ if __name__ == "__main__":
     # training process
     model.fit(train_X, train_y)
 
-    print("Evaluation:")
+    print(
+        "[INFO] {} Training finished. Start evaluation:".format(
+            datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+        )
+    )
     # test and evaluation
     y_pred = model.predict(test_X)
 
@@ -319,7 +345,9 @@ if __name__ == "__main__":
             args.test_eval = "MSE"
 
     print(
-        "The {} of test data is: {:.4f}".format(
-            args.test_eval, eval_metrics[args.test_eval](y_pred, test_y)
+        "[INFO] {} The {} of test data is: {:.4f}".format(
+            datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+            args.test_eval,
+            eval_metrics[args.test_eval](y_pred, test_y),
         )
     )

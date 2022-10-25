@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:31:02 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:31:49 pm
+Last Modified: Monday, 24th October 2022 10:52:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,12 +39,12 @@ SOFTWARE.
 """
 
 import pandas as pd
-from My_AutoML._utils import formatting
+from InsurAutoML._utils import formatting
 
 
 def test_add_classifier():
 
-    from My_AutoML._model._sklearn import ComplementNB
+    from InsurAutoML._model._sklearn import ComplementNB
 
     data = pd.read_csv("example/example_data/heart.csv")
     # encoding categorical features
@@ -72,9 +72,13 @@ def test_add_regressor():
     # else, use sklearn version for testing
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+        from InsurAutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
     else:
-        from My_AutoML._model._autosklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
+        from InsurAutoML._model._autosklearn import (
+            LibSVM_SVR,
+            MLPRegressor,
+            SGDRegressor,
+        )
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -131,7 +135,7 @@ def test_add_regressor():
 
 def test_lightgbm_classifier():
 
-    from My_AutoML._model import LightGBM_Classifier
+    from InsurAutoML._model import LightGBM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
 
@@ -165,7 +169,7 @@ def test_lightgbm_classifier():
 
 def test_lightgbm_regressor():
 
-    from My_AutoML._model import LightGBM_Regressor
+    from InsurAutoML._model import LightGBM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -202,7 +206,7 @@ def test_lightgbm_regressor():
 
 def test_xgboost_classifier():
 
-    from My_AutoML._model import XGBoost_Classifier
+    from InsurAutoML._model import XGBoost_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
 
@@ -233,7 +237,7 @@ def test_xgboost_classifier():
 
 def test_xgboost_regressor():
 
-    from My_AutoML._model import XGBoost_Regressor
+    from InsurAutoML._model import XGBoost_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -267,7 +271,7 @@ def test_xgboost_regressor():
 
 def test_gam_classifier():
 
-    from My_AutoML._model import GAM_Classifier
+    from InsurAutoML._model import GAM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
 
@@ -293,7 +297,7 @@ def test_gam_classifier():
 
 def test_gam_regressor():
 
-    from My_AutoML._model import GAM_Regressor
+    from InsurAutoML._model import GAM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 

@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:39:59 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:41:03 pm
+Last Modified: Monday, 24th October 2022 10:52:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 
 def test_get_algo():
 
-    from My_AutoML._utils._optimize import get_algo
+    from InsurAutoML._utils._optimize import get_algo
 
     get_algo("GridSearch")
     get_algo("HyperOpt")
@@ -80,7 +80,7 @@ def test_get_algo():
 
 def test_get_scheduler():
 
-    from My_AutoML._utils._optimize import get_scheduler
+    from InsurAutoML._utils._optimize import get_scheduler
 
     get_scheduler("FIFOScheduler")
     get_scheduler("ASHAScheduler")
@@ -106,7 +106,7 @@ def test_get_scheduler():
 
 def test_get_progress_reporter():
 
-    from My_AutoML._utils._optimize import get_progress_reporter
+    from InsurAutoML._utils._optimize import get_progress_reporter
 
     get_progress_reporter("CLIReporter", max_evals=64, max_error=4)
     get_progress_reporter("JupyterNotebookReporter", max_evals=64, max_error=4)
@@ -114,16 +114,16 @@ def test_get_progress_reporter():
 
 def test_get_logger():
 
-    from My_AutoML._utils._optimize import get_logger
+    from InsurAutoML._utils._optimize import get_logger
 
     get_logger(["Logger", "TBX", "JSON", "CSV", "MLflow"])
 
 
 def test_get_estimator():
 
-    from My_AutoML._utils._optimize import get_estimator
+    from InsurAutoML._utils._optimize import get_estimator
     from sklearn.linear_model import LinearRegression
-    from My_AutoML._utils._base import has_method
+    from InsurAutoML._utils._base import has_method
 
     test_list = [
         "Lasso",
@@ -145,7 +145,7 @@ def test_get_estimator():
 
 def test_get_metrics():
 
-    from My_AutoML._utils._optimize import get_metrics
+    from InsurAutoML._utils._optimize import get_metrics
     from sklearn.metrics import accuracy_score
     from typing import Callable
 

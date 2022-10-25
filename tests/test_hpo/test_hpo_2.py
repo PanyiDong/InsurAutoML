@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:27:39 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:28:26 pm
+Last Modified: Monday, 24th October 2022 10:51:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,17 +38,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from My_AutoML import load_data
+from InsurAutoML import load_data
 
 
 def test_objective_6():
 
-    from My_AutoML._hpo._utils import TabularObjective
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
+    from InsurAutoML._hpo._utils import TabularObjective
+    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML._imputation import SimpleImputer
+    from InsurAutoML._base import no_processing
+    from InsurAutoML._scaling import Standardize
+    from InsurAutoML._model import LogisticRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "heart")
@@ -122,12 +122,12 @@ def test_objective_6():
 
 def test_objective_7():
 
-    from My_AutoML._hpo._utils import TabularObjective
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LogisticRegression
+    from InsurAutoML._hpo._utils import TabularObjective
+    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML._imputation import SimpleImputer
+    from InsurAutoML._base import no_processing
+    from InsurAutoML._scaling import Standardize
+    from InsurAutoML._model import LogisticRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "heart")
@@ -201,12 +201,12 @@ def test_objective_7():
 
 def test_objective_8():
 
-    from My_AutoML._hpo._utils import TabularObjective
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
+    from InsurAutoML._hpo._utils import TabularObjective
+    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML._imputation import SimpleImputer
+    from InsurAutoML._base import no_processing
+    from InsurAutoML._scaling import Standardize
+    from InsurAutoML._model import LinearRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "insurance")
@@ -277,12 +277,12 @@ def test_objective_8():
 
 def test_objective_9():
 
-    from My_AutoML._hpo._utils import TabularObjective
-    from My_AutoML._encoding import DataEncoding
-    from My_AutoML._imputation import SimpleImputer
-    from My_AutoML._base import no_processing
-    from My_AutoML._scaling import Standardize
-    from My_AutoML._model import LinearRegression
+    from InsurAutoML._hpo._utils import TabularObjective
+    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML._imputation import SimpleImputer
+    from InsurAutoML._base import no_processing
+    from InsurAutoML._scaling import Standardize
+    from InsurAutoML._model import LinearRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "insurance")

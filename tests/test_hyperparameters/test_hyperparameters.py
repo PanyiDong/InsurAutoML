@@ -11,7 +11,7 @@ File Created: Thursday, 14th April 2022 12:25:53 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 14th April 2022 12:31:22 am
+Last Modified: Monday, 24th October 2022 10:51:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,71 +40,77 @@ SOFTWARE.
 
 
 def test_encoder_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         encoder_hyperparameter,
     )
-    
-    assert (
-        isinstance(encoder_hyperparameter, list)
+
+    assert isinstance(
+        encoder_hyperparameter, list
     ), "Encoder hyperparameters correctly imported."
-    
+
+
 def test_imputer_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         imputer_hyperparameter,
     )
-    
-    assert (
-        isinstance(imputer_hyperparameter, list)
+
+    assert isinstance(
+        imputer_hyperparameter, list
     ), "Imputer hyperparameters correctly imported."
 
+
 def test_balancing_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         balancing_hyperparameter,
     )
-    
-    assert (
-        isinstance(balancing_hyperparameter, list)
+
+    assert isinstance(
+        balancing_hyperparameter, list
     ), "Balancing hyperparameters correctly imported."
-    
+
+
 def test_scaling_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         scaling_hyperparameter,
     )
-    
-    assert (
-        isinstance(scaling_hyperparameter, list)
+
+    assert isinstance(
+        scaling_hyperparameter, list
     ), "Scaling hyperparameters correctly imported."
-    
+
+
 def test_feature_selection_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         feature_selection_hyperparameter,
     )
-    
-    assert (
-        isinstance(feature_selection_hyperparameter, list)
+
+    assert isinstance(
+        feature_selection_hyperparameter, list
     ), "Feature Selection hyperparameters correctly imported."
-    
+
+
 def test_regressor_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         regressor_hyperparameter,
     )
-    
-    assert (
-        isinstance(regressor_hyperparameter, list)
+
+    assert isinstance(
+        regressor_hyperparameter, list
     ), "Regressor Selection hyperparameters correctly imported."
-    
+
+
 def test_classifier_hyperparameters():
-    
-    from My_AutoML._hyperparameters import (
+
+    from InsurAutoML._hyperparameters import (
         classifier_hyperparameter,
     )
-    
-    assert (
-        isinstance(classifier_hyperparameter, list)
+
+    assert isinstance(
+        classifier_hyperparameter, list
     ), "Classifier Selection hyperparameters correctly imported."
