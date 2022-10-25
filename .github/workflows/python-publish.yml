@@ -27,5 +27,6 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           pip install Cython
-          python setup.py sdist bdist_wheel
+          # python setup.py sdist bdist_wheel
+          pip install -e .[normal]
           twine upload dist/*
