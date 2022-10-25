@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 11:19:49 pm
+Last Modified: Monday, 24th October 2022 11:29:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -71,8 +71,8 @@ InsurAutoML_version = (
     .strip()
 )
 
-assert os.path.isfile("cf_remote/version.py")
-with open("cf_remote/VERSION", "w", encoding="utf-8") as fh:
+assert os.path.isfile("InsurAutoML/version.py")
+with open("InsurAutoML/VERSION", "w", encoding="utf-8") as fh:
     fh.write("%s\n" % InsurAutoML_version)
 
 INSTALL_LIST = [
