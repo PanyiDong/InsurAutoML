@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:25:37 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:27:25 pm
+Last Modified: Monday, 24th October 2022 10:51:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,8 +39,8 @@ SOFTWARE.
 """
 
 import os
-import My_AutoML
-from My_AutoML import load_data
+import InsurAutoML
+from InsurAutoML import load_data
 
 # def test_stroke():
 
@@ -70,7 +70,7 @@ def test_heart():
     features.remove("HeartDisease")
     response = ["HeartDisease"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         model_name="heart",
         search_algo="GridSearch",
         timeout=60,
@@ -98,7 +98,7 @@ def test_insurance():
     features.remove("expenses")
     response = ["expenses"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         model_name="insurance",
         objective="MAE",
         timeout=60,
@@ -117,7 +117,7 @@ def test_insurance():
 
 def test_insurance_R2():
 
-    from My_AutoML._hpo._base import AutoTabularBase
+    from InsurAutoML._hpo._base import AutoTabularBase
 
     # test load_data here
     data = load_data().load("example/example_data", "insurance")
@@ -155,7 +155,7 @@ def test_stroke_import_version():
     features.remove("stroke")
     response = ["stroke"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         model_name="stroke",
         objective="auc",
         timeout=60,
@@ -183,7 +183,7 @@ def test_stroke_loading():
     features.remove("stroke")
     response = ["stroke"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         model_name="stroke",
         timeout=60,
     )
@@ -202,7 +202,7 @@ def test_stroke_with_limit():
     features.remove("stroke")
     response = ["stroke"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         model_name="no_valid",
         encoder=["DataEncoding"],
         imputer=["SimpleImputer"],
@@ -230,7 +230,7 @@ def test_single():
     features.remove("expenses")
     response = ["expenses"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         n_estimators=1,
         model_name="insurance",
         objective="MAE",
@@ -258,7 +258,7 @@ def test_bagging():
     features.remove("expenses")
     response = ["expenses"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         ensemble_strategy="bagging",
         model_name="insurance",
         objective="MAE",
@@ -286,7 +286,7 @@ def test_boosting():
     features.remove("expenses")
     response = ["expenses"]
 
-    mol = My_AutoML.AutoTabular(
+    mol = InsurAutoML.AutoTabular(
         ensemble_strategy="boosting",
         model_name="insurance",
         objective="MAE",

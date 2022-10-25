@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:35:25 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:42:19 pm
+Last Modified: Monday, 24th October 2022 10:52:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import pandas as pd
 
 def test_as_dataframe():
 
-    from My_AutoML._utils._data import as_dataframe
+    from InsurAutoML._utils._data import as_dataframe
 
     converter = as_dataframe()
 
@@ -63,7 +63,7 @@ def test_as_dataframe():
 
 def test_unify_nan():
 
-    from My_AutoML._utils._data import unify_nan
+    from InsurAutoML._utils._data import unify_nan
 
     data = np.arange(15).reshape(5, 3)
     data = pd.DataFrame(data, columns=["column_1", "column_2", "column_3"])
@@ -89,7 +89,7 @@ def test_unify_nan():
 
 def test_remove_index_columns():
 
-    from My_AutoML._utils._data import remove_index_columns
+    from InsurAutoML._utils._data import remove_index_columns
 
     data = pd.DataFrame(
         {
@@ -136,7 +136,7 @@ def test_remove_index_columns():
 
 def test_formatting():
 
-    from My_AutoML._utils._data import formatting
+    from InsurAutoML._utils._data import formatting
 
     data = pd.read_csv("Appendix/insurance.csv")
     train = data.iloc[100:, :]
@@ -152,7 +152,7 @@ def test_formatting():
 
 def test_get_missing_matrix():
 
-    from My_AutoML._utils._data import get_missing_matrix
+    from InsurAutoML._utils._data import get_missing_matrix
 
     test = pd.DataFrame(
         {
@@ -185,7 +185,7 @@ def test_get_missing_matrix():
 
 def test_extremeclass():
 
-    from My_AutoML._utils._data import ExtremeClass
+    from InsurAutoML._utils._data import ExtremeClass
 
     cutter = ExtremeClass(extreme_threshold=0.9)
     test = pd.DataFrame(
@@ -199,7 +199,7 @@ def test_extremeclass():
 
 def test_assign_classes():
 
-    from My_AutoML._utils._data import assign_classes
+    from InsurAutoML._utils._data import assign_classes
 
     test = [[0.9, 0.1], [0.2, 0.8]]
 
@@ -210,7 +210,7 @@ def test_assign_classes():
 
 def test_softmax():
 
-    from My_AutoML._utils._data import softmax
+    from InsurAutoML._utils._data import softmax
 
     a = np.array([0.1, -0.1, 1])
 

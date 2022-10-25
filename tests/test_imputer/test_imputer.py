@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 10:13:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 11:46:30 pm
+Last Modified: Monday, 24th October 2022 10:51:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -82,8 +82,8 @@ import pandas as pd
 
 def test_imputer():
 
-    from My_AutoML._imputation import imputers
-    from My_AutoML._utils import formatting
+    from InsurAutoML._imputation import imputers
+    from InsurAutoML._utils import formatting
 
     for method_name, method_object in zip(imputers.keys(), imputers.values()):
 
@@ -109,7 +109,7 @@ def test_imputer():
 
 def test_DummyImputer():
 
-    from My_AutoML._imputation import DummyImputer
+    from InsurAutoML._imputation import DummyImputer
 
     data = pd.DataFrame(
         np.random.randint(0, 50, size=(100, 5)),
@@ -136,7 +136,7 @@ def test_DummyImputer():
 
 def test_kNNImputer():
 
-    from My_AutoML._imputation import KNNImputer
+    from InsurAutoML._imputation import KNNImputer
 
     data = pd.DataFrame(
         np.random.randint(0, 50, size=(100, 5)),

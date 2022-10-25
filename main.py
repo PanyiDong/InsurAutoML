@@ -11,7 +11,7 @@ File Created: Friday, 25th February 2022 6:13:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 1st October 2022 1:20:26 pm
+Last Modified: Monday, 24th October 2022 10:48:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,9 +43,9 @@ from sqlite3 import DatabaseError
 
 import sklearn
 import datetime
-import My_AutoML
-from My_AutoML import load_data, train_test_split, type_of_task
-from My_AutoML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
+import InsurAutoML
+from InsurAutoML import load_data, train_test_split, type_of_task
+from InsurAutoML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
 
 model_dict = {
     "auto": AutoTabular,
@@ -190,10 +190,10 @@ parser.add_argument(
 )
 parser.add_argument(
     "--logger",
-    default = ["Logger"],
-    type = str or list,
+    default=["Logger"],
+    type=str or list,
     nargs="+",
-    help = "list of used loggers",
+    help="list of used loggers",
 )
 parser.add_argument(
     "--progress_reporter",
@@ -306,7 +306,7 @@ if __name__ == "__main__":
         search_algo=SEARCH_ALGO,
         search_algo_settings=SEARCH_ALGO_SETTINGS,
         search_scheduler=SEARCH_SCHEDULER,
-        logger = LOGGER,
+        logger=LOGGER,
         progress_reporter=PROGRESS_REPORTER,
         full_status=FULL_STATUS,
         seed=SEED,

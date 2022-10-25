@@ -1,0 +1,47 @@
+setuptools==59.5.0
+cython
+numpy
+pandas
+scipy
+pyarrow
+fastparquet
+matplotlib
+seaborn>=0.11.0
+ray<2.0.0
+gensim
+tqdm==4.62.3
+mlflow==1.21.0
+tensorboardX
+hyperopt==0.2.5
+
+[:platform_system == "Linux"]
+auto-sklearn==0.14.6
+scikit-learn==0.24.2
+
+[:platform_system == "MacOS"]
+scikit-learn>1.0.0
+
+[:platform_system == "Windows"]
+redis
+scikit-learn>1.0.0
+
+[lightweight]
+
+[nn]
+gensim
+lightgbm
+xgboost
+pygam
+torch
+nni
+
+[nn:platform_system == "Linux"]
+rpy2
+
+[normal]
+lightgbm
+xgboost
+pygam
+
+[normal:platform_system == "Linux"]
+rpy2

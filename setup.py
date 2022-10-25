@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 1:28:55 pm
+Last Modified: Monday, 24th October 2022 10:48:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -129,7 +129,7 @@ SETUP_REQUIRES = [
 ]
 
 SETUP_ARGS = {
-    "name": "My_AutoML",
+    "name": "InsurAutoML",
     "version": "0.2.1",
     "author": "Panyi Dong",
     "url": "https://github.com/PanyiDong/My_AutoML",
@@ -148,7 +148,7 @@ def setup_package():
         packages=find_packages(
             exclude=EXCLUDE_LIST,
         ),
-        package_dir={"My_AutoML": "My_AutoML"},
+        package_dir={"My_AutoML": "InsurAutoML"},
         include_package_data=True,
         package_data={"My_AutoML": DATA_LIST},
         platforms=["Linux", "Windows", "MacOS"],

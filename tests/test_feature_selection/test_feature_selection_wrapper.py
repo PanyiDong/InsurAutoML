@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:22:59 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:24:10 pm
+Last Modified: Monday, 24th October 2022 10:57:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 import pandas as pd
-from My_AutoML._feature_selection import (
+from InsurAutoML._feature_selection import (
     PCA_FeatureSelection,
     RBFSampler,
 )
@@ -122,9 +122,9 @@ def test_feature_selection_densifier():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import densifier
+        from InsurAutoML._feature_selection._sklearn import densifier
     else:
-        from My_AutoML._feature_selection._autosklearn import densifier
+        from InsurAutoML._feature_selection._autosklearn import densifier
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -138,7 +138,7 @@ def test_feature_selection_densifier():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import densifier
+        from InsurAutoML._feature_selection._sklearn import densifier
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]
@@ -172,9 +172,9 @@ def test_feature_selection_feature_agglomeration():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import feature_agglomeration
+        from InsurAutoML._feature_selection._sklearn import feature_agglomeration
     else:
-        from My_AutoML._feature_selection._autosklearn import feature_agglomeration
+        from InsurAutoML._feature_selection._autosklearn import feature_agglomeration
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -188,7 +188,7 @@ def test_feature_selection_feature_agglomeration():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import feature_agglomeration
+        from InsurAutoML._feature_selection._sklearn import feature_agglomeration
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]
@@ -207,9 +207,9 @@ def test_feature_selection_kernel_pca():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import kernel_pca
+        from InsurAutoML._feature_selection._sklearn import kernel_pca
     else:
-        from My_AutoML._feature_selection._autosklearn import kernel_pca
+        from InsurAutoML._feature_selection._autosklearn import kernel_pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -223,7 +223,7 @@ def test_feature_selection_kernel_pca():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import kernel_pca
+        from InsurAutoML._feature_selection._sklearn import kernel_pca
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]
@@ -242,9 +242,9 @@ def test_feature_selection_kitchen_sinks():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import kitchen_sinks
+        from InsurAutoML._feature_selection._sklearn import kitchen_sinks
     else:
-        from My_AutoML._feature_selection._autosklearn import kitchen_sinks
+        from InsurAutoML._feature_selection._autosklearn import kitchen_sinks
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -258,7 +258,7 @@ def test_feature_selection_kitchen_sinks():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import kitchen_sinks
+        from InsurAutoML._feature_selection._sklearn import kitchen_sinks
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]
@@ -277,9 +277,9 @@ def test_feature_selection_nystroem_sampler():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import nystroem_sampler
+        from InsurAutoML._feature_selection._sklearn import nystroem_sampler
     else:
-        from My_AutoML._feature_selection._autosklearn import nystroem_sampler
+        from InsurAutoML._feature_selection._autosklearn import nystroem_sampler
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -293,7 +293,7 @@ def test_feature_selection_nystroem_sampler():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import nystroem_sampler
+        from InsurAutoML._feature_selection._sklearn import nystroem_sampler
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]
@@ -312,9 +312,9 @@ def test_feature_selection_pca():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import pca
+        from InsurAutoML._feature_selection._sklearn import pca
     else:
-        from My_AutoML._feature_selection._autosklearn import pca
+        from InsurAutoML._feature_selection._autosklearn import pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -328,7 +328,7 @@ def test_feature_selection_pca():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import pca
+        from InsurAutoML._feature_selection._sklearn import pca
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]
@@ -347,9 +347,9 @@ def test_feature_selection_random_trees_embedding():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is None:
-        from My_AutoML._feature_selection._sklearn import random_trees_embedding
+        from InsurAutoML._feature_selection._sklearn import random_trees_embedding
     else:
-        from My_AutoML._feature_selection._autosklearn import random_trees_embedding
+        from InsurAutoML._feature_selection._autosklearn import random_trees_embedding
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -363,7 +363,7 @@ def test_feature_selection_random_trees_embedding():
 
     # add tests for sklearn methods when autosklearn is installed
     if autosklearn_spec is not None:
-        from My_AutoML._feature_selection._sklearn import random_trees_embedding
+        from InsurAutoML._feature_selection._sklearn import random_trees_embedding
 
         data = pd.read_csv("Appendix/Medicalpremium.csv")
         X = data.iloc[:, :-1]

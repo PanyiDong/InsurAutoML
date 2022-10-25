@@ -11,7 +11,7 @@ File Created: Sunday, 7th August 2022 9:38:04 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 9:12:54 am
+Last Modified: Monday, 24th October 2022 10:57:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import shutil
 
 def test_datasets():
 
-    from My_AutoML._datasets import (
+    from InsurAutoML._datasets import (
         ADULT,  # Classification
         AUTO,
         BREAST,

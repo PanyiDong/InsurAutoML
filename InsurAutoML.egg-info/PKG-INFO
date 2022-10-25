@@ -1,0 +1,19 @@
+Metadata-Version: 2.1
+Name: InsurAutoML
+Version: 0.2.1
+Summary: Automated Machine Learning/AutoML pipeline.
+Home-page: https://github.com/PanyiDong/My_AutoML
+Author: Panyi Dong
+Author-email: panyid2@illinois.edu
+License: MIT
+Platform: Linux
+Platform: Windows
+Platform: MacOS
+Requires-Python: >=3.7
+Provides-Extra: lightweight
+Provides-Extra: normal
+Provides-Extra: nn
+License-File: LICENSE
+
+UNKNOWN
+

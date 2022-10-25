@@ -11,7 +11,7 @@ File Created: Saturday, 9th April 2022 11:03:41 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 12:11:15 am
+Last Modified: Monday, 24th October 2022 10:57:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from My_AutoML._balancing import balancings
+from InsurAutoML._balancing import balancings
 
 data_X = pd.DataFrame(
     np.random.normal(0, 10, (100, 10)),

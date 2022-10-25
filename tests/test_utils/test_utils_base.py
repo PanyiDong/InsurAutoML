@@ -11,7 +11,7 @@ File Created: Sunday, 25th September 2022 11:34:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:41:46 pm
+Last Modified: Monday, 24th October 2022 10:52:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import pandas as pd
 
 def test_load_data():
 
-    from My_AutoML import load_data
+    from InsurAutoML import load_data
 
     data = load_data().load("Appendix", "insurance")
 
@@ -61,7 +61,7 @@ def test_load_data():
 
 def test_random_guess():
 
-    from My_AutoML._utils._base import random_guess
+    from InsurAutoML._utils._base import random_guess
 
     assert random_guess(1) == 1, "random_guess(1) should be 1, get {}".format(
         random_guess(1)
@@ -76,7 +76,7 @@ def test_random_guess():
 
 def test_random_index():
 
-    from My_AutoML._utils._base import random_index
+    from InsurAutoML._utils._base import random_index
 
     assert (
         np.sort(random_index(5)) == np.array([0, 1, 2, 3, 4])
@@ -87,7 +87,7 @@ def test_random_index():
 
 def test_random_list():
 
-    from My_AutoML._utils._base import random_list
+    from InsurAutoML._utils._base import random_list
 
     assert (
         np.sort(random_list([0, 1, 2, 3, 4])) == np.array([0, 1, 2, 3, 4])
@@ -98,7 +98,7 @@ def test_random_list():
 
 def test_is_date():
 
-    from My_AutoML._utils._base import is_date
+    from InsurAutoML._utils._base import is_date
 
     test = pd.DataFrame(
         {
@@ -118,7 +118,7 @@ def test_is_date():
 
 def test_feature_rounding():
 
-    from My_AutoML._utils._base import feature_rounding
+    from InsurAutoML._utils._base import feature_rounding
 
     test = pd.DataFrame(
         {
@@ -141,7 +141,7 @@ def test_feature_rounding():
 
 def test_timer():
 
-    from My_AutoML._utils._base import Timer
+    from InsurAutoML._utils._base import Timer
     import time
 
     timer = Timer()
@@ -158,7 +158,7 @@ def test_timer():
 
 def test_minloc():
 
-    from My_AutoML._utils._base import minloc
+    from InsurAutoML._utils._base import minloc
 
     assert (
         minloc([4, 2, 6, 2, 1]) == 4
@@ -167,7 +167,7 @@ def test_minloc():
 
 def test_maxloc():
 
-    from My_AutoML._utils._base import maxloc
+    from InsurAutoML._utils._base import maxloc
 
     assert (
         maxloc([4, 2, 6, 2, 1]) == 2
@@ -176,7 +176,7 @@ def test_maxloc():
 
 def test_True_index():
 
-    from My_AutoML._utils._base import True_index
+    from InsurAutoML._utils._base import True_index
 
     assert True_index([True, False, 1, 0, "hello", 5]) == [
         0,
@@ -188,7 +188,7 @@ def test_True_index():
 
 def test_type_of_script():
 
-    from My_AutoML._utils._base import type_of_script
+    from InsurAutoML._utils._base import type_of_script
 
     assert (
         type_of_script() == "terminal"
@@ -197,7 +197,7 @@ def test_type_of_script():
 
 def test_has_method():
 
-    from My_AutoML._utils._base import has_method
+    from InsurAutoML._utils._base import has_method
     from sklearn.linear_model import LogisticRegression
 
     mol = LogisticRegression()
@@ -208,7 +208,7 @@ def test_has_method():
 
 def test_is_none():
 
-    from My_AutoML._utils._base import is_none
+    from InsurAutoML._utils._base import is_none
 
     assert is_none(None) == True, "The is_none function is not correct."
     assert is_none("not none") == False, "The is_none function is not correct."
