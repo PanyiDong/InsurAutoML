@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:48:21 pm
+Last Modified: Monday, 24th October 2022 11:19:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,6 +41,7 @@ import sys
 import glob
 import logging
 import importlib
+import subprocess
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command import build_ext
@@ -62,6 +63,17 @@ except ImportError:
 
         return cythonize(*args, **kwargs)
 
+
+# Automatically get release version
+InsurAutoML_version = (
+    subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE)
+    .stdout.decode("utf-8")
+    .strip()
+)
+
+assert os.path.isfile("cf_remote/version.py")
+with open("cf_remote/VERSION", "w", encoding="utf-8") as fh:
+    fh.write("%s\n" % InsurAutoML_version)
 
 INSTALL_LIST = [
     "setuptools==59.5.0",
@@ -130,7 +142,7 @@ SETUP_REQUIRES = [
 
 SETUP_ARGS = {
     "name": "InsurAutoML",
-    "version": "0.2.1",
+    "version": InsurAutoML_version,
     "author": "Panyi Dong",
     "url": "https://github.com/PanyiDong/My_AutoML",
     "author_email": "panyid2@illinois.edu",

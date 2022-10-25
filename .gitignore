@@ -9,6 +9,7 @@ tmp/
 build/
 dist/
 My_AutoML.egg-info/
+InsurAutoML.egg-info/
 .coverage
 htmlcov/*
 .ipynb_checkpoints/
