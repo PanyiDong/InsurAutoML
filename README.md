@@ -1,6 +1,6 @@
 # Project for Auto Machine Learning (AutoML)
 
-[![Linux](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build.yml) [![Windows](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-windows.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-windows.yml) [![release](https://img.shields.io/github/v/release/PanyiDong/My_AutoML)](https://img.shields.io/github/v/release/PanyiDong/My_AutoML) [![codecov](https://codecov.io/gh/PanyiDong/My_AutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/My_AutoML)  [![build-nn](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml/badge.svg)](https://github.com/PanyiDong/My_AutoML/actions/workflows/build-nn.yml)
+[![Linux](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml) [![Windows](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml) [![release](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML)](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML) [![codecov](https://codecov.io/gh/PanyiDong/InsurAutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/InsurAutoML) 
 
 IRisk Lab Project, UIUC, Fall 2021
 
@@ -12,30 +12,38 @@ The project aims to create a AutoML package with special focus on insurance data
 
 System Requirements:
 
-- Linux (write and test on Ubuntu 20.04) and Windows (Windows is now compatible but may suffer from efficiency and system problems)
+- Linux (write and test on Ubuntu 20.04) and Windows (Windows is now compatible)
 
 - As all trials are running parallelized, more threads (correspondingly, more memory) will increase the training efficiency
 
-- `gcc` is required for compilation (write and test on 9.4.0)
-
-- `pip`, `git` is required for installation
+- `pip` is required for installation (`git` for building from source)
   
 - Python version: should support version >= 3.7 (write and test on `3.8` and `3.9`)
   
-- If neural network is required, please use GPU supported device
+- If neural network is required, GPU supported device will increase the training efficiency
 
-## Usage
+## Installation
 
-### 1. Clone the repository
+### 1. Install from `pip`
 
 Open a command terminal.
 
 ```console
-git clone https://github.com/PanyiDong/My_AutoML.git
-cd My_AutoML
+pip install InsurAutoML
 ```
 
-### 2. Install dependencies
+### 2. Build from source
+
+#### 1. Clone the repository
+
+Open a command terminal.
+
+```console
+git clone https://github.com/PanyiDong/InsurAutoML.git
+cd InsurAutoML
+```
+
+#### 2. Install dependencies
 
 #### install by `setup.py`
 
@@ -55,17 +63,23 @@ At this moment, `normal` contains few more ML packages that allows testing on a 
 pip install -r requirements.txt
 ```
 
-For neural network related support (need `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
+For neural network related support (recommended for `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
 
 > NOTE: 1. For Windows, the installation of `rpy2` is not straightforward, so it may not actually useable, but it's in-built here in `requirements.txt`. If Windows user install through `setup.py`, it will not be included.
 
-### 3. Put data in the folder and run for training/evaluation
+## Usage
+
+### 1. Put data in the folder and run for training/evaluation
 
 Example below runs a classification task on `heart.csv` file in `example/example_data` folder
 
 `train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
 
 Your can specify the data folder (or by default at current folder), test_data name (or evaluation set will be split from train_data), evaluation metrics and all model parameters by arguments.
+
+### 2. Run experiments
+
+In the command terminal:
 
 ```console
 python main.py --data_folder example/example_data --train_data heart --response HeartDisease
@@ -80,7 +94,7 @@ python main.py --data_folder example/example_data --train_data insurance --respo
 Or, you can treat it like a package and follows the fit/predict workflow like jupyter notebooks in `examples`.
 
 ```python
-from My_AutoML import AutoTabular
+from InsurAutoML import AutoTabular
 model = AutoTabular()
 model.fit(train_X, train_y)
 
@@ -92,7 +106,7 @@ By default, progress reporter `CLIReporter` is prepared for terminal/command-lik
 Moreover, in current version, model selection and hyperparameter optimization is achieved by `ray.tune`. However, if you still need previous `HyperOpt` version, you can call as:
 
 ```python
-from My_AutoML._legacy import AutoTabular
+from InsurAutoML._legacy import AutoTabular
 model = AutoTabular()
 model.fit(train_X, train_y)
 
@@ -175,4 +189,4 @@ Other files in the repository:
 
 ## Future
 
-I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure AutoML for tabular tasks/NLP tasks (it's available now for tabular tasks). But no schedules for such progress can be made.
+I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure AutoML for tabular tasks/NLP tasks (it's available now for tabular tasks). Furthermore, explore the topics in explainability, fairness of ML models. But no schedules for such progress can be made.
