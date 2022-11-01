@@ -10,7 +10,7 @@
     },
     "main": "main.py",
     "private": false,
-    "version": "0.2.2.3",
+    "version": ".2.2.11",
     "description": "Automated Machine Learning/AutoML pipeline.",
     "install_requires": [
         "setuptools==59.5.0",
@@ -37,19 +37,19 @@
     "extras_require": {
         "lightweight": [],
         "normal": [
-            "rpy2;platform_system=='Linux'",
             "lightgbm",
             "xgboost",
-            "pygam"
+            "pygam",
+            "rpy2"
         ],
         "nn": [
-            "rpy2;platform_system=='Linux'",
             "gensim",
             "lightgbm",
             "xgboost",
             "pygam",
             "torch",
-            "nni"
+            "nni",
+            "rpy2"
         ]
     }
 }
