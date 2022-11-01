@@ -30,4 +30,8 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           python setup.py sdist bdist_wheel
+
+          # remove original zip files (uploaded by Linux version)
+          rm -r -f dist/*.tar.gz
+
           twine upload dist/*
