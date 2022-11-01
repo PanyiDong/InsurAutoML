@@ -1,12 +1,11 @@
-name: Windows
+name: nn_test
 on:
   - pull_request
-  - push
 jobs:
   run:
-    runs-on: windows-latest
+    runs-on: self-hosted
     env:
-      OS: windows-latest
+      OS: ubuntu-latest
       PYTHON: "3.9"
     steps:
       - uses: actions/checkout@master
@@ -14,7 +13,8 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: 3.9
-      - name: "run tests (without neural network)"
+      - name: "run tests (with neural network)"
         run: |
           pip install pytest
-          pip install -e .[normal]
+          pip install -e .[nn]
+          pytest tests/

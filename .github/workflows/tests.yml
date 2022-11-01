@@ -1,12 +1,11 @@
-name: Windows
+name: Linux_test
 on:
   - pull_request
-  - push
 jobs:
   run:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     env:
-      OS: windows-latest
+      OS: ubuntu-latest
       PYTHON: "3.9"
     steps:
       - uses: actions/checkout@master
@@ -18,3 +17,4 @@ jobs:
         run: |
           pip install pytest
           pip install -e .[normal]
+          pytest tests/

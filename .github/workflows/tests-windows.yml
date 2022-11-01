@@ -1,7 +1,6 @@
-name: Windows
+name: Windows_test
 on:
   - pull_request
-  - push
 jobs:
   run:
     runs-on: windows-latest
@@ -18,3 +17,4 @@ jobs:
         run: |
           pip install pytest
           pip install -e .[normal]
+          pytest tests/

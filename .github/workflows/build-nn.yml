@@ -1,4 +1,4 @@
-name: build-nn
+name: NN
 on:
   - pull_request
 jobs:
@@ -17,4 +17,3 @@ jobs:
         run: |
           pip install pytest
           pip install -e .[nn]
-          # pytest tests/
