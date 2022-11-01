@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.0.2
+Project: InsurAutoML
+Latest Version: 0.2.2.2
 Relative Path: /setup.py
-File Created: Friday, 4th March 2022 11:33:55 pm
+File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 31st October 2022 11:19:31 pm
+Last Modified: Monday, 31st October 2022 11:50:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,19 +69,22 @@ except ImportError:
 InsurAutoML_version = (
     subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE)
     .stdout.decode("utf-8")
-    .strip()
+    .strip()[1:]  # remove the first character 'v'
 )
+# get only the version release number in case push is attached
 InsurAutoML_version = (
     InsurAutoML_version.split("-")[0]
     if "-" in InsurAutoML_version
     else InsurAutoML_version
 )
 
-
+# assert version file
 assert os.path.isfile("InsurAutoML/version.py")
+# write version to VERSION file
 with open("InsurAutoML/VERSION", "w", encoding="utf-8") as fh:
     fh.write("%s\n" % InsurAutoML_version)
 
+# Constant variables
 INSTALL_LIST = [
     "setuptools==59.5.0",
     "cython",
@@ -163,6 +166,8 @@ EXT_MODULES = []
 
 def setup_package():
 
+    # global dep_list
+
     setup(
         packages=find_packages(
             exclude=EXCLUDE_LIST,
@@ -179,7 +184,10 @@ def setup_package():
         **SETUP_ARGS,
     )
 
+    # dep_list = setup.install_requires + setup.extras_require
 
+
+# torch extensions build (not used at this moment)
 def build_torch_extensions():
 
     torch_extensions = []
@@ -238,6 +246,7 @@ class CythonExt(Extension):
         self._include = dirs
 
 
+# cython extension build
 def build_cython_extensions():
 
     # import numpy
@@ -261,6 +270,7 @@ def build_cython_extensions():
     return cython_extensions
 
 
+# prepare for package.json file
 def get_package():
 
     result = {}
@@ -277,13 +287,37 @@ def get_package():
     result["private"] = False
     result["version"] = SETUP_ARGS["version"]
     result["description"] = SETUP_ARGS["description"]
-    result["dependencies"] = INSTALL_LIST
+    result["install_requires"] = INSTALL_LIST
+    result["extras_require"] = EXTRA_DICT
 
     if os.path.exists("package.json"):
         os.remove("package.json")
 
     with open("package.json", "w") as f:
         json.dump(result, f, indent=4)
+
+
+def get_requirements():
+
+    if os.path.exists("requirements.txt"):
+        os.remove("requirements.txt")
+
+    with open(r"requirements.txt", "w") as fp:
+        dep_list = [item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["normal"]]
+        dep_list = list(set(dep_list))
+        for item in dep_list:
+            # write each item on a new line
+            fp.write("%s\n" % item)
+
+    if os.path.exists("requirements_nn.txt"):
+        os.remove("requirements_nn.txt")
+
+    with open(r"requirements_nn.txt", "w") as fp:
+        dep_list = [item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["nn"]]
+        dep_list = list(set(dep_list))
+        for item in dep_list:
+            # write each item on a new line
+            fp.write("%s\n" % item)
 
 
 def main():
@@ -304,5 +338,7 @@ def main():
 
 
 if __name__ == "__main__":
-    get_package()
+
+    get_requirements()
     main()
+    get_package()
