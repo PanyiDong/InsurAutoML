@@ -31,6 +31,12 @@ jobs:
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
           python setup.py sdist bdist_wheel
-          auditwheel repair [[lib]]-linux_x86_64.whl -w . --plat manylinux_2_24_x86_64
-          twine upload [[lib]]-manylinux_2_24_x86_64.whl
-          # twine upload dist/*
+
+          # build manylinux wheel
+          auditwheel repair dist/*-linux_x86_64.whl -w dist/ --plat manylinux_2_24_x86_64
+          # auditwheel repair dist/*.whl
+          # remove original whl files
+          rm -r -f dist/*-linux_x86_64.whl
+
+          # twine upload [[lib]]-manylinux_2_24_x86_64.whl
+          twine upload dist/*
