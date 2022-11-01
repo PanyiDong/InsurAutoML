@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 31st October 2022 11:01:31 pm
+Last Modified: Monday, 31st October 2022 11:19:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -71,6 +71,12 @@ InsurAutoML_version = (
     .stdout.decode("utf-8")
     .strip()
 )
+InsurAutoML_version = (
+    InsurAutoML_version.split("-")[0]
+    if "-" in InsurAutoML_version
+    else InsurAutoML_version
+)
+
 
 assert os.path.isfile("InsurAutoML/version.py")
 with open("InsurAutoML/VERSION", "w", encoding="utf-8") as fh:

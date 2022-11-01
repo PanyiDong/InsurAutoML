@@ -10,7 +10,7 @@
     },
     "main": "main.py",
     "private": false,
-    "version": "v0.2.2.2-2-g21eba02",
+    "version": "v0.2.2.2",
     "description": "Automated Machine Learning/AutoML pipeline.",
     "dependencies": [
         "setuptools==59.5.0",
