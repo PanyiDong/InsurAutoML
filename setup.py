@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.2.2
+Latest Version: 0.2.2.3
 Relative Path: /setup.py
 File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 31st October 2022 11:50:00 pm
+Last Modified: Tuesday, 1st November 2022 1:25:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
