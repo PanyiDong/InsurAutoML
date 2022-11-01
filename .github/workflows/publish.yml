@@ -57,8 +57,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine cython auditwheel patchelf>=0.14
-          # sudo apt-get install patchelf
+          pip install setuptools wheel twine cython
       - name: Build # and publish
         # env:
         #   TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
