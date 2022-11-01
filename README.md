@@ -65,7 +65,7 @@ pip install -r requirements.txt
 
 For neural network related support (recommended for `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
 
-> NOTE: 1. For Windows, the installation of `rpy2` is not straightforward, so it may not actually useable, but it's in-built here in `requirements.txt`. If Windows user install through `setup.py`, it will not be included.
+> NOTE: 1. The installation of `rpy2` is not straightforward, so it may not actually useable, but it's in-built here in `requirements.txt`. If user install through `setup.py`, it will not be included if R is not installed (through the environment variable `R_HOME`).
 
 ## Usage
 

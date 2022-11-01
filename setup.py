@@ -11,7 +11,7 @@ File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 1st November 2022 1:25:01 pm
+Last Modified: Tuesday, 1st November 2022 2:42:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,6 +43,7 @@ import json
 import logging
 import importlib
 import subprocess
+from typing import Optional
 
 from setuptools import setup, find_packages, Extension
 from setuptools.command import build_ext
@@ -63,7 +64,6 @@ except ImportError:
         from Cython.Build import cythonize
 
         return cythonize(*args, **kwargs)
-
 
 # Automatically get release version
 InsurAutoML_version = (
@@ -113,13 +113,13 @@ INSTALL_LIST = [
 EXTRA_DICT = {
     "lightweight": [],
     "normal": [
-        "rpy2;platform_system=='Linux'",
+        # "rpy2;platform_system=='Linux'",
         "lightgbm",
         "xgboost",
         "pygam",
     ],
     "nn": [
-        "rpy2;platform_system=='Linux'",
+        # "rpy2;platform_system=='Linux'",
         "gensim",
         "lightgbm",
         "xgboost",
@@ -130,6 +130,105 @@ EXTRA_DICT = {
         # "datasets",
     ],
 }
+
+# check R installation
+def r_home_from_subprocess() -> Optional[str]:
+    """Return the R home directory from calling 'R RHOME'."""
+    cmd = ('R', 'RHOME')
+    log.debug('Looking for R home with: {}'.format(' '.join(cmd)))
+    try:
+        tmp = subprocess.check_output(cmd, universal_newlines=True)
+    except Exception as e:  # FileNotFoundError, WindowsError, etc
+        log.error(f'Unable to determine R home: {e}')
+        return None
+    r_home = tmp.split(os.linesep)
+    if r_home[0].startswith('WARNING'):
+        res = r_home[1]
+    else:
+        res = r_home[0].strip()
+    return res
+
+
+# TODO: move all Windows all code into an os-specific module ?
+def r_home_from_registry() -> Optional[str]:
+    """Return the R home directory from the Windows Registry."""
+    from packaging.version import Version
+    try:
+        import winreg  # type: ignore
+    except ImportError:
+        import _winreg as winreg  # type: ignore
+    # There are two possible locations for RHOME in the registry
+    # We prefer the user installation (which the user has more control
+    # over). Thus, HKEY_CURRENT_USER is the first item in the list and
+    # the for-loop breaks at the first hit.
+    for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
+        try:
+            with winreg.OpenKeyEx(w_hkey, 'Software\\R-core\\R') as hkey:
+
+                # >v4.x.x: grab the highest version installed
+                def get_version(i):
+                    try:
+                        return Version(winreg.EnumKey(hkey, i))
+                    except Exception:
+                        return None
+
+                latest = max(
+                    (v for v in (get_version(i)
+                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
+                     if v is not None)
+                )
+
+                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
+                    r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
+
+                # check for an earlier version
+                if not r_home:
+                    r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+        except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
+            pass
+        else:
+            # We have a path RHOME
+            if sys.version_info[0] == 2:
+                # Python 2 path compatibility
+                r_home = r_home.encode(sys.getfilesystemencoding())
+            # Break the loop, because we have a hit.
+            break
+    else:
+        # for-loop did not break - RHOME is unknown.
+        log.error('Unable to determine R home.')
+        r_home = None
+    return 
+
+def get_r_home() -> Optional[str]:
+    """Get R's home directory (aka R_HOME).
+    If an environment variable R_HOME is found it is returned,
+    and if none is found it is trying to get it from an R executable
+    in the PATH. On Windows, a third last attempt is made by trying
+    to obtain R_HOME from the registry. If all attempt are unfruitful,
+    None is returned.
+    """
+
+    r_home = os.environ.get('R_HOME')
+
+    if not r_home:
+        r_home = r_home_from_subprocess()
+    if not r_home and os.name == 'nt':
+        r_home = r_home_from_registry()
+    log.info(f'R home found: {r_home}')
+    return r_home
+
+# get R Home environment variable
+# if found, install rpy2
+# otherwise, do not install rpy2
+R_HOME = get_r_home()
+if not R_HOME:
+    raise RuntimeError("""The R home directory could not be determined.""")
+
+if not os.environ.get("R_HOME"):
+    os.environ['R_HOME'] = R_HOME
+    EXTRA_DICT["normal"].append("rpy2")
+    EXTRA_DICT["nn"].append("rpy2")
+
 
 DATA_LIST = ["Appendix/*", "example/*"]
 
