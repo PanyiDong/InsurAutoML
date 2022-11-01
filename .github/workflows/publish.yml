@@ -86,7 +86,6 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: artifact
-          path: /dist
 
       - name: Setup Python
         uses: actions/setup-python@v4
@@ -97,8 +96,9 @@ jobs:
           pip install twine
 
           # unzip artifact
+          mkdir dist
           sudo apt-get install zip unzip
-          unzip dist/artifact.zip -d dist/
+          unzip artifact.zip -d dist/
 
       - name: Publish to PyPI
         env:
