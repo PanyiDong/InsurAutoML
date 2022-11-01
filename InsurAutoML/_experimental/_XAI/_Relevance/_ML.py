@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_experimental/_XAI/_LRP/_ML.py
-File Created: Monday, 24th October 2022 10:22:28 pm
+Project: InsurAutoML
+Latest Version: 0.2.2.2
+Relative Path: /InsurAutoML/_experimental/_XAI/_Relevance/_ML.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:46:21 pm
+Last Modified: Tuesday, 25th October 2022 5:32:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,8 +39,9 @@ SOFTWARE.
 """
 
 from sklearn.linear_model import LinearRegression
+import pandas as pd
 
-
+# linear regression with relevance attached
 class LinearRegressor(LinearRegression):
     def __init__(
         self,
@@ -58,14 +59,6 @@ class LinearRegressor(LinearRegression):
 
     def predict(self, X):
         return super().predict(X)
-
-    @property
-    def feature_names(self):
-
-        if hasattr(self, "_feature_names"):
-            return self._feature_names
-        else:
-            raise AttributeError("No feature names found")
 
     def format(self, relevance, how="absolute"):
 
@@ -92,3 +85,11 @@ class LinearRegressor(LinearRegression):
             self.format(self.relevance, how=how)
         else:
             return self.relevance
+
+    @property
+    def feature_names(self):
+
+        if hasattr(self, "_feature_names"):
+            return self._feature_names
+        else:
+            raise AttributeError("No feature names found")

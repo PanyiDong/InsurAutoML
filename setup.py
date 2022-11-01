@@ -11,7 +11,7 @@ File Created: Friday, 4th March 2022 11:33:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 11:29:08 pm
+Last Modified: Monday, 31st October 2022 11:01:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,7 @@ SOFTWARE.
 import os
 import sys
 import glob
+import json
 import logging
 import importlib
 import subprocess
@@ -144,7 +145,7 @@ SETUP_ARGS = {
     "name": "InsurAutoML",
     "version": InsurAutoML_version,
     "author": "Panyi Dong",
-    "url": "https://github.com/PanyiDong/My_AutoML",
+    "url": "https://github.com/PanyiDong/InsurAutoML",
     "author_email": "panyid2@illinois.edu",
     "description": "Automated Machine Learning/AutoML pipeline.",
     "license": "MIT",
@@ -160,9 +161,9 @@ def setup_package():
         packages=find_packages(
             exclude=EXCLUDE_LIST,
         ),
-        package_dir={"My_AutoML": "InsurAutoML"},
+        package_dir={"InsurAutoML": "InsurAutoML"},
         include_package_data=True,
-        package_data={"My_AutoML": DATA_LIST},
+        package_data={"InsurAutoML": DATA_LIST},
         platforms=["Linux", "Windows", "MacOS"],
         python_requires=">=3.7",
         install_requires=INSTALL_LIST,
@@ -254,6 +255,31 @@ def build_cython_extensions():
     return cython_extensions
 
 
+def get_package():
+
+    result = {}
+    result["name"] = SETUP_ARGS["name"]
+    result["author"] = {
+        "name": SETUP_ARGS["author"],
+        "email": SETUP_ARGS["author_email"],
+    }
+    result["repository"] = {
+        "type": "git",
+        "url": SETUP_ARGS["url"],
+    }
+    result["main"] = "main.py"
+    result["private"] = False
+    result["version"] = SETUP_ARGS["version"]
+    result["description"] = SETUP_ARGS["description"]
+    result["dependencies"] = INSTALL_LIST
+
+    if os.path.exists("package.json"):
+        os.remove("package.json")
+
+    with open("package.json", "w") as f:
+        json.dump(result, f, indent=4)
+
+
 def main():
 
     # # check whether need to build pytorch extensions
@@ -272,4 +298,5 @@ def main():
 
 
 if __name__ == "__main__":
+    get_package()
     main()
