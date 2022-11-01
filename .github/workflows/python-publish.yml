@@ -8,7 +8,7 @@ on:
     types:
       - published
   pull_request:
-  push:
+  # push:
 
 jobs:
   deploy:
