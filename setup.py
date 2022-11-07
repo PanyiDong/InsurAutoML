@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.2.3
+Latest Version: .2.2.11
 Relative Path: /setup.py
 File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 1st November 2022 2:42:20 pm
+Last Modified: Tuesday, 1st November 2022 3:28:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -229,7 +229,6 @@ if not os.environ.get("R_HOME"):
     EXTRA_DICT["normal"].append("rpy2")
     EXTRA_DICT["nn"].append("rpy2")
 
-
 DATA_LIST = ["Appendix/*", "example/*"]
 
 EXCLUDE_LIST = [
@@ -262,6 +261,11 @@ SETUP_ARGS = {
 }
 EXT_MODULES = []
 
+# get long description
+from pathlib import Path
+this_directory = Path(__file__).parent
+long_description = (this_directory / "README.md").read_text()
+
 
 def setup_package():
 
@@ -275,6 +279,8 @@ def setup_package():
         include_package_data=True,
         package_data={"InsurAutoML": DATA_LIST},
         platforms=["Linux", "Windows", "MacOS"],
+        long_description=long_description,
+        long_description_content_type='text/markdown',
         python_requires=">=3.7",
         install_requires=INSTALL_LIST,
         extras_require=EXTRA_DICT,
