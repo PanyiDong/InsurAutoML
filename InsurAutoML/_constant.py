@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_constant.py
-File Created: Sunday, 10th April 2022 4:50:47 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_constant.py
+File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 27th April 2022 5:53:01 pm
+Last Modified: Tuesday, 8th November 2022 10:57:13 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -229,3 +229,13 @@ REGRESSION_CRITERIA = [
     "neg_R2",
     "MAX",
 ]
+
+# methods corresponding process must have
+METHOD_MAPPING = {
+    "encoder": ["fit", "refit"],
+    "imputer": ["fill"],
+    "balancing": ["fit_transform"],
+    "scaling": ["fit", "transform", "fit_transform"],
+    "feature_selection": ["fit", "transform"],
+    "model": ["fit", "predict"],
+}

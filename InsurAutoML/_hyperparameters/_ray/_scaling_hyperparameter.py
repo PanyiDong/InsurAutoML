@@ -11,7 +11,7 @@ File: _scaling_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 8:49:18 pm
+Last Modified: Tuesday, 8th November 2022 10:21:55 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -70,10 +70,11 @@ scaling_hyperparameter = [
     FEATURETRUNCATION,
 ]
 
-scaling_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "scaling") 
-    for order, dict in enumerate(scaling_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# scaling_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "scaling") 
+#     for order, dict in enumerate(scaling_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

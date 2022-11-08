@@ -11,7 +11,7 @@ File: _encoder_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 3:50:04 pm
+Last Modified: Tuesday, 8th November 2022 10:22:08 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,10 +53,11 @@ encoder_hyperparameter = [
     DATAENCODING,
 ]
 
-encoder_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "encoder") 
-    for order, dict in enumerate(encoder_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# encoder_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "encoder") 
+#     for order, dict in enumerate(encoder_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

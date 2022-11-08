@@ -11,7 +11,7 @@ File: _feature_selection_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 9:21:00 pm
+Last Modified: Tuesday, 8th November 2022 10:22:01 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -283,10 +283,11 @@ feature_selection_hyperparameter = [
     # FOCI, # tend to get no feature selected
 ]
 
-feature_selection_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "feature_selection")
-    for order, dict in enumerate(feature_selection_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# feature_selection_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "feature_selection")
+#     for order, dict in enumerate(feature_selection_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

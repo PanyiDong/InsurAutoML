@@ -11,7 +11,7 @@ File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 4:44:03 pm
+Last Modified: Tuesday, 8th November 2022 10:22:13 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -346,10 +346,11 @@ classifier_hyperparameter = [
     GAMCLASSIFIER,
 ]
 
-classifier_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "model")
-    for order, dict in enumerate(classifier_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# classifier_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "model")
+#     for order, dict in enumerate(classifier_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

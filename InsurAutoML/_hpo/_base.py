@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 8:37:21 pm
+Last Modified: Tuesday, 8th November 2022 3:05:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -59,7 +59,10 @@ from InsurAutoML._hpo._utils import (
 )
 from InsurAutoML._constant import UNI_CLASS, MAX_TIME
 from InsurAutoML._base import no_processing
-from InsurAutoML._utils._base import type_of_script
+from InsurAutoML._utils._base import (
+    type_of_script,
+    format_hyper_dict
+)
 from InsurAutoML._utils._file import (
     save_methods,
     load_methods,
@@ -535,7 +538,7 @@ class AutoTabularBase:
             feature_selection_hyperparameter,
             classifier_hyperparameter,
             regressor_hyperparameter,
-        )
+        )            
 
         from additional import (
             add_encoder_hyperparameter,
@@ -559,7 +562,7 @@ class AutoTabularBase:
 
         # all hyperparameters for imputers
         if "no_processing" in imputer.keys() :
-            _all_imputers_hyperparameters = [{"imputer_0": "no_processing"}]
+            _all_imputers_hyperparameters = [{"imputer": "no_processing"}]
         else :
             _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
         # include additional hyperparameters
@@ -600,8 +603,8 @@ class AutoTabularBase:
                         CLASSIFICATION_CRITERIA,
                     )
 
-                    item["SFS_estimator"] = tune.choice(CLASSIFICATION_ESTIMATORS)
-                    item["SFS_criteria"] = tune.choice(CLASSIFICATION_CRITERIA)
+                    item["estimator"] = tune.choice(CLASSIFICATION_ESTIMATORS)
+                    item["criteria"] = tune.choice(CLASSIFICATION_CRITERIA)
                     break
         elif self.task_mode == "regression":
             for item in _all_feature_selection_hyperparameters:
@@ -611,8 +614,8 @@ class AutoTabularBase:
                         REGRESSION_CRITERIA,
                     )
 
-                    item["SFS_estimator"] = tune.choice(REGRESSION_ESTIMATORS)
-                    item["SFS_criteria"] = tune.choice(REGRESSION_CRITERIA)
+                    item["estimator"] = tune.choice(REGRESSION_ESTIMATORS)
+                    item["criteria"] = tune.choice(REGRESSION_CRITERIA)
                     break
 
         # # initialize feature selection hyperparameter space
@@ -641,7 +644,7 @@ class AutoTabularBase:
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
                         from InsurAutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
 
-                        item["LightGBM_Classifier_objective"] = tune.choice(
+                        item["objective"] = tune.choice(
                             LIGHTGBM_BINARY_CLASSIFICATION
                         )
                     else:
@@ -649,7 +652,7 @@ class AutoTabularBase:
                             LIGHTGBM_MULTICLASS_CLASSIFICATION,
                         )
 
-                        item["LightGBM_Classifier_objective"] = tune.choice(
+                        item["objective"] = tune.choice(
                             LIGHTGBM_MULTICLASS_CLASSIFICATION
                         )
                         
@@ -660,7 +663,33 @@ class AutoTabularBase:
         check_status(scaling, _all_scalings_hyperparameters, ref = "scaling")
         check_status(feature_selection, _all_feature_selection_hyperparameters, ref = "feature_selection")
         check_status(models, _all_models_hyperparameters, ref = "model")
-
+                        
+        # format default search space
+        _all_encoders_hyperparameters = [
+            format_hyper_dict(dict, order + 1, ref = "encoder", search_algo = self.search_algo)
+            for order, dict in enumerate(_all_encoders_hyperparameters)
+        ]
+        _all_imputers_hyperparameters = [
+            format_hyper_dict(dict, order + 1, ref = "imputer", search_algo = self.search_algo)
+            for order, dict in enumerate(_all_imputers_hyperparameters)
+        ]
+        _all_balancings_hyperparameters = [
+            format_hyper_dict(dict, order + 1, ref = "balancing", search_algo = self.search_algo)
+            for order, dict in enumerate(_all_balancings_hyperparameters)
+        ]
+        _all_scalings_hyperparameters = [
+            format_hyper_dict(dict, order + 1, ref = "scaling", search_algo = self.search_algo)
+            for order, dict in enumerate(_all_scalings_hyperparameters)
+        ]
+        _all_feature_selection_hyperparameters = [
+            format_hyper_dict(dict, order + 1, ref = "feature_selection", search_algo = self.search_algo)
+            for order, dict in enumerate(_all_feature_selection_hyperparameters)
+        ]
+        _all_models_hyperparameters = [
+            format_hyper_dict(dict, order + 1, ref = "model", search_algo = self.search_algo)
+            for order, dict in enumerate(_all_models_hyperparameters)
+        ]
+                        
         # generate the hyperparameter space
         hyperparameter_space = _get_hyperparameter_space(
             X,
@@ -677,6 +706,7 @@ class AutoTabularBase:
             _all_models_hyperparameters,
             models,
             self.task_mode,
+            self.search_algo,
         )  # _X to choose whether include imputer
         # others are the combinations of default hyperparameter space & methods selected
 
@@ -1355,32 +1385,64 @@ class AutoTabularBase:
 
             # optimization process
             # partially activated objective function
-            fit_analysis = tune.run(
-                trainer,
-                config=hyperparameter_space,
-                name=self.model_name,  # name of the tuning process, use model_name
-                resume="AUTO",
-                checkpoint_freq=8,  # disable checkpoint
-                checkpoint_at_end=True,
-                keep_checkpoints_num=4,
-                checkpoint_score_attr="loss",
-                mode="min",  # always call a minimization process
-                search_alg=algo(**self.search_algo_settings),
-                scheduler=scheduler(**self.search_scheduler_settings),
-                reuse_actors=True,
-                raise_on_failed_trial=False,
-                metric="loss",
-                num_samples=self.max_evals,
-                max_failures=self.max_error,
-                stop=stopper,  # use stopper
-                callbacks=logger,
-                # time_budget_s=self.timeout,  # included in stopper
-                progress_reporter=progress_reporter,
-                verbose=self.verbose,
-                trial_dirname_creator=trial_str_creator,
-                local_dir=self.sub_directory,
-                log_to_file=True,
-            )
+            # special treatment for optuna, embed search space in search algorithm
+            if self.search_algo in ["Optuna"] :
+                fit_analysis = tune.run(
+                    trainer,
+                    # config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(
+                        hyperparameter_space,
+                        **self.search_algo_settings
+                    ),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
+            else :
+                fit_analysis = tune.run(
+                    trainer,
+                    config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(**self.search_algo_settings),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
 
             # shut down ray
             # ray.shutdown()
@@ -1440,35 +1502,69 @@ class AutoTabularBase:
 
             # subtrial directory
             self.sub_directory = self.temp_directory
-
+            
             # optimization process
             # partially activated objective function
-            fit_analysis = tune.run(
-                trainer,
-                config=hyperparameter_space,
-                name=self.model_name,  # name of the tuning process, use model_name
-                resume="AUTO",
-                checkpoint_freq=8,  # disable checkpoint
-                checkpoint_at_end=True,
-                keep_checkpoints_num=4,
-                checkpoint_score_attr="loss",
-                mode="min",  # always call a minimization process
-                search_alg=algo(**self.search_algo_settings),
-                scheduler=scheduler(**self.search_scheduler_settings),
-                reuse_actors=True,
-                raise_on_failed_trial=False,
-                metric="loss",
-                num_samples=self.max_evals,
-                max_failures=self.max_error,
-                stop=stopper,  # use stopper
-                callbacks=logger,
-                # time_budget_s=self.timeout,  # included in stopper
-                progress_reporter=progress_reporter,
-                verbose=self.verbose,
-                trial_dirname_creator=trial_str_creator,
-                local_dir=self.sub_directory,
-                log_to_file=True,
-            )
+            # special treatment for optuna, embed search space in search algorithm
+            if self.search_algo in ["Optuna"] :
+                fit_analysis = tune.run(
+                    trainer,
+                    # config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    # mode="min",  # always call a minimization process
+                    search_alg=algo(
+                        hyperparameter_space,
+                        mode="min",  # always call a minimization process
+                        metric="loss",
+                        **self.search_algo_settings
+                    ),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    # metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
+            else :
+                fit_analysis = tune.run(
+                    trainer,
+                    config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(**self.search_algo_settings),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
 
             # shut down ray
             rayStatus.ray_shutdown()
@@ -1554,36 +1650,74 @@ class AutoTabularBase:
 
                 # optimization process
                 # partially activated objective function
-                fit_analysis = tune.run(
-                    trainer,
-                    config=hyperparameter_space,
-                    name=self.model_name
-                    + "_"
-                    + self.ensemble_strategy
-                    + "_"
-                    + str(_n + 1),  # name of the tuning process, use model_name
-                    resume="AUTO",
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(**self.search_algo_settings),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=True,
-                )
+                # special treatment for optuna, embed search space in search algorithm
+                if self.search_algo in ["Optuna"] :
+                    fit_analysis = tune.run(
+                        trainer,
+                        # config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        # mode="min",  # always call a minimization process
+                        search_alg=algo(
+                            hyperparameter_space,
+                            metric="loss",
+                            mode="min",  # always call a minimization process
+                            **self.search_algo_settings
+                        ),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        # metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
+                else :
+                    fit_analysis = tune.run(
+                        trainer,
+                        config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        mode="min",  # always call a minimization process
+                        search_alg=algo(**self.search_algo_settings),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
 
                 # shut down ray
                 rayStatus.ray_shutdown()
@@ -1658,36 +1792,73 @@ class AutoTabularBase:
 
                 # optimization process
                 # partially activated objective function
-                fit_analysis = tune.run(
-                    trainer,
-                    config=hyperparameter_space,
-                    name=self.model_name
-                    + "_"
-                    + self.ensemble_strategy
-                    + "_"
-                    + str(_n + 1),  # name of the tuning process, use model_name
-                    resume="AUTO",
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(**self.search_algo_settings),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=True,
-                )
+                if self.search_algo in ["Optuna"] :
+                    fit_analysis = tune.run(
+                        trainer,
+                        # config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        # mode="min",  # always call a minimization process
+                        search_alg=algo(
+                            hyperparameter_space,
+                            metric="loss",
+                            mode="min",  # always call a minimization process
+                            **self.search_algo_settings
+                        ),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        # metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
+                else :
+                    fit_analysis = tune.run(
+                        trainer,
+                        config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        mode="min",  # always call a minimization process
+                        search_alg=algo(**self.search_algo_settings),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
 
                 # shut down ray
                 rayStatus.ray_shutdown()

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_scaling/_scaling.py
-File Created: Friday, 25th February 2022 6:13:42 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_scaling/_scaling.py
+File: _scaling.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:50:56 pm
+Last Modified: Tuesday, 8th November 2022 10:33:17 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,6 +65,9 @@ class NoScaling:
         return X
 
     def inverse_transform(self, X):
+        
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
 
         self._fitted = False
         return X
@@ -140,6 +143,9 @@ class Standardize:
         return _X
 
     def inverse_transform(self, X):
+        
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
 
         if self.with_mean:
             X += self._mean
@@ -214,6 +220,9 @@ class Normalize:
         return _X
 
     def inverse_transform(self, X):
+        
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
 
         X *= self._scale
 
@@ -323,6 +332,9 @@ class RobustScale:
         return _X
 
     def inverse_transform(self, X):
+        
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
 
         if self.with_centering:
             X += self._median
@@ -396,6 +408,9 @@ class MinMaxScale:
         return _X
 
     def inverse_transform(self, X):
+        
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
 
         f_min, f_max = self.feature_range
         if not f_min < f_max:
@@ -531,6 +546,13 @@ class PowerTransformer:
         self._fitted = False  # record whether the model has been fitted
 
     def fit(self, X, y=None):
+        
+        # check if the inputs are dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+            
+        # record features and response
+        self.features = list(X.columns)        
 
         from sklearn.preprocessing import PowerTransformer
 
@@ -548,7 +570,7 @@ class PowerTransformer:
 
     def transform(self, X, y=None):
 
-        return self.mol.transform(X)
+        return pd.DataFrame(self.mol.transform(X), columns=self.features)
 
     def fit_transform(self, X, y=None):
 
@@ -559,10 +581,13 @@ class PowerTransformer:
         return self.transform(X)
 
     def inverse_transform(self, X):
+        
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
 
         self._fitted = False
 
-        return self.mol.inverse_transform(X)
+        return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
 
 
 class QuantileTransformer:
@@ -604,6 +629,13 @@ class QuantileTransformer:
         self._fitted = False  # record whether the model has been fitted
 
     def fit(self, X, y=None):
+        
+        # check if the inputs are dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+            
+        # record features and response
+        self.features = list(X.columns)  
 
         # limit max number of quantiles to entries number
         self.n_quantiles = min(self.n_quantiles, X.shape[0])
@@ -627,7 +659,7 @@ class QuantileTransformer:
 
     def transform(self, X, y=None):
 
-        return self.mol.transform(X)
+        return pd.DataFrame(self.mol.transform(X), columns=self.features)
 
     def fit_transform(self, X, y=None):
 
@@ -639,9 +671,12 @@ class QuantileTransformer:
 
     def inverse_transform(self, X):
 
+        if not self._fitted :
+            raise ValueError("Model has not been fitted yet! Can't perform inverse transform.")
+
         self._fitted = False
 
-        return self.mol.inverse_transform(X)
+        return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
 
 
 ####################################################################################################

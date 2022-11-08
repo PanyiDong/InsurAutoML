@@ -11,7 +11,7 @@ File: _imputer_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 3:59:26 pm
+Last Modified: Tuesday, 8th November 2022 10:22:22 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -109,10 +109,11 @@ imputer_hyperparameter = [
     # KPROTOTYPENN,
 ]
 
-imputer_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "imputer") 
-    for order, dict in enumerate(imputer_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# imputer_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "imputer") 
+#     for order, dict in enumerate(imputer_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

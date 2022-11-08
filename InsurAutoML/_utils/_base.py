@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: .2.2.11
+Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_base.py
 File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 2:46:54 pm
+Last Modified: Tuesday, 8th November 2022 4:43:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -283,11 +283,44 @@ def is_none(item, pat=[None, "None", "none", "NONE"]):
         return True
     else:
         return False
-
-# format the output of a hyperparameter dictionary
-def format_hyper_dict(dict, order, ref = "encoder") :
+    
+# format the output of a hyperparameter dictionary by RandomSearch, GridSearch, HyperOpt
+def _hyperopt_format_hyper_dict(dict, order, ref = "encoder") :
     header = dict.pop(ref)
     result = {"{}_{}".format(ref, order): header}
     result.update({header + "_" + str(key): val for key, val in dict.items() if key != ref})
     
     return result
+
+# format the output of a hyperparameter dictionary by Optuna
+def _base_format_hyper_dict(dict, order, ref = "encoder") :
+    
+    return dict
+    
+def format_hyper_dict(dict, order, ref = "encoder", search_algo = "RandomSearch") :
+    if search_algo in ["RandomSearch", "GridSearch", "Optuna"]:
+        return _base_format_hyper_dict(dict, order, ref)
+    elif search_algo in ["HyperOpt"] :
+        return _hyperopt_format_hyper_dict(dict, order, ref)
+    else :
+        raise NotImplementedError("Search algorithm {} is not implemented!".format(search_algo))
+
+
+def distribution_to_suggest(trial, method, key, value) :
+    
+    import optuna.distributions as distributions
+    if isinstance(value, distributions.UniformDistribution) :
+        return trial.suggest_uniform(method + "_" + key, value.low, value.high)
+    elif isinstance(value, distributions.LogUniformDistribution) :
+        return trial.suggest_loguniform(method + "_" + key, value.low, value.high)
+    elif isinstance(value, distributions.DiscreteUniformDistribution) :
+        return trial.suggest_discrete_uniform(method + "_" + key, value.low, value.high, value.q)
+    elif isinstance(value, distributions.IntUniformDistribution) :
+        return trial.suggest_int(method + "_" + key, value.low, value.high)
+    elif isinstance(value, distributions.CategoricalDistribution) :
+        return trial.suggest_categorical(method + "_" + key, value.choices)
+    elif isinstance(value, distributions.IntLogUniformDistribution) :
+        return trial.suggest_int(method + "_" + key, value.low, value.high)
+    else :
+        raise TypeError("Distribution {} is not supported!".format(type(value)))
+        

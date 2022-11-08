@@ -11,7 +11,7 @@ File: _balancing_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 3:49:32 pm
+Last Modified: Tuesday, 8th November 2022 10:22:17 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -105,10 +105,11 @@ balancing_hyperparameter = [
     SMOTEENN,
 ]
 
-balancing_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "balancing") 
-    for order, dict in enumerate(balancing_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# balancing_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "balancing") 
+#     for order, dict in enumerate(balancing_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

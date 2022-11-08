@@ -1,17 +1,17 @@
 """
-File: add.py
+File: additional.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /add.py
-File Created: Saturday, 1st October 2022 9:15:59 am
+Relative Path: /additional.py
+File: additional.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 1st October 2022 1:28:20 pm
+Last Modified: Tuesday, 8th November 2022 10:11:48 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -80,86 +80,112 @@ if not, leave it as it is.
 # Template of self-defined models and hyperparameters
 
 # from ray import tune
-# from My_AutoML._encoding import DataEncoding
-# from My_AutoML._imputation import SimpleImputer
-# from My_AutoML._balancing import SimpleRandomOverSampling
-# from My_AutoML._scaling import Standardize
-# from My_AutoML._feature_selection import mRMR
-# from My_AutoML._model import LinearRegression, LogisticRegression
+# from InsurAutoML._encoding import DataEncoding
+# from InsurAutoML._imputation import SimpleImputer
+# from InsurAutoML._balancing import SimpleRandomOverSampling
+# from InsurAutoML._scaling import Standardize
+# from InsurAutoML._feature_selection import mRMR
+# from InsurAutoML._model import LinearRegression, LogisticRegression
 
+
+# # additional encoders
 # add_encoders = {"DataEncoding": DataEncoding}
 
+# DATAENCODING = {
+#     "encoder": "DataEncoding",
+#     "dummy_coding": tune.choice([True, False]),
+# }
+
 # add_encoder_hyperparameter = [
-#     {
-#         "encoder_add_1": "DataEncoding",
-#         "DataEncoding_dummy_coding": tune.choice([True, False]),
-#     },
+#     DATAENCODING,
 # ]
 
+# # additional imputers
 # add_imputers = {
 #     "SimpleImputer": SimpleImputer,
 # }
 
+# SIMPLEIMPUTER = {
+#     "imputer": "SimpleImputer",
+#     "method": tune.choice(
+#         ["mean", "zero", "median", "most frequent"]
+#     ),
+# }
+
 # add_imputer_hyperparameter = [
-#     {
-#         "imputer_add_1": "SimpleImputer",
-#         "SimpleImputer_method": tune.choice(
-#             ["mean", "zero", "median", "most frequent"]
-#         ),
-#     },
+#     SIMPLEIMPUTER,
 # ]
 
+# # additional balancings
 # add_balancings = {
 #     "SimpleRandomOverSampling": SimpleRandomOverSampling,
 # }
 
+# SIMPLERANDOMOVERSAMPLING = {
+#     "balancing": "SimpleRandomOverSampling",
+#     "imbalance_threshold": tune.uniform(0.8, 1),
+# }
+
 # add_balancing_hyperparameter = [
-#     {
-#         "balancing_add_1": "SimpleRandomOverSampling",
-#         "SimpleRandomOverSampling_imbalance_threshold": tune.uniform(0.8, 1),
-#     },
+#     SIMPLERANDOMOVERSAMPLING,
 # ]
 
+
+# # additional scalings
 # add_scalings = {
 #     "Standardize": Standardize,
 # }
 
+# STANDARDIZE = {"scaling": "Standardize"}
+
 # add_scaling_hyperparameter = [
-#     {"scaling_add_1": "Standardize"},
+#     STANDARDIZE,
 # ]
 
+
+# # additional feature selections
 # add_feature_selections = {
 #     "mRMR": mRMR,
 # }
 
+# MRMR = {
+#     "feature_selection": "mRMR",
+#     "n_prop": tune.uniform(0, 1),
+# }
+
 # add_feature_selection_hyperparameter = [
-#     {
-#         "feature_selection_add_1": "mRMR",
-#         "mRMR_n_prop": tune.uniform(0, 1),
-#     },
+#     MRMR,
 # ]
 
+
+# # additional regressors
 # add_regressors = {
 #     "LinearRegression": LinearRegression,
 # }
 
+# LINEARREGRESSION = {
+#     "model": "LinearRegression",
+# }
+
 # add_regressor_hyperparameter = [
-#     {
-#         "model_add_1": "LinearRegression",
-#     },
+#     LINEARREGRESSION,
 # ]
 
+
+# # additional classifiers
 # add_classifiers = {
 #     "LogisticRegression": LogisticRegression,
 # }
 
+# LOGISTICREGRESSION = {
+#     "model": "LogisticRegression",
+#     "penalty": tune.choice(["l2", "none"]),
+#     "tol": tune.loguniform(1e-5, 1e-1),
+#     "C": tune.loguniform(1e-5, 10),
+# }
+
 # add_classifier_hyperparameter = [
-#     {
-#         "model_add_1": "LogisticRegression",
-#         "LogisticRegression_penalty": tune.choice(["l2", "none"]),
-#         "LogisticRegression_tol": tune.loguniform(1e-5, 1e-1),
-#         "LogisticRegression_C": tune.loguniform(1e-5, 10),
-#     },
+#     LOGISTICREGRESSION,
 # ]
 
 ####################################################################################################################

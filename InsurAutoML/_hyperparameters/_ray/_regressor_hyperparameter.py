@@ -11,7 +11,7 @@ File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 4:50:43 pm
+Last Modified: Tuesday, 8th November 2022 10:21:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -386,10 +386,11 @@ regressor_hyperparameter = [
     GAMREGRESSOR,
 ]
 
-regressor_hyperparameter = [
-    format_hyper_dict(dict, order + 1, ref = "model") 
-    for order, dict in enumerate(regressor_hyperparameter)
-]
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# regressor_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "model") 
+#     for order, dict in enumerate(regressor_hyperparameter)
+# ]
 
 if __name__ == "__main__":
     pass

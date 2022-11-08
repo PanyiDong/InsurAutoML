@@ -11,7 +11,7 @@ File: _wrapper.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 9:43:09 pm
+Last Modified: Tuesday, 8th November 2022 10:26:07 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -533,5 +533,9 @@ class ASFFS:
         return self
 
     def transform(self, X):
+        
+        # check if the input is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         return X.loc[:, self.selected_]
