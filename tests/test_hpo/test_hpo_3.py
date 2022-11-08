@@ -1,17 +1,17 @@
 """
-File: test_hpo_2.py
+File: test_hpo_3.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /tests/test_hpo/test_hpo_2.py
-File Created: Sunday, 25th September 2022 11:25:37 pm
+Relative Path: /tests/test_hpo/test_hpo_3.py
+File: test_hpo_3.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:51:47 pm
+Last Modified: Tuesday, 8th November 2022 12:14:29 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -232,6 +232,33 @@ def test_single():
 
     mol = InsurAutoML.AutoTabular(
         n_estimators=1,
+        model_name="insurance",
+        objective="MAE",
+        timeout=60,
+    )
+    mol.fit(data[features], data[response])
+    y_pred = mol.predict(data[features])
+
+    assert (
+        os.path.exists("tmp/insurance/init.txt") == True
+    ), "Regression for Insurance data failed to initiated."
+    assert mol._fitted == True, "Regression for Insurance data failed to fit."
+    assert (
+        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+    ), "Regression for Insurance data failed to find optimal setting."
+    
+def test_stacking():
+    
+    # test load_data here
+    data = load_data().load("example/example_data", "insurance")
+    data = data["insurance"]
+
+    features = list(data.columns)
+    features.remove("expenses")
+    response = ["expenses"]
+
+    mol = InsurAutoML.AutoTabular(
+        ensemble_strategy="stacking",
         model_name="insurance",
         objective="MAE",
         timeout=60,

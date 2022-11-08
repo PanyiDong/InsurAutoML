@@ -1,17 +1,17 @@
 """
-File: test_regression.py
+File: test_hpo.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /tests/test_hpo/test_regression.py
-File Created: Sunday, 10th April 2022 12:00:04 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /tests/test_hpo/test_hpo.py
+File: test_hpo.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:57 pm
+Last Modified: Monday, 7th November 2022 11:43:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -418,12 +418,14 @@ def test_objective_5():
         objective="precision",
         validation=True,
         valid_size=0.15,
-        full_status=False,
+        full_status=True,
         reset_index=True,
         _iter=1,
         seed=1,
     )
     result = clf.step()
+    clf.save_checkpoint("tmp")
+    clf.load_checkpoint("tmp")
     clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."

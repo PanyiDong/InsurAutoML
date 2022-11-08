@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_hpo/_utils.py
-File Created: Tuesday, 10th May 2022 10:27:56 pm
+Relative Path: /InsurAutoML/_hpo/_utils.py
+File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:23 pm
+Last Modified: Tuesday, 8th November 2022 12:27:57 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -178,7 +178,7 @@ class ClassifierEnsemble(formatting):
         estimators,
         voting="hard",
         weights=None,
-        features=None,
+        features=[],
         strategy="stacking",
     ):
         self.estimators = estimators
@@ -216,8 +216,6 @@ class ClassifierEnsemble(formatting):
         if len(self.features) == 0:
             self.features = [X.columns for _ in range(len(self.estimators))]
 
-        # remember all unique labels
-        super(ClassifierEnsemble, self).fit(y)
         # remember the name of response
         if isinstance(y, pd.Series):
             self._response = [y.name]
@@ -226,6 +224,9 @@ class ClassifierEnsemble(formatting):
         elif isinstance(y, np.ndarray):
             y = pd.DataFrame(y, columns=["response"])
             self._response = ["response"]
+            
+        # remember all unique labels
+        super(ClassifierEnsemble, self).fit(y)
 
         # check for estimators type
         if not isinstance(self.estimators, list):
@@ -261,6 +262,13 @@ class ClassifierEnsemble(formatting):
                     )
                 ]
             ).T
+            # if larger than 2d, take until get 2d array
+            while True :
+                if len(pred_list.shape) > 2 :
+                    pred_list = pred_list[0]
+                else :
+                    break
+                
             if self.strategy == "stacking" or self.strategy == "bagging":
                 pred = np.apply_along_axis(
                     lambda x: np.argmax(np.bincount(x, weights=self.weights)),
@@ -313,7 +321,7 @@ class RegressorEnsemble(formatting):
         estimators,
         voting="mean",
         weights=None,
-        features=None,
+        features=[],
         strategy="stacking",
     ):
         self.estimators = estimators
@@ -321,6 +329,11 @@ class RegressorEnsemble(formatting):
         self.weights = weights
         self.features = features
         self.strategy = strategy
+        
+        # initialize the formatting
+        super(RegressorEnsemble, self).__init__(
+            inplace=False,
+        )
 
         self._fitted = False
 
@@ -349,6 +362,18 @@ class RegressorEnsemble(formatting):
             if self.weights is not None
             else None
         )
+        
+        # remember the name of response
+        if isinstance(y, pd.Series):
+            self._response = [y.name]
+        elif isinstance(y, pd.DataFrame):
+            self._response = list(y.columns)
+        elif isinstance(y, np.ndarray):
+            y = pd.DataFrame(y, columns=["response"])
+            self._response = ["response"]
+            
+        # remember all unique labels
+        super(RegressorEnsemble, self).fit(y)
 
         # if bagging, features much be provided
         if self.strategy == "bagging" and len(self.features) == 0:
@@ -392,18 +417,33 @@ class RegressorEnsemble(formatting):
                 )
             ]
         ).T
-
+        # if larger than 2d, take until get 2d array
+        while True :
+            if len(pred_list.shape) > 2 :
+                pred_list = pred_list[0]
+            else :
+                break
+                
         if self.strategy == "stacking" or self.strategy == "bagging":
             # if weights not included, not use weights
             try:
-                return self.voting(pred_list, axis=1, weights=self.weights)
+                pred = self.voting(pred_list, axis=1, weights=self.weights)
             except:
                 # if weights included, but not available in voting function, warn users
                 if self.weights is not None:
                     warnings.warn("weights are not used in voting method")
-                return self.voting(pred_list, axis=1)
+                pred = self.voting(pred_list, axis=1)
         elif self.strategy == "boosting":
-            return np.sum(pred_list, axis=1)
+            pred = np.sum(pred_list, axis=1)
+        
+        # make sure all predictions are seen
+        if isinstance(pred, pd.DataFrame):
+            return super(RegressorEnsemble, self).refit(pred)
+        # if not dataframe, convert to dataframe for formatting
+        else:
+            return super(RegressorEnsemble, self).refit(
+                pd.DataFrame(pred, columns=self._response)
+            )
 
 
 class TabularObjective(tune.Trainable):
