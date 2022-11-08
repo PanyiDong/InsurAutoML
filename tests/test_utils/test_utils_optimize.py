@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
 Relative Path: /tests/test_utils/test_utils_optimize.py
-File Created: Sunday, 25th September 2022 11:39:59 pm
+File: test_utils_optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:52:30 pm
+Last Modified: Monday, 7th November 2022 7:04:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -173,3 +173,23 @@ def test_get_metrics():
         assert isinstance(
             get_metrics(item), Callable
         ), "The metrics are not correctly called."
+
+
+def test_check_func() :
+    
+    from InsurAutoML._utils._optimize import check_func
+    from InsurAutoML._model import LogisticRegression
+    
+    assert check_func(
+        LogisticRegression, ref = "model"
+    ) == None, "The check_func method is not correctly done."
+    
+def test_check_status() :
+    
+    from InsurAutoML._utils._optimize import check_status
+    from InsurAutoML._hyperparameters import regressor_hyperparameter
+    from InsurAutoML._model import regressors
+    
+    assert check_status(
+        regressors, regressor_hyperparameter, ref = "model"
+    ) == None, "The check_status method is not correctly done."

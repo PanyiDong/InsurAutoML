@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_optimize.py
-File Created: Friday, 8th April 2022 11:55:13 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/_optimize.py
+File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:51:09 pm
+Last Modified: Monday, 7th November 2022 6:57:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -893,3 +893,62 @@ class ray_status:
         ray.shutdown()
         # check if ray is shutdown
         assert ray.is_initialized() == False, "Ray is not shutdown."
+        
+# check if an object has a method
+def check_func(obj, ref):
+    
+    METHOD_MAPPING = {
+        "encoder": ["fit", "refit"],
+        "imputer": ["fill"],
+        "balancing": ["fit_transform"],
+        "scaling": ["fit", "transform", "fit_transform"],
+        "feature_selection": ["fit", "transform"],
+        "model": ["fit", "predict"],
+    }
+    
+    for _func in METHOD_MAPPING[ref]:
+        if not callable(getattr(obj, _func, None)):
+            raise AttributeError(f"{ref} {obj} does not have {_func} method!")
+        
+    return None
+
+# check hyperparameter space
+def check_status(
+    methods,
+    hyperparameter_space,
+    ref = "encoder",
+) :
+    # get all method names in hyperparameter space
+    all_methods = []
+    for _dict in hyperparameter_space :
+        # get the method name by reference key
+        for key in _dict.keys() :
+            if ref + "_" in key :
+                all_methods.append(_dict[key])
+                break
+    # check status of encoder hyperparameter space
+    for method_name, method_object in methods.items():
+        # check whether the method exists
+        if method_name not in all_methods :
+            raise ValueError(
+                "Method {} is not in {} hyperparameter space!".format(method_name, ref)
+            )
+        # check whether the method has corresponding functions
+        check_func(method_object, ref)
+        
+        # check whether the hyperparameter space is valid
+        # get corresponding hyperparameter space
+        for key in hyperparameter_space[all_methods.index(method_name)].keys() :
+            if ref + "_" in key :
+                continue
+            else :
+                if not key.replace(method_name + "_", "") in method_object.__init__.__code__.co_varnames :
+                    raise ValueError(
+                        "Hyperparameter {} is not in {}!".format(key.replace(method_name + "_", ""), method_name)
+                    )
+        
+    return None
+        
+if __name__ == "__main__" :
+    pass
+        

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_feature_selection/_filter.py
-File Created: Monday, 8th August 2022 8:43:53 pm
+Relative Path: /InsurAutoML/_feature_selection/_filter.py
+File: _filter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:55:54 pm
+Last Modified: Monday, 7th November 2022 9:28:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -108,6 +108,10 @@ class FeatureFilter:
         return self
 
     def transform(self, X):
+        
+        # check if input is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -178,6 +182,12 @@ class mRMR:
         return test_item[maxloc(results)][0]  # use 0 to select item instead of tuple
 
     def fit(self, X, y=None):
+        
+        # check if inputs are dataframes
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:

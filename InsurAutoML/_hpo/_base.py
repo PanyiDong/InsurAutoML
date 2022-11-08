@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/_base.py
-File Created: Tuesday, 5th April 2022 10:49:30 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_base.py
+File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:32 pm
+Last Modified: Monday, 7th November 2022 8:37:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -76,6 +76,7 @@ from InsurAutoML._utils._optimize import (
     get_progress_reporter,
     TimePlateauStopper,
     ray_status,
+    check_status,
 )
 
 # filter certain warnings
@@ -557,7 +558,10 @@ class AutoTabularBase:
         # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
 
         # all hyperparameters for imputers
-        _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
+        if "no_processing" in imputer.keys() :
+            _all_imputers_hyperparameters = [{"imputer_0": "no_processing"}]
+        else :
+            _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
         # include additional hyperparameters
         _all_imputers_hyperparameters += add_imputer_hyperparameter
 
@@ -648,6 +652,14 @@ class AutoTabularBase:
                         item["LightGBM_Classifier_objective"] = tune.choice(
                             LIGHTGBM_MULTICLASS_CLASSIFICATION
                         )
+                        
+        # check status of hyperparameter space
+        check_status(encoder, _all_encoders_hyperparameters, ref = "encoder")
+        check_status(imputer, _all_imputers_hyperparameters, ref = "imputer")
+        check_status(balancing, _all_balancings_hyperparameters, ref = "balancing")
+        check_status(scaling, _all_scalings_hyperparameters, ref = "scaling")
+        check_status(feature_selection, _all_feature_selection_hyperparameters, ref = "feature_selection")
+        check_status(models, _all_models_hyperparameters, ref = "model")
 
         # generate the hyperparameter space
         hyperparameter_space = _get_hyperparameter_space(

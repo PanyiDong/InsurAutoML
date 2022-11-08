@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_feature_selection/_wrapper.py
-File Created: Monday, 8th August 2022 8:43:59 pm
+Relative Path: /InsurAutoML/_feature_selection/_wrapper.py
+File: _wrapper.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:35 pm
+Last Modified: Monday, 7th November 2022 9:43:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -141,7 +141,7 @@ class ExhaustiveFS:
 
     def transform(self, X):
 
-        return X[:, self.selected_features]
+        return X.iloc[:, self.selected_features]
 
 
 # Sequential Feature Selection (SFS)
@@ -203,6 +203,10 @@ class SFS:
         )  # use 0 to select item instead of tuple
 
     def fit(self, X, y=None):
+        
+        # check if the input is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         # check whether y is empty
         # for SFS, y is required to train a model
@@ -419,6 +423,12 @@ class ASFFS:
         )
 
     def fit(self, X, y):
+        
+        # check if the input is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         n, p = X.shape
         features = list(X.columns)

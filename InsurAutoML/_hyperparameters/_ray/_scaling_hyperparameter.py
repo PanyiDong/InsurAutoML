@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_ray/_scaling_hyperparameter.py
-File Created: Wednesday, 6th April 2022 10:06:01 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hyperparameters/_ray/_scaling_hyperparameter.py
+File: _scaling_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 2:24:08 pm
+Last Modified: Monday, 7th November 2022 8:49:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,15 +39,41 @@ SOFTWARE.
 """
 
 from ray import tune
+from InsurAutoML._utils._base import format_hyper_dict
+
+NOPROCESSING = {"scaling": "no_processing"}
+STANDARDIZE = {"scaling": "Standardize"}
+NORMALIZE = {"scaling": "Normalize"}
+ROBUSTSCALE = {"scaling": "RobustScale"}
+POWERTRANSFORMER = {
+    "scaling": "PowerTransformer",
+    "method": tune.choice(["yeo-johnson"]),
+}
+QUANTILETRANSFORMER = {"scaling": "QuantileTransformer"}
+MINMAXSCALE = {"scaling": "MinMaxScale"}
+WINSORIZATION = {"scaling": "Winsorization"}
+FEATUREMANIPULATION = {"scaling": "Feature_Manipulation"}
+FEATURETRUNCATION = {"scaling": "Feature_Truncation"}
 
 # scaling
+# initialize the hyperparameter dictionary
 scaling_hyperparameter = [
-    {"scaling_1": "no_processing"},
-    {"scaling_2": "Standardize"},
-    {"scaling_3": "Normalize"},
-    {"scaling_4": "RobustScale"},
-    {"scaling_5": "MinMaxScale"},
-    {"scaling_6": "Winsorization"},
-    {"scaling_7": "Feature_Manipulation"},
-    {"scaling_8": "Feature_Truncation"},
+    NOPROCESSING,
+    STANDARDIZE,
+    NORMALIZE,
+    ROBUSTSCALE,
+    POWERTRANSFORMER,
+    QUANTILETRANSFORMER,
+    MINMAXSCALE,
+    WINSORIZATION,
+    FEATUREMANIPULATION,
+    FEATURETRUNCATION,
 ]
+
+scaling_hyperparameter = [
+    format_hyper_dict(dict, order + 1, ref = "scaling") 
+    for order, dict in enumerate(scaling_hyperparameter)
+]
+
+if __name__ == "__main__":
+    pass

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_feature_selection/_hybrid.py
-File Created: Monday, 8th August 2022 8:44:16 pm
+Relative Path: /InsurAutoML/_feature_selection/_hybrid.py
+File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:47 pm
+Last Modified: Monday, 7th November 2022 9:14:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -152,6 +152,12 @@ class CBFS:
         )  # use 0 to select item instead of tuple
 
     def fit(self, X, y=None):
+        
+        # check if X is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -187,6 +193,10 @@ class CBFS:
         return self
 
     def transform(self, X):
+        
+        # check if X is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         return X.iloc[:, self.selected_features]
 
@@ -218,7 +228,7 @@ class GeneticAlgorithm:
 
     n_generations: Number of looping generation for GA, default = 10
 
-    feature_selection: Feature selection methods to generate a pool of selections, default = 'auto'
+    fs_method: Feature selection methods to generate a pool of selections, default = 'auto'
     support ('auto', 'random', 'Entropy', 't_statistics', 'SVM_RFE')
 
     n_initial: Number of random feature selection rules to initialize, default = 10
@@ -257,7 +267,7 @@ class GeneticAlgorithm:
         n_components=None,
         n_prop=None,
         n_generations=10,
-        feature_selection="random",
+        fs_method="random",
         n_initial=10,
         fitness_func=None,
         fitness_fit="SVM",
@@ -274,7 +284,7 @@ class GeneticAlgorithm:
         self.n_components = n_components
         self.n_prop = n_prop
         self.n_generations = n_generations
-        self.feature_selection = feature_selection
+        self.fs_method = fs_method
         self.n_initial = n_initial
         self.fitness_func = fitness_func
         self.fitness_fit = fitness_fit
@@ -573,6 +583,12 @@ class GeneticAlgorithm:
     def fit(self, X, y):
 
         np.random.seed(self.seed)  # set random seed
+        
+        # check if X is dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         n, p = X.shape
         # check whether n_components/n_prop is valid
@@ -609,9 +625,9 @@ class GeneticAlgorithm:
 
         # select feature selection methods
         # if auto, all default methods will be used; if not, use predefined one
-        if self.feature_selection == "auto":
+        if self.fs_method == "auto":
             self._feature_sel_methods = self._auto_sel
-        elif self.feature_selection == "random":
+        elif self.fs_method == "random":
             self.n_initial = int(self.n_initial)
             self._feature_sel_methods = {}
             for i in range(
@@ -619,15 +635,15 @@ class GeneticAlgorithm:
             ):  # get n_initial random feature selection rule
                 self._feature_sel_methods["random_" + str(i + 1)] = self._random
         else:
-            self.feature_selection = (
-                [self.feature_selection]
-                if not isinstance(self.feature_selection, list)
-                else self.feature_selection
+            self.fs_method = (
+                [self.fs_method]
+                if not isinstance(self.fs_method, list)
+                else self.fs_method
             )
             self._feature_sel_methods = {}
 
             # check if all methods are available
-            for _method in self.feature_selection:
+            for _method in self.fs_method:
                 if _method not in [*self._auto_sel]:
                     raise ValueError(
                         "Not recognizing feature selection methods, only support {}, get {}.".format(
@@ -670,6 +686,10 @@ class GeneticAlgorithm:
         return self
 
     def transform(self, X):
+        
+        # check if X is dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         # check for all/no feature removed cases
         if self.selection_.count(self.selection_[0]) == len(self.selection_):

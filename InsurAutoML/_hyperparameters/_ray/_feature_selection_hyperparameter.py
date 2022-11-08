@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_ray/_feature_selection_hyperparameter.py
-File Created: Wednesday, 6th April 2022 10:06:01 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hyperparameters/_ray/_feature_selection_hyperparameter.py
+File: _feature_selection_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 11th May 2022 9:32:58 am
+Last Modified: Monday, 7th November 2022 9:21:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,205 +39,254 @@ SOFTWARE.
 """
 
 from ray import tune
+from InsurAutoML._utils._base import format_hyper_dict
+
+NOPROCESSING = {
+    "feature_selection": "no_processing"
+}
+LDASELECTION = {
+    "feature_selection": "LDASelection"
+}
+PCAFEATURESELECTION = {
+    "feature_selection": "PCA_FeatureSelection"
+}
+RBFSAMPLER = {
+    "feature_selection": "RBFSampler"
+}
+FEATUREFILTER = {
+    "feature_selection": "FeatureFilter",
+    "criteria": tune.choice(["Pearson", "MI"]),
+    "n_prop": tune.uniform(0, 1),
+}
+ASFFS = {
+    "feature_selection": "ASFFS",
+    "model": tune.choice(["Linear", "Lasso", "Ridge"]),
+    "objective": tune.choice(["MSE", "MAE"]),
+}
+GENETICALGORITHM = {
+    "feature_selection": "GeneticAlgorithm",
+    "n_prop": tune.uniform(0.6, 1),
+    "n_generations": tune.qrandint(10, 40),
+    "fs_method": tune.choice(
+        ["auto", "random", "Entropy", "t_statistics"]
+    ),
+    "n_initial": tune.qrandint(5, 15),
+    "fitness_fit": tune.choice(
+        ["Linear", "Decision Tree", "Random Forest", "SVM"]
+    ),
+    "p_crossover": tune.uniform(0.8, 1),
+    "p_mutation": tune.loguniform(1e-5, 1),
+}
+EXTRATREESPREPROCFORCLASSIFICATION = {
+    "feature_selection": "extra_trees_preproc_for_classification",
+    "n_estimators": tune.choice([100]),
+    "criterion": tune.choice(
+        ["gini", "entropy"]
+    ),
+    "min_samples_leaf": tune.qrandint(
+        1, 20, 1
+    ),
+    "min_samples_split": tune.qrandint(
+        2, 20, 1
+    ),
+    "max_features": tune.uniform(0.1, 1.0),
+    "bootstrap": tune.choice([True, False]),
+    "max_leaf_nodes": tune.choice([None]),
+    "max_depth": tune.choice([None]),
+    "min_weight_fraction_leaf": tune.choice(
+        [0.0]
+    ),
+    "min_impurity_decrease": tune.choice(
+        [0.0]
+    ),
+}
+EXTRATREESPREPROCFORREGRESSION ={
+    "feature_selection": "extra_trees_preproc_for_regression",
+    "n_estimators": tune.choice([100]),
+    "criterion": tune.choice(
+        ["mse", "friedman_mse", "mae"],
+    ),
+    "min_samples_leaf": tune.qrandint(1, 20, 1),
+    "min_samples_split": tune.qrandint(2, 20, 1),
+    "max_features": tune.uniform(0.1, 1.0),
+    "bootstrap": tune.choice([True, False]),
+    "max_leaf_nodes": tune.choice([None]),
+    "max_depth": tune.choice([None]),
+    "min_weight_fraction_leaf": tune.choice(
+        [0.0]
+    ),
+}
+FASTICA = {
+    "feature_selection": "fast_ica",
+    # n_components only selected when whiten = True
+    "algorithm": tune.choice(["parallel", "deflation"]),
+    "whiten": tune.choice([True, False]),
+    "fun": tune.choice(["logcosh", "exp", "cube"]),
+    "n_components": tune.qrandint(10, 2000, 1),
+}
+FEATUREAGGLOMERATION = {
+    "feature_selection": "feature_agglomeration",
+    # forbid linkage = 'ward' while affinity in ['manhattan', 'cosine']
+    "n_clusters": tune.qrandint(2, 400, 1),
+    "affinity": tune.choice(
+        ["euclidean", "manhattan", "cosine"]
+    ),
+    "linkage": tune.choice(["ward", "complete", "average"]),
+    "pooling_func": tune.choice(["mean", "median", "max"]),
+}
+KERNELPCA = {
+    "feature_selection": "kernel_pca",
+    # degree only selected when kernel = 'poly'
+    # coef0 only selected when kernel in ['poly', 'sigmoid']
+    # gamma only selected when kernel in ['poly', 'rbf']
+    "n_components": tune.qrandint(10, 2000, 1),
+    "kernel": tune.choice(["poly", "rbf", "sigmoid", "cosine"]),
+    "gamma": tune.loguniform(3.0517578125e-05, 8),
+    "degree": tune.qrandint(2, 5, 1),
+    "coef0": tune.uniform(-1, 1),
+}
+KITCHENSINKS = {
+    "feature_selection": "kitchen_sinks",
+    "gamma": tune.loguniform(3.0517578125e-05, 8),
+    "n_components": tune.qrandint(50, 10000, 1),
+}
+LIBLINEARSVCPREPROCESSOR = {
+    "feature_selection": "liblinear_svc_preprocessor",
+    # forbid penalty = 'l1' while loss = 'hinge'
+    "penalty": tune.choice(["l1"]),
+    "loss": tune.choice(["squared_hinge"]),
+    "dual": tune.choice([False]),
+    "tol": tune.loguniform(1e-5, 1e-1),
+    "C": tune.loguniform(0.03125, 32768),
+    "multi_class": tune.choice(["ovr"]),
+    "fit_intercept": tune.choice([True]),
+    "intercept_scaling": tune.choice([1]),
+}
+NYSTROEMSAMPLER = {
+    "feature_selection": "nystroem_sampler",
+    # degree only selected when kernel = 'poly'
+    # coef0 only selected when kernel in ['poly', 'sigmoid']
+    # gamma only selected when kernel in ['poly', 'rbf', 'sigmoid']
+    "kernel": tune.choice(["poly", "rbf", "sigmoid", "cosine"]),
+    "n_components": tune.qrandint(50, 10000, 1),
+    "gamma": tune.loguniform(3.0517578125e-05, 8),
+    "degree": tune.qrandint(2, 5, 1),
+    "coef0": tune.uniform(-1, 1),
+}
+PCA = {
+    "feature_selection": "pca",
+    "keep_variance": tune.uniform(0.5, 0.9999),
+    "whiten": tune.choice([True, False]),
+}
+POLYNOMIAL = {
+    "feature_selection": "polynomial",
+    "degree": tune.qrandint(2, 4, 1),
+    "interaction_only": tune.choice([True, False]),
+    "include_bias": tune.choice([True, False]),
+}
+RANDOMTREESEMBEDDING = {
+    "feature_selection": "random_trees_embedding",
+    "n_estimators": tune.qrandint(10, 100, 1),
+    "max_depth": tune.qrandint(2, 10, 1),
+    "min_samples_split": tune.qrandint(2, 20, 1),
+    "min_samples_leaf": tune.qrandint(1, 20, 1),
+    "min_weight_fraction_leaf": tune.choice([1.0]),
+    "max_leaf_nodes": tune.choice([None]),
+    "bootstrap": tune.choice([True, False]),
+}
+SELECTPERCENTILECLASSIFICATION = {
+    "feature_selection": "select_percentile_classification",
+    "percentile": tune.qrandint(1, 99, 1),
+    "score_func": tune.choice(
+        ["chi2", "f_classif", "mutual_info"],
+    ),
+}
+SELECTPERCENTILEREGRESSION = {
+    "feature_selection": "select_percentile_regression",
+    "percentile": tune.qrandint(1, 99, 1),
+    "score_func": tune.choice(
+        ["f_regression", "mutual_info"]
+    ),
+}
+SELECTRATESCLASSIFICATION = {
+    "feature_selection": "select_rates_classification",
+    "alpha": tune.uniform(0.01, 0.5),
+    "score_func": tune.choice(
+        ["chi2", "f_classif", "mutual_info"],
+    ),
+    "mode": tune.choice(["fpr", "fdr", "fwe"]),
+}
+SELECTRATESREGRESSION = {
+    "feature_selection": "select_rates_regression",
+    "alpha": tune.uniform(0.01, 0.5),
+    "score_func": tune.choice(["f_regression"]),
+    "mode": tune.choice(["fpr", "fdr", "fwe"]),
+}
+TRUNCATEDSVD = {
+    "feature_selection": "truncatedSVD",
+    "target_dim": tune.qrandint(10, 256, 1),
+}
+EXHAUSTIVEFS = {
+    "feature_selection": "ExhaustiveFS",
+    "estimator": tune.choice(["Lasso"]),
+    "criteria": tune.choice(["accuracy"]),
+}
+SFS = {
+    "feature_selection": "SFS",
+    # will be specified by task_type when initializing the HPO model
+    "estimator": tune.choice(["Need to specify by task_type"]),
+    "n_prop": tune.uniform(0, 1),
+    "criteria": tune.choice(["Need to specify by task_type"]),
+}
+MRMR = {
+    "feature_selection": "mRMR",
+    "n_prop": tune.uniform(0, 1),
+}
+CBFS = {
+    "feature_selection": "CBFS",
+    "copula": tune.choice(["empirical"]),
+    "n_prop": tune.uniform(0, 1),
+}
+FOCI = {
+    "feature_selection": "FOCI",
+}
 
 # feature_selection
 feature_selection_hyperparameter = [
-    {"feature_selection_1": "no_processing"},
-    {"feature_selection_2": "LDASelection"},
-    {"feature_selection_3": "PCA_FeatureSelection"},
-    {"feature_selection_4": "RBFSampler"},
-    {
-        "feature_selection_5": "FeatureFilter",
-        "FeatureFilter_criteria": tune.choice(["Pearson", "MI"]),
-        "FeatureFilter_n_prop": tune.uniform(0, 1),
-    },
-    {
-        "feature_selection_6": "ASFFS",
-        "ASFFS_model": tune.choice(["Linear", "Lasso", "Ridge"]),
-        "ASFFS_objective": tune.choice(["MSE", "MAE"]),
-    },
-    {
-        "feature_selection_7": "GeneticAlgorithm",
-        "GeneticAlgorithm_n_prop": tune.uniform(0.6, 1),
-        "GeneticAlgorithm_n_generations": tune.qrandint(10, 40),
-        "GeneticAlgorithm_feature_selection": tune.choice(
-            ["auto", "random", "Entropy", "t_statistics"]
-        ),
-        "GeneticAlgorithm_n_initial": tune.qrandint(5, 15),
-        "GeneticAlgorithm_fitness_fit": tune.choice(
-            ["Linear", "Decision Tree", "Random Forest", "SVM"]
-        ),
-        "GeneticAlgorithm_p_crossover": tune.uniform(0.8, 1),
-        "GeneticAlgorithm_p_mutation": tune.loguniform(1e-5, 1),
-    },
-    {
-        "feature_selection_8": "extra_trees_preproc_for_classification",
-        "extra_trees_preproc_for_classification_n_estimators": tune.choice([100]),
-        "extra_trees_preproc_for_classification_criterion": tune.choice(
-            ["gini", "entropy"]
-        ),
-        "extra_trees_preproc_for_classification_min_samples_leaf": tune.qrandint(
-            1, 20, 1
-        ),
-        "extra_trees_preproc_for_classification_min_samples_split": tune.qrandint(
-            2, 20, 1
-        ),
-        "extra_trees_preproc_for_classification_max_features": tune.uniform(0.1, 1.0),
-        "extra_trees_preproc_for_classification_bootstrap": tune.choice([True, False]),
-        "extra_trees_preproc_for_classification_max_leaf_nodes": tune.choice([None]),
-        "extra_trees_preproc_for_classification_max_depth": tune.choice([None]),
-        "extra_trees_preproc_for_classification_min_weight_fraction_leaf": tune.choice(
-            [0.0]
-        ),
-        "extra_trees_preproc_for_classification_min_impurity_decrease": tune.choice(
-            [0.0]
-        ),
-    },
-    {
-        "feature_selection_9": "extra_trees_preproc_for_regression",
-        "extra_trees_preproc_for_regression_n_estimators": tune.choice([100]),
-        "extra_trees_preproc_for_regression_criterion": tune.choice(
-            ["mse", "friedman_mse", "mae"],
-        ),
-        "extra_trees_preproc_for_regression_min_samples_leaf": tune.qrandint(1, 20, 1),
-        "extra_trees_preproc_for_regression_min_samples_split": tune.qrandint(2, 20, 1),
-        "extra_trees_preproc_for_regression_max_features": tune.uniform(0.1, 1.0),
-        "extra_trees_preproc_for_regression_bootstrap": tune.choice([True, False]),
-        "extra_trees_preproc_for_regression_max_leaf_nodes": tune.choice([None]),
-        "extra_trees_preproc_for_regression_max_depth": tune.choice([None]),
-        "extra_trees_preproc_for_regression_min_weight_fraction_leaf": tune.choice(
-            [0.0]
-        ),
-    },
-    {
-        "feature_selection_10": "fast_ica",
-        # n_components only selected when whiten = True
-        "fast_ica_algorithm": tune.choice(["parallel", "deflation"]),
-        "fast_ica_whiten": tune.choice([True, False]),
-        "fast_ica_fun": tune.choice(["logcosh", "exp", "cube"]),
-        "fast_ica_n_components": tune.qrandint(10, 2000, 1),
-    },
-    {
-        "feature_selection_11": "feature_agglomeration",
-        # forbid linkage = 'ward' while affinity in ['manhattan', 'cosine']
-        "feature_agglomeration_n_clusters": tune.qrandint(2, 400, 1),
-        "feature_agglomeration_affinity": tune.choice(
-            ["euclidean", "manhattan", "cosine"]
-        ),
-        "feature_agglomeration_linkage": tune.choice(["ward", "complete", "average"]),
-        "feature_agglomeration_pooling_func": tune.choice(["mean", "median", "max"]),
-    },
-    {
-        "feature_selection_12": "kernel_pca",
-        # degree only selected when kernel = 'poly'
-        # coef0 only selected when kernel in ['poly', 'sigmoid']
-        # gamma only selected when kernel in ['poly', 'rbf']
-        "kernel_pca_n_components": tune.qrandint(10, 2000, 1),
-        "kernel_pca_kernel": tune.choice(["poly", "rbf", "sigmoid", "cosine"]),
-        "kernel_pca_gamma": tune.loguniform(3.0517578125e-05, 8),
-        "kernel_pca_degree": tune.qrandint(2, 5, 1),
-        "kernel_pca_coef0": tune.uniform(-1, 1),
-    },
-    {
-        "feature_selection_13": "kitchen_sinks",
-        "kitchen_sinks_gamma": tune.loguniform(3.0517578125e-05, 8),
-        "kitchen_sinks_n_components": tune.qrandint(50, 10000, 1),
-    },
-    {
-        "feature_selection_14": "liblinear_svc_preprocessor",
-        # forbid penalty = 'l1' while loss = 'hinge'
-        "liblinear_svc_preprocessor_penalty": tune.choice(["l1"]),
-        "liblinear_svc_preprocessor_loss": tune.choice(["squared_hinge"]),
-        "liblinear_svc_preprocessor_dual": tune.choice([False]),
-        "liblinear_svc_preprocessor_tol": tune.loguniform(1e-5, 1e-1),
-        "liblinear_svc_preprocessor_C": tune.loguniform(0.03125, 32768),
-        "liblinear_svc_preprocessor_multi_class": tune.choice(["ovr"]),
-        "liblinear_svc_preprocessor_fit_intercept": tune.choice([True]),
-        "liblinear_svc_preprocessor_intercept_scaling": tune.choice([1]),
-    },
-    {
-        "feature_selection_15": "nystroem_sampler",
-        # degree only selected when kernel = 'poly'
-        # coef0 only selected when kernel in ['poly', 'sigmoid']
-        # gamma only selected when kernel in ['poly', 'rbf', 'sigmoid']
-        "nystroem_sampler_kernel": tune.choice(["poly", "rbf", "sigmoid", "cosine"]),
-        "nystroem_sampler_n_components": tune.qrandint(50, 10000, 1),
-        "nystroem_sampler_gamma": tune.loguniform(3.0517578125e-05, 8),
-        "nystroem_sampler_degree": tune.qrandint(2, 5, 1),
-        "nystroem_sampler_coef0": tune.uniform(-1, 1),
-    },
-    {
-        "feature_selection_16": "pca",
-        "pca_keep_variance": tune.uniform(0.5, 0.9999),
-        "pca_whiten": tune.choice([True, False]),
-    },
-    {
-        "feature_selection_17": "polynomial",
-        "polynomial_degree": tune.qrandint(2, 4, 1),
-        "polynomial_interaction_only": tune.choice([True, False]),
-        "polynomial_include_bias": tune.choice([True, False]),
-    },
-    {
-        "feature_selection_18": "random_trees_embedding",
-        "random_trees_embedding_n_estimators": tune.qrandint(10, 100, 1),
-        "random_trees_embedding_max_depth": tune.qrandint(2, 10, 1),
-        "random_trees_embedding_min_samples_split": tune.qrandint(2, 20, 1),
-        "random_trees_embedding_min_samples_leaf": tune.qrandint(1, 20, 1),
-        "random_trees_embedding_min_weight_fraction_leaf": tune.choice([1.0]),
-        "random_trees_embedding_max_leaf_nodes": tune.choice([None]),
-        "random_trees_embedding_bootstrap": tune.choice([True, False]),
-    },
-    {
-        "feature_selection_19": "select_percentile_classification",
-        "select_percentile_classification_percentile": tune.qrandint(1, 99, 1),
-        "select_percentile_classification_score_func": tune.choice(
-            ["chi2", "f_classif", "mutual_info"],
-        ),
-    },
-    {
-        "feature_selection_20": "select_percentile_regression",
-        "select_percentile_regression_percentile": tune.qrandint(1, 99, 1),
-        "select_percentile_regression_score_func": tune.choice(
-            ["f_regression", "mutual_info"]
-        ),
-    },
-    {
-        "feature_selection_21": "select_rates_classification",
-        "select_rates_classification_alpha": tune.uniform(0.01, 0.5),
-        "select_rates_classification_score_func": tune.choice(
-            ["chi2", "f_classif", "mutual_info"],
-        ),
-        "select_rates_classification_mode": tune.choice(["fpr", "fdr", "fwe"]),
-    },
-    {
-        "feature_selection_22": "select_rates_regression",
-        "select_rates_regression_alpha": tune.uniform(0.01, 0.5),
-        "select_rates_regression_score_func": tune.choice(["f_regression"]),
-        "select_rates_regression_mode": tune.choice(["fpr", "fdr", "fwe"]),
-    },
-    {
-        "feature_selection_23": "truncatedSVD",
-        "truncatedSVD_target_dim": tune.qrandint(10, 256, 1),
-    },
-    {
-        "feature_selection_24": "ExhaustiveFS",
-        "ExhaustiveFS_estimator": tune.choice(["Lasso"]),
-        "ExhaustiveFS_criteria": tune.choice(["accuracy"]),
-    },
-    {
-        "feature_selection_25": "SFS",
-        # will be specified by task_type when initializing the HPO model
-        "SFS_estimator": tune.choice(["Need to specify by task_type"]),
-        "SFS_n_prop": tune.uniform(0, 1),
-        "SFS_criteria": tune.choice(["Need to specify by task_type"]),
-    },
-    {
-        "feature_selection_26": "mRMR",
-        "mRMR_n_prop": tune.uniform(0, 1),
-    },
-    {
-        "feature_selection_27": "CBFS",
-        "CBFS_copula": tune.choice(["empirical"]),
-        "CBFS_n_prop": tune.uniform(0, 1),
-    },
+    NOPROCESSING,
+    LDASELECTION,
+    PCAFEATURESELECTION,
+    RBFSAMPLER,
+    FEATUREFILTER,
+    ASFFS,
+    GENETICALGORITHM,
+    EXTRATREESPREPROCFORCLASSIFICATION,
+    EXTRATREESPREPROCFORREGRESSION,
+    FASTICA,
+    FEATUREAGGLOMERATION,
+    KERNELPCA,
+    KITCHENSINKS,
+    LIBLINEARSVCPREPROCESSOR,
+    NYSTROEMSAMPLER,
+    PCA,
+    POLYNOMIAL,
+    RANDOMTREESEMBEDDING,
+    SELECTPERCENTILECLASSIFICATION,
+    SELECTPERCENTILEREGRESSION,
+    SELECTRATESCLASSIFICATION,
+    SELECTRATESREGRESSION,
+    TRUNCATEDSVD,
+    EXHAUSTIVEFS,
+    SFS,
+    MRMR,
+    CBFS,
+    # FOCI, # tend to get no feature selected
 ]
+
+feature_selection_hyperparameter = [
+    format_hyper_dict(dict, order + 1, ref = "feature_selection")
+    for order, dict in enumerate(feature_selection_hyperparameter)
+]
+
+if __name__ == "__main__":
+    pass

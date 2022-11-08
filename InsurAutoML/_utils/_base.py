@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_base.py
-File Created: Wednesday, 6th April 2022 12:01:20 am
+Project: InsurAutoML
+Latest Version: .2.2.11
+Relative Path: /InsurAutoML/_utils/_base.py
+File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 7:51:20 pm
+Last Modified: Monday, 7th November 2022 2:46:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -283,3 +283,11 @@ def is_none(item, pat=[None, "None", "none", "NONE"]):
         return True
     else:
         return False
+
+# format the output of a hyperparameter dictionary
+def format_hyper_dict(dict, order, ref = "encoder") :
+    header = dict.pop(ref)
+    result = {"{}_{}".format(ref, order): header}
+    result.update({header + "_" + str(key): val for key, val in dict.items() if key != ref})
+    
+    return result

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
+Project: InsurAutoML
+Latest Version: 0.2.3
 Relative Path: /tests/test_feature_selection/test_feature_selection.py
-File Created: Friday, 15th April 2022 12:27:07 pm
+File: test_feature_selection.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:57:04 pm
+Last Modified: Monday, 7th November 2022 9:37:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -196,7 +196,7 @@ def test_GA():
 
     feature_selection = GeneticAlgorithm(
         n_components=5,
-        feature_selection="random",
+        fs_method="random",
         fitness_fit="Linear",
         n_generations=50,
         p_mutation=0.1,
@@ -208,7 +208,7 @@ def test_GA():
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection=["Entropy"], fitness_fit="Decision Tree"
+        n_components=5, fs_method=["Entropy"], fitness_fit="Decision Tree"
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
@@ -217,7 +217,7 @@ def test_GA():
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection=["t_statistics"], fitness_fit="Random Forest"
+        n_components=5, fs_method=["t_statistics"], fitness_fit="Random Forest"
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
@@ -226,10 +226,50 @@ def test_GA():
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
-        n_components=5, feature_selection="auto", fitness_fit="SVM"
+        n_components=5, fs_method="auto", fitness_fit="SVM"
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+def test_FOCI() :
+    
+    from InsurAutoML._feature_selection import FOCI
+    
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+    
+    feature_selection = FOCI()
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+    
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+    
+    
+def test_ExhaustiveFS() :
+    
+    from InsurAutoML._feature_selection._wrapper import ExhaustiveFS
+    from sklearn.linear_model import Ridge
+    
+    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+    
+    feature_selection = ExhaustiveFS(criteria = "MSE")
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+    
+    assert feature_selection._fitted == True, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+    
+    feature_selection = ExhaustiveFS(estimator = Ridge(), criteria = "MSE")
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+    
     assert feature_selection._fitted == True, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
 Relative Path: /tests/test_utils/test_utils_base.py
-File Created: Sunday, 25th September 2022 11:34:10 pm
+File: test_utils_base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:52:22 pm
+Last Modified: Monday, 7th November 2022 8:11:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -212,3 +212,12 @@ def test_is_none():
 
     assert is_none(None) == True, "The is_none function is not correct."
     assert is_none("not none") == False, "The is_none function is not correct."
+
+def test_format_hyper_dict() :
+    
+    from InsurAutoML._utils._base import format_hyper_dict
+    
+    input = {"encoder": "encoder", "n_estimators": 2}
+    expected = {"encoder_1": "encoder", "encoder_n_estimators": 2}
+    
+    assert format_hyper_dict(input, 1, ref = "encoder") == expected, "The format_hyper_dict function is not correct."

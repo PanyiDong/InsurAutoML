@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_ray/_balancing_hyperparameter.py
-File Created: Wednesday, 6th April 2022 10:06:01 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hyperparameters/_ray/_balancing_hyperparameter.py
+File: _balancing_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:23:34 pm
+Last Modified: Monday, 7th November 2022 3:49:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,53 +39,76 @@ SOFTWARE.
 """
 
 from ray import tune
+from InsurAutoML._utils._base import format_hyper_dict
+
+NOPROCESSING = {
+    "balancing": "no_processing",
+}
+SIMPLERANDOMOVERSAMPLING = {
+    "balancing": "SimpleRandomOverSampling",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+}
+SIMPLERANDOMUNDERSAMPLING = {
+    "balancing": "SimpleRandomUnderSampling",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+}
+TOMEKLINK = {
+    "balancing": "TomekLink",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+}
+EDITEDNEARESTNEIGHBOR = {
+    "balancing": "EditedNearestNeighbor",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+    "k": tune.qrandint(1, 7, 1),
+}
+CONDENSEDNEARESTNEIGHBOR = {
+    "balancing": "CondensedNearestNeighbor",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+}
+ONESIDEDSELECTION = {
+    "balancing": "OneSidedSelection",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+}
+CNNTOMEKLINK = {
+    "balancing": "CNN_TomekLink",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+}
+SMOTE = {
+    "balancing": "Smote",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+    "k": tune.qrandint(1, 10, 1),
+}
+SMOTETOMEKLINK = {
+    "balancing": "Smote_TomekLink",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+    "k": tune.qrandint(1, 10, 1),
+}
+SMOTEENN = {
+    "balancing": "Smote_ENN",
+    "imbalance_threshold": tune.uniform(0.8, 1),
+    "k": tune.qrandint(1, 10, 1),
+}
 
 # balancing
-# if the imbalance threshold small, TomekLink will take too long
+# initialize the hyperparameter dictionary
 balancing_hyperparameter = [
-    {"balancing_1": "no_processing"},
-    {
-        "balancing_2": "SimpleRandomOverSampling",
-        "SimpleRandomOverSampling_imbalance_threshold": tune.uniform(0.8, 1),
-    },
-    {
-        "balancing_3": "SimpleRandomUnderSampling",
-        "SimpleRandomUnderSampling_imbalance_threshold": tune.uniform(0.8, 1),
-    },
-    {
-        "balancing_4": "TomekLink",
-        "TomekLink_imbalance_threshold": tune.uniform(0.8, 1),
-    },
-    {
-        "balancing_5": "EditedNearestNeighbor",
-        "EditedNearestNeighbor_imbalance_threshold": tune.uniform(0.8, 1),
-        "EditedNearestNeighbor_k": tune.qrandint(1, 7, 1),
-    },
-    {
-        "balancing_6": "CondensedNearestNeighbor",
-        "CondensedNearestNeighbor_imbalance_threshold": tune.uniform(0.8, 1),
-    },
-    {
-        "balancing_7": "OneSidedSelection",
-        "OneSidedSelection_imbalance_threshold": tune.uniform(0.8, 1),
-    },
-    {
-        "balancing_8": "CNN_TomekLink",
-        "CNN_TomekLink_imbalance_threshold": tune.uniform(0.8, 1),
-    },
-    {
-        "balancing_9": "Smote",
-        "Smote_imbalance_threshold": tune.uniform(0.8, 1),
-        "Smote_k": tune.qrandint(1, 10, 1),
-    },
-    {
-        "balancing_10": "Smote_TomekLink",
-        "Smote_TomekLink_imbalance_threshold": tune.uniform(0.8, 1),
-        "Smote_TomekLink_k": tune.qrandint(1, 10, 1),
-    },
-    {
-        "balancing_11": "Smote_ENN",
-        "Smote_ENN_imbalance_threshold": tune.uniform(0.8, 1),
-        "Smote_ENN_k": tune.qrandint(1, 10, 1),
-    },
+    NOPROCESSING,
+    SIMPLERANDOMOVERSAMPLING,
+    SIMPLERANDOMUNDERSAMPLING,
+    TOMEKLINK,   # if the imbalance threshold small, TomekLink will take too long
+    EDITEDNEARESTNEIGHBOR,
+    CONDENSEDNEARESTNEIGHBOR,
+    ONESIDEDSELECTION,
+    CNNTOMEKLINK,
+    SMOTE,
+    SMOTETOMEKLINK,
+    SMOTEENN,
 ]
+
+balancing_hyperparameter = [
+    format_hyper_dict(dict, order + 1, ref = "balancing") 
+    for order, dict in enumerate(balancing_hyperparameter)
+]
+
+if __name__ == "__main__":
+    pass
