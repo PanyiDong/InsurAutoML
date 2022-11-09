@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 3:05:29 pm
+Last Modified: Tuesday, 8th November 2022 6:14:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -793,12 +793,12 @@ class AutoTabularBase:
 
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(self, idx, optimal_point, best_path):
-
+        
         # optimal encoder
         optimal_encoder_hyperparameters = optimal_point["encoder"]
         # find optimal encoder key
         for _key in optimal_encoder_hyperparameters.keys():
-            if "encoder_" in _key:
+            if "encoder" in _key:
                 _encoder_key = _key
                 break
         optimal_encoder = optimal_encoder_hyperparameters[_encoder_key]
@@ -813,7 +813,7 @@ class AutoTabularBase:
         optimal_imputer_hyperparameters = optimal_point["imputer"]
         # find optimal imputer key
         for _key in optimal_imputer_hyperparameters.keys():
-            if "imputer_" in _key:
+            if "imputer" in _key:
                 _imputer_key = _key
                 break
         optimal_imputer = optimal_imputer_hyperparameters[_imputer_key]
@@ -828,7 +828,7 @@ class AutoTabularBase:
         optimal_balancing_hyperparameters = optimal_point["balancing"]
         # find optimal balancing key
         for _key in optimal_balancing_hyperparameters.keys():
-            if "balancing_" in _key:
+            if "balancing" in _key:
                 _balancing_key = _key
                 break
         optimal_balancing = optimal_balancing_hyperparameters[_balancing_key]
@@ -843,7 +843,7 @@ class AutoTabularBase:
         optimal_scaling_hyperparameters = optimal_point["scaling"]
         # find optimal scaling key
         for _key in optimal_scaling_hyperparameters.keys():
-            if "scaling_" in _key:
+            if "scaling" in _key:
                 _scaling_key = _key
                 break
         optimal_scaling = optimal_scaling_hyperparameters[_scaling_key]
@@ -858,7 +858,7 @@ class AutoTabularBase:
         optimal_feature_selection_hyperparameters = optimal_point["feature_selection"]
         # find optimal feature_selection key
         for _key in optimal_feature_selection_hyperparameters.keys():
-            if "feature_selection_" in _key:
+            if "feature_selection" in _key:
                 _feature_selection_key = _key
                 break
         optimal_feature_selection = optimal_feature_selection_hyperparameters[
@@ -877,7 +877,7 @@ class AutoTabularBase:
         optimal_model_hyperparameters = optimal_point["model"]  # optimal model selected
         # find optimal model key
         for _key in optimal_model_hyperparameters.keys():
-            if "model_" in _key:
+            if "model" in _key:
                 _model_key = _key
                 break
         optimal_model = optimal_model_hyperparameters[
