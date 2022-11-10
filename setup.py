@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.2.11
+Latest Version: 0.2.3
 Relative Path: /setup.py
 File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 3:08:48 pm
+Last Modified: Wednesday, 9th November 2022 11:28:41 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -120,15 +120,23 @@ EXTRA_DICT = {
     ],
     "nn": [
         # "rpy2;platform_system=='Linux'",
-        "gensim",
         "lightgbm",
         "xgboost",
         "pygam",
+        "gensim",
         "torch",
         "nni",
         # "transformers",
         # "datasets",
     ],
+    "dev": [
+        "lightgbm",
+        "xgboost",
+        "pygam",
+        "optuna",
+        "flaml",
+        "nevergrad",
+    ]
 }
 
 # check R installation

@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 9th November 2022 6:26:08 pm
+Last Modified: Thursday, 10th November 2022 12:03:05 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -996,6 +996,14 @@ def get_algo(search_algo):
         from ray.tune.suggest.basic_variant import BasicVariantGenerator
 
         algo = BasicVariantGenerator
+    # Update: Nov. 9, 2022
+    # The method BayesOptSearch requires non-discrete hyperparameter space, which is not supported 
+    # by the our version of space.
+    # The work around is to generate a continuous range for discrete hyperparameters, and then 
+    # convert the continuous range to discrete range in the objective function.
+    # e.g. for binary categorical hyperparameter, we can generate a continuous range from 0 to 1,
+    # and then convert the continuous range to 0 or 1 in the objective function.
+    # This is not within the scope of the current version.
     # elif search_algo == "BayesOptSearch":
 
     #     # check whether bayes_opt is installed
@@ -1046,8 +1054,7 @@ def get_algo(search_algo):
         flaml_spec = importlib.util.find_spec("flaml")
         if flaml_spec is None:
             raise ImportError(
-                "flaml not installed. Please install it first to use BlendSearch. \
-                Command to install: pip install 'flaml[blendsearch]'"
+                "flaml not installed. Please install it first to use BlendSearch. \nCommand to install: pip install flaml"
             )
 
         # Blend Search
@@ -1060,8 +1067,7 @@ def get_algo(search_algo):
         flaml_spec = importlib.util.find_spec("flaml")
         if flaml_spec is None:
             raise ImportError(
-                "flaml not installed. Please install it first to use BlendSearch. \
-                Command to install: pip install 'flaml[blendsearch]'"
+                "flaml not installed. Please install it first to use BlendSearch. \nCommand to install: pip install 'flaml[blendsearch]'"
             )
 
         # Blend Search
@@ -1102,8 +1108,7 @@ def get_algo(search_algo):
         hyperopt_spec = importlib.util.find_spec("hyperopt")
         if hyperopt_spec is None:
             raise ImportError(
-                "hyperopt not installed. Please install it first to use HyperOpt. \
-                Command to install: pip install -U hyperopt"
+                "hyperopt not installed. Please install it first to use HyperOpt. \nCommand to install: pip install -U hyperopt"
             )
 
         # HyperOpt Search
@@ -1116,8 +1121,7 @@ def get_algo(search_algo):
         nevergrad_spec = importlib.util.find_spec("nevergrad")
         if nevergrad_spec is None:
             raise ImportError(
-                "nevergrad not installed. Please install it first to use Nevergrad. \
-                Command to install: pip install nevergrad"
+                "nevergrad not installed. Please install it first to use Nevergrad. \nCommand to install: pip install nevergrad"
             )
 
         # Nevergrad Search
@@ -1131,8 +1135,7 @@ def get_algo(search_algo):
         optuna_spec = importlib.util.find_spec("optuna")
         if optuna_spec is None:
             raise ImportError(
-                "optuna not installed. Please install it first to use Optuna. \
-                Command to install: pip install optuna"
+                "optuna not installed. Please install it first to use Optuna. \nCommand to install: pip install optuna"
             )
 
         # Optuna Search
@@ -1154,20 +1157,22 @@ def get_algo(search_algo):
     #     from ray.tune.suggest.sigopt import SigOptSearch
 
     #     algo = SigOptSearch
-    elif search_algo == "Scikit-Optimize":
+    # Update: Nov. 9, 2022
+    # skopt have quite different idea of hyperparameter space, so it's not used here.
+    # elif search_algo == "Scikit-Optimize":
 
-        # check whether scikit-optimize is installed
-        skopt_spec = importlib.util.find_spec("skopt")
-        if skopt_spec is None:
-            raise ImportError(
-                "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
-                Command to install: pip install scikit-optimize"
-            )
+    #     # check whether scikit-optimize is installed
+    #     skopt_spec = importlib.util.find_spec("skopt")
+    #     if skopt_spec is None:
+    #         raise ImportError(
+    #             "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
+    #             Command to install: pip install scikit-optimize"
+    #         )
 
-        # Scikit-Optimize Search
-        from ray.tune.suggest.skopt import SkOptSearch
+    #     # Scikit-Optimize Search
+    #     from ray.tune.suggest.skopt import SkOptSearch
 
-        algo = SkOptSearch
+    #     algo = SkOptSearch
     # elif search_algo == "ZOOpt":
 
     #     # check whether zoopt is installed

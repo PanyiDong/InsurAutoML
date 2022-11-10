@@ -11,7 +11,7 @@ File: test_utils_base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 8:11:20 pm
+Last Modified: Wednesday, 9th November 2022 11:35:41 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -220,4 +220,9 @@ def test_format_hyper_dict() :
     input = {"encoder": "encoder", "n_estimators": 2}
     expected = {"encoder_1": "encoder", "encoder_n_estimators": 2}
     
-    assert format_hyper_dict(input, 1, ref = "encoder") == expected, "The format_hyper_dict function is not correct."
+    assert format_hyper_dict(
+        input, 1, ref = "encoder", search_algo="RandomSearch"
+    ) == input, "The format_hyper_dict function is not correct."
+    assert format_hyper_dict(
+        input, 1, ref = "encoder", search_algo="HyperOpt"
+    ) == expected, "The format_hyper_dict function is not correct."
