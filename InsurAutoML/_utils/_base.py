@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 4:43:11 pm
+Last Modified: Wednesday, 9th November 2022 6:26:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
 import warnings
 import time
 import numpy as np
@@ -298,15 +299,23 @@ def _base_format_hyper_dict(dict, order, ref = "encoder") :
     return dict
     
 def format_hyper_dict(dict, order, ref = "encoder", search_algo = "RandomSearch") :
-    if search_algo in ["RandomSearch", "GridSearch", "Optuna"]:
+    if search_algo in ["RandomSearch", "GridSearch", "Optuna", "BlendSearch", "CFO", "Scikit-Optimize", "Nevergrad"]:
         return _base_format_hyper_dict(dict, order, ref)
     elif search_algo in ["HyperOpt"] :
         return _hyperopt_format_hyper_dict(dict, order, ref)
     else :
         raise NotImplementedError("Search algorithm {} is not implemented!".format(search_algo))
 
+def distribution_to_suggest(trial, method, key, value, algo = "Optuna") :
+    
+    if algo == "Optuna" :
+        return _optuna_distribution_to_suggest(trial, method, key, value)
+    # elif algo == "Nevergrad" :
+    #     return _nevergrad_distribution_to_suggest(trial, method, key, value)
+    else :
+        raise NotImplementedError("Search algorithm {} is not implemented!".format(algo))
 
-def distribution_to_suggest(trial, method, key, value) :
+def _optuna_distribution_to_suggest(trial, method, key, value) :
     
     import optuna.distributions as distributions
     if isinstance(value, distributions.UniformDistribution) :
@@ -323,4 +332,10 @@ def distribution_to_suggest(trial, method, key, value) :
         return trial.suggest_int(method + "_" + key, value.low, value.high)
     else :
         raise TypeError("Distribution {} is not supported!".format(type(value)))
+    
+class DisableLogger() :
+    def __enter__(self) :
+        logging.disable(logging.CRITICAL)
+    def __exit__(self, exitype, value, traceback) :
+        logging.disable(logging.NOTSET)
         

@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 4:42:35 pm
+Last Modified: Wednesday, 9th November 2022 6:26:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,6 +57,7 @@ from typing import Callable
 from InsurAutoML._utils._base import (
     has_method,
     distribution_to_suggest,
+    DisableLogger,
 )
 from InsurAutoML._constant import (
     METHOD_MAPPING
@@ -528,33 +529,32 @@ def _optuna_get_hyperparameter_space(
         encoder_hyper = {}
         encoder_hyper["encoder"] = encoder
         for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
-            # TODO: convert all distributions to trial suggest
-            encoder_hyper[key] = distribution_to_suggest(trial, encoder, key, value)
+            encoder_hyper[key] = distribution_to_suggest(trial, encoder, key, value, algo = "Optuna")
             
         imputer_hyper = {}
         imputer_hyper["imputer"] = imputer
         for key, value in _imputer_hyperparameter[[*_imputer].index(imputer)].items():
-            imputer_hyper[key] = distribution_to_suggest(trial, imputer, key, value)
+            imputer_hyper[key] = distribution_to_suggest(trial, imputer, key, value, algo = "Optuna")
             
         balancing_hyper = {}
         balancing_hyper["balancing"] = balancing
         for key, value in _balancing_hyperparameter[[*_balancing].index(balancing)].items():
-            balancing_hyper[key] = distribution_to_suggest(trial, balancing, key, value)
+            balancing_hyper[key] = distribution_to_suggest(trial, balancing, key, value, algo = "Optuna")
             
         scaling_hyper = {}
         scaling_hyper["scaling"] = scaling
         for key, value in _scaling_hyperparameter[[*_scaling].index(scaling)].items():
-            scaling_hyper[key] = distribution_to_suggest(trial, scaling, key, value)
+            scaling_hyper[key] = distribution_to_suggest(trial, scaling, key, value, algo = "Optuna")
             
         feature_selection_hyper = {}
         feature_selection_hyper["feature_selection"] = feature_selection
         for key, value in _feature_selection_hyperparameter[[*_feature_selection].index(feature_selection)].items():
-            feature_selection_hyper[key] = distribution_to_suggest(trial, feature_selection, key, value)
+            feature_selection_hyper[key] = distribution_to_suggest(trial, feature_selection, key, value, algo = "Optuna")
             
         model_hyper = {}
         model_hyper["model"] = model
         for key, value in _model_hyperparameter[[*_models].index(model)].items():
-            model_hyper[key] = distribution_to_suggest(trial, model, key, value)
+            model_hyper[key] = distribution_to_suggest(trial, model, key, value, algo = "Optuna")
             
         return {
             "task_type": "tabular_" + task_mode,
@@ -581,7 +581,304 @@ def _optuna_get_hyperparameter_space(
         _model_hyperparameter = _model_hyperparameter,
         task_mode = task_mode,
     )
-                   
+    
+def _nevergrad_get_hyperparameter_space(
+    X,
+    encoders_hyperparameters,
+    encoder,
+    imputers_hyperparameters,
+    imputer,
+    balancings_hyperparameters,
+    balancing,
+    scalings_hyperparameters,
+    scaling,
+    feature_selection_hyperparameters,
+    feature_selection,
+    models_hyperparameters,
+    models,
+    task_mode,
+):
+    # check installation of optuna
+    nevergrad_spec = importlib.util.find_spec("nevergrad")
+    if nevergrad_spec is None:
+        raise ImportError(
+            "nevergrad not installed. Please install it first to use Nevergrad. \
+            Command to install: pip install nevergrad"
+        )
+        
+    import nevergrad as ng
+    from ray.tune.suggest.nevergrad import NevergradSearch
+    
+    # encoding space
+    # get all method names in hyperparameter space
+    all_encoders = [item["encoder"] for item in encoders_hyperparameters]
+    _encoding_hyperparameter = []
+    for _encoder in [*encoder]:
+        # need a layer of hyperparameter space to retain it
+        encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"] = tune.choice(
+            [encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"]]
+        )
+        _encoding_hyperparameter.append(
+            NevergradSearch.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
+        )
+        
+    # raise error if no encoding hyperparameters are found
+    if len(_encoding_hyperparameter) == 0:
+        raise ValueError(
+            "No encoding hyperparameters are found. Please check your encoders."
+        )
+    
+    # imputation space
+    # get all method names in hyperparameter space
+    all_imputers = [item["imputer"] for item in imputers_hyperparameters]
+    _imputer_hyperparameter = []
+    for _imputer in [*imputer]:
+        imputers_hyperparameters[all_imputers.index(_imputer)]["imputer"] = tune.choice(
+            [imputers_hyperparameters[all_imputers.index(_imputer)]["imputer"]]
+        )
+        _imputer_hyperparameter.append(
+            NevergradSearch.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
+        )
+        
+    # raise error if no encoding hyperparameters are found
+    if len(_imputer_hyperparameter) == 0:
+        raise ValueError(
+            "No imputer hyperparameters are found. Please check your encoders."
+        )
+    
+    # balancing space
+    # get all method names in hyperparameter space
+    all_balancings = [item["balancing"] for item in balancings_hyperparameters]
+    _balancing_hyperparameter = []
+    for _balancing in [*balancing]:
+        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = tune.choice(
+            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
+        )
+        _balancing_hyperparameter.append(
+            NevergradSearch.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
+        )
+        
+    # raise error if no encoding hyperparameters are found
+    if len(_balancing_hyperparameter) == 0:
+        raise ValueError(
+            "No balancing hyperparameters are found. Please check your encoders."
+        )
+    
+    # scaling space
+    # get all method names in hyperparameter space
+    all_scalings = [item["scaling"] for item in scalings_hyperparameters]
+    _scaling_hyperparameter = []
+    for _scaling in [*scaling]:
+        scalings_hyperparameters[all_scalings.index(_scaling)]["scaling"] = tune.choice(
+            [scalings_hyperparameters[all_scalings.index(_scaling)]["scaling"]]
+        )
+        _scaling_hyperparameter.append(
+            NevergradSearch.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
+        )
+        
+    # raise error if no encoding hyperparameters are found
+    if len(_scaling_hyperparameter) == 0:
+        raise ValueError(
+            "No scaling hyperparameters are found. Please check your encoders."
+        )
+    
+    # feature selection space
+    # get all method names in hyperparameter space
+    all_feature_selections = [item["feature_selection"] for item in feature_selection_hyperparameters]
+    _feature_selection_hyperparameter = []
+    for _feature_selection in [*feature_selection]:
+        feature_selection_hyperparameters[
+            all_feature_selections.index(_feature_selection)
+        ]["feature_selection"] = tune.choice(
+            [feature_selection_hyperparameters[
+                all_feature_selections.index(_feature_selection)
+            ]["feature_selection"]]
+        )
+        _feature_selection_hyperparameter.append(
+            NevergradSearch.convert_search_space(
+                feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
+            )
+        )
+        
+    # raise error if no encoding hyperparameters are found
+    if len(_feature_selection_hyperparameter) == 0:
+        raise ValueError(
+            "No feature selection hyperparameters are found. Please check your encoders."
+        )
+    
+    # model space
+    # get all method names in hyperparameter space
+    all_models = [item["model"] for item in models_hyperparameters]
+    _model_hyperparameter = []
+    for _model in [*models]:
+        models_hyperparameters[all_models.index(_model)]["model"] = tune.choice(
+            [models_hyperparameters[all_models.index(_model)]["model"]]
+        )
+        _model_hyperparameter.append(
+            NevergradSearch.convert_search_space(models_hyperparameters[all_models.index(_model)])
+        )
+        
+    # raise error if no encoding hyperparameters are found
+    if len(_model_hyperparameter) == 0:
+        raise ValueError(
+            "No model hyperparameters are found. Please check your encoders."
+        )
+    
+    # the pipeline search space
+    # select one of the method/hyperparameter setting from each part
+    return {
+        "task_type": "tabular_" + task_mode,
+        "encoder": tune.choice(_encoding_hyperparameter),
+        "imputer": tune.choice(_imputer_hyperparameter),
+        "balancing": tune.choice(_balancing_hyperparameter),
+        "scaling": tune.choice(_scaling_hyperparameter),
+        "feature_selection": tune.choice(_feature_selection_hyperparameter),
+        "model": tune.choice(_model_hyperparameter),
+    }    
+    
+# Update: Nov. 9, 2022
+# skopt have quite different idea of hyperparameter space, so it's not used here.
+# def _skopt_get_hyperparameter_space(
+#     X,
+#     encoders_hyperparameters,
+#     encoder,
+#     imputers_hyperparameters,
+#     imputer,
+#     balancings_hyperparameters,
+#     balancing,
+#     scalings_hyperparameters,
+#     scaling,
+#     feature_selection_hyperparameters,
+#     feature_selection,
+#     models_hyperparameters,
+#     models,
+#     task_mode,
+# ):
+#     # check installation of optuna
+#     skopt_spec = importlib.util.find_spec("skopt")
+#     if skopt_spec is None:
+#         raise ImportError(
+#             "skopt not installed. Please install it first to use Scikit-Optimize. \
+#             Command to install: pip install scikit-optimize"
+#         )
+        
+#     from ray.tune.suggest.skopt import SkOptSearch
+    
+#     # encoding space
+#     # get all method names in hyperparameter space
+#     all_encoders = [item["encoder"] for item in encoders_hyperparameters]
+#     _encoding_hyperparameter = []
+#     for _encoder in [*encoder]:
+#         _encoding_hyperparameter.append(
+#             SkOptSearch.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
+#         )
+        
+#     # raise error if no encoding hyperparameters are found
+#     if len(_encoding_hyperparameter) == 0:
+#         raise ValueError(
+#             "No encoding hyperparameters are found. Please check your encoders."
+#         )
+
+#     _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
+    
+#     # imputation space
+#     # get all method names in hyperparameter space
+#     all_imputers = [item["imputer"] for item in imputers_hyperparameters]
+#     _imputer_hyperparameter = []
+#     for _imputer in [*imputer]:
+#         _imputer_hyperparameter.append(
+#             SkOptSearch.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
+#         )
+        
+#     # raise error if no encoding hyperparameters are found
+#     if len(_imputer_hyperparameter) == 0:
+#         raise ValueError(
+#             "No imputer hyperparameters are found. Please check your encoders."
+#         )
+
+#     _imputer_hyperparameter = tune.choice(_imputer_hyperparameter)
+    
+#     # balancing space
+#     # get all method names in hyperparameter space
+#     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
+#     _balancing_hyperparameter = []
+#     for _balancing in [*balancing]:
+#         _balancing_hyperparameter.append(
+#             SkOptSearch.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
+#         )
+        
+#     # raise error if no encoding hyperparameters are found
+#     if len(_balancing_hyperparameter) == 0:
+#         raise ValueError(
+#             "No balancing hyperparameters are found. Please check your encoders."
+#         )
+
+#     _balancing_hyperparameter = tune.choice(_balancing_hyperparameter)
+    
+#     # scaling space
+#     # get all method names in hyperparameter space
+#     all_scalings = [item["scaling"] for item in scalings_hyperparameters]
+#     _scaling_hyperparameter = []
+#     for _scaling in [*scaling]:
+#         _scaling_hyperparameter.append(
+#             SkOptSearch.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
+#         )
+        
+#     # raise error if no encoding hyperparameters are found
+#     if len(_scaling_hyperparameter) == 0:
+#         raise ValueError(
+#             "No scaling hyperparameters are found. Please check your encoders."
+#         )
+
+#     _scaling_hyperparameter = tune.choice(_scaling_hyperparameter)
+    
+#     # feature selection space
+#     # get all method names in hyperparameter space
+#     all_feature_selections = [item["feature_selection"] for item in feature_selection_hyperparameters]
+#     _feature_selection_hyperparameter = []
+#     for _feature_selection in [*feature_selection]:
+#         _feature_selection_hyperparameter.append(
+#             SkOptSearch.convert_search_space(
+#                 feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
+#             )
+#         )
+        
+#     # raise error if no encoding hyperparameters are found
+#     if len(_feature_selection_hyperparameter) == 0:
+#         raise ValueError(
+#             "No feature selection hyperparameters are found. Please check your encoders."
+#         )
+
+#     _feature_selection_hyperparameter = tune.choice(_feature_selection_hyperparameter)
+    
+#     # model space
+#     # get all method names in hyperparameter space
+#     all_models = [item["model"] for item in models_hyperparameters]
+#     _model_hyperparameter = []
+#     for _model in [*models]:
+#         _model_hyperparameter.append(
+#             SkOptSearch.convert_search_space(models_hyperparameters[all_models.index(_model)])
+#         )
+        
+#     # raise error if no encoding hyperparameters are found
+#     if len(_model_hyperparameter) == 0:
+#         raise ValueError(
+#             "No model hyperparameters are found. Please check your encoders."
+#         )
+
+#     _model_hyperparameter = tune.choice(_model_hyperparameter)
+    
+#     # the pipeline search space
+#     # select one of the method/hyperparameter setting from each part
+#     return {
+#         "task_type": "tabular_" + task_mode,
+#         "encoder": _encoding_hyperparameter,
+#         "imputer": _imputer_hyperparameter,
+#         "balancing": _balancing_hyperparameter,
+#         "scaling": _scaling_hyperparameter,
+#         "feature_selection": _feature_selection_hyperparameter,
+#         "model": _model_hyperparameter,
+#     }    
         
 
 def _get_hyperparameter_space(
@@ -601,7 +898,7 @@ def _get_hyperparameter_space(
     task_mode,
     search_aglo,
 ):
-    if search_aglo in ["RandomSearch", "GridSearch"]:
+    if search_aglo in ["RandomSearch", "GridSearch", "BlendSearch", "CFO"]:
         return _base_get_hyperparameter_space(
             X,
             encoders_hyperparameters,
@@ -636,22 +933,58 @@ def _get_hyperparameter_space(
             task_mode,
         )
     elif search_aglo in ["Optuna"] :
-        return _optuna_get_hyperparameter_space(
-            X,
-            encoders_hyperparameters,
-            encoder,
-            imputers_hyperparameters,
-            imputer,
-            balancings_hyperparameters,
-            balancing,
-            scalings_hyperparameters,
-            scaling,
-            feature_selection_hyperparameters,
-            feature_selection,
-            models_hyperparameters,
-            models,
-            task_mode,
-        )
+        with DisableLogger() :
+            return _optuna_get_hyperparameter_space(
+                X,
+                encoders_hyperparameters,
+                encoder,
+                imputers_hyperparameters,
+                imputer,
+                balancings_hyperparameters,
+                balancing,
+                scalings_hyperparameters,
+                scaling,
+                feature_selection_hyperparameters,
+                feature_selection,
+                models_hyperparameters,
+                models,
+                task_mode,
+            )
+    elif search_aglo in ["Nevergrad"] :
+        with DisableLogger() :
+            return _nevergrad_get_hyperparameter_space(
+                X,
+                encoders_hyperparameters,
+                encoder,
+                imputers_hyperparameters,
+                imputer,
+                balancings_hyperparameters,
+                balancing,
+                scalings_hyperparameters,
+                scaling,
+                feature_selection_hyperparameters,
+                feature_selection,
+                models_hyperparameters,
+                models,
+                task_mode,
+            )
+    # elif search_aglo in ["Scikit-Optimize"] :
+    #     return _skopt_get_hyperparameter_space(
+    #         X,
+    #         encoders_hyperparameters,
+    #         encoder,
+    #         imputers_hyperparameters,
+    #         imputer,
+    #         balancings_hyperparameters,
+    #         balancing,
+    #         scalings_hyperparameters,
+    #         scaling,
+    #         feature_selection_hyperparameters,
+    #         feature_selection,
+    #         models_hyperparameters,
+    #         models,
+    #         task_mode,
+    #     )
 
 
 # get the hyperparameter optimization algorithm based on string input
@@ -677,21 +1010,21 @@ def get_algo(search_algo):
     #     from ray.tune.suggest.bayesopt import BayesOptSearch
 
     #     algo = BayesOptSearch
-    elif search_algo == "AxSearch":
+    # elif search_algo == "AxSearch":
 
-        # check whether Ax and sqlalchemy are installed
-        Ax_spec = importlib.util.find_spec("ax")
-        sqlalchemy_spec = importlib.util.find_spec("sqlalchemy")
-        if Ax_spec is None or sqlalchemy_spec is None:
-            raise ImportError(
-                "Ax or sqlalchemy not installed. Please install these packages to use AxSearch. \
-                    Command to install: pip install ax-platform sqlalchemy"
-            )
+    #     # check whether Ax and sqlalchemy are installed
+    #     Ax_spec = importlib.util.find_spec("ax")
+    #     sqlalchemy_spec = importlib.util.find_spec("sqlalchemy")
+    #     if Ax_spec is None or sqlalchemy_spec is None:
+    #         raise ImportError(
+    #             "Ax or sqlalchemy not installed. Please install these packages to use AxSearch. \
+    #                 Command to install: pip install ax-platform sqlalchemy"
+    #         )
 
-        # Ax Search
-        from ray.tune.suggest.ax import AxSearch
+    #     # Ax Search
+    #     from ray.tune.suggest.ax import AxSearch
 
-        algo = AxSearch
+    #     algo = AxSearch
     # elif search_algo == "BOHB":
 
     #     # check whether HpBandSter and ConfigSpace are installed
@@ -749,20 +1082,20 @@ def get_algo(search_algo):
     #     from ray.tune.suggest.dragonfly import DragonflySearch
 
     #     algo = DragonflySearch
-    elif search_algo == "HEBO":
+    # elif search_algo == "HEBO":
 
-        # check whether HEBO is installed
-        HEBO_spec = importlib.util.find_spec("HEBO")
-        if HEBO_spec is None:
-            raise ImportError(
-                "HEBO not installed. Please install it first to use HEBO. \
-                Command to install: pip install 'HEBO>=0.2.0'"
-            )
+    #     # check whether HEBO is installed
+    #     HEBO_spec = importlib.util.find_spec("HEBO")
+    #     if HEBO_spec is None:
+    #         raise ImportError(
+    #             "HEBO not installed. Please install it first to use HEBO. \
+    #             Command to install: pip install 'HEBO>=0.2.0'"
+    #         )
 
-        # Heteroscedastic Evolutionary Bayesian Optimization/HEBO
-        from ray.tune.suggest.hebo import HEBOSearch
+    #     # Heteroscedastic Evolutionary Bayesian Optimization/HEBO
+    #     from ray.tune.suggest.hebo import HEBOSearch
 
-        algo = HEBOSearch
+    #     algo = HEBOSearch
     elif search_algo == "HyperOpt":
 
         # check whether hyperopt is installed
@@ -821,20 +1154,20 @@ def get_algo(search_algo):
     #     from ray.tune.suggest.sigopt import SigOptSearch
 
     #     algo = SigOptSearch
-    # elif search_algo == "Scikit-Optimize":
+    elif search_algo == "Scikit-Optimize":
 
-    #     # check whether scikit-optimize is installed
-    #     skopt_spec = importlib.util.find_spec("skopt")
-    #     if skopt_spec is None:
-    #         raise ImportError(
-    #             "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
-    #             Command to install: pip install scikit-optimize"
-    #         )
+        # check whether scikit-optimize is installed
+        skopt_spec = importlib.util.find_spec("skopt")
+        if skopt_spec is None:
+            raise ImportError(
+                "scikit-optimize not installed. Please install it first to use Scikit-Optimize. \
+                Command to install: pip install scikit-optimize"
+            )
 
-    #     # Scikit-Optimize Search
-    #     from ray.tune.suggest.skopt import SkOptSearch
+        # Scikit-Optimize Search
+        from ray.tune.suggest.skopt import SkOptSearch
 
-    #     algo = SkOptSearch
+        algo = SkOptSearch
     # elif search_algo == "ZOOpt":
 
     #     # check whether zoopt is installed

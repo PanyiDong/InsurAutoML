@@ -1,6 +1,6 @@
 # Project for Auto Machine Learning (AutoML)
 
-[![Linux](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml) [![Windows](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml) [![release](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML)](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML) [![codecov](https://codecov.io/gh/PanyiDong/InsurAutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/InsurAutoML) 
+[![Linux](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml) [![Windows](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml) [![release](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML)](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML) [![codecov](https://codecov.io/gh/PanyiDong/InsurAutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/InsurAutoML)
 
 IRisk Lab Project, UIUC, Fall 2021
 
@@ -69,15 +69,37 @@ For neural network related support (recommended for `CUDA` supported devices), p
 
 ## Usage
 
-### 1. Put data in the folder and run for training/evaluation
+### 1. Command Line Interface
 
-Example below runs a classification task on `heart.csv` file in `example/example_data` folder
+#### Put train/test data in the folder
+
+After putting data to the folder, few of arguments need to be recognized.
+
+__Must have arguments__ :
 
 `train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
 
 Your can specify the data folder (or by default at current folder), test_data name (or evaluation set will be split from train_data), evaluation metrics and all model parameters by arguments.
 
-### 2. Run experiments
+__Optional arguments__ :
+
+`data_folder`: refers to the folder where the data is stored, default set to current folder.
+
+`test_data`: refers to the test_data file name (no file extension needed), default is to split from `train_data`.
+
+`test_eval`: refers to evaluation metric, default is set to accuracy for classification and MSE for regression tasks.
+
+`n_estimators`: refers to number of pipelines used to form the final ensemble, default set to 5.
+
+`timeout`: refers to the time budget in seconds for experiments, default set to 360.
+
+`max_evals`: refers to number of trials for experiments, default set to 64.
+
+Use `python main.py -h` for full list of supported arguments and explanation.
+
+#### Run experiments
+
+Example below runs a classification task on `heart.csv` file in `example/example_data` folder
 
 In the command terminal:
 
@@ -91,6 +113,10 @@ And an example run regression task on `insurance.csv` file in `example/example_d
 python main.py --data_folder example/example_data --train_data insurance --response expenses
 ```
 
+In the end, will see the test evaluation results, recordings of the training procedures and optimal model ensemble file.
+
+#### 2. Native Python Interface
+
 Or, you can treat it like a package and follows the fit/predict workflow like jupyter notebooks in `examples`.
 
 ```python
@@ -101,9 +127,9 @@ model.fit(train_X, train_y)
 model.predict(test_X)
 ```
 
-By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs. (Now, the pipeline can identify whether console terminal/Jupyter Notebook environment is used, you don't need to worry about it.)
+~~By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs. ~~ Now, the pipeline can identify whether console terminal/Jupyter Notebook environment is used, don't need to worry about it.
 
-Moreover, in current version, model selection and hyperparameter optimization is achieved by `ray.tune`. However, if you still need previous `HyperOpt` version, you can call as:
+Moreover, in current version, model selection and hyperparameter optimization is achieved by `ray.tune`, which provides better scalability and interface. However, if you still need previous `HyperOpt` version, you can call as:
 
 ```python
 from InsurAutoML._legacy import AutoTabular
@@ -139,7 +165,7 @@ Current Progress:
 >
 > 5. deal with imbalance data: use over-/under-sampling methods to balance the dataset, some of the available methods: Tome kLink, One Sided Selection (OSS), Smote, etc.
 >
-> 6. feature selection: PCA, AFFS, etc. And some models from autosklearn will be applied.
+> 6. feature selection: PCA, AFFS, etc. And some models from sklearn/autosklearn will be applied.
 >
 > 7. apply `ray.tune` (with plentiful search algorithms and search schedulers) to create a pipeline of AutoML workflow. Consider the methods as a hyperparameter, and create a hyperparameter space, where we can find the optimal ML workflow. Only supervised classification/regression models supported.
 
@@ -157,9 +183,9 @@ The pipeline of AutoML:
 >
 > 6. Regression/Classification: perform regression/classification models to fit the datasets.
 
-With the new update, cutomized/personalized preprocessing methods and models are supported by using the `additional.py` file as additional input. In the file, there's also a template of how to write the methods and correpsonding hyperparameter space.
+With the new update, customized/personalized preprocessing methods and models are supported by using the `additional.py` file as additional input. In the file, there's also a template of how to write the methods and corresponding hyperparameter space.
 
-Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and only fit the optimal pipeline, which can save the training time (for optimization). On test dataset Employee Future prediction, the over 3 minutes training time can be reduced to 2.1 seconds reproduction time. Fitted models, preprocessed train/test datasets, hyperparameter settings for each trials will also by stored in `tmp` folders for inspection. (Both `model` and `tmp` are changeable arguments if you prefer other names.)
+Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file, file name may vary by experiments, controlled by argument `model_name` in Python interface, or `train_data` + "_model" in command line interface). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and directly use the optimal pipeline, which can save the training time (for optimization). Fitted models, preprocessed train/test datasets, hyperparameter settings for each trials will also by stored in `tmp` folders for inspection. (Both `model` and `tmp` are changeable arguments if you prefer other names.)
 
 ### Configuration
 
@@ -177,16 +203,16 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 >
 > 6. objective: metrics use to evaluate trials' performance
 >
-> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch` and `HyperOpt` are now supported, may seek compatibility for more search algorithms
+> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch`, `HyperOpt`, `Optuna`, `BlendSearch`, `CFO` and `Nevergrad` are now supported. Default is set to `HyperOpt`. The use of `BlendSearch`, `CFO` and `Nevergrad` requires additional packages, see the error message for installation guide when using. This will be all algorithms that will be supported in short time.
 >
 > 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
 
 Other files in the repository:
 
-1. `report.pdf` and presentation provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
+1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
 
 2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
 
 ## Future
 
-I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure AutoML for tabular tasks/NLP tasks (it's available now for tabular tasks). Furthermore, explore the topics in explainability, fairness of ML models. But no schedules for such progress can be made.
+I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure NAS for NLP tasks (there's a workable algorithm for MLP NAS through nni and still in development of complete structure). Furthermore, explore the topics in explainability, fairness of ML models. But no schedules for such progress can be made.

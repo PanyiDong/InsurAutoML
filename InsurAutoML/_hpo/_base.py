@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 6:14:33 pm
+Last Modified: Wednesday, 9th November 2022 6:27:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1290,15 +1290,11 @@ class AutoTabularBase:
 
         # special requirement for Nevergrad, need a algorithm setting
         if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
-            warnings.warn("No algorithm setting for Nevergrad find, use NGOpt.")
+            warnings.warn("No algorithm setting for Nevergrad find, use OnePlusOne.")
             import nevergrad as ng
 
-            self.search_algo_settings = {"optimizer": ng.optimizers.NGOpt}
-            # raise AttributeError(
-            #     "Search algorithm Nevergrad requires Nevergrad optimizer. \
-            #     Example: self.search_algo_settings = {'optimizer': nevergrad.optimizers.NGOpt}."
-            # )
-
+            self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
+        
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
 
@@ -1386,7 +1382,7 @@ class AutoTabularBase:
             # optimization process
             # partially activated objective function
             # special treatment for optuna, embed search space in search algorithm
-            if self.search_algo in ["Optuna"] :
+            if self.search_algo in ["Optuna"]:
                 fit_analysis = tune.run(
                     trainer,
                     # config=hyperparameter_space,
@@ -1396,15 +1392,17 @@ class AutoTabularBase:
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
                     checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
+                    # mode="min",  # always call a minimization process
                     search_alg=algo(
-                        hyperparameter_space,
+                        space=hyperparameter_space,
+                        mode="min",  # always call a minimization process
+                        metric="loss",
                         **self.search_algo_settings
                     ),
                     scheduler=scheduler(**self.search_scheduler_settings),
                     reuse_actors=True,
                     raise_on_failed_trial=False,
-                    metric="loss",
+                    # metric="loss",
                     num_samples=self.max_evals,
                     max_failures=self.max_error,
                     stop=stopper,  # use stopper
@@ -1506,7 +1504,7 @@ class AutoTabularBase:
             # optimization process
             # partially activated objective function
             # special treatment for optuna, embed search space in search algorithm
-            if self.search_algo in ["Optuna"] :
+            if self.search_algo in ["Optuna"]:
                 fit_analysis = tune.run(
                     trainer,
                     # config=hyperparameter_space,
@@ -1518,7 +1516,7 @@ class AutoTabularBase:
                     checkpoint_score_attr="loss",
                     # mode="min",  # always call a minimization process
                     search_alg=algo(
-                        hyperparameter_space,
+                        space=hyperparameter_space,
                         mode="min",  # always call a minimization process
                         metric="loss",
                         **self.search_algo_settings
@@ -1651,7 +1649,7 @@ class AutoTabularBase:
                 # optimization process
                 # partially activated objective function
                 # special treatment for optuna, embed search space in search algorithm
-                if self.search_algo in ["Optuna"] :
+                if self.search_algo in ["Optuna"]:
                     fit_analysis = tune.run(
                         trainer,
                         # config=hyperparameter_space,
@@ -1667,7 +1665,7 @@ class AutoTabularBase:
                         checkpoint_score_attr="loss",
                         # mode="min",  # always call a minimization process
                         search_alg=algo(
-                            hyperparameter_space,
+                            space=hyperparameter_space,
                             metric="loss",
                             mode="min",  # always call a minimization process
                             **self.search_algo_settings
