@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 9th November 2022 6:27:09 pm
+Last Modified: Saturday, 12th November 2022 12:55:04 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,6 +72,7 @@ from InsurAutoML._utils._data import (
     str2list,
     str2dict,
 )
+from InsurAutoML._utils._metadata import MetaData
 from InsurAutoML._utils._optimize import (
     get_algo,
     get_scheduler,
@@ -1101,6 +1102,22 @@ class AutoTabularBase:
                 y = pd.DataFrame(y)
             except:
                 raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
+            
+        # get data metadata
+        self.metadata = MetaData().get(X)
+        # check if there's unsupported data type
+        # if datetime ,recommend to remove
+        if ("Datetime", "") in self.metadata.keys():
+            warnings.warn(
+                "Found datatime data type columns {}, it's better to remove those columns".format(
+                    *self.metadata[("Datetime", "")]
+                )
+            )
+        # TODO: when NLP and Image supported, redirect to corresponding model
+        if ("Object", "Text") in self.metadata.keys():
+            raise NotImplementedError("Text data type is not supported yet.")
+        if ("Path", "") in self.metadata.keys():
+            raise NotImplementedError("Image data type is not supported yet.") 
 
         # get features and response names
         if isinstance(X, pd.DataFrame):  # expect multiple features
@@ -1880,7 +1897,7 @@ class AutoTabularBase:
                 _y_pred = self._ensemble.estimators[-1][1].predict(_X)
 
         # make sure the ensemble is fitted
-        # usually, most of the methods are already fitted
+        # usually, every method is already fitted
         # but all pipelines need to be checked and set to fitted
         self._ensemble.fit(_X, _y)
 
@@ -1901,9 +1918,14 @@ class AutoTabularBase:
         if self.reset_index:
             # reset index to avoid indexing error
             X.reset_index(drop=True, inplace=True)
+            
+        # check if fitted
+        if not self._fitted:
+            raise ValueError("Pipeline not fitted yet! Call fit() first.")
 
         _X = X.copy()
 
+        # since pipeline is converted to ensemble, no need to predict on each component
         # may need preprocessing for test data, the preprocessing should be the same as in fit part
         # Encoding
         # # convert string types to numerical type
@@ -1927,5 +1949,4 @@ class AutoTabularBase:
         # # use model to predict
         # return self._fit_model.predict(_X)
 
-        # since use ensemble to predict, all are wrapped in the ensemble
         return self._ensemble.predict(_X)

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/_ML.py
-File Created: Tuesday, 5th April 2022 10:50:27 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_ML.py
+File: _ML.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:39 pm
+Last Modified: Thursday, 10th November 2022 2:48:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -700,9 +700,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
     def fit(self, X, y=None):
 
-        if isinstance(y, pd.DataFrame) or isinstance(y, np.ndarray):
+        if isinstance(y, pd.DataFrame) or isinstance(y, pd.Series) or isinstance(y, np.ndarray):
             self._type = type_of_task(y)
-        elif y == None:
+        elif not y:
             self._type = "Unsupervised"
 
         if self._type in ["binary", "multiclass"]:  # assign classification tasks

@@ -1,17 +1,17 @@
 """
-File: _baseModel.py
+File: _wholeSpace.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_nas/_nninn/_baseModel.py
-File Created: Sunday, 17th July 2022 9:21:02 pm
+Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_baseSpace/_wholeSpace.py
+File: _wholeSpace.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 11th October 2022 3:40:54 pm
+Last Modified: Saturday, 12th November 2022 11:15:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ import nni
 import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper
 
-from ._utils import ACTIVATIONS, RNN_TYPES, how_to_init
+from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
 
 
 @model_wrapper

@@ -11,7 +11,7 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:57:13 am
+Last Modified: Sunday, 13th November 2022 4:04:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+FULLTYPE_MAPPING = {
+    ("Int", "Numerical"): "con",
+    ("Int", "Categorical"): "cat",
+    ("Float", ""): "con",
+    ("Datetime", ""): "",
+    ("Object", "Categorical"): "cat",
+    ("Object", "Text"): "txt",
+    ("Path", ""): "img",
+}
+
+UNIQUE_FULLTYPE = list(FULLTYPE_MAPPING.keys())
 
 # encoders
 ENCODERS = ["DataEncoding"]

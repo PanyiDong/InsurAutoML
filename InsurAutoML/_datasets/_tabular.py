@@ -1,17 +1,17 @@
 """
-File: __tabular.py
+File: _tabular.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_data/__tabular.py
-File Created: Saturday, 6th August 2022 10:49:36 pm
+Relative Path: /InsurAutoML/_datasets/_tabular.py
+File: _tabular.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 8:49:52 am
+Last Modified: Thursday, 10th November 2022 11:26:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -243,7 +243,7 @@ def PROD(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
+        # split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
@@ -253,7 +253,9 @@ def PROD(split="train", save=True, data_path="tmp"):
             )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
+            dataset = pd.read_csv(
+                os.path.join(URL, "{}.csv".format("dev" if split == "test" else split)).replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
@@ -269,8 +271,8 @@ def PROD(split="train", save=True, data_path="tmp"):
                 )
         return dataset.iloc[:, :-1], dataset.iloc[:, -1]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
+        # if "test" in split:
+        #     split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
@@ -285,7 +287,7 @@ def PROD(split="train", save=True, data_path="tmp"):
                 )
             else:
                 dataset[_split] = pd.read_csv(
-                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                    os.path.join(URL, "{}.csv".format("dev" if _split == "test" else _split)).replace("\\", "/")
                 )
                 # whether need to save
                 if save:
@@ -317,7 +319,7 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
+        # split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
@@ -328,7 +330,7 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
         # else, download it
         else:
             dataset = pd.read_parquet(
-                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+                os.path.join(URL, "{}.pq".format("dev" if split == "test" else split)).replace("\\", "/")
             )
             # whether need to save
             if save:
@@ -343,8 +345,8 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
                 )
         return dataset.loc[:, dataset.columns != "target"], dataset["target"]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
+        # if "test" in split:
+        #     split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
@@ -357,7 +359,7 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
                 )
             else:
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                    os.path.join(URL, "{}.pq".format("dev" if _split == "test" else _split)).replace("\\", "/")
                 )
                 # whether need to save
                 if save:
@@ -389,7 +391,6 @@ def JIGSAW100K(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/jigsaw_unintended_bias100K"
     DATANAME = "jigsaw_unintended_bias100K"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -461,7 +462,6 @@ def AIRBNB(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/airbnb_melbourne"
     DATANAME = "airbnb_melbourne"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -532,7 +532,6 @@ def IMDBGenre(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/imdb_genre_prediction"
     DATANAME = "imdb_genre_prediction"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -609,7 +608,6 @@ def FakeJob(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/fake_job_postings"
     DATANAME = "fake_job_postings"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -686,7 +684,6 @@ def FakeJob2(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/fake_job_postings2"
     DATANAME = "fake_job_postings2"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -763,7 +760,6 @@ def KickStarter(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/kick_starter_funding"
     DATANAME = "kick_starter_funding"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -840,7 +836,6 @@ def WINEReview(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/wine_reviews"
     DATANAME = "wine_reviews"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -917,7 +912,6 @@ def NewsChannel(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_channel"
     DATANAME = "news_channel"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -996,7 +990,6 @@ def WomenCloth(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/women_clothing_review"
     DATANAME = "women_clothing_review"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1071,7 +1064,7 @@ def MERCARI(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
+        # split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
@@ -1082,7 +1075,7 @@ def MERCARI(split="train", save=True, data_path="tmp"):
         # else, download it
         else:
             dataset = pd.read_parquet(
-                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+                os.path.join(URL, "{}.pq".format("dev" if split == "test" else split)).replace("\\", "/")
             )
             # whether need to save
             if save:
@@ -1097,8 +1090,8 @@ def MERCARI(split="train", save=True, data_path="tmp"):
                 )
         return dataset.loc[:, dataset.columns != "price"], dataset["price"]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
+        # if "test" in split:
+        #     split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
@@ -1111,7 +1104,7 @@ def MERCARI(split="train", save=True, data_path="tmp"):
                 )
             else:
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                    os.path.join(URL, "{}.pq".format("dev" if _split == "test" else _split)).replace("\\", "/")
                 )
                 # whether need to save
                 if save:
@@ -1143,7 +1136,6 @@ def MERCARI100K(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/mercari_price_suggestion100K"
     DATANAME = "mercari_price_suggestion100K"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1215,7 +1207,6 @@ def AE(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/ae_price_prediction"
     DATANAME = "ae_price_prediction"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1283,7 +1274,6 @@ def JCPenney(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/jc_penney_products"
     DATANAME = "jc_penney_products"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1360,7 +1350,6 @@ def NewsPopularity(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_popularity"
     DATANAME = "news_popularity"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1436,8 +1425,7 @@ def NewsPopularity2(split="train", save=True, data_path="tmp"):
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_popularity2"
     DATANAME = "news_popularity2"
-
-    # need to convert test to dev for reading
+    
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1513,8 +1501,7 @@ def BookPrice(split="train", save=True, data_path="tmp"):
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_competitions/predict_the_price_of_books"
     DATANAME = "predict_the_price_of_books"
-
-    # need to convert test to dev for reading
+    
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1591,7 +1578,6 @@ def DSSalary(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_competitions/predict_the_data_scientists_salary_in_india_hackathon"
     DATANAME = "predict_the_data_scientists_salary"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1668,7 +1654,6 @@ def CAHousePrice(split="train", save=True, data_path="tmp"):
     URL = "https://automl-mm-bench.s3.amazonaws.com/kaggle-california-house-prices"
     DATANAME = "california_house_prices"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
