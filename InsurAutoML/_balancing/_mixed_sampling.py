@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_balancing/_mixed_sampling.py
-File Created: Wednesday, 6th April 2022 12:27:23 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_balancing/_mixed_sampling.py
+File: _mixed_sampling.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:52 pm
+Last Modified: Sunday, 13th November 2022 9:41:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, Tuple
 import numpy as np
 import pandas as pd
 import warnings
@@ -64,14 +67,14 @@ class Smote_TomekLink(Smote, TomekLink):
 
     def __init__(
         self,
-        imbalance_threshold=0.9,
-        norm="l2",
-        all=False,
-        max_iter=1000,
-        seed=1,
-        k=5,
-        generation="mean",
-    ):
+        imbalance_threshold: float = 0.9,
+        norm: str = "l2",
+        all: bool = False,
+        max_iter: int = 1000,
+        k: int = 5,
+        generation: str = "mean",
+        seed: int = 1,
+    ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
@@ -82,7 +85,9 @@ class Smote_TomekLink(Smote, TomekLink):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(
+        self, X: pd.DataFrame, y: pd.DataFrame = None
+    ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
@@ -140,14 +145,14 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
 
     def __init__(
         self,
-        imbalance_threshold=0.9,
-        norm="l2",
-        all=False,
-        max_iter=1000,
-        seed=1,
-        k=5,
-        generation="mean",
-    ):
+        imbalance_threshold: float = 0.9,
+        norm: str = "l2",
+        all: bool = False,
+        max_iter: int = 1000,
+        seed: int = 1,
+        k: int = 5,
+        generation: str = "mean",
+    ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
@@ -158,7 +163,9 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit_transform(self, X, y=None):
+    def fit_transform(
+        self, X: pd.DataFrame, y: pd.DataFrame = None
+    ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
 
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty

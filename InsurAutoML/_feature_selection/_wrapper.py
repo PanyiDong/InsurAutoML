@@ -11,7 +11,7 @@ File: _wrapper.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:26:07 am
+Last Modified: Sunday, 13th November 2022 9:24:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,8 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
 from inspect import isclass
-from typing import Callable
+from typing import Union, Callable, List, Tuple
 from itertools import combinations
 import numpy as np
 import pandas as pd
@@ -75,15 +77,17 @@ class ExhaustiveFS:
 
     def __init__(
         self,
-        estimator="Lasso",
-        criteria="neg_accuracy",
-    ):
+        estimator: str = "Lasso",
+        criteria: str = "neg_accuracy",
+    ) -> None:
         self.estimator = estimator
         self.criteria = criteria
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> ExhaustiveFS:
 
         # make sure estimator is recognized
         if self.estimator == "Lasso":
@@ -139,7 +143,9 @@ class ExhaustiveFS:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return X.iloc[:, self.selected_features]
 
@@ -168,11 +174,11 @@ class SFS:
 
     def __init__(
         self,
-        estimator="Lasso",
-        n_components=None,
-        n_prop=None,
-        criteria="neg_accuracy",
-    ):
+        estimator: str = "Lasso",
+        n_components: int = None,
+        n_prop: float = None,
+        criteria: str = "neg_accuracy",
+    ) -> None:
         self.estimator = estimator
         self.n_components = n_components
         self.n_prop = n_prop
@@ -180,7 +186,14 @@ class SFS:
 
         self._fitted = False
 
-    def select_feature(self, X, y, estimator, selected_features, unselected_features):
+    def select_feature(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        estimator: Callable,
+        selected_features: List[str],
+        unselected_features: List[str],
+    ) -> Tuple[float, str]:
 
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
@@ -202,8 +215,12 @@ class SFS:
             test_item[minloc(results)][0],
         )  # use 0 to select item instead of tuple
 
-    def fit(self, X, y=None):
-        
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> SFS:
+
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -263,7 +280,9 @@ class SFS:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return X.iloc[:, self.selected_features]
 
@@ -307,13 +326,13 @@ class ASFFS:
 
     def __init__(
         self,
-        n_components=None,
-        Delta=0,
-        b=None,
-        r_max=5,
-        model="Linear",
-        objective="MSE",
-    ):
+        n_components: int = None,
+        Delta: float = 0.0,
+        b: int = None,
+        r_max: int = 5,
+        model: str = "Linear",
+        objective: str = "MSE",
+    ) -> None:
         self.n_components = n_components
         self.Delta = Delta
         self.b = b
@@ -323,7 +342,7 @@ class ASFFS:
 
         self._fitted = False
 
-    def generalization_limit(self, k, d, b):
+    def generalization_limit(self, k: int, d: int, b: int) -> int:
 
         if np.abs(k - d) < b:
             r = self.r_max
@@ -334,7 +353,14 @@ class ASFFS:
 
         return r
 
-    def _Forward_Objective(self, selected, unselected, o, X, y):
+    def _Forward_Objective(
+        self,
+        selected: List[str],
+        unselected: List[str],
+        o: int,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+    ) -> Tuple[str, float]:
 
         _subset = list(itertools.combinations(unselected, o))
         _comb_subset = [
@@ -378,7 +404,13 @@ class ASFFS:
             _objective_list[maxloc(_objective_list)],
         )
 
-    def _Backward_Objective(self, selected, o, X, y):
+    def _Backward_Objective(
+        self,
+        selected: List[str],
+        o: int,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+    ) -> Tuple[str, float]:
 
         _subset = list(itertools.combinations(selected, o))
         _comb_subset = [
@@ -422,8 +454,10 @@ class ASFFS:
             _objective_list[maxloc(_objective_list)],
         )
 
-    def fit(self, X, y):
-        
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> ASFFS:
+
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -448,9 +482,8 @@ class ASFFS:
             [] for _ in range(p + 1)
         ]  # mark the best performing subset features
         _unselected = features.copy()
-        _selected = (
-            []
-        )  # selected  feature stored here, not selected will be stored in features
+        # selected  feature stored here, not selected will be stored in features
+        _selected = []
 
         while True:
 
@@ -532,8 +565,10 @@ class ASFFS:
 
         return self
 
-    def transform(self, X):
-        
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

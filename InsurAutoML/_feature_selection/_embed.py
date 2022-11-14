@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
+Project: InsurAutoML
 Last Version: 0.2.1
-Relative Path: /My_AutoML/_feature_selection/_embed.py
-File Created: Monday, 8th August 2022 8:44:06 pm
+Relative Path: /InsurAutoML/_feature_selection/_embed.py
+File: _embed.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 9:08:42 pm
+Last Modified: Sunday, 13th November 2022 8:33:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,11 +38,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, Tuple
 import time
 import numbers
 import numpy as np
+import pandas as pd
 
-# import pandas as pd
 # import scipy
 # import scipy.linalg
 from sklearn.utils.extmath import stable_cumsum, svd_flip
@@ -80,8 +83,13 @@ class PCA_FeatureSelection:
     """
 
     def __init__(
-        self, n_components=None, solver="auto", tol=0.0, n_iter="auto", seed=1
-    ):
+        self,
+        n_components: int = None,
+        solver: str = "auto",
+        tol: float = 0.0,
+        n_iter: str = "auto",
+        seed: str = 1,
+    ) -> None:
         self.n_components = n_components
         self.solver = solver
         self.tol = tol
@@ -90,7 +98,11 @@ class PCA_FeatureSelection:
 
         self._fitted = False
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> PCA_FeatureSelection:
 
         n, p = X.shape
 
@@ -131,7 +143,9 @@ class PCA_FeatureSelection:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         _features = list(X.columns)
 
@@ -144,7 +158,9 @@ class PCA_FeatureSelection:
 
         return X_new
 
-    def _fit_full(self, X, n_components):
+    def _fit_full(
+        self, X: Union[pd.DataFrame, np.ndarray], n_components: int
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         n, p = X.shape
         if n_components < 0 or n_components > min(n, p):
@@ -202,7 +218,9 @@ class PCA_FeatureSelection:
 
         return U, S, V
 
-    def _fit_truncated(self, X, n_components, solver):
+    def _fit_truncated(
+        self, X: Union[pd.DataFrame, np.ndarray], n_components: int, solver: str
+    ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
 
         n, p = X.shape
 
@@ -345,14 +363,20 @@ class RBFSampler:
     seed: random generation seed, default = None
     """
 
-    def __init__(self, gamma=1.0, n_components=100, seed=1):
+    def __init__(
+        self, gamma: float = 1.0, n_components: int = 100, seed: int = 1
+    ) -> None:
         self.gamma = gamma
         self.n_components = n_components
         self.seed = seed
 
         self._fitted = False
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> RBFSampler:
 
         if isinstance(X, list):
             n_features = len(X[0])
@@ -385,7 +409,9 @@ class RBFSampler:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         projection = np.dot(X, self._random_weights)
         projection += self._random_offset

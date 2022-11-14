@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_imputation/_nn.py
-File Created: Tuesday, 5th April 2022 11:50:10 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_imputation/_nn.py
+File: _nn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:20 pm
+Last Modified: Sunday, 13th November 2022 11:33:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union
 from time import sleep
 from tqdm import tqdm
 import numpy as np
@@ -380,18 +383,18 @@ class GAIN_torch(formatting, MinMaxScale):
 
     def __init__(
         self,
-        batch_size=128,
-        hint_rate=0.9,
-        alpha=100,
-        optim="Adam",
-        lr=None,
-        max_iter=100,
-        delta=1e-8,
-        scaling=True,
-        progressbar=False,
-        deep_copy=False,
-        seed=1,
-    ):
+        batch_size: int = 128,
+        hint_rate: float = 0.9,
+        alpha: int = 100,
+        optim: str = "Adam",
+        lr: float = None,
+        max_iter: int = 100,
+        delta: float = 1e-8,
+        scaling: bool = True,
+        progressbar: bool = False,
+        deep_copy: bool = False,
+        seed: int = 1,
+    ) -> None:
         self.batch_size = batch_size
         self.hint_rate = hint_rate
         self.alpha = alpha
@@ -419,12 +422,12 @@ class GAIN_torch(formatting, MinMaxScale):
         self._fitted = False  # whether fitted on train set
 
     # get random m integer number in range [0, n - 1]
-    def random_index(self, n, m):
+    def random_index(self, n: int, m: int) -> np.ndarray:
 
         return np.random.permutation(n)[:m]
 
     # initialize Generator/Discriminator variables
-    def _initialization(self, p, h_dim):
+    def _initialization(self, p: int, h_dim: int) -> None:
 
         # W with random normal initialization and b with zero initialization
         # initialize Generator variables
@@ -464,7 +467,7 @@ class GAIN_torch(formatting, MinMaxScale):
         self.theta_D = [D_W1, D_W2, D_W3, D_b1, D_b2, D_b3]
 
     # Generator network structure
-    def Generator(self, data, mask):
+    def Generator(self, data: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
 
         G_W1, G_W2, G_W3, G_b1, G_b2, G_b3 = self.theta_G
         _input = torch.cat(tensors=[data, mask], dim=1)  # concate data with mask
@@ -477,7 +480,7 @@ class GAIN_torch(formatting, MinMaxScale):
         return G_pro
 
     # Discriminator network structure
-    def Discriminator(self, data, hint):
+    def Discriminator(self, data: torch.Tensor, hint: torch.Tensor) -> torch.Tensor:
 
         D_W1, D_W2, D_W3, D_b1, D_b2, D_b3 = self.theta_D
         _input = torch.cat(tensors=[data, hint], dim=1)  # concate data with hint matrix
@@ -490,7 +493,9 @@ class GAIN_torch(formatting, MinMaxScale):
         return D_pro
 
     # Generator loss
-    def network_loss(self, X, M, H):
+    def network_loss(
+        self, X: torch.Tensor, M: torch.Tensor, H: torch.Tensor
+    ) -> torch.Tensor:
 
         _G = self.Generator(X, M)
         _hat_X = X * M + _G * (1 - M)
@@ -507,7 +512,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
         return _G_loss, _D_loss
 
-    def fill(self, X):
+    def fill(self, X: Union[pd.DataFrame, np.ndarray, torch.Tensor]) -> pd.DataFrame:
 
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
@@ -525,7 +530,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
         return _X
 
-    def _fill(self, X):
+    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         _X = X.copy(deep=self.deep_copy)
 
@@ -724,18 +729,18 @@ class GAIN(GAIN_tf, GAIN_torch):
 
     def __init__(
         self,
-        batch_size=128,
-        hint_rate=0.9,
-        alpha=100,
-        optim="Adam",
-        lr=None,
-        max_iter=100,
-        delta=1e-8,
-        scaling=True,
-        progressbar=False,
-        deep_copy=False,
-        seed=1,
-    ):
+        batch_size: int = 128,
+        hint_rate: float = 0.9,
+        alpha: int = 100,
+        optim: str = "Adam",
+        lr: float = None,
+        max_iter: int = 100,
+        delta: float = 1e-8,
+        scaling: bool = True,
+        progressbar: bool = False,
+        deep_copy: bool = False,
+        seed: int = 1,
+    ) -> None:
 
         self.batch_size = batch_size
         self.hint_rate = hint_rate
@@ -786,7 +791,7 @@ class GAIN(GAIN_tf, GAIN_torch):
                 "No tensorflow or torch installed. This method is not supported."
             )
 
-    def fill(self, X):
+    def fill(self, X: Union[pd.DataFrame, np.ndarray, torch.Tensor]) -> pd.DataFrame:
 
         self._fitted = True
 

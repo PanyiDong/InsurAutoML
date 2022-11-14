@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 12th November 2022 12:55:04 am
+Last Modified: Monday, 14th November 2022 12:24:57 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,9 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# import ray
-from ray import tune
+from __future__ import annotations
 
+from typing import Union, List, Callable, Dict, Tuple
 import os
 import datetime
 import copy
@@ -51,6 +51,9 @@ import random
 import numpy as np
 import pandas as pd
 
+# import ray
+from ray import tune
+
 from InsurAutoML._hpo._utils import (
     TabularObjective,
     Pipeline,
@@ -59,10 +62,7 @@ from InsurAutoML._hpo._utils import (
 )
 from InsurAutoML._constant import UNI_CLASS, MAX_TIME
 from InsurAutoML._base import no_processing
-from InsurAutoML._utils._base import (
-    type_of_script,
-    format_hyper_dict
-)
+from InsurAutoML._utils._base import type_of_script, format_hyper_dict
 from InsurAutoML._utils._file import (
     save_methods,
     load_methods,
@@ -239,39 +239,39 @@ class AutoTabularBase:
 
     def __init__(
         self,
-        task_mode="classification",
-        n_estimators=5,
-        ensemble_strategy="stacking",
-        timeout=360,
-        max_evals=64,
-        allow_error_prop=0.1,
-        temp_directory="tmp",
-        delete_temp_after_terminate=False,
-        save=True,
-        model_name="model",
-        ignore_warning=True,
-        encoder="auto",
-        imputer="auto",
-        balancing="auto",
-        scaling="auto",
-        feature_selection="auto",
-        models="auto",
-        validation=True,
-        valid_size=0.15,
-        objective="accuracy",
-        search_algo="HyperOpt",
-        search_algo_settings={},
-        search_scheduler="FIFOScheduler",
-        search_scheduler_settings={},
-        logger=["Logger"],
-        progress_reporter=None,
-        full_status=False,
-        verbose=1,
-        cpu_threads=None,
-        use_gpu=None,
-        reset_index=True,
-        seed=1,
-    ):
+        task_mode: str = "classification",
+        n_estimators: int = 5,
+        ensemble_strategy: str = "stacking",
+        timeout: int = 360,
+        max_evals: int = 64,
+        allow_error_prop: float = 0.1,
+        temp_directory: str = "tmp",
+        delete_temp_after_terminate: bool = False,
+        save: bool = True,
+        model_name: str = "model",
+        ignore_warning: bool = True,
+        encoder: Union[str, List[str]] = "auto",
+        imputer: Union[str, List[str]] = "auto",
+        balancing: Union[str, List[str]] = "auto",
+        scaling: Union[str, List[str]] = "auto",
+        feature_selection: Union[str, List[str]] = "auto",
+        models: Union[str, List[str]] = "auto",
+        validation: bool = True,
+        valid_size: float = 0.15,
+        objective: Union[str, Callable] = "accuracy",
+        search_algo: str = "HyperOpt",
+        search_algo_settings: Dict = {},
+        search_scheduler: str = "FIFOScheduler",
+        search_scheduler_settings: Dict = {},
+        logger: List[str] = ["Logger"],
+        progress_reporter: str = None,
+        full_status: bool = False,
+        verbose: int = 1,
+        cpu_threads: int = None,
+        use_gpu: bool = None,
+        reset_index: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.task_mode = task_mode
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -308,7 +308,9 @@ class AutoTabularBase:
         self._iter = 0  # record iteration number
         self._fitted = False  # record whether the model has been fitted
 
-    def get_hyperparameter_space(self, X, y):
+    def get_hyperparameter_space(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, np.ndarray]
+    ) -> Tuple[Dict]:
 
         # initialize default search options
         # and select the search options based on the input restrictions
@@ -539,7 +541,7 @@ class AutoTabularBase:
             feature_selection_hyperparameter,
             classifier_hyperparameter,
             regressor_hyperparameter,
-        )            
+        )
 
         from additional import (
             add_encoder_hyperparameter,
@@ -562,9 +564,9 @@ class AutoTabularBase:
         # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
 
         # all hyperparameters for imputers
-        if "no_processing" in imputer.keys() :
+        if "no_processing" in imputer.keys():
             _all_imputers_hyperparameters = [{"imputer": "no_processing"}]
-        else :
+        else:
             _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
         # include additional hyperparameters
         _all_imputers_hyperparameters += add_imputer_hyperparameter
@@ -645,9 +647,7 @@ class AutoTabularBase:
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
                         from InsurAutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
 
-                        item["objective"] = tune.choice(
-                            LIGHTGBM_BINARY_CLASSIFICATION
-                        )
+                        item["objective"] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
                     else:
                         from InsurAutoML._constant import (
                             LIGHTGBM_MULTICLASS_CLASSIFICATION,
@@ -656,41 +656,57 @@ class AutoTabularBase:
                         item["objective"] = tune.choice(
                             LIGHTGBM_MULTICLASS_CLASSIFICATION
                         )
-                        
+
         # check status of hyperparameter space
-        check_status(encoder, _all_encoders_hyperparameters, ref = "encoder")
-        check_status(imputer, _all_imputers_hyperparameters, ref = "imputer")
-        check_status(balancing, _all_balancings_hyperparameters, ref = "balancing")
-        check_status(scaling, _all_scalings_hyperparameters, ref = "scaling")
-        check_status(feature_selection, _all_feature_selection_hyperparameters, ref = "feature_selection")
-        check_status(models, _all_models_hyperparameters, ref = "model")
-                        
+        check_status(encoder, _all_encoders_hyperparameters, ref="encoder")
+        check_status(imputer, _all_imputers_hyperparameters, ref="imputer")
+        check_status(balancing, _all_balancings_hyperparameters, ref="balancing")
+        check_status(scaling, _all_scalings_hyperparameters, ref="scaling")
+        check_status(
+            feature_selection,
+            _all_feature_selection_hyperparameters,
+            ref="feature_selection",
+        )
+        check_status(models, _all_models_hyperparameters, ref="model")
+
         # format default search space
         _all_encoders_hyperparameters = [
-            format_hyper_dict(dict, order + 1, ref = "encoder", search_algo = self.search_algo)
+            format_hyper_dict(
+                dict, order + 1, ref="encoder", search_algo=self.search_algo
+            )
             for order, dict in enumerate(_all_encoders_hyperparameters)
         ]
         _all_imputers_hyperparameters = [
-            format_hyper_dict(dict, order + 1, ref = "imputer", search_algo = self.search_algo)
+            format_hyper_dict(
+                dict, order + 1, ref="imputer", search_algo=self.search_algo
+            )
             for order, dict in enumerate(_all_imputers_hyperparameters)
         ]
         _all_balancings_hyperparameters = [
-            format_hyper_dict(dict, order + 1, ref = "balancing", search_algo = self.search_algo)
+            format_hyper_dict(
+                dict, order + 1, ref="balancing", search_algo=self.search_algo
+            )
             for order, dict in enumerate(_all_balancings_hyperparameters)
         ]
         _all_scalings_hyperparameters = [
-            format_hyper_dict(dict, order + 1, ref = "scaling", search_algo = self.search_algo)
+            format_hyper_dict(
+                dict, order + 1, ref="scaling", search_algo=self.search_algo
+            )
             for order, dict in enumerate(_all_scalings_hyperparameters)
         ]
         _all_feature_selection_hyperparameters = [
-            format_hyper_dict(dict, order + 1, ref = "feature_selection", search_algo = self.search_algo)
+            format_hyper_dict(
+                dict, order + 1, ref="feature_selection", search_algo=self.search_algo
+            )
             for order, dict in enumerate(_all_feature_selection_hyperparameters)
         ]
         _all_models_hyperparameters = [
-            format_hyper_dict(dict, order + 1, ref = "model", search_algo = self.search_algo)
+            format_hyper_dict(
+                dict, order + 1, ref="model", search_algo=self.search_algo
+            )
             for order, dict in enumerate(_all_models_hyperparameters)
         ]
-                        
+
         # generate the hyperparameter space
         hyperparameter_space = _get_hyperparameter_space(
             X,
@@ -793,8 +809,10 @@ class AutoTabularBase:
     #     return self
 
     # select optimal settings and fit on optimal hyperparameters
-    def _fit_optimal(self, idx, optimal_point, best_path):
-        
+    def _fit_optimal(
+        self, idx: int, optimal_point: Dict, best_path: str
+    ) -> Tuple(str, Pipeline):
+
         # optimal encoder
         optimal_encoder_hyperparameters = optimal_point["encoder"]
         # find optimal encoder key
@@ -1021,7 +1039,9 @@ class AutoTabularBase:
 
         return ("pipe_" + str(idx + 1), Pipeline(**pip_setting))
 
-    def _fit_ensemble(self, trial_id, config, iter=None, features=None):
+    def _fit_ensemble(
+        self, trial_id: str, config: Dict, iter: int = None, features: List[str] = None
+    ) -> None:
 
         # initialize ensemble list
         try:
@@ -1086,7 +1106,9 @@ class AutoTabularBase:
                 strategy=self.ensemble_strategy,
             )
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> AutoTabularBase:
 
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
@@ -1102,7 +1124,7 @@ class AutoTabularBase:
                 y = pd.DataFrame(y)
             except:
                 raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
-            
+
         # get data metadata
         self.metadata = MetaData().get(X)
         # check if there's unsupported data type
@@ -1117,7 +1139,7 @@ class AutoTabularBase:
         if ("Object", "Text") in self.metadata.keys():
             raise NotImplementedError("Text data type is not supported yet.")
         if ("Path", "") in self.metadata.keys():
-            raise NotImplementedError("Image data type is not supported yet.") 
+            raise NotImplementedError("Image data type is not supported yet.")
 
         # get features and response names
         if isinstance(X, pd.DataFrame):  # expect multiple features
@@ -1311,7 +1333,7 @@ class AutoTabularBase:
             import nevergrad as ng
 
             self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
-        
+
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
 
@@ -1414,7 +1436,7 @@ class AutoTabularBase:
                         space=hyperparameter_space,
                         mode="min",  # always call a minimization process
                         metric="loss",
-                        **self.search_algo_settings
+                        **self.search_algo_settings,
                     ),
                     scheduler=scheduler(**self.search_scheduler_settings),
                     reuse_actors=True,
@@ -1431,7 +1453,7 @@ class AutoTabularBase:
                     local_dir=self.sub_directory,
                     log_to_file=True,
                 )
-            else :
+            else:
                 fit_analysis = tune.run(
                     trainer,
                     config=hyperparameter_space,
@@ -1517,7 +1539,7 @@ class AutoTabularBase:
 
             # subtrial directory
             self.sub_directory = self.temp_directory
-            
+
             # optimization process
             # partially activated objective function
             # special treatment for optuna, embed search space in search algorithm
@@ -1536,7 +1558,7 @@ class AutoTabularBase:
                         space=hyperparameter_space,
                         mode="min",  # always call a minimization process
                         metric="loss",
-                        **self.search_algo_settings
+                        **self.search_algo_settings,
                     ),
                     scheduler=scheduler(**self.search_scheduler_settings),
                     reuse_actors=True,
@@ -1553,7 +1575,7 @@ class AutoTabularBase:
                     local_dir=self.sub_directory,
                     log_to_file=True,
                 )
-            else :
+            else:
                 fit_analysis = tune.run(
                     trainer,
                     config=hyperparameter_space,
@@ -1685,7 +1707,7 @@ class AutoTabularBase:
                             space=hyperparameter_space,
                             metric="loss",
                             mode="min",  # always call a minimization process
-                            **self.search_algo_settings
+                            **self.search_algo_settings,
                         ),
                         scheduler=scheduler(**self.search_scheduler_settings),
                         reuse_actors=True,
@@ -1702,7 +1724,7 @@ class AutoTabularBase:
                         local_dir=self.sub_directory,
                         log_to_file=True,
                     )
-                else :
+                else:
                     fit_analysis = tune.run(
                         trainer,
                         config=hyperparameter_space,
@@ -1807,7 +1829,7 @@ class AutoTabularBase:
 
                 # optimization process
                 # partially activated objective function
-                if self.search_algo in ["Optuna"] :
+                if self.search_algo in ["Optuna"]:
                     fit_analysis = tune.run(
                         trainer,
                         # config=hyperparameter_space,
@@ -1826,7 +1848,7 @@ class AutoTabularBase:
                             hyperparameter_space,
                             metric="loss",
                             mode="min",  # always call a minimization process
-                            **self.search_algo_settings
+                            **self.search_algo_settings,
                         ),
                         scheduler=scheduler(**self.search_scheduler_settings),
                         reuse_actors=True,
@@ -1843,7 +1865,7 @@ class AutoTabularBase:
                         local_dir=self.sub_directory,
                         log_to_file=True,
                     )
-                else :
+                else:
                     fit_analysis = tune.run(
                         trainer,
                         config=hyperparameter_space,
@@ -1913,12 +1935,12 @@ class AutoTabularBase:
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         if self.reset_index:
             # reset index to avoid indexing error
             X.reset_index(drop=True, inplace=True)
-            
+
         # check if fitted
         if not self._fitted:
             raise ValueError("Pipeline not fitted yet! Call fit() first.")

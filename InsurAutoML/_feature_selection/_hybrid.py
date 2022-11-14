@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 7th November 2022 9:14:51 pm
+Last Modified: Sunday, 13th November 2022 8:56:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, List, Tuple, Callable
 from itertools import combinations
 from collections import Counter
 import warnings
@@ -79,17 +82,17 @@ class CBFS:
 
     def __init__(
         self,
-        copula="empirical",
-        n_components=None,
-        n_prop=None,
-    ):
+        copula: str = "empirical",
+        n_components: int = None,
+        n_prop: float = None,
+    ) -> None:
         self.copula = copula
         self.n_components = n_components
         self.n_prop = n_prop
 
         self._fitted = False
 
-    def Empirical_Copula(self, data):
+    def Empirical_Copula(self, data: pd.DataFrame) -> List[float]:
 
         # make sure it's a dataframe
         if not isinstance(data, pd.DataFrame):
@@ -106,7 +109,13 @@ class CBFS:
 
         return p
 
-    def select_feature(self, X, y, selected_features, unselected_features):
+    def select_feature(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selected_features: List[str],
+        unselected_features: List[str],
+    ) -> Tuple[float, str]:
 
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
@@ -151,8 +160,12 @@ class CBFS:
             test_item[maxloc(results)][0],
         )  # use 0 to select item instead of tuple
 
-    def fit(self, X, y=None):
-        
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> CBFS:
+
         # check if X is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -192,8 +205,10 @@ class CBFS:
 
         return self
 
-    def transform(self, X):
-        
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
         # check if X is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -264,23 +279,23 @@ class GeneticAlgorithm:
 
     def __init__(
         self,
-        n_components=None,
-        n_prop=None,
-        n_generations=10,
-        fs_method="random",
-        n_initial=10,
-        fitness_func=None,
-        fitness_fit="SVM",
-        fitness_weight=0.9,
-        n_pair=5,
-        ga_selection="Roulette Wheel",
-        p_crossover=1,
-        ga_crossover="Single-point",
-        crossover_n=None,
-        p_mutation=0.001,
-        mutation_n=None,
-        seed=1,
-    ):
+        n_components: int = None,
+        n_prop: float = None,
+        n_generations: int = 10,
+        fs_method: str = "random",
+        n_initial: int = 10,
+        fitness_func: Callable = None,
+        fitness_fit: str = "SVM",
+        fitness_weight: float = 0.9,
+        n_pair: int = 5,
+        ga_selection: str = "Roulette Wheel",
+        p_crossover: float = 1.0,
+        ga_crossover: str = "Single-point",
+        crossover_n: int = None,
+        p_mutation: float = 0.001,
+        mutation_n: int = None,
+        seed: int = 1,
+    ) -> None:
         self.n_components = n_components
         self.n_prop = n_prop
         self.n_generations = n_generations
@@ -306,7 +321,12 @@ class GeneticAlgorithm:
 
         self._fitted = False
 
-    def _random(self, X, y, n):
+    def _random(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         # randomly select n features from X
         _, p = X.shape
@@ -326,7 +346,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _entropy(self, X, y, n):
+    def _entropy(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         # call Mutual Information from FeatureFilter
         _score = MI(X, y)
@@ -340,7 +365,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _t_statistics(self, X, y, n):
+    def _t_statistics(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
         if len(np.unique(y)) == 2:
@@ -359,7 +389,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _SVM_RFE(self, X, y, n):
+    def _SVM_RFE(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         from sklearn.feature_selection import RFE
 
@@ -384,7 +419,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _cal_fitness(self, X, y, selection):
+    def _cal_fitness(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selection: List[int],
+    ) -> float:
 
         if not self.fitness_func:  # fit selected features and calcualte accuracy score
             if self.fitness_fit == "Linear":
@@ -461,7 +501,12 @@ class GeneticAlgorithm:
         else:
             return self.fitness_func(X, y, selection)
 
-    def _GeneticAlgorithm(self, X, y, selection_pool):
+    def _GeneticAlgorithm(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selection_pool: List[List[int]],
+    ) -> List[int]:
 
         n, p = X.shape
 
@@ -563,7 +608,7 @@ class GeneticAlgorithm:
 
     def _early_stopping(
         self,
-    ):  # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
+    ) -> bool:  # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
 
         if len(self._fitness) < 10:
             return False
@@ -580,10 +625,12 @@ class GeneticAlgorithm:
             else:
                 return False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> GeneticAlgorithm:
 
         np.random.seed(self.seed)  # set random seed
-        
+
         # check if X is dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -658,7 +705,9 @@ class GeneticAlgorithm:
 
         return self
 
-    def _fit(self, X, y):
+    def _fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> GeneticAlgorithm:
 
         # generate the feature selection pool using
         _sel_methods = [*self._feature_sel_methods]
@@ -685,8 +734,10 @@ class GeneticAlgorithm:
 
         return self
 
-    def transform(self, X):
-        
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
         # check if X is dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -728,16 +779,18 @@ class SvetnikRF:
 
     def __init__(
         self,
-        cv=5,
-        repeat=20,
-        seed=1,
-    ):
+        cv: int = 5,
+        repeat: int = 20,
+        seed: int = 1,
+    ) -> None:
         self.cv = cv
         self.repeat = repeat
         # self.seed = seed
         np.random.seed(seed)
 
-    def fit(self, X, y):
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> SvetnikRF:
 
         # check if X is a dataframe
         # need to use index

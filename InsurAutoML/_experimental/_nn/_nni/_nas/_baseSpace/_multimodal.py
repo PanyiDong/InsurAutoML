@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File: _multimodal.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_utils/_nn/__init__.py
-File: __init__.py
+Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_baseSpace/_multimodal.py
+File: _multimodal.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 5:14:39 pm
+Last Modified: Sunday, 13th November 2022 5:18:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,4 +38,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._multiProc import MultiPreprocessing
+"""
+List of methods:
+                    Txt           Cat           Con
+FusToken:      tokenize      encoding      encoding
+FusEmbed:     embedding     embedding     embedding
+FusModel:         model         model         model
+
+FusToken: Txt/Cat/Con are only tokenized to numerics and fuse those heads together for whole model training.
+FusEmbed: Txt/Cat/Con are further embedded with a few layers of NNs and fuse those embeddings together for later half of model training.
+FusModel: Txt/Cat/Con are almost trained separately and just fused together for unified prediction.
+"""
+
+"""
+List of classes need for multimodal neural architecture search.
+1. entire network space (whole vs lint)
+2. heads (before fuse)
+3. prediction (after fuse for FusModel)
+"""
+
