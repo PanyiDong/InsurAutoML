@@ -1,5 +1,5 @@
 """
-File: _scaling_hyperparameter.py
+File Name: _scaling_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_scaling_hyperparameter.py
-File: _scaling_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:21:55 am
+Last Modified: Monday, 14th November 2022 8:03:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,7 +72,7 @@ scaling_hyperparameter = [
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
 # scaling_hyperparameter = [
-#     format_hyper_dict(dict, order + 1, ref = "scaling") 
+#     format_hyper_dict(dict, order + 1, ref = "scaling")
 #     for order, dict in enumerate(scaling_hyperparameter)
 # ]
 

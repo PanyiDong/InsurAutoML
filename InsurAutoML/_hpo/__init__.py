@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/__init__.py
-File Created: Tuesday, 5th April 2022 10:49:08 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/__init__.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 9:13:24 pm
+Last Modified: Monday, 14th November 2022 7:50:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

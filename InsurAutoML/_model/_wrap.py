@@ -1,17 +1,17 @@
 """
-File: _wrap.py
+File Name: _wrap.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_model/_wrap.py
-File Created: Sunday, 19th June 2022 10:33:15 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_wrap.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 19th June 2022 10:38:02 pm
+Last Modified: Monday, 14th November 2022 8:15:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,14 +38,24 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, Callable
+import numpy as np
+import pandas as pd
+
 
 class BaseClassificationWrapper:
-    def __init__(self, estimator) -> None:
+    def __init__(self, estimator: Callable) -> None:
         self.estimator = estimator
 
         self._fitted = False
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> BaseClassificationWrapper:
 
         self.estimator.fit(X, y)
 
@@ -53,14 +63,18 @@ class BaseClassificationWrapper:
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         if not self._fitted:
             raise Exception("Model has not been fitted yet.")
 
         return self.estimator.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         if not self._fitted:
             raise Exception("Model has not been fitted yet.")
@@ -69,12 +83,16 @@ class BaseClassificationWrapper:
 
 
 class BaseRegressionWrapper:
-    def __init__(self, estimator) -> None:
+    def __init__(self, estimator: Callable) -> None:
         self.estimator = estimator
 
         self._fitted = False
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> BaseRegressionWrapper:
 
         self.estimator.fit(X, y)
 
@@ -82,13 +100,17 @@ class BaseRegressionWrapper:
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         if not self._fitted:
             raise Exception("Model has not been fitted yet.")
 
         return self.estimator.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         raise NotImplementedError("predict_proba is not implemented for regression.")

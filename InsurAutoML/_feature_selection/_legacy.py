@@ -1,17 +1,17 @@
 """
-File: _legacy.py
+File Name: _legacy.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_feature_selection/_legacy.py
-File Created: Friday, 8th April 2022 9:20:27 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_feature_selection/_legacy.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:44 pm
+Last Modified: Monday, 14th November 2022 7:05:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,8 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._base import RBFSampler
-from ._advance import FeatureFilter, ASFFS, GeneticAlgorithm
+from ._embed import RBFSampler
+from ._filter import FeatureFilter
+from ._wrapper import ASFFS
+from ._hybrid import GeneticAlgorithm
 from InsurAutoML._base import no_processing
 
 import autosklearn

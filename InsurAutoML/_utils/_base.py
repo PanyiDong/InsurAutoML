@@ -1,5 +1,5 @@
 """
-File: _base.py
+File Name: _base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_base.py
-File: _base.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 9th November 2022 11:59:10 pm
+Last Modified: Monday, 14th November 2022 9:09:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,15 +38,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
+from typing import List, Union, Callable, Any, Dict
 import logging
 import warnings
 import time
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
+from InsurAutoML._constant import UNI_CLASS
 
 # set response to [0, 1] class, random guess at 0.5
-def random_guess(number, seed=1):
+def random_guess(number: float, seed: int=1) -> int:
     if seed != None:
         np.random.seed(seed)
     if number > 0.5:
@@ -59,7 +62,7 @@ def random_guess(number, seed=1):
 
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-def random_index(n, total=None, seed=1):
+def random_index(n: int, total: int=None, seed: int=1) -> np.ndarray:
     if seed is not None:
         np.random.seed(seed)
     if total is None:
@@ -92,7 +95,7 @@ def random_index(n, total=None, seed=1):
 
 
 # Return randomly shuffle of a list (unique values only)
-def random_list(vlist, seed=1):
+def random_list(vlist: list, seed: int=1) -> np.ndarray:
     if seed != None:
         np.random.seed(seed)
 
@@ -111,7 +114,7 @@ def random_list(vlist, seed=1):
 # check if values in the dataframe is time string
 # rule = 'any' will consider the column as date type as long as one value is date type,
 # rule = 'all' will consider the column as date type only when all values are date type.
-def is_date(df, rule="any"):
+def is_date(df: pd.DataFrame, rule: str="any") -> List[bool]:
     def _is_date(string, fuzzy=False):
         try:
             parse(string, fuzzy=fuzzy)
@@ -130,7 +133,7 @@ def is_date(df, rule="any"):
 
 
 # Round data for categorical features (in case after preprocessing/modification, the data changed)
-def feature_rounding(X, uni_class=20):
+def feature_rounding(X: pd.DataFrame, uni_class: int=UNI_CLASS) -> pd.DataFrame:
 
     features = list(X.columns)
     _X = X.copy(deep=True)
@@ -144,7 +147,7 @@ def feature_rounding(X, uni_class=20):
 
 
 # Return location of minimum values
-def minloc(vlist):
+def minloc(vlist: List) -> int:
 
     # make sure input is np.array
     if not isinstance(vlist, np.ndarray):
@@ -176,7 +179,7 @@ def minloc(vlist):
 
 
 # Return location of maximum values
-def maxloc(vlist):
+def maxloc(vlist: List) -> int:
 
     # make sure input is np.array
     if not isinstance(vlist, np.ndarray):
@@ -209,7 +212,7 @@ def maxloc(vlist):
 
 # return the index of Boolean list or {0, 1} list
 # default 1 consider as True
-def True_index(X, _true=[True, 1]):
+def True_index(X: List, _true: List=[True, 1]) -> List[int]:
 
     result = [i for i, value in enumerate(X) if value in _true]
 
@@ -217,7 +220,7 @@ def True_index(X, _true=[True, 1]):
 
 
 # determine the task types
-def type_of_task(y):
+def type_of_task(y: Union[pd.DataFrame, np.ndarray]) -> str:
 
     if isinstance(y, pd.DataFrame):
         y = y.values
@@ -237,30 +240,30 @@ def type_of_task(y):
 # define a Timer to record efficiency
 # enable multiple running times for comparison
 class Timer:
-    def __init__(self):
+    def __init__(self) -> None:
         self.times = []
         self.start()
 
-    def start(self):  # start the timer
+    def start(self) -> None:  # start the timer
         self.tik = time.time()
 
-    def stop(self):  # stop the timer and record the time
+    def stop(self) -> float:  # stop the timer and record the time
         self.times.append(time.time() - self.tik)
         return self.times[-1]
 
-    def avg(self):
+    def avg(self) -> float:  # return the average time
         return sum(self.times) / len(self.times)
 
-    def sum(self):
+    def sum(self) -> float:  # return the sum of time
         return sum(self.times)
 
-    def cumsum(self):
+    def cumsum(self) -> List[float]:  # return the accumulated time
         return np.array(self.times).cumsum().tolist()
 
 
 # determine whether using a python terminal environment or
 # a jupyter notebook environment
-def type_of_script():
+def type_of_script() -> str:
 
     try:
         ipy_str = str(type(get_ipython()))
@@ -273,12 +276,12 @@ def type_of_script():
 
 
 # determine whether a method exists in a class
-def has_method(obj, name):
+def has_method(obj: Callable, name: str) -> bool:
     return callable(getattr(obj, name, None))
 
 
 # check if is None
-def is_none(item, pat=[None, "None", "none", "NONE"]):
+def is_none(item: Any, pat: List=[None, "None", "none", "NONE"]) -> bool:
 
     if item in pat:
         return True
@@ -286,7 +289,7 @@ def is_none(item, pat=[None, "None", "none", "NONE"]):
         return False
     
 # format the output of a hyperparameter dictionary by RandomSearch, GridSearch, HyperOpt
-def _hyperopt_format_hyper_dict(dict, order, ref = "encoder") :
+def _hyperopt_format_hyper_dict(dict: Dict, order: int, ref: str = "encoder") -> Dict :
     header = dict.pop(ref)
     result = {"{}_{}".format(ref, order): header}
     result.update({header + "_" + str(key): val for key, val in dict.items() if key != ref})
@@ -294,11 +297,11 @@ def _hyperopt_format_hyper_dict(dict, order, ref = "encoder") :
     return result
 
 # format the output of a hyperparameter dictionary by Optuna
-def _base_format_hyper_dict(dict, order, ref = "encoder") :
+def _base_format_hyper_dict(dict: Dict, order: int, ref: str = "encoder") -> Dict :
     
     return dict
     
-def format_hyper_dict(dict, order, ref = "encoder", search_algo = "RandomSearch") :
+def format_hyper_dict(dict: Dict, order: int, ref: str = "encoder", search_algo: str = "RandomSearch") -> Dict :
     if search_algo in [
         "RandomSearch", "GridSearch", "Optuna", "BlendSearch", "CFO", "Scikit-Optimize", "Nevergrad"
     ]:
@@ -308,7 +311,7 @@ def format_hyper_dict(dict, order, ref = "encoder", search_algo = "RandomSearch"
     else :
         raise NotImplementedError("Search algorithm {} is not implemented!".format(search_algo))
 
-def _optuna_distribution_to_suggest(trial, method, key, value) :
+def _optuna_distribution_to_suggest(trial: Any, method: str, key: str, value: Any) -> Any:
     
     import optuna.distributions as distributions
     if isinstance(value, distributions.UniformDistribution) :
@@ -326,7 +329,7 @@ def _optuna_distribution_to_suggest(trial, method, key, value) :
     else :
         raise TypeError("Distribution {} is not supported!".format(type(value)))
     
-def distribution_to_suggest(trial, method, key, value, algo = "Optuna") :
+def distribution_to_suggest(trial: Any, method: str, key: str, value: Any, algo: str = "Optuna") -> Any:
     
     if algo == "Optuna" :
         return _optuna_distribution_to_suggest(trial, method, key, value)
@@ -336,8 +339,8 @@ def distribution_to_suggest(trial, method, key, value, algo = "Optuna") :
         raise NotImplementedError("Search algorithm {} is not implemented!".format(algo))
     
 class DisableLogger() :
-    def __enter__(self) :
+    def __enter__(self) -> None:
         logging.disable(logging.CRITICAL)
-    def __exit__(self, exitype, value, traceback) :
+    def __exit__(self, exitype, value, traceback) -> None:
         logging.disable(logging.NOTSET)
         

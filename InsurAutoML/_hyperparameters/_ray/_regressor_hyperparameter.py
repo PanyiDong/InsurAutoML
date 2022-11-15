@@ -1,5 +1,5 @@
 """
-File: _regressor_hyperparameter.py
+File Name: _regressor_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_regressor_hyperparameter.py
-File: _regressor_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:21:51 am
+Last Modified: Monday, 14th November 2022 8:03:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -77,9 +77,7 @@ DECISIONTREE = {
     "model": "DecisionTree",
     "criterion": tune.choice(["mse", "friedman_mse", "mae"])
     if sklearn_1_0_0
-    else tune.choice(
-        ["squared_error", "friedman_mse", "absolute_error", "poisson"]
-    ),
+    else tune.choice(["squared_error", "friedman_mse", "absolute_error", "poisson"]),
     "max_features": tune.choice([1.0]),
     "max_depth_factor": tune.uniform(0.0, 2.0),
     "min_samples_split": tune.qrandint(2, 20, 1),
@@ -121,9 +119,7 @@ HISTGRADIENTBOOSTINGREGRESSOR = {
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "max_bins": tune.choice([255]),
     "l2_regularization": tune.loguniform(1e-10, 1),
-    "early_stop": tune.choice(
-        ["off", "train", "valid"]
-    ),
+    "early_stop": tune.choice(["off", "train", "valid"]),
     "tol": tune.choice([1e-7]),
     "scoring": tune.choice(["loss"]),
     "n_iter_no_change": tune.qrandint(1, 20, 1),
@@ -277,9 +273,7 @@ BAYESIANRIDGE = {
 # }
 GRADIENTBOOSTINGREGRESSOR = {
     "model": "GradientBoostingRegressor",
-    "loss": tune.choice(
-        ["ls", "lad", "huber", "quantile"]
-    )
+    "loss": tune.choice(["ls", "lad", "huber", "quantile"])
     if sklearn_1_0_0
     else tune.choice(["squared_error", "absolute_error", "huber", "quantile"]),
     "learning_rate": tune.loguniform(0.01, 1),
@@ -293,9 +287,7 @@ GRADIENTBOOSTINGREGRESSOR = {
     "min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
     "max_depth": tune.randint(1, 31),
     "min_impurity_decrease": tune.uniform(0.0, 1.0),
-    "max_features": tune.choice(
-        ["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]
-    ),
+    "max_features": tune.choice(["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]),
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "validation_fraction": tune.uniform(0.01, 0.4),
     "n_iter_no_change": tune.qrandint(1, 20, 1),
@@ -350,9 +342,7 @@ XGBOOSTREGRESSOR = {
 }
 GAMREGRESSOR = {
     "model": "GAM_Regressor",
-    "type": tune.choice(
-        ["linear", "gamma", "poisson", "inverse_gaussian"]
-    ),
+    "type": tune.choice(["linear", "gamma", "poisson", "inverse_gaussian"]),
     "tol": tune.loguniform(1e-4, 1),
 }
 
@@ -388,7 +378,7 @@ regressor_hyperparameter = [
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
 # regressor_hyperparameter = [
-#     format_hyper_dict(dict, order + 1, ref = "model") 
+#     format_hyper_dict(dict, order + 1, ref = "model")
 #     for order, dict in enumerate(regressor_hyperparameter)
 # ]
 

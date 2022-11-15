@@ -1,5 +1,5 @@
 """
-File: _metadata.py
+File Name: _metadata.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_metadata.py
-File: _metadata.py
+File Created: Saturday, 12th November 2022 12:48:12 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 3:15:30 pm
+Last Modified: Monday, 14th November 2022 8:17:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -109,13 +109,29 @@ class MetaData:
 
     _unique_fulltype = UNIQUE_FULLTYPE
 
+    def __init__(self, data: Any = None) -> None:
+
+        # if fed data, get metadata from data
+        if data is not None:
+            self.get(data)
+
     def __repr__(self) -> str:
+        # check whether metadata generated
+        self._check_metadata()
+
         return str(self.metadata)
 
     def __str__(self) -> str:
+        # check whether metadata generated
+        self._check_metadata()
+
         return str(self.metadata)
 
-    def get(self, data: any) -> Dict[Tuple, List] or dict:
+    def _check_metadata(self):
+        if not hasattr(self, "metadata"):
+            raise AttributeError("Metadata not generated yet. Please use get() first.")
+
+    def get(self, data: Any) -> Dict[Tuple, List] or dict:
 
         if isinstance(data, pd.DataFrame):
             return self.get_from_df(data)
@@ -125,6 +141,9 @@ class MetaData:
     def update(
         self, data: pd.DataFrame, names: List[str] = None
     ) -> Dict[Tuple, List] or dict:
+
+        # check whether metadata generated
+        self._check_metadata()
 
         # if names not provided, update all columns
         if names is None:
@@ -156,6 +175,9 @@ class MetaData:
     def force_update(
         self, names: List[str] or str, fulltypes: List[Tuple[str, str]] or str
     ) -> Dict[Tuple, List] or dict:
+
+        # check whether metadata generated
+        self._check_metadata()
 
         # if names is a string, convert it to a list
         if isinstance(names, str):
@@ -191,6 +213,9 @@ class MetaData:
 
     def register(self, name: str, fulltype: dict, details: dict = None) -> None:
 
+        # check whether metadata generated
+        self._check_metadata()
+
         # register the metadata
         if fulltype in self.metadata.keys():
             self.metadata[fulltype] += [name]
@@ -203,7 +228,7 @@ class MetaData:
         else:
             self.details[name] = {}
 
-    def _get_from_others(self, data: any) -> Dict[Tuple, List] or dict:
+    def _get_from_others(self, data: Any) -> Dict[Tuple, List] or dict:
 
         # convert to dataframe
         try:

@@ -1,17 +1,17 @@
 """
-File: _utilsPL.py
+File Name: _evaulatorPL.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_nas/_nni/_utilsPL.py
-File Created: Tuesday, 19th July 2022 2:04:35 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_evaulatorPL.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 11th October 2022 3:43:52 pm
+Last Modified: Monday, 14th November 2022 8:26:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

@@ -1,17 +1,17 @@
 """
-File: _preprocessing.py
+File Name: _preprocessing.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_preprocessing.py
-File Created: Wednesday, 6th April 2022 12:04:44 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/_preprocessing.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th July 2022 10:44:33 am
+Last Modified: Monday, 14th November 2022 9:40:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Union, Tuple
 import importlib
 import pandas as pd
 
@@ -65,12 +66,12 @@ if datasets_spec is not None:
 # build a vocabulary from text using torchtext methods
 # fixed length sequence needed
 def text_preprocessing_torchtext(
-    data,
-    batch_size=32,
-    shuffle=True,
-    drop_first=True,
-    return_offset=False,
-):
+    data: Union[pd.DataFrame, TensorDataset],
+    batch_size: int = 32,
+    shuffle: bool = True,
+    drop_first: bool = True,
+    return_offset: bool = False,
+) -> Tuple[DataLoader, torchtext.vocab.Vocab]:
     tokenizer = get_tokenizer("basic_english")
 
     # yield tokens from a string
@@ -131,14 +132,14 @@ def text_preprocessing_torchtext(
 
 # text preprocessing using transformers package
 def text_preprocessing_transformers(
-    data,
-    batch_size=32,
-    tokenizer_model="bert-base-uncased",
-    max_len=512,
-    return_attention_mask=False,
-    return_token_type_ids=False,
-    return_tensors="pt",
-):
+    data: Union[pd.DataFrame, TensorDataset],
+    batch_size: int = 32,
+    tokenizer_model: str = "bert-base-uncased",
+    max_len: int = 512,
+    return_attention_mask: bool = False,
+    return_token_type_ids: bool = False,
+    return_tensors: str = "pt",
+) -> DataLoader:
 
     """
     Parameters

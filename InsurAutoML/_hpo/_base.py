@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 12:24:57 am
+Last Modified: Monday, 14th November 2022 11:34:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,8 @@ SOFTWARE.
 """
 
 from __future__ import annotations
+import logging
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
 from typing import Union, List, Callable, Dict, Tuple
 import os
@@ -60,7 +62,7 @@ from InsurAutoML._hpo._utils import (
     ClassifierEnsemble,
     RegressorEnsemble,
 )
-from InsurAutoML._constant import UNI_CLASS, MAX_TIME
+from InsurAutoML._constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL
 from InsurAutoML._base import no_processing
 from InsurAutoML._utils._base import type_of_script, format_hyper_dict
 from InsurAutoML._utils._file import (
@@ -110,7 +112,20 @@ else:
     device_count = 0
 
 
-class AutoTabularBase:
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+
+class AutoTabularBase(MetaData):
 
     """ "
     Base class module for AutoTabular (for classification and regression tasks)
@@ -334,11 +349,14 @@ class AutoTabularBase:
             encoder = {}  # if specified, check if encoders in default encoders
             for _encoder in self.encoder:
                 if _encoder not in [*self._all_encoders]:
-                    raise ValueError(
-                        "Only supported encoders are {}, get {}.".format(
+                    self._logger.error("Only supported encoders are {}, get {}.".format(
                             [*self._all_encoders], _encoder
-                        )
-                    )
+                        ), ValueError)
+                    # raise ValueError(
+                    #     "Only supported encoders are {}, get {}.".format(
+                    #         [*self._all_encoders], _encoder
+                    #     )
+                    # )
                 encoder[_encoder] = self._all_encoders[_encoder]
 
         # Imputer: fill missing values
@@ -1109,7 +1127,42 @@ class AutoTabularBase:
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> AutoTabularBase:
+        
+        # initialize temp directory
+        # check if temp directory exists, if exists, empty it
+        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
+            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+        if not os.path.isdir(self.temp_directory):
+            os.makedirs(self.temp_directory)
+        os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
+        # # set up logging file
+        # if not os.path.exists(
+        #     os.path.join(self.temp_directory, self.model_name, "logging.conf")
+        # ):
+        #     with open(
+        #         os.path.join(self.temp_directory, self.model_name, "logging.conf"), "w"
+        #     ) as fp:
+        #         pass
+        # logging.config.fileConfig(
+        #     os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+        #     disable_existing_loggers=False,
+        # )
+        # # set up verbosity of logging
+        self._logger = setup_logger(
+            __name__,
+            os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+            level=logging.INFO,
+        )
+        # logging.basicConfig(level=LOGGINGLEVEL[self.verbose])
+        # self._logger = logging.getLogger(__name__)
+        
+        self._logger.info(
+            "[INFO] {} Experiment: {}. Status: Start preparing AutoTabular...".format(
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+            )
+        )
+        
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
 
@@ -1126,7 +1179,7 @@ class AutoTabularBase:
                 raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
 
         # get data metadata
-        self.metadata = MetaData().get(X)
+        super(AutoTabularBase, self).__init__(X)
         # check if there's unsupported data type
         # if datetime ,recommend to remove
         if ("Datetime", "") in self.metadata.keys():
@@ -1233,9 +1286,9 @@ class AutoTabularBase:
         else:
             try:
                 X = pd.DataFrame(X)
-                print(
-                    "[INFO] {} X is not a dataframe, converted to dataframe.".format(
-                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+                self._logger.info(
+                    "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
                     )
                 )
             except:
@@ -1262,17 +1315,27 @@ class AutoTabularBase:
             models,
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
+        
+        self._logger.info(
+                "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+                )
+            )
 
         # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
         # if the model is already trained, read the setting
         if os.path.exists(self.model_name):
-
-            print(
-                "[INFO] {} Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+            self._logger.info(
+                "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
                 )
             )
+            # print(
+            #     "[INFO] {} Stored model found, load previous model.".format(
+            #         datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+            #     )
+            # )
             # self.load_model(_X, _y)
             # (
             #     self._fit_encoder,
@@ -1287,14 +1350,6 @@ class AutoTabularBase:
             self._fitted = True  # successfully fitted the model
 
             return self
-
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
         # write basic information to init.txt
         with open(
@@ -1329,7 +1384,10 @@ class AutoTabularBase:
 
         # special requirement for Nevergrad, need a algorithm setting
         if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
-            warnings.warn("No algorithm setting for Nevergrad find, use OnePlusOne.")
+            self._logger.warn(
+                "No algorithm setting for Nevergrad find, use OnePlusOne."
+            )
+            # warnings.warn("No algorithm setting for Nevergrad find, use OnePlusOne.")
             import nevergrad as ng
 
             self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
@@ -1371,7 +1429,8 @@ class AutoTabularBase:
 
         # ensemble settings
         if self.n_estimators == 1:
-            warnings.warn("Set n_estimators to 1, no ensemble will be used.")
+            self._logger.warn("Set n_estimators to 1, no ensemble will be used.")
+            # warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
             # get progress reporter
             progress_reporter = get_progress_reporter(
@@ -1417,6 +1476,8 @@ class AutoTabularBase:
 
             # subtrial directory
             self.sub_directory = self.temp_directory
+            
+            self._logger.info("[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
 
             # optimization process
             # partially activated objective function
@@ -1486,6 +1547,8 @@ class AutoTabularBase:
             # # check if ray is shutdown
             # assert ray.is_initialized() == False, "Ray is not shutdown."
             rayStatus.ray_shutdown()
+            
+            self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
 
             # get the best config settings
             best_trial_id = str(
@@ -1605,6 +1668,8 @@ class AutoTabularBase:
 
             # shut down ray
             rayStatus.ray_shutdown()
+            
+            self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
 
             # get all configs, trial_id
             analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
@@ -1758,6 +1823,8 @@ class AutoTabularBase:
 
                 # shut down ray
                 rayStatus.ray_shutdown()
+                
+                self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1899,6 +1966,8 @@ class AutoTabularBase:
 
                 # shut down ray
                 rayStatus.ray_shutdown()
+                
+                self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1930,6 +1999,8 @@ class AutoTabularBase:
         # whether to retain temp files
         if self.delete_temp_after_terminate:
             shutil.rmtree(self.temp_directory)
+            
+        self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
 
         self._fitted = True
 

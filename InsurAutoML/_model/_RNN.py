@@ -1,17 +1,17 @@
 """
-File: _RNN.py
+File Name: _RNN.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/_RNN.py
-File Created: Tuesday, 5th April 2022 11:46:25 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_RNN.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:11 pm
+Last Modified: Monday, 14th November 2022 8:15:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Type
+from __future__ import annotations
+
+from typing import Union, Tuple
 import warnings
 import numpy as np
 import pandas as pd
@@ -59,7 +61,7 @@ if pytorch_spec is not None:
 
 ####################################################################################################
 # RNN models
-# RNN/LSTM/GRU models supported
+# Common RNN/LSTM/GRU models supported
 
 
 class RNN_Net(nn.Module):
@@ -86,25 +88,25 @@ class RNN_Net(nn.Module):
 
     dropout: dropout rate in fully-connected layers, default = 0.2
 
-    device: device cpu/gpu for the training
+    device: string or torch.device cpu/gpu for the training
     """
 
     def __init__(
         self,
-        input_size,
-        hidden_size,
-        output_size,
-        n_layers=1,
-        RNN_unit="RNN",
-        activation="Sigmoid",
-        dropout=0.2,
-        use_softmax=False,
-        device=torch.device("cuda"),
-    ):
+        input_size: int,
+        hidden_size: int,
+        output_size: int,
+        n_layers: int = 1,
+        RNN_unit: str = "RNN",
+        activation: str = "Sigmoid",
+        dropout: float = 0.2,
+        use_softmax: bool = False,
+        device: Union[str, torch.device] = torch.device("cuda"),
+    ) -> None:
         super().__init__()
 
         # assign device
-        self.device = device
+        self.device = torch.device(device) if isinstance(device, str) else device
 
         # hidden size and hidden layers
         self.hidden_size = hidden_size
@@ -116,12 +118,16 @@ class RNN_Net(nn.Module):
 
         # select RNN unit from ["RNN", "LSTM", "GRU"]
         self.RNN_unit = RNN_unit
-        if self.RNN_unit == "RNN":
-            self.rnn = nn.RNN(input_size, hidden_size, n_layers, batch_first=True)
-        elif self.RNN_unit == "LSTM":
-            self.rnn = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True)
-        elif self.RNN_unit == "GRU":
-            self.rnn = nn.GRU(input_size, hidden_size, n_layers, batch_first=True)
+        if self.RNN_unit in ["RNN", "LSTM", "GRU"]:
+            self.rnn = getattr(nn, self.RNN_unit)(
+                input_size, hidden_size, n_layers, batch_first=True
+            )
+        # if self.RNN_unit == "RNN":
+        #     self.rnn = nn.RNN(input_size, hidden_size, n_layers, batch_first=True)
+        # elif self.RNN_unit == "LSTM":
+        #     self.rnn = nn.LSTM(input_size, hidden_size, n_layers, batch_first=True)
+        # elif self.RNN_unit == "GRU":
+        #     self.rnn = nn.GRU(input_size, hidden_size, n_layers, batch_first=True)
         else:
             raise TypeError("Not recognizing RNN unit type!")
 
@@ -129,12 +135,14 @@ class RNN_Net(nn.Module):
         self.hidden2tag = nn.Linear(hidden_size, output_size)
 
         # activation function
-        if activation == "ReLU":
-            self.activation = nn.ReLU()
-        elif activation == "Tanh":
-            self.activation = nn.Tanh()
-        elif activation == "Sigmoid":
-            self.activation = nn.Sigmoid()
+        if activation in ["ReLU", "Tanh", "Sigmoid"]:
+            self.activation = getattr(nn, activation)()
+        # if activation == "ReLU":
+        #     self.activation = nn.ReLU()
+        # elif activation == "Tanh":
+        #     self.activation = nn.Tanh()
+        # elif activation == "Sigmoid":
+        #     self.activation = nn.Sigmoid()
         else:
             raise TypeError("Not recognizing activation function!")
 
@@ -143,7 +151,9 @@ class RNN_Net(nn.Module):
         if self.use_softmax:
             self.softmax_layer = nn.LogSoftmax(dim=1)  # softmax layer
 
-    def forward(self, input, hidden):
+    def forward(
+        self, input: torch.Tensor, hidden: torch.Tensor
+    ) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
 
         # embeds = self.embedding(input)
         if self.RNN_unit in ["LSTM"]:
@@ -162,7 +172,9 @@ class RNN_Net(nn.Module):
         elif self.RNN_unit in ["RNN", "GRU"]:
             return tag_scores, rnn_hidden
 
-    def init_hidden(self, batch_size):
+    def init_hidden(
+        self, batch_size: int
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
 
         h0 = torch.zeros((self.n_layers, batch_size, self.hidden_size)).to(self.device)
 
@@ -222,22 +234,22 @@ class RNN_Base:
 
     def __init__(
         self,
-        input_size=1,
-        hidden_size=256,
-        output_size=1,
-        n_layers=1,
-        RNN_unit="RNN",
-        activation="Sigmoid",
-        dropout=0.2,
-        learning_rate=None,
-        optimizer="Adam",
-        criteria="CrossEntropy",
-        batch_size=32,
-        num_epochs=20,
-        use_softmax=False,
-        is_cuda=True,
-        seed=1,
-    ):
+        input_size: int = 1,
+        hidden_size: int = 256,
+        output_size: int = 1,
+        n_layers: int = 1,
+        RNN_unit: str = "RNN",
+        activation: str = "Sigmoid",
+        dropout: float = 0.2,
+        learning_rate: float = None,
+        optimizer: str = "Adam",
+        criteria: str = "CrossEntropy",
+        batch_size: int = 32,
+        num_epochs: int = 20,
+        use_softmax: bool = False,
+        is_cuda: bool = True,
+        seed: int = 1,
+    ) -> None:
         # model parameters
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -260,7 +272,11 @@ class RNN_Base:
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> RNN_Base:
 
         # set seed
         torch.manual_seed(self.seed)
@@ -344,7 +360,7 @@ class RNN_Base:
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         # convert to tensor
         X = torch.as_tensor(
@@ -412,21 +428,21 @@ class RNN_Classifier(RNN_Base):
 
     def __init__(
         self,
-        input_size=1,
-        hidden_size=256,
-        output_size=1,
-        n_layers=1,
-        RNN_unit="RNN",
-        activation="Sigmoid",
-        dropout=0.2,
-        learning_rate=None,
-        optimizer="Adam",
-        criteria="CrossEntropy",
-        batch_size=32,
-        num_epochs=20,
-        is_cuda=True,
-        seed=1,
-    ):
+        input_size: int = 1,
+        hidden_size: int = 256,
+        output_size: int = 1,
+        n_layers: int = 1,
+        RNN_unit: str = "RNN",
+        activation: str = "Sigmoid",
+        dropout: float = 0.2,
+        learning_rate: float = None,
+        optimizer: str = "Adam",
+        criteria: str = "CrossEntropy",
+        batch_size: int = 32,
+        num_epochs: int = 20,
+        is_cuda: bool = True,
+        seed: int = 1,
+    ) -> None:
         # model parameters
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -448,7 +464,9 @@ class RNN_Classifier(RNN_Base):
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
+    ) -> RNN_Classifier:
 
         # get unique classes
         self.output_size = len(pd.unique(y))
@@ -486,12 +504,12 @@ class RNN_Classifier(RNN_Base):
 
         return super().fit(X, y)
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         # need to assign prediction to classes
         return assign_classes(super().predict(X))
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         # not need to use argmax to select the one class
         # but to return full probability
@@ -541,21 +559,21 @@ class RNN_Regressor(RNN_Base):
 
     def __init__(
         self,
-        input_size=1,
-        hidden_size=256,
-        output_size=1,
-        n_layers=1,
-        RNN_unit="RNN",
-        activation="Sigmoid",
-        dropout=0.2,
-        learning_rate=None,
-        optimizer="Adam",
-        criteria="MSE",
-        batch_size=32,
-        num_epochs=20,
-        is_cuda=True,
-        seed=1,
-    ):
+        input_size: int = 1,
+        hidden_size: int = 256,
+        output_size: int = 1,
+        n_layers: int = 1,
+        RNN_unit: str = "RNN",
+        activation: str = "Sigmoid",
+        dropout: float = 0.2,
+        learning_rate: float = None,
+        optimizer: str = "Adam",
+        criteria: str = "MSE",
+        batch_size: int = 32,
+        num_epochs: int = 20,
+        is_cuda: bool = True,
+        seed: int = 1,
+    ) -> None:
         # model parameters
         self.input_size = input_size
         self.hidden_size = hidden_size
@@ -577,7 +595,9 @@ class RNN_Regressor(RNN_Base):
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
+    ) -> RNN_Regressor:
 
         # get unique classes
         self.output_size = 1
@@ -615,10 +635,10 @@ class RNN_Regressor(RNN_Base):
 
         return super().fit(X, y)
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         return super().predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         raise NotImplementedError("predict_proba is not implemented for regression.")

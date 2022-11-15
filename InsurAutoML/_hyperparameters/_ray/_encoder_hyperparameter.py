@@ -1,5 +1,5 @@
 """
-File: _encoder_hyperparameter.py
+File Name: _encoder_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_encoder_hyperparameter.py
-File: _encoder_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:22:08 am
+Last Modified: Monday, 14th November 2022 8:03:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,7 +55,7 @@ encoder_hyperparameter = [
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
 # encoder_hyperparameter = [
-#     format_hyper_dict(dict, order + 1, ref = "encoder") 
+#     format_hyper_dict(dict, order + 1, ref = "encoder")
 #     for order, dict in enumerate(encoder_hyperparameter)
 # ]
 

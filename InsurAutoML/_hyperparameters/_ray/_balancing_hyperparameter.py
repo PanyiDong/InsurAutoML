@@ -1,5 +1,5 @@
 """
-File: _balancing_hyperparameter.py
+File Name: _balancing_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_balancing_hyperparameter.py
-File: _balancing_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:22:17 am
+Last Modified: Monday, 14th November 2022 8:02:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -95,7 +95,7 @@ balancing_hyperparameter = [
     NOPROCESSING,
     SIMPLERANDOMOVERSAMPLING,
     SIMPLERANDOMUNDERSAMPLING,
-    TOMEKLINK,   # if the imbalance threshold small, TomekLink will take too long
+    TOMEKLINK,  # if the imbalance threshold small, TomekLink will take too long
     EDITEDNEARESTNEIGHBOR,
     CONDENSEDNEARESTNEIGHBOR,
     ONESIDEDSELECTION,
@@ -107,7 +107,7 @@ balancing_hyperparameter = [
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
 # balancing_hyperparameter = [
-#     format_hyper_dict(dict, order + 1, ref = "balancing") 
+#     format_hyper_dict(dict, order + 1, ref = "balancing")
 #     for order, dict in enumerate(balancing_hyperparameter)
 # ]
 

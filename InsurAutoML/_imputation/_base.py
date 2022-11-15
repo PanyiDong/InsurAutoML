@@ -1,5 +1,5 @@
 """
-File: _base.py
+File Name: _base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_imputation/_base.py
-File: _base.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 11:13:24 pm
+Last Modified: Monday, 14th November 2022 8:07:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

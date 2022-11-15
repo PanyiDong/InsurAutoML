@@ -1,17 +1,17 @@
 """
-File: test_encoder.py
+File Name: test_encoder.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
+Project: InsurAutoML
+Latest Version: 0.2.3
 Relative Path: /tests/test_encoder/test_encoder.py
-File Created: Saturday, 9th April 2022 10:09:13 pm
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:57:07 pm
+Last Modified: Monday, 14th November 2022 8:22:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 def test_encoder_1():
 

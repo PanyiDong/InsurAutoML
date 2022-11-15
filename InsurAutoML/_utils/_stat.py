@@ -1,17 +1,17 @@
 """
-File: _stat.py
+File Name: _stat.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_stat.py
-File Created: Wednesday, 6th April 2022 12:02:53 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/_stat.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:33:34 pm
+Last Modified: Monday, 14th November 2022 9:44:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Union, List, Tuple
 import warnings
 import numpy as np
 import pandas as pd
@@ -46,7 +47,11 @@ import copy
 
 # return non-nan covariance matrix between X and y, (return covariance of X if y = None)
 # default calculate at columns (axis = 0), axis = 1 at rows
-def nan_cov(X, y=None, axis=0):
+def nan_cov(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    axis: int = 0,
+) -> np.ndarray:
 
     if isinstance(y, pd.DataFrame):
         _empty = y.isnull().all().all()
@@ -105,7 +110,10 @@ def nan_cov(X, y=None, axis=0):
 
 
 # return class (unique in y) mean of X
-def class_means(X, y):
+def class_means(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> List[float]:
 
     _class = np.unique(y)
     result = []
@@ -118,7 +126,9 @@ def class_means(X, y):
 
 
 # return maximum likelihood estimate for covariance
-def empirical_covariance(X, *, assume_centered=False):
+def empirical_covariance(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray], *, assume_centered: bool = False
+) -> np.ndarray:
 
     X = np.asarray(X)
 
@@ -139,7 +149,11 @@ def empirical_covariance(X, *, assume_centered=False):
 
 
 # return weighted within-class covariance matrix
-def class_cov(X, y, priors):
+def class_cov(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    priors: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> np.ndarray:
 
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
@@ -157,13 +171,16 @@ def class_cov(X, y, priors):
 
 
 # return Pearson Correlation Coefficients
-def Pearson_Corr(X, y):
-    
+def Pearson_Corr(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> List:
+
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
     features = list(X.columns)
-    
+
     result = [
         (nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
         for _column in features
@@ -179,7 +196,10 @@ def Pearson_Corr(X, y):
 
 
 # return Mutual Information
-def MI(X, y):
+def MI(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> List[float]:
 
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
@@ -217,7 +237,12 @@ def MI(X, y):
 
 
 # return t-statistics of dataset, only two groups dataset are suitable
-def t_score(X, y, fvalue=True, pvalue=False):
+def t_score(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    fvalue: bool = True,
+    pvalue: bool = False,
+) -> Union[float, Tuple[float, float]]:
 
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
@@ -254,7 +279,12 @@ def t_score(X, y, fvalue=True, pvalue=False):
 
 
 # return ANOVA of dataset, more than two groups dataset are suitable
-def ANOVA(X, y, fvalue=True, pvalue=False):
+def ANOVA(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    fvalue: bool = True,
+    pvalue: bool = False,
+) -> Union[float, Tuple[float, float]]:
 
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
@@ -288,49 +318,71 @@ def ANOVA(X, y, fvalue=True, pvalue=False):
 
 # convert metrics to minimize the error (as a loss function)
 # add negative sign to make maximization to minimize
-def neg_R2(y_true, y_pred):
+def neg_R2(
+    y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> float:
 
     from sklearn.metrics import r2_score
 
     return -r2_score(y_true, y_pred)
 
 
-def neg_accuracy(y_true, y_pred):
+def neg_accuracy(
+    y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> float:
 
     from sklearn.metrics import accuracy_score
 
     return -accuracy_score(y_true, y_pred)
 
 
-def neg_precision(y_true, y_pred):
+def neg_precision(
+    y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> float:
 
     from sklearn.metrics import precision_score
 
     return -precision_score(y_true, y_pred)
 
 
-def neg_auc(y_true, y_pred):
+def neg_auc(
+    y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> float:
 
     from sklearn.metrics import roc_auc_score
 
     return -roc_auc_score(y_true, y_pred)
 
 
-def neg_hinge(y_true, y_pred):
+def neg_hinge(
+    y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> float:
 
     from sklearn.metrics import hinge_loss
 
     return -hinge_loss(y_true, y_pred)
 
 
-def neg_f1(y_true, y_pred):
+def neg_f1(
+    y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
+) -> float:
 
     from sklearn.metrics import f1_score
 
     return -f1_score(y_true, y_pred)
 
 
-def ACCC(Z, y, X=None):
+def ACCC(
+    Z: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+) -> float:
 
     """
     Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1]

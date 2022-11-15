@@ -1,5 +1,5 @@
 """
-File: _classifier_hyperparameter.py
+File Name: _classifier_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_classifier_hyperparameter.py
-File: _classifier_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:22:13 am
+Last Modified: Monday, 14th November 2022 8:02:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -98,9 +98,7 @@ HISTGRADIENTBOOSTINGCLASSIFIER = {
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "max_bins": tune.choice([255]),
     "l2_regularization": tune.loguniform(1e-10, 1),
-    "early_stop": tune.choice(
-        ["off", "train", "valid"]
-    ),
+    "early_stop": tune.choice(["off", "train", "valid"]),
     "tol": tune.choice([1e-7]),
     "scoring": tune.choice(["loss"]),
     "n_iter_no_change": tune.qrandint(1, 20, 1),
@@ -247,9 +245,7 @@ GRADIENTBOOSTINGCLASSIFIER = {
     "min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
     "max_depth": tune.randint(1, 31),
     "min_impurity_decrease": tune.uniform(0.0, 1.0),
-    "max_features": tune.choice(
-        ["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]
-    ),
+    "max_features": tune.choice(["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]),
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "validation_fraction": tune.uniform(0.01, 0.4),
     "n_iter_no_change": tune.qrandint(1, 20, 1),
@@ -262,9 +258,7 @@ MLP_CLASSIFIER = {
     "activation": tune.choice(["Tanh", "Sigmoid"]),
     "learning_rate": tune.uniform(1e-5, 1),
     "optimizer": tune.choice(["Adam", "SGD"]),
-    "criteria": tune.choice(
-        ["CrossEntropy", "NegativeLogLikelihood"]
-    ),
+    "criteria": tune.choice(["CrossEntropy", "NegativeLogLikelihood"]),
     "batch_size": tune.choice([16, 32, 64]),
     "num_epochs": tune.qrandint(5, 30, 1),
 }
@@ -277,17 +271,13 @@ RNN_CLASSIFIER = {
     "dropout": tune.loguniform(1e-7, 0.8),
     "learning_rate": tune.loguniform(1e-7, 1),
     "optimizer": tune.choice(["Adam", "SGD"]),
-    "criteria": tune.choice(
-        ["CrossEntropy", "NegativeLogLikelihood"]
-    ),
+    "criteria": tune.choice(["CrossEntropy", "NegativeLogLikelihood"]),
     "batch_size": tune.choice([16, 32, 64]),
     "num_epochs": tune.qrandint(5, 30, 1),
 }
 LIGHTGBMCLASSIFIER = {
     "model": "LightGBM_Classifier",
-    "objective": tune.choice(
-        ["Need to specify in HPO by response"]
-    ),
+    "objective": tune.choice(["Need to specify in HPO by response"]),
     "boosting": tune.choice(LIGHTGBM_BOOSTING),
     "n_estimators": tune.qlograndint(50, 500, 1),
     # max_depth == -1 for no limit

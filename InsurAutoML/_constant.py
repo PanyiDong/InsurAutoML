@@ -1,5 +1,5 @@
 """
-File: _constant.py
+File Name: _constant.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_constant.py
-File: _constant.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 4:04:35 pm
+Last Modified: Monday, 14th November 2022 10:05:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import logging
+
+LOGGINGLEVEL = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
 FULLTYPE_MAPPING = {
     ("Int", "Numerical"): "con",

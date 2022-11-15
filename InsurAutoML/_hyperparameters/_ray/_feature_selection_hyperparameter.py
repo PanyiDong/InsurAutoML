@@ -1,5 +1,5 @@
 """
-File: _feature_selection_hyperparameter.py
+File Name: _feature_selection_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_feature_selection_hyperparameter.py
-File: _feature_selection_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:22:01 am
+Last Modified: Monday, 14th November 2022 8:03:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,18 +41,10 @@ SOFTWARE.
 from ray import tune
 from InsurAutoML._utils._base import format_hyper_dict
 
-NOPROCESSING = {
-    "feature_selection": "no_processing"
-}
-LDASELECTION = {
-    "feature_selection": "LDASelection"
-}
-PCAFEATURESELECTION = {
-    "feature_selection": "PCA_FeatureSelection"
-}
-RBFSAMPLER = {
-    "feature_selection": "RBFSampler"
-}
+NOPROCESSING = {"feature_selection": "no_processing"}
+LDASELECTION = {"feature_selection": "LDASelection"}
+PCAFEATURESELECTION = {"feature_selection": "PCA_FeatureSelection"}
+RBFSAMPLER = {"feature_selection": "RBFSampler"}
 FEATUREFILTER = {
     "feature_selection": "FeatureFilter",
     "criteria": tune.choice(["Pearson", "MI"]),
@@ -67,40 +59,26 @@ GENETICALGORITHM = {
     "feature_selection": "GeneticAlgorithm",
     "n_prop": tune.uniform(0.6, 1),
     "n_generations": tune.qrandint(10, 40),
-    "fs_method": tune.choice(
-        ["auto", "random", "Entropy", "t_statistics"]
-    ),
+    "fs_method": tune.choice(["auto", "random", "Entropy", "t_statistics"]),
     "n_initial": tune.qrandint(5, 15),
-    "fitness_fit": tune.choice(
-        ["Linear", "Decision Tree", "Random Forest", "SVM"]
-    ),
+    "fitness_fit": tune.choice(["Linear", "Decision Tree", "Random Forest", "SVM"]),
     "p_crossover": tune.uniform(0.8, 1),
     "p_mutation": tune.loguniform(1e-5, 1),
 }
 EXTRATREESPREPROCFORCLASSIFICATION = {
     "feature_selection": "extra_trees_preproc_for_classification",
     "n_estimators": tune.choice([100]),
-    "criterion": tune.choice(
-        ["gini", "entropy"]
-    ),
-    "min_samples_leaf": tune.qrandint(
-        1, 20, 1
-    ),
-    "min_samples_split": tune.qrandint(
-        2, 20, 1
-    ),
+    "criterion": tune.choice(["gini", "entropy"]),
+    "min_samples_leaf": tune.qrandint(1, 20, 1),
+    "min_samples_split": tune.qrandint(2, 20, 1),
     "max_features": tune.uniform(0.1, 1.0),
     "bootstrap": tune.choice([True, False]),
     "max_leaf_nodes": tune.choice([None]),
     "max_depth": tune.choice([None]),
-    "min_weight_fraction_leaf": tune.choice(
-        [0.0]
-    ),
-    "min_impurity_decrease": tune.choice(
-        [0.0]
-    ),
+    "min_weight_fraction_leaf": tune.choice([0.0]),
+    "min_impurity_decrease": tune.choice([0.0]),
 }
-EXTRATREESPREPROCFORREGRESSION ={
+EXTRATREESPREPROCFORREGRESSION = {
     "feature_selection": "extra_trees_preproc_for_regression",
     "n_estimators": tune.choice([100]),
     "criterion": tune.choice(
@@ -112,9 +90,7 @@ EXTRATREESPREPROCFORREGRESSION ={
     "bootstrap": tune.choice([True, False]),
     "max_leaf_nodes": tune.choice([None]),
     "max_depth": tune.choice([None]),
-    "min_weight_fraction_leaf": tune.choice(
-        [0.0]
-    ),
+    "min_weight_fraction_leaf": tune.choice([0.0]),
 }
 FASTICA = {
     "feature_selection": "fast_ica",
@@ -128,9 +104,7 @@ FEATUREAGGLOMERATION = {
     "feature_selection": "feature_agglomeration",
     # forbid linkage = 'ward' while affinity in ['manhattan', 'cosine']
     "n_clusters": tune.qrandint(2, 400, 1),
-    "affinity": tune.choice(
-        ["euclidean", "manhattan", "cosine"]
-    ),
+    "affinity": tune.choice(["euclidean", "manhattan", "cosine"]),
     "linkage": tune.choice(["ward", "complete", "average"]),
     "pooling_func": tune.choice(["mean", "median", "max"]),
 }
@@ -204,9 +178,7 @@ SELECTPERCENTILECLASSIFICATION = {
 SELECTPERCENTILEREGRESSION = {
     "feature_selection": "select_percentile_regression",
     "percentile": tune.qrandint(1, 99, 1),
-    "score_func": tune.choice(
-        ["f_regression", "mutual_info"]
-    ),
+    "score_func": tune.choice(["f_regression", "mutual_info"]),
 }
 SELECTRATESCLASSIFICATION = {
     "feature_selection": "select_rates_classification",

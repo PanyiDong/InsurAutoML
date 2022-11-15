@@ -1,17 +1,17 @@
 """
-File: _utils.py
+File Name: _utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Last Version: 0.2.1
+Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hpo/_utils.py
-File: _utils.py
+File Created: Thursday, 10th November 2022 1:50:38 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 12:14:04 am
+Last Modified: Monday, 14th November 2022 9:56:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,9 @@ SOFTWARE.
 """
 
 from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
 
 import warnings
 from typing import Callable, Union, List, Tuple, Dict, Any
@@ -441,7 +444,8 @@ class RegressorEnsemble(formatting):
             except:
                 # if weights included, but not available in voting function, warn users
                 if self.weights is not None:
-                    warnings.warn("weights are not used in voting method")
+                    logger.warn("weights are not used in voting method")
+                    # warnings.warn("weights are not used in voting method")
                 pred = self.voting(pred_list, axis=1)
         elif self.strategy == "boosting":
             pred = np.sum(pred_list, axis=1)
@@ -737,13 +741,14 @@ class TabularObjective(tune.Trainable):
             f.write("Model Hyperparameters:")
             print(self._model_hyper, file=f, end="\n\n")
 
-    def save_checkpoint(self, tmp_checkpoint_dir: str) -> None:
+    def save_checkpoint(self, tmp_checkpoint_dir: str) -> str:
         checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
 
         with open(checkpoint_path, "w") as out_f:
             json.dump(self.status_dict, out_f)
 
-        # return tmp_checkpoint_dir
+        # need to return the path of checkpoints to be further processed
+        return tmp_checkpoint_dir
 
     def load_checkpoint(self, tmp_checkpoint_dir: str) -> None:
         checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")

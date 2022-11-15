@@ -1,17 +1,17 @@
 """
-File: _xgboost.py
+File Name: _xgboost.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/_xgboost.py
-File Created: Friday, 15th April 2022 12:19:22 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_xgboost.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 7:13:33 pm
+Last Modified: Monday, 14th November 2022 8:15:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union
+import numpy as np
+import pandas as pd
 import xgboost as xgb
 from xgboost import XGBClassifier, XGBRegressor
 
@@ -72,15 +77,15 @@ class XGBoost_Base:
 
     def __init__(
         self,
-        task_type="classification",
-        eta=0.3,
-        gamma=0,
-        max_depth=6,
-        min_child_weight=1,
-        max_delta_step=0,
-        reg_lambda=1,
-        reg_alpha=0,
-    ):
+        task_type: str = "classification",
+        eta: float = 0.3,
+        gamma: float = 0.0,
+        max_depth: int = 6,
+        min_child_weight: float = 1.0,
+        max_delta_step: float = 0.0,
+        reg_lambda: float = 1.0,
+        reg_alpha: float = 0.0,
+    ) -> None:
         self.task_type = task_type
         self.eta = eta
         self.gamma = gamma
@@ -92,7 +97,9 @@ class XGBoost_Base:
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> XGBoost_Base:
 
         if self.task_type == "classification":
             self.model = XGBClassifier(
@@ -121,11 +128,15 @@ class XGBoost_Base:
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict_proba(X)
 
@@ -155,14 +166,14 @@ class XGBoost_Classifier(XGBoost_Base):
 
     def __init__(
         self,
-        eta=0.3,
-        gamma=0,
-        max_depth=6,
-        min_child_weight=1,
-        max_delta_step=0,
-        reg_lambda=1,
-        reg_alpha=0,
-    ):
+        eta: float = 0.3,
+        gamma: float = 0.0,
+        max_depth: int = 6,
+        min_child_weight: float = 1.0,
+        max_delta_step: float = 0.0,
+        reg_lambda: float = 1.0,
+        reg_alpha: float = 0.0,
+    ) -> None:
         self.eta = eta
         self.gamma = gamma
         self.max_depth = max_depth
@@ -184,7 +195,9 @@ class XGBoost_Classifier(XGBoost_Base):
             reg_alpha=self.reg_alpha,
         )
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> XGBoost_Classifier:
 
         super().fit(X, y)
 
@@ -192,11 +205,15 @@ class XGBoost_Classifier(XGBoost_Base):
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return super().predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return super().predict_proba(X)
 
@@ -226,14 +243,14 @@ class XGBoost_Regressor(XGBoost_Base):
 
     def __init__(
         self,
-        eta=0.3,
-        gamma=0,
-        max_depth=6,
-        min_child_weight=1,
-        max_delta_step=0,
-        reg_lambda=1,
-        reg_alpha=0,
-    ):
+        eta: float = 0.3,
+        gamma: float = 0.0,
+        max_depth: int = 6,
+        min_child_weight: float = 1.0,
+        max_delta_step: float = 0.0,
+        reg_lambda: float = 1.0,
+        reg_alpha: float = 0.0,
+    ) -> None:
         self.eta = eta
         self.gamma = gamma
         self.max_depth = max_depth
@@ -255,7 +272,9 @@ class XGBoost_Regressor(XGBoost_Base):
             reg_alpha=self.reg_alpha,
         )
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> XGBoost_Regressor:
 
         super().fit(X, y)
 
@@ -263,10 +282,14 @@ class XGBoost_Regressor(XGBoost_Base):
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return super().predict(X)
 
-    def predict_proba(self, X):
-    
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
         raise NotImplementedError("predict_proba is not implemented for regression.")

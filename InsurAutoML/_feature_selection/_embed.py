@@ -1,17 +1,17 @@
 """
-File: _embed.py
+File Name: _embed.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Last Version: 0.2.1
+Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_feature_selection/_embed.py
-File: _embed.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 8:33:52 pm
+Last Modified: Monday, 14th November 2022 7:01:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

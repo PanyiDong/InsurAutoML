@@ -1,5 +1,5 @@
 """
-File: _imputer_hyperparameter.py
+File Name: _imputer_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_imputer_hyperparameter.py
-File: _imputer_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:22:22 am
+Last Modified: Monday, 14th November 2022 8:03:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,16 +43,10 @@ from InsurAutoML._utils._base import format_hyper_dict
 
 SIMPLEIMPUTER = {
     "imputer": "SimpleImputer",
-    "method": tune.choice(
-        ["mean", "zero", "median", "most frequent"]
-    ),
+    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
 }
-DUMMYIMPUTER = {
-    "imputer": "DummyImputer"
-}
-JOINTIMPUTER = {
-    "imputer": "JointImputer"
-}
+DUMMYIMPUTER = {"imputer": "DummyImputer"}
+JOINTIMPUTER = {"imputer": "JointImputer"}
 EXPECTATIONMAXIMIZATION = {
     "imputer": "ExpectationMaximization",
     "iterations": tune.qrandint(10, 100, 1),
@@ -66,15 +60,11 @@ KNNIMPUTER = {
 MISSFORESTIMPUTER = {
     "imputer": "MissForestImputer",
     "threshold": tune.loguniform(1e-5, 10),
-    "method": tune.choice(
-        ["mean", "zero", "median", "most frequent"]
-    ),
+    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
 }
 MICE = {
-    "imputer": "MICE", 
-    "method": tune.choice(
-        ["mean", "zero", "median", "most frequent"]
-    ),
+    "imputer": "MICE",
+    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
     "cycle": tune.qrandint(5, 20, 1),
 }
 GAIN = {
@@ -111,7 +101,7 @@ imputer_hyperparameter = [
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
 # imputer_hyperparameter = [
-#     format_hyper_dict(dict, order + 1, ref = "imputer") 
+#     format_hyper_dict(dict, order + 1, ref = "imputer")
 #     for order, dict in enumerate(imputer_hyperparameter)
 # ]
 

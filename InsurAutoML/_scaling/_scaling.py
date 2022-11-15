@@ -1,5 +1,5 @@
 """
-File: _scaling.py
+File Name: _scaling.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_scaling/_scaling.py
-File: _scaling.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 11:06:56 pm
+Last Modified: Monday, 14th November 2022 8:16:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -127,7 +127,7 @@ class Standardize:
             _x_sum = 0
             _x_2_sum = 0
             _x_sum += np.nansum(_data)
-            _x_2_sum += np.nansum(_data ** 2)
+            _x_2_sum += np.nansum(_data**2)
             if self.with_mean == True:
                 self._mean[i] = _x_sum / n_notnan
             if self.with_std == True:
@@ -197,7 +197,11 @@ class Normalize:
     supported ['l1', 'l2', 'max']
     """
 
-    def __init__(self, norm: str = "max", deep_copy: bool = True,) -> None:
+    def __init__(
+        self,
+        norm: str = "max",
+        deep_copy: bool = True,
+    ) -> None:
         self.norm = norm
         self.deep_copy = deep_copy
 
@@ -223,7 +227,7 @@ class Normalize:
             elif self.norm == "l1":
                 self._scale[i] = np.abs(_data).sum()
             elif self.norm == "l2":
-                self._scale[i] = (_data ** 2).sum()
+                self._scale[i] = (_data**2).sum()
 
         self._fitted = True
 
@@ -410,7 +414,9 @@ class MinMaxScale:
     """
 
     def __init__(
-        self, feature_range: Tuple[float, float] = (0.0, 1.0), deep_copy: bool = True,
+        self,
+        feature_range: Tuple[float, float] = (0.0, 1.0),
+        deep_copy: bool = True,
     ) -> None:
         self.feature_range = feature_range
         self.deep_copy = deep_copy
@@ -507,7 +513,10 @@ class Winsorization:
     """
 
     def __init__(
-        self, quantile: float = 0.95, threshold: float = 0.1, deep_copy: bool = True,
+        self,
+        quantile: float = 0.95,
+        threshold: float = 0.1,
+        deep_copy: bool = True,
     ) -> None:
         self.quantile = quantile
         self.threshold = threshold
@@ -631,7 +640,9 @@ class PowerTransformer:
         from sklearn.preprocessing import PowerTransformer
 
         self.mol = PowerTransformer(
-            method=self.method, standardize=self.standardize, copy=self.deep_copy,
+            method=self.method,
+            standardize=self.standardize,
+            copy=self.deep_copy,
         )
 
         self.mol.fit(X, y)

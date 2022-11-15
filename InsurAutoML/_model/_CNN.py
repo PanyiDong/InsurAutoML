@@ -1,17 +1,17 @@
 """
-File: _CNN.py
+File Name: _CNN.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_model/_CNN.py
-File Created: Thursday, 14th July 2022 2:23:42 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_CNN.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 9:16:16 am
+Last Modified: Monday, 14th November 2022 8:14:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

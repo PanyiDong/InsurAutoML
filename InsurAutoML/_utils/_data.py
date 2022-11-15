@@ -1,17 +1,17 @@
 """
-File: _data.py
+File Name: _data.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_data.py
-File Created: Wednesday, 6th April 2022 12:01:26 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/_data.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:50:34 pm
+Last Modified: Monday, 14th November 2022 9:23:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Any, Tuple, List, Union
 import os
 import re
 import ast
@@ -49,7 +50,7 @@ from ._base import random_index
 from InsurAutoML._constant import UNI_CLASS
 
 # string list to list
-def str2list(item):
+def str2list(item: str) -> list:
 
     try:
         return ast.literal_eval(item)
@@ -58,7 +59,7 @@ def str2list(item):
 
 
 # string dict to dict
-def str2dict(item):
+def str2dict(item: str) -> dict:
 
     try:
         return json.loads(item)
@@ -67,7 +68,9 @@ def str2dict(item):
 
 
 # Train test split using test set percentage
-def train_test_split(X, y, test_perc=0.15, seed=1):
+def train_test_split(
+    X: Any, y: Any, test_perc: float = 0.15, seed: int = 1
+) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
 
     """
     return order: X_train, X_test, y_train, y_test
@@ -89,11 +92,11 @@ def train_test_split(X, y, test_perc=0.15, seed=1):
 # transform between numpy array and pandas dataframe
 # to deal with some problems where dataframe will be converted to array using sklearn objects
 class as_dataframe:
-    def __init__(self):
+    def __init__(self) -> None:
         self.design_matrix = None  # record the values of dataframe
         self.columns = None  # record column heads for the dataframe
 
-    def to_array(self, X):
+    def to_array(self, X: pd.DataFrame) -> np.ndarray:
 
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Input should be dataframe!")
@@ -103,7 +106,7 @@ class as_dataframe:
 
         return self.design_matrix
 
-    def to_df(self, X=None, columns=None):
+    def to_df(self, X: Any = None, columns: List = None) -> pd.DataFrame:
 
         if not isinstance(X, np.ndarray):
             if not X:
@@ -203,12 +206,19 @@ class formatting:
 
     def __init__(
         self,
-        columns=[],
-        numerics=["int16", "int32", "int64", "float16", "float32", "float64"],
-        nas=[np.nan, None, "nan", "NaN", "NA", "novalue", "None", "none"],
-        allow_string=False,
-        inplace=True,
-    ):
+        columns: List = [],
+        numerics: List[str] = [
+            "int16",
+            "int32",
+            "int64",
+            "float16",
+            "float32",
+            "float64",
+        ],
+        nas: List = [np.nan, None, "nan", "NaN", "NA", "novalue", "None", "none"],
+        allow_string: bool = False,
+        inplace: bool = True,
+    ) -> None:
         self.columns = columns
         self.numerics = numerics
         self.nas = nas
@@ -220,7 +230,7 @@ class formatting:
 
     # factorize data without changing values in nas
     # pd.factorize will automatically convert missing values
-    def factorize(self, data):
+    def factorize(self, data: pd.Series) -> pd.Series:
 
         # get all unique values, including missing types
         raw_unique = pd.unique(data)
@@ -242,14 +252,14 @@ class formatting:
         return data
 
     # make sure the category seen in observed data
-    def unify_cate(self, x, list):
+    def unify_cate(self, x: Any, list: List) -> Any:
 
         if not x in list and str(x) not in self.nas:
             x = np.argmin(np.abs([item - x for item in list]))
 
         return x
 
-    def fit(self, X):
+    def fit(self, X: pd.DataFrame) -> None:
 
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
@@ -270,7 +280,7 @@ class formatting:
                 else:
                     self.factorize(X[_column])
 
-    def refit(self, X):
+    def refit(self, X: pd.DataFrame) -> Union[None, pd.DataFrame]:
 
         for _column in self.columns:
             # if numerical, refit the dtype
@@ -300,7 +310,12 @@ class formatting:
             return X
 
 
-def unify_nan(dataset, columns=[], nas=["novalue", "None", "none"], replace=False):
+def unify_nan(
+    dataset: pd.DataFrame,
+    columns: List = [],
+    nas: List[str] = ["novalue", "None", "none"],
+    replace: bool = False,
+) -> pd.DataFrame:
 
     """
     unify missing values
@@ -364,8 +379,14 @@ def unify_nan(dataset, columns=[], nas=["novalue", "None", "none"], replace=Fals
 
 
 def remove_index_columns(
-    data, index=[], columns=[], axis=1, threshold=1, reset_index=True, save=False
-):
+    data: pd.DataFrame,
+    index: List = [],
+    columns: List = [],
+    axis: int = 1,
+    threshold: float = 1,
+    reset_index: bool = True,
+    save: bool = False,
+) -> pd.DataFrame:
 
     """
     delete columns/indexes with majority being nan values
@@ -473,8 +494,10 @@ def remove_index_columns(
 
 # get missing matrix
 def get_missing_matrix(
-    data, nas=["nan", "NaN", "NaT", "NA", "novalue", "None", "none"], missing=1
-):
+    data: pd.DataFrame,
+    nas: List[str] = ["nan", "NaN", "NaT", "NA", "novalue", "None", "none"],
+    missing: int = 1,
+) -> pd.DataFrame:
 
     """
     Get missing matrix for datasets
@@ -533,7 +556,9 @@ def get_missing_matrix(
 
 # determine whether the data contains imbalanced data
 # if value, returns the column header and majority class from the unbalanced dataset
-def is_imbalance(data, threshold, value=False):
+def is_imbalance(
+    data: pd.DataFrame, threshold: float, value: bool = False
+) -> Union[bool, Tuple[str, float]]:
 
     features = list(data.columns)
 
@@ -564,7 +589,7 @@ def is_imbalance(data, threshold, value=False):
 # return the distance between sample and the table sample points
 # notice: the distance betwen sample and sample itself will be included, be aware to deal with it
 # supported norm ['l1', 'l2']
-def LinkTable(sample, table, norm="l2"):
+def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> List:
 
     if sample.shape[1] != table.shape[1]:
         raise ValueError("Not same size of columns!")
@@ -597,10 +622,10 @@ class ExtremeClass:
     the threshold percentage of which the class holds in the feature will drop the feature
     """
 
-    def __init__(self, extreme_threshold=1):
+    def __init__(self, extreme_threshold: float = 1) -> None:
         self.extreme_threshold = extreme_threshold
 
-    def cut(self, X):
+    def cut(self, X: pd.DataFrame) -> pd.DataFrame:
 
         _X = X.copy(deep=True)
 
@@ -621,13 +646,13 @@ class ExtremeClass:
 # assign the class with the largest probability to the sample
 # common use of this function is to convert the prediction of the class
 # from neural network to actual predictions
-def assign_classes(list):
+def assign_classes(list: List) -> List:
 
     return np.array([np.argmax(item) for item in list])
 
 
 # softmax function that can handle 1d data
-def softmax(df):
+def softmax(df: pd.DataFrame) -> pd.DataFrame:
 
     if len(df.shape) == 1:
         ppositive = 1 / (1 + np.exp(-df))
@@ -641,7 +666,15 @@ def softmax(df):
 
 
 # plot high dimensional data
-def plotHighDimCluster(X, y, plot=True, method="PCA", dim=2, save=False, path="tmp"):
+def plotHighDimCluster(
+    X: Union[pd.DataFrame, np.ndarray],
+    y: Union[pd.DataFrame, np.ndarray],
+    plot: bool = True,
+    method: str = "PCA",
+    dim: int = 2,
+    save: bool = False,
+    path: str = "tmp",
+) -> None:
 
     import matplotlib.pyplot as plt
 
@@ -710,7 +743,7 @@ def plotHighDimCluster(X, y, plot=True, method="PCA", dim=2, save=False, path="t
 
 
 # distinguish from numerical categorical and numerical continuous
-def numerical_categorical_continuous(df):
+def numerical_categorical_continuous(df: pd.DataFrame) -> str:
 
     if len(pd.unique(df)) <= min(UNI_CLASS, 0.1 * len(df)):
         return "numerical_categorical"
@@ -719,7 +752,7 @@ def numerical_categorical_continuous(df):
 
 
 # distinguish the data type of each column between string categorical and text
-def string_categorical_text(df):
+def string_categorical_text(df: pd.DataFrame) -> str:
 
     # # check if the input is a dataframe
     # if not isinstance(df, pd.DataFrame):
@@ -736,7 +769,7 @@ def string_categorical_text(df):
 
 # distinguish numerical and categorical features
 # one column at a time
-def feature_type(df):
+def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
 
     if not df.dtype == "object":
         return numerical_categorical_continuous(df)
@@ -745,7 +778,7 @@ def feature_type(df):
 
 
 # text preprocessing
-def text_preprocessing(text):
+def text_preprocessing(text: str) -> list:
 
     # remove anything inside brackets
     extract_txt = re.sub("[\(\[].*?[\)\]]", "", text)
@@ -761,7 +794,12 @@ def text_preprocessing(text):
 
 # use word2vec to convert a text column to vector column
 def text2vec(
-    df, method="Word2Vec", pretrained=None, dim=100, how="sum", return_type="df"
+    df: Union[pd.DataFrame, pd.Series],
+    method: str = "Word2Vec",
+    pretrained: str = None,
+    dim: int = 100,
+    how: str = "sum",
+    return_type: str = "df",
 ):
     # get prefix
     if isinstance(df, pd.DataFrame):

@@ -1,17 +1,17 @@
 """
-File: _NN.py
+File Name: _NN.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.2.2
+Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_experimental/_XAI/_Relevance/_NN.py
 File Created: Tuesday, 25th October 2022 2:50:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 25th October 2022 2:50:48 pm
+Last Modified: Monday, 14th November 2022 8:27:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,3 +37,5 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+

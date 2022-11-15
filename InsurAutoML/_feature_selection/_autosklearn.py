@@ -1,5 +1,5 @@
 """
-File: _autosklearn.py
+File Name: _autosklearn.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_feature_selection/_autosklearn.py
-File: _autosklearn.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 8:28:53 pm
+Last Modified: Monday, 14th November 2022 7:01:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

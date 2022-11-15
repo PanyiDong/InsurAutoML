@@ -1,6 +1,7 @@
 name: NN
 on:
   - pull_request
+  - push
 jobs:
   run:
     runs-on: self-hosted
@@ -13,7 +14,7 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: 3.9
-      - name: "run tests (with neural network)"
+      - name: "run builds (with neural network)"
         run: |
           pip install pytest
           pip install -e .[nn]

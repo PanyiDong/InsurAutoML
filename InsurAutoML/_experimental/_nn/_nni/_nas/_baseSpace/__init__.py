@@ -1,5 +1,5 @@
 """
-File: __init__.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_baseSpace/__init__.py
-File: __init__.py
+File Created: Saturday, 12th November 2022 11:15:34 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 12th November 2022 11:15:45 pm
+Last Modified: Monday, 14th November 2022 8:26:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

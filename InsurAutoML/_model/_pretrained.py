@@ -1,17 +1,17 @@
 """
-File: _pretrained.py
+File Name: _pretrained.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_model/_pretrained.py
-File Created: Wednesday, 13th July 2022 11:20:52 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_pretrained.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:50:44 pm
+Last Modified: Monday, 14th November 2022 8:15:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

@@ -1,5 +1,5 @@
 """
-File: _clustering.py
+File Name: _clustering.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_imputation/_clustering.py
-File: _clustering.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 13th November 2022 11:28:54 pm
+Last Modified: Monday, 14th November 2022 8:07:44 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -143,7 +143,7 @@ class AAI_kNN(formatting, MinMaxScale):
 
         # get numerator and denominator
         numerator = np.nansum(x * y)
-        denominator = np.sqrt(np.nansum(x ** 2) * np.nansum(y ** 2))
+        denominator = np.sqrt(np.nansum(x**2) * np.nansum(y**2))
 
         # special case of denominator being 0
         if denominator == 0:
@@ -387,7 +387,10 @@ class KMI(formatting, MinMaxScale):
     ----------
     """
 
-    def __init__(self, scaling: bool = True,) -> None:
+    def __init__(
+        self,
+        scaling: bool = True,
+    ) -> None:
         self.scaling = scaling
 
         raise NotImplementedError("Not implemented!")

@@ -1,5 +1,5 @@
 """
-File: _optimize.py
+File Name: _optimize.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_optimize.py
-File: _optimize.py
+File Created: Thursday, 10th November 2022 1:50:38 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 10th November 2022 12:03:05 am
+Last Modified: Monday, 14th November 2022 9:58:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import logging
+logger = logging.getLogger(__name__)
+
+from typing import Dict, Callable, Union, List, Any
 import warnings
 from inspect import isclass
 import copy
@@ -50,7 +54,6 @@ import ray
 from ray import tune
 from ray.tune import Stopper
 import importlib
-from typing import Callable
 
 # from wrapt_timeout_decorator import *
 
@@ -67,21 +70,21 @@ from InsurAutoML._constant import (
 # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
 # only chosen ones will be added to hyperparameter space
 def _base_get_hyperparameter_space(
-    X,
-    encoders_hyperparameters,
-    encoder,
-    imputers_hyperparameters,
-    imputer,
-    balancings_hyperparameters,
-    balancing,
-    scalings_hyperparameters,
-    scaling,
-    feature_selection_hyperparameters,
-    feature_selection,
-    models_hyperparameters,
-    models,
-    task_mode,
-):
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    imputers_hyperparameters: Dict,
+    imputer: Dict,
+    balancings_hyperparameters: Dict,
+    balancing: Dict,
+    scalings_hyperparameters: Dict,
+    scaling: Dict,
+    feature_selection_hyperparameters: Dict,
+    feature_selection: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Dict:
     # encoding space
     # get all method names in hyperparameter space
     all_encoders = [item["encoder"] for item in encoders_hyperparameters]
@@ -189,21 +192,21 @@ def _base_get_hyperparameter_space(
     }
 
 def _hyerpot_get_hyperparameter_space(
-    X,
-    encoders_hyperparameters,
-    encoder,
-    imputers_hyperparameters,
-    imputer,
-    balancings_hyperparameters,
-    balancing,
-    scalings_hyperparameters,
-    scaling,
-    feature_selection_hyperparameters,
-    feature_selection,
-    models_hyperparameters,
-    models,
-    task_mode,
-):
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    imputers_hyperparameters: Dict,
+    imputer: Dict,
+    balancings_hyperparameters: Dict,
+    balancing: Dict,
+    scalings_hyperparameters: Dict,
+    scaling: Dict,
+    feature_selection_hyperparameters: Dict,
+    feature_selection: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Dict:
 
     # encoding space
     _encoding_hyperparameter = []
@@ -382,21 +385,21 @@ def _hyerpot_get_hyperparameter_space(
     }
     
 def _optuna_get_hyperparameter_space(
-    X,
-    encoders_hyperparameters,
-    encoder,
-    imputers_hyperparameters,
-    imputer,
-    balancings_hyperparameters,
-    balancing,
-    scalings_hyperparameters,
-    scaling,
-    feature_selection_hyperparameters,
-    feature_selection,
-    models_hyperparameters,
-    models,
-    task_mode,
-) :
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    imputers_hyperparameters: Dict,
+    imputer: Dict,
+    balancings_hyperparameters: Dict,
+    balancing: Dict,
+    scalings_hyperparameters: Dict,
+    scaling: Dict,
+    feature_selection_hyperparameters: Dict,
+    feature_selection: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Callable:
     # check installation of optuna
     optuna_spec = importlib.util.find_spec("optuna")
     if optuna_spec is None:
@@ -583,21 +586,21 @@ def _optuna_get_hyperparameter_space(
     )
     
 def _nevergrad_get_hyperparameter_space(
-    X,
-    encoders_hyperparameters,
-    encoder,
-    imputers_hyperparameters,
-    imputer,
-    balancings_hyperparameters,
-    balancing,
-    scalings_hyperparameters,
-    scaling,
-    feature_selection_hyperparameters,
-    feature_selection,
-    models_hyperparameters,
-    models,
-    task_mode,
-):
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    imputers_hyperparameters: Dict,
+    imputer: Dict,
+    balancings_hyperparameters: Dict,
+    balancing: Dict,
+    scalings_hyperparameters: Dict,
+    scaling: Dict,
+    feature_selection_hyperparameters: Dict,
+    feature_selection: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Dict:
     # check installation of optuna
     nevergrad_spec = importlib.util.find_spec("nevergrad")
     if nevergrad_spec is None:
@@ -882,22 +885,22 @@ def _nevergrad_get_hyperparameter_space(
         
 
 def _get_hyperparameter_space(
-    X,
-    encoders_hyperparameters,
-    encoder,
-    imputers_hyperparameters,
-    imputer,
-    balancings_hyperparameters,
-    balancing,
-    scalings_hyperparameters,
-    scaling,
-    feature_selection_hyperparameters,
-    feature_selection,
-    models_hyperparameters,
-    models,
-    task_mode,
-    search_aglo,
-):
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    imputers_hyperparameters: Dict,
+    imputer: Dict,
+    balancings_hyperparameters: Dict,
+    balancing: Dict,
+    scalings_hyperparameters: Dict,
+    scaling: Dict,
+    feature_selection_hyperparameters: Dict,
+    feature_selection: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+    search_aglo: str,
+) -> Union[Dict, Callable]:
     if search_aglo in ["RandomSearch", "GridSearch", "BlendSearch", "CFO"]:
         return _base_get_hyperparameter_space(
             X,
@@ -988,7 +991,7 @@ def _get_hyperparameter_space(
 
 
 # get the hyperparameter optimization algorithm based on string input
-def get_algo(search_algo):
+def get_algo(search_algo: str) -> Callable:
 
     if search_algo == "RandomSearch" or search_algo == "GridSearch":
 
@@ -1216,7 +1219,7 @@ def get_algo(search_algo):
 
 
 # get search scheduler based on string input
-def get_scheduler(search_scheduler):
+def get_scheduler(search_scheduler: str) -> Callable:
 
     if search_scheduler == "FIFOScheduler":
 
@@ -1283,10 +1286,10 @@ def get_scheduler(search_scheduler):
 
 # get progress reporter based on string input
 def get_progress_reporter(
-    progress_reporter,
-    max_evals,
-    max_error,
-):
+    progress_reporter: str,
+    max_evals: int,
+    max_error: int,
+) -> Callable:
 
     if progress_reporter == "CLIReporter":
 
@@ -1332,7 +1335,7 @@ def get_progress_reporter(
     return progress_reporter
 
 
-def get_logger(logger):
+def get_logger(logger: List) -> List[Callable]:
 
     if not isinstance(logger, list) and logger is not None:
         raise TypeError("Expect a list of string or None, get {}.".format(logger))
@@ -1411,14 +1414,14 @@ class TimePlateauStopper(Stopper):
 
     def __init__(
         self,
-        timeout=360,
-        metric="loss",
-        std=0.01,
-        num_results=4,
-        grace_period=4,
-        metric_threshold=None,
-        mode="min",
-    ):
+        timeout: int=360,
+        metric: str="loss",
+        std: float=0.01,
+        num_results: int=4,
+        grace_period: int=4,
+        metric_threshold: float=None,
+        mode: str="min",
+    ) -> None:
         self._start = time.time()
         self._deadline = timeout
 
@@ -1433,7 +1436,7 @@ class TimePlateauStopper(Stopper):
         self._iter = defaultdict(lambda: 0)
         self._trial_results = defaultdict(lambda: deque(maxlen=self._num_results))
 
-    def __call__(self, trial_id, result):
+    def __call__(self, trial_id: str, result: Any) -> bool:
 
         metric_result = result.get(self._metric)  # get metric from result
         self._trial_results[trial_id].append(metric_result)
@@ -1465,13 +1468,13 @@ class TimePlateauStopper(Stopper):
         # If stdev is lower than threshold, stop early.
         return current_std < self._std
 
-    def stop_all(self):
+    def stop_all(self) -> bool:
 
         return time.time() - self._start > self._deadline
 
 
 # get estimator based on string or class
-def get_estimator(estimator_str):
+def get_estimator(estimator_str: str) -> Callable:
 
     if estimator_str == "Lasso":
         from sklearn.linear_model import Lasso
@@ -1519,7 +1522,7 @@ def get_estimator(estimator_str):
 
 # get metrics based on string or class
 # if not in min mode, call negative of the metric
-def get_metrics(metric_str):
+def get_metrics(metric_str: str) -> Callable:
 
     if metric_str == "neg_accuracy":
         from InsurAutoML._utils._stat import neg_accuracy
@@ -1527,10 +1530,11 @@ def get_metrics(metric_str):
         return neg_accuracy
     elif metric_str == "accuracy":
         from sklearn.metrics import accuracy_score
-
-        warnings.warn(
-            "accuracy_score is not for min mode, please use neg_accuracy instead."
-        )
+        
+        logger.warn("accuracy_score is not for min mode, please use neg_accuracy instead.")
+        # warnings.warn(
+        #     "accuracy_score is not for min mode, please use neg_accuracy instead."
+        # )
         return accuracy_score
     elif metric_str == "neg_precision":
         from InsurAutoML._utils._stat import neg_precision
@@ -1539,9 +1543,10 @@ def get_metrics(metric_str):
     elif metric_str == "precision":
         from sklearn.metrics import precision_score
 
-        warnings.warn(
-            "precision_score is not for min mode, please use neg_precision instead."
-        )
+        logger.warn("precision_score is not for min mode, please use neg_precision instead.")
+        # warnings.warn(
+        #     "precision_score is not for min mode, please use neg_precision instead."
+        # )
         return precision_score
     elif metric_str == "neg_auc":
         from InsurAutoML._utils._stat import neg_auc
@@ -1550,7 +1555,8 @@ def get_metrics(metric_str):
     elif metric_str == "auc":
         from sklearn.metrics import roc_auc_score
 
-        warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
+        logger.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
+        # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
     elif metric_str == "neg_hinge":
         from InsurAutoML._utils._stat import neg_hinge
@@ -1558,8 +1564,9 @@ def get_metrics(metric_str):
         return neg_hinge
     elif metric_str == "hinge":
         from sklearn.metrics import hinge_loss
-
-        warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
+        
+        logger.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
+        # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
     elif metric_str == "neg_f1":
         from InsurAutoML._utils._stat import neg_f1
@@ -1568,7 +1575,8 @@ def get_metrics(metric_str):
     elif metric_str == "f1":
         from sklearn.metrics import f1_score
 
-        warnings.warn("f1_score is not for min mode, please use neg_f1 instead.")
+        logger.warn("f1_score is not for min mode, please use neg_f1 instead.")
+        # warnings.warn("f1_score is not for min mode, please use neg_f1 instead.")
         return f1_score
     elif metric_str == "MSE":
         from sklearn.metrics import mean_squared_error
@@ -1588,8 +1596,9 @@ def get_metrics(metric_str):
         return neg_R2
     elif metric_str == "R2":
         from sklearn.metrics import r2_score
-
-        warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
+        
+        logger.warn("r2_score is not for min mode, please use neg_R2 instead.")
+        # warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
         return r2_score
     elif metric_str == "MAX":
         from sklearn.metrics import max_error
@@ -1606,13 +1615,13 @@ def get_metrics(metric_str):
 class ray_status:
     def __init__(
         self,
-        cpu_threads,
-        gpu_count,
-    ):
+        cpu_threads: int,
+        gpu_count: int,
+    ) -> None:
         self.cpu_threads = cpu_threads
         self.gpu_count = gpu_count
 
-    def ray_init(self):
+    def ray_init(self) -> None:
 
         # initialize ray
         # if already initialized, do nothing
@@ -1625,7 +1634,7 @@ class ray_status:
         # check if ray is initialized
         assert ray.is_initialized() == True, "Ray is not initialized."
 
-    def ray_shutdown(self):
+    def ray_shutdown(self) -> None:
 
         # shut down ray
         ray.shutdown()
@@ -1633,7 +1642,7 @@ class ray_status:
         assert ray.is_initialized() == False, "Ray is not shutdown."
         
 # check if an object has a method
-def check_func(obj, ref):
+def check_func(obj: Callable, ref: str) -> None:
     
     for _func in METHOD_MAPPING[ref]:
         if not callable(getattr(obj, _func, None)):
@@ -1643,10 +1652,10 @@ def check_func(obj, ref):
 
 # check hyperparameter space
 def check_status(
-    methods,
-    hyperparameter_space,
-    ref = "encoder",
-) :
+    methods: Dict,
+    hyperparameter_space: List[Dict],
+    ref: str = "encoder",
+) -> None:
     # get all method names in hyperparameter space
     all_methods = []
     for _dict in hyperparameter_space :
