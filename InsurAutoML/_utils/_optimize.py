@@ -1,5 +1,5 @@
 """
-File Name: _optimize.py
+File: _optimize.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_optimize.py
-File Created: Thursday, 10th November 2022 1:50:38 pm
+File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 9:58:51 pm
+Last Modified: Tuesday, 15th November 2022 4:18:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1416,7 +1416,7 @@ class TimePlateauStopper(Stopper):
         self,
         timeout: int=360,
         metric: str="loss",
-        std: float=0.01,
+        std_ratio: float=0.01,
         num_results: int=4,
         grace_period: int=4,
         metric_threshold: float=None,
@@ -1428,7 +1428,7 @@ class TimePlateauStopper(Stopper):
         self._metric = metric
         self._mode = mode
 
-        self._std = std
+        self._std_ratio = std_ratio
         self._num_results = num_results
         self._grace_period = grace_period
         self._metric_threshold = metric_threshold
@@ -1458,15 +1458,20 @@ class TimePlateauStopper(Stopper):
             elif self._mode == "max" and metric_result < self._metric_threshold:
                 return False
 
-        # if threshold not specified, use std to stop
-        # Calculate stdev of last `num_results` results
+        # if threshold not specified, use std/mean to stop
+        # Calculate mean/stdev of last `num_results` results
         try:
             current_std = np.std(self._trial_results[trial_id])
         except Exception:
             current_std = float("inf")
+            
+        try: 
+            current_mean = np.mean(self._trial_results[trial_id])
+        except Exception:
+            current_mean = float("inf")
 
         # If stdev is lower than threshold, stop early.
-        return current_std < self._std
+        return current_std / current_mean < self._std_ratio
 
     def stop_all(self) -> bool:
 

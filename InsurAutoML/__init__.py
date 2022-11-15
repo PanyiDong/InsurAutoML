@@ -1,5 +1,5 @@
 """
-File Name: __init__.py
+File: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/__init__.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 10:10:22 pm
+Last Modified: Tuesday, 15th November 2022 4:04:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -123,7 +123,7 @@ from ._utils import (
 #     GeneticAlgorithm,
 # )
 
-# extracted from autosklearn
+# extracted from sklearn
 # not all used in the pipeline
 # from ._feature_selection import (
 #     Densifier,
@@ -232,7 +232,7 @@ __all__ = [
     "FeatureFilter",
     "ASFFS",
     "GeneticAlgorithm",
-    "densifier",  # from autosklearn
+    "densifier",  # from sklearn
     "extra_trees_preproc_for_classification",
     "extra_trees_preproc_for_regression",
     "fast_ica",

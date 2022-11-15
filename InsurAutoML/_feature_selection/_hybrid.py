@@ -1,5 +1,5 @@
 """
-File Name: _hybrid.py
+File: _hybrid.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_feature_selection/_hybrid.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 7:01:32 pm
+Last Modified: Tuesday, 15th November 2022 2:54:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -582,8 +582,9 @@ class GeneticAlgorithm:
                 np.random.rand() < self.p_mutation
             ):  # only certain probability of executing mutation
                 if not self.mutation_n:
-                    self.mutation_n = int(
-                        p / 10
+                    # make sure it's at least 1
+                    self.mutation_n = max(
+                        1, int(p / 10)
                     )  # default number of mutation point is first quarter point
                 else:
                     if self.mutation_n > p:

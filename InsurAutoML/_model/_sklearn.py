@@ -1,5 +1,5 @@
 """
-File Name: _sklearn.py
+File: _sklearn.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_model/_sklearn.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:15:42 pm
+Last Modified: Tuesday, 15th November 2022 2:40:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -540,13 +540,13 @@ class KNearestNeighborsClassifier(sklearn.neighbors.KNeighborsClassifier):
 class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
     def __init__(
         self,
-        shrinkage: str = "auto",
-        shrinkage_factor: float = 0.5,
+        shrinkage_type: str = "auto",
         tol: float = 1e-4,
+        shrinkage_factor: float = 0.5,
     ) -> None:
-        self.shrinkage = shrinkage
-        self.shrinkage_factor = float(shrinkage_factor)
+        self.shrinkage_type = shrinkage_type
         self.tol = float(tol)
+        self.shrinkage_factor = float(shrinkage_factor)
 
         self._fitted = False  # whether the model is fitted
 
@@ -555,23 +555,24 @@ class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LDA:
-
-        if self.shrinkage is None or self.shrinkage == "None":
-            self.shrinkage = None
+        if self.shrinkage_type is None or self.shrinkage_type == "None":
+            _shrinkage = None
             solver = "svd"
-        elif self.shrinkage == "auto":
-            self.shrinkage = "auto"
+        elif self.shrinkage_type == "auto":
+            _shrinkage = "auto"
             solver = "lsqr"
-        elif self.shrinkage == "manual":
-            self.shrinkage = float(self.shrinkage_factor)
+        elif self.shrinkage_type == "manual":
+            _shrinkage = float(self.shrinkage_factor)
             solver = "lsqr"
         else:
             raise ValueError(
-                "Not a valid shrinkage parameter, should be None, auto or manual"
+                "Not a valid shrinkage parameter, should be None, auto or manual. Got {}".format(
+                    self.shrinkage
+                )
             )
 
         super().__init__(
-            shrinkage=self.shrinkage,
+            shrinkage=_shrinkage,
             solver=solver,
             tol=self.tol,
         )
@@ -820,7 +821,7 @@ class MLPClassifier:
         else:
             # MLPClassifier can record previous training
             self.estimator.max_iter = min(
-                self.estimator.max_iter - self.estimator.n_iter_, self.max_iter
+                self._get_max_iter() - self.estimator.n_iter_, n_iter
             )  # limit the number of iterations
 
         self.estimator.fit(X, y)
@@ -1935,7 +1936,7 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    ) -> KNeighborsRegressor:
+    ) -> KNearestNeighborsRegressor:
 
         super().fit(X, y)
 
@@ -1991,7 +1992,7 @@ class LibLinear_SVR(sklearn.svm.LinearSVR):
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    ) -> LinearSVR:
+    ) -> LibLinear_SVR:
 
         super().fit(X, y)
 
@@ -2169,7 +2170,7 @@ class MLPRegressor:
         else:
             # MLPClassifier can record previous training
             self.estimator.max_iter = min(
-                self.estimator.max_iter - self.estimator.n_iter_, self.max_iter
+                self._get_max_iter() - self.estimator.n_iter_, n_iter
             )  # limit the number of iterations
 
         self.estimator.fit(X, y)

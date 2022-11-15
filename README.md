@@ -48,12 +48,12 @@ cd InsurAutoML
 #### install by `setup.py`
 
 ```console
-pip install -e .[normal]
+pip install -e .
 ```
 
-This method will use `setup.py` to install the dependencies, by default, if no GPU support, should install `normal` version. If GPU is supported, and you wish to test neural network related architectures, use `pip install -e .[nn]` for neural network installation; or, if you wish to use a lightweight, essential-only installation, use `pip install -e .[lightweight]`.
+This method will use `setup.py` to install the dependencies, by default, if no GPU support, should install `normal` version. If you wish to use a extended version with more flexibilities, use `pip install -e .[extended]`; or, if GPU is supported, and you wish to test neural network related architectures, use `pip install -e .[nn]` for neural network installation.
 
-At this moment, `normal` contains few more ML packages that allows testing on a larger model/hyperparameter space. The differences may becomes larger for later versions.
+At this moment, `extended` contains few more ML packages and search algorithms that allows testing on a larger model/hyperparameter space with different search strategies. The differences may becomes larger for later versions.
 
 #### install by `requirements.txt`
 
@@ -127,17 +127,9 @@ model.fit(train_X, train_y)
 model.predict(test_X)
 ```
 
+The legacy version of `AutoTabular`, which is built on top of `HyperOpt`, is still callable by `InsurAutoML._legacy.AutoTabular` but not maintained anymore due the decryption of `autosklearn` methods. The legacy version may be removed in the future.
+
 ~~By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs. ~~ Now, the pipeline can identify whether console terminal/Jupyter Notebook environment is used, don't need to worry about it.
-
-Moreover, in current version, model selection and hyperparameter optimization is achieved by `ray.tune`, which provides better scalability and interface. However, if you still need previous `HyperOpt` version, you can call as:
-
-```python
-from InsurAutoML._legacy import AutoTabular
-model = AutoTabular()
-model.fit(train_X, train_y)
-
-model.predict(test_X)
-```
 
 One important issue I find now is that, `ray.tune` does not force to stop running trials but only stop generating new trials. So, if setting `timeout` too low, it's common the fitting does not end in time (long running trials are expected not to finish in short time). However, if the pipeline is used as normal cases, which the `timeout` and `max_evals` both should be set to a rather large number, this case should not be as significant as very short time limit. I think that force trial runtime to stop can be a solution, but with few tryouts, I haven't found anything useful yet.
 
@@ -165,7 +157,7 @@ Current Progress:
 >
 > 5. deal with imbalance data: use over-/under-sampling methods to balance the dataset, some of the available methods: Tome kLink, One Sided Selection (OSS), Smote, etc.
 >
-> 6. feature selection: PCA, AFFS, etc. And some models from sklearn/autosklearn will be applied.
+> 6. feature selection: PCA, AFFS, etc. And some models from sklearn will be applied.
 >
 > 7. apply `ray.tune` (with plentiful search algorithms and search schedulers) to create a pipeline of AutoML workflow. Consider the methods as a hyperparameter, and create a hyperparameter space, where we can find the optimal ML workflow. Only supervised classification/regression models supported.
 

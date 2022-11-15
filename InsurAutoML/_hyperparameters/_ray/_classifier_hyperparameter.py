@@ -1,5 +1,5 @@
 """
-File Name: _classifier_hyperparameter.py
+File: _classifier_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_classifier_hyperparameter.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:02:58 pm
+Last Modified: Tuesday, 15th November 2022 4:08:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -91,7 +91,7 @@ GAUSSIANNB = {
 }
 HISTGRADIENTBOOSTINGCLASSIFIER = {
     "model": "HistGradientBoostingClassifier",
-    "loss": tune.choice(["auto"]),
+    "loss": tune.choice(["log_loss"]),
     "learning_rate": tune.loguniform(0.01, 1),
     "min_samples_leaf": tune.qlograndint(1, 200, 1),
     "max_depth": tune.choice(["None"]),
@@ -112,9 +112,9 @@ KNEARESTNEIGHBORSCLASSIFIER = {
 }
 LDA = {
     "model": "LDA",
-    "shrinkage": tune.choice([None, "auto", "manual"]),
-    "shrinkage_factor": tune.uniform(0.0, 1.0),
+    "shrinkage_type": tune.choice(["None", "auto", "manual"]),
     "tol": tune.loguniform(1e-5, 1e-1),
+    "shrinkage_factor": tune.uniform(0.0, 1.0),
 }
 LIBLINEARSVC = {
     "model": "LibLinear_SVC",
@@ -196,7 +196,7 @@ SGD = {
     # power_t only selected for learning_rate = 'invscaling'
     # eta0 only selected for learning_rate in ['constant', 'invscaling']
     "loss": tune.choice(
-        ["hinge", "log", "modified_huber", "squared_hinge", "perceptron"],
+        ["hinge", "log_loss", "modified_huber", "squared_hinge", "perceptron"],
     ),
     "penalty": tune.choice(["l1", "l2", "elasticnet"]),
     "alpha": tune.loguniform(1e-7, 1e-1),
@@ -233,7 +233,7 @@ COMPLEMENTNB = {
 # }
 GRADIENTBOOSTINGCLASSIFIER = {
     "model": "GradientBoostingClassifier",
-    "loss": tune.choice(["deviance", "exponential"]),
+    "loss": tune.choice(["log_loss", "exponential"]),
     "learning_rate": tune.loguniform(0.01, 1),
     "n_estimators": tune.qlograndint(10, 500, 1),
     "subsample": tune.uniform(0.1, 1),
@@ -245,7 +245,7 @@ GRADIENTBOOSTINGCLASSIFIER = {
     "min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
     "max_depth": tune.randint(1, 31),
     "min_impurity_decrease": tune.uniform(0.0, 1.0),
-    "max_features": tune.choice(["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]),
+    "max_features": tune.choice(["sqrt", "log2", tune.uniform(0.0, 1.0)]),
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "validation_fraction": tune.uniform(0.01, 0.4),
     "n_iter_no_change": tune.qrandint(1, 20, 1),
@@ -306,7 +306,7 @@ GAMCLASSIFIER = {
 
 # classifier hyperparameters
 classifier_hyperparameter = [
-    # classification models from autosklearn
+    # classification models from sklearn
     ADABOOSTCLASSIFIER,
     BERNOULLINB,
     DECISIONTREE,

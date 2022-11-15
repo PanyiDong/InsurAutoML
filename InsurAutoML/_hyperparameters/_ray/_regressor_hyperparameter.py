@@ -1,5 +1,5 @@
 """
-File Name: _regressor_hyperparameter.py
+File: _regressor_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hyperparameters/_ray/_regressor_hyperparameter.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:03:26 pm
+Last Modified: Tuesday, 15th November 2022 4:23:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -110,7 +110,7 @@ HISTGRADIENTBOOSTINGREGRESSOR = {
     "model": "HistGradientBoostingRegressor",
     # n_iter_no_change only selected for early_stop in ['valid', 'train']
     # validation_fraction only selected for early_stop = 'valid'
-    "loss": tune.choice(["least_squares"])
+    "loss": tune.choice(["squared_error"])
     if sklearn_1_0_0
     else tune.choice(["squared_error"]),
     "learning_rate": tune.loguniform(0.01, 1),
@@ -287,7 +287,7 @@ GRADIENTBOOSTINGREGRESSOR = {
     "min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
     "max_depth": tune.randint(1, 31),
     "min_impurity_decrease": tune.uniform(0.0, 1.0),
-    "max_features": tune.choice(["sqrt", "log2", "auto", tune.uniform(0.0, 1.0)]),
+    "max_features": tune.choice(["sqrt", "log2", tune.uniform(0.0, 1.0)]),
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "validation_fraction": tune.uniform(0.01, 0.4),
     "n_iter_no_change": tune.qrandint(1, 20, 1),
@@ -348,7 +348,7 @@ GAMREGRESSOR = {
 
 # regressor hyperparameters
 regressor_hyperparameter = [
-    # extract from autosklearn
+    # extract from sklearn
     ADABOOSTREGRESSOR,
     ARDREGRESSION,
     DECISIONTREE,

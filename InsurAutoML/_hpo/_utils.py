@@ -1,5 +1,5 @@
 """
-File Name: _utils.py
+File: _utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_hpo/_utils.py
-File Created: Thursday, 10th November 2022 1:50:38 pm
+File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 9:56:57 pm
+Last Modified: Tuesday, 15th November 2022 2:30:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -935,7 +935,7 @@ class TabularObjective(tune.Trainable):
                 )
             else:
                 raise TypeError("Only accept numpy array or pandas dataframe!")
-
+            
             self.mol.fit(_X_train_obj, _y_train_obj.values.ravel())
             os.remove("objective_process.txt")
 

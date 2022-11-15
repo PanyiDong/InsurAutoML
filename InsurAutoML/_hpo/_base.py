@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 11:34:37 pm
+Last Modified: Tuesday, 15th November 2022 4:21:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 import logging
+
 formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
 from typing import Union, List, Callable, Dict, Tuple
@@ -92,6 +93,8 @@ warnings.filterwarnings("ignore", message="Variables are collinear")
 # warnings.filterwarnings(
 #     "ignore", message="The TensorboardX logger cannot be instantiated"
 # )
+# Update: Nov 15, 2022
+# autosklearn decrypted, sklearn new versions supported
 # I wish to use sklearn v1.0 for new features
 # but there's conflicts between autosklearn models and sklearn models
 # mae <-> absolute_error, mse <-> squared_error inconsistency
@@ -349,9 +352,12 @@ class AutoTabularBase(MetaData):
             encoder = {}  # if specified, check if encoders in default encoders
             for _encoder in self.encoder:
                 if _encoder not in [*self._all_encoders]:
-                    self._logger.error("Only supported encoders are {}, get {}.".format(
+                    self._logger.error(
+                        "Only supported encoders are {}, get {}.".format(
                             [*self._all_encoders], _encoder
-                        ), ValueError)
+                        ),
+                        ValueError,
+                    )
                     # raise ValueError(
                     #     "Only supported encoders are {}, get {}.".format(
                     #         [*self._all_encoders], _encoder
@@ -1127,7 +1133,7 @@ class AutoTabularBase(MetaData):
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> AutoTabularBase:
-        
+
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
@@ -1156,13 +1162,13 @@ class AutoTabularBase(MetaData):
         )
         # logging.basicConfig(level=LOGGINGLEVEL[self.verbose])
         # self._logger = logging.getLogger(__name__)
-        
+
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Start preparing AutoTabular...".format(
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
             )
         )
-        
+
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
 
@@ -1288,7 +1294,8 @@ class AutoTabularBase(MetaData):
                 X = pd.DataFrame(X)
                 self._logger.info(
                     "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
-                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
                     )
                 )
             except:
@@ -1315,12 +1322,12 @@ class AutoTabularBase(MetaData):
             models,
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
-        
+
         self._logger.info(
-                "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
-                )
+            "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
             )
+        )
 
         # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
@@ -1328,7 +1335,8 @@ class AutoTabularBase(MetaData):
         if os.path.exists(self.model_name):
             self._logger.info(
                 "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                    self.model_name,
                 )
             )
             # print(
@@ -1409,7 +1417,7 @@ class AutoTabularBase(MetaData):
         stopper = TimePlateauStopper(
             timeout=self.timeout,
             metric="loss",
-            std=0.1,
+            std_ratio=0.1,
             num_results=4,
             grace_period=4,
             mode="min",
@@ -1476,8 +1484,13 @@ class AutoTabularBase(MetaData):
 
             # subtrial directory
             self.sub_directory = self.temp_directory
-            
-            self._logger.info("[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
+
+            self._logger.info(
+                "[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # optimization process
             # partially activated objective function
@@ -1547,8 +1560,13 @@ class AutoTabularBase(MetaData):
             # # check if ray is shutdown
             # assert ray.is_initialized() == False, "Ray is not shutdown."
             rayStatus.ray_shutdown()
-            
-            self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
+
+            self._logger.info(
+                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # get the best config settings
             best_trial_id = str(
@@ -1668,8 +1686,13 @@ class AutoTabularBase(MetaData):
 
             # shut down ray
             rayStatus.ray_shutdown()
-            
-            self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
+
+            self._logger.info(
+                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # get all configs, trial_id
             analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
@@ -1823,8 +1846,13 @@ class AutoTabularBase(MetaData):
 
                 # shut down ray
                 rayStatus.ray_shutdown()
-                
-                self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
+
+                self._logger.info(
+                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                    )
+                )
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1966,8 +1994,13 @@ class AutoTabularBase(MetaData):
 
                 # shut down ray
                 rayStatus.ray_shutdown()
-                
-                self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
+
+                self._logger.info(
+                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                    )
+                )
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1999,8 +2032,12 @@ class AutoTabularBase(MetaData):
         # whether to retain temp files
         if self.delete_temp_after_terminate:
             shutil.rmtree(self.temp_directory)
-            
-        self._logger.info("[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name))
+
+        self._logger.info(
+            "[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name
+            )
+        )
 
         self._fitted = True
 

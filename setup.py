@@ -11,7 +11,7 @@ File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 9th November 2022 11:28:41 pm
+Last Modified: Tuesday, 15th November 2022 4:31:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,6 +65,7 @@ except ImportError:
 
         return cythonize(*args, **kwargs)
 
+
 # Automatically get release version
 InsurAutoML_version = (
     subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE)
@@ -104,53 +105,46 @@ INSTALL_LIST = [
     "mlflow==1.21.0",
     "tensorboardX",
     "hyperopt==0.2.5",
-    "auto-sklearn==0.14.6;platform_system=='Linux'",
-    "scikit-learn==0.24.2;platform_system=='Linux'",
-    "scikit-learn>1.0.0;platform_system=='Windows'",
-    "scikit-learn>1.0.0;platform_system=='MacOS'",
+    # "auto-sklearn==0.14.6;platform_system=='Linux'",
+    # "scikit-learn==0.24.2;platform_system=='Linux'",
+    # "scikit-learn>1.0.0;platform_system=='Windows'",
+    # "scikit-learn>1.0.0;platform_system=='MacOS'",
+    "scikit-learn>=1.1.0",
 ]
 
 EXTRA_DICT = {
-    "lightweight": [],
-    "normal": [
+    "normal": [],
+    "extended": [
         # "rpy2;platform_system=='Linux'",
         "lightgbm",
         "xgboost",
         "pygam",
+        "flaml",
+        "nevergrad",
+        "optuna",
     ],
     "nn": [
         # "rpy2;platform_system=='Linux'",
-        "lightgbm",
-        "xgboost",
-        "pygam",
         "gensim",
         "torch",
         "nni",
         # "transformers",
         # "datasets",
     ],
-    "dev": [
-        "lightgbm",
-        "xgboost",
-        "pygam",
-        "optuna",
-        "flaml",
-        "nevergrad",
-    ]
 }
 
 # check R installation
 def r_home_from_subprocess() -> Optional[str]:
     """Return the R home directory from calling 'R RHOME'."""
-    cmd = ('R', 'RHOME')
-    log.debug('Looking for R home with: {}'.format(' '.join(cmd)))
+    cmd = ("R", "RHOME")
+    log.debug("Looking for R home with: {}".format(" ".join(cmd)))
     try:
         tmp = subprocess.check_output(cmd, universal_newlines=True)
     except Exception as e:  # FileNotFoundError, WindowsError, etc
-        log.error(f'Unable to determine R home: {e}')
+        log.error(f"Unable to determine R home: {e}")
         return None
     r_home = tmp.split(os.linesep)
-    if r_home[0].startswith('WARNING'):
+    if r_home[0].startswith("WARNING"):
         res = r_home[1]
     else:
         res = r_home[0].strip()
@@ -161,6 +155,7 @@ def r_home_from_subprocess() -> Optional[str]:
 def r_home_from_registry() -> Optional[str]:
     """Return the R home directory from the Windows Registry."""
     from packaging.version import Version
+
     try:
         import winreg  # type: ignore
     except ImportError:
@@ -171,7 +166,7 @@ def r_home_from_registry() -> Optional[str]:
     # the for-loop breaks at the first hit.
     for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
         try:
-            with winreg.OpenKeyEx(w_hkey, 'Software\\R-core\\R') as hkey:
+            with winreg.OpenKeyEx(w_hkey, "Software\\R-core\\R") as hkey:
 
                 # >v4.x.x: grab the highest version installed
                 def get_version(i):
@@ -181,17 +176,21 @@ def r_home_from_registry() -> Optional[str]:
                         return None
 
                 latest = max(
-                    (v for v in (get_version(i)
-                                 for i in range(winreg.QueryInfoKey(hkey)[0]))
-                     if v is not None)
+                    (
+                        v
+                        for v in (
+                            get_version(i) for i in range(winreg.QueryInfoKey(hkey)[0])
+                        )
+                        if v is not None
+                    )
                 )
 
-                with winreg.OpenKeyEx(hkey, f'{latest}') as subkey:
+                with winreg.OpenKeyEx(hkey, f"{latest}") as subkey:
                     r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
 
                 # check for an earlier version
                 if not r_home:
-                    r_home = winreg.QueryValueEx(hkey, 'InstallPath')[0]
+                    r_home = winreg.QueryValueEx(hkey, "InstallPath")[0]
         except Exception:  # FileNotFoundError, WindowsError, OSError, etc.
             pass
         else:
@@ -203,9 +202,10 @@ def r_home_from_registry() -> Optional[str]:
             break
     else:
         # for-loop did not break - RHOME is unknown.
-        log.error('Unable to determine R home.')
+        log.error("Unable to determine R home.")
         r_home = None
-    return 
+    return
+
 
 def get_r_home() -> Optional[str]:
     """Get R's home directory (aka R_HOME).
@@ -216,14 +216,15 @@ def get_r_home() -> Optional[str]:
     None is returned.
     """
 
-    r_home = os.environ.get('R_HOME')
+    r_home = os.environ.get("R_HOME")
 
     if not r_home:
         r_home = r_home_from_subprocess()
-    if not r_home and os.name == 'nt':
+    if not r_home and os.name == "nt":
         r_home = r_home_from_registry()
-    log.info(f'R home found: {r_home}')
+    log.info(f"R home found: {r_home}")
     return r_home
+
 
 # get R Home environment variable
 # if found, install rpy2
@@ -233,8 +234,8 @@ if not R_HOME:
     raise RuntimeError("""The R home directory could not be determined.""")
 
 if not os.environ.get("R_HOME"):
-    os.environ['R_HOME'] = R_HOME
-    EXTRA_DICT["normal"].append("rpy2")
+    os.environ["R_HOME"] = R_HOME
+    EXTRA_DICT["extended"].append("rpy2")
     EXTRA_DICT["nn"].append("rpy2")
 
 DATA_LIST = ["Appendix/*", "example/*"]
@@ -271,6 +272,7 @@ EXT_MODULES = []
 
 # get long description
 from pathlib import Path
+
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
 
@@ -288,7 +290,7 @@ def setup_package():
         package_data={"InsurAutoML": DATA_LIST},
         platforms=["Linux", "Windows", "MacOS"],
         long_description=long_description,
-        long_description_content_type='text/markdown',
+        long_description_content_type="text/markdown",
         python_requires=">=3.7",
         install_requires=INSTALL_LIST,
         extras_require=EXTRA_DICT,
@@ -416,7 +418,9 @@ def get_requirements():
         os.remove("requirements.txt")
 
     with open(r"requirements.txt", "w") as fp:
-        dep_list = [item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["normal"]]
+        dep_list = [
+            item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["extended"]
+        ]
         dep_list = list(set(dep_list))
         for item in dep_list:
             # write each item on a new line

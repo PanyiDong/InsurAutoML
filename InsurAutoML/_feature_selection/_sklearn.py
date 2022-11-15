@@ -1,5 +1,5 @@
 """
-File Name: _sklearn.py
+File: _sklearn.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_feature_selection/_sklearn.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 7:01:48 pm
+Last Modified: Tuesday, 15th November 2022 2:50:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -190,7 +190,9 @@ class extra_trees_preproc_for_regression:
             criterion=self.criterion,
             min_samples_leaf=self.min_samples_leaf,
             min_samples_split=self.min_samples_split,
-            max_features=int(np.log(X.shape[1] + 1) * self.max_features),
+            max_features=max(
+                1, int(np.log(X.shape[1] + 1) * self.max_features)
+            ),  # make sure it's at least 1
             bootstrap=self.bootstrap,
             max_leaf_nodes=self.max_leaf_nodes,
             max_depth=self.max_depth,
@@ -773,19 +775,20 @@ class select_rates_classification(sklearn.feature_selection.GenericUnivariateSel
         mode: str = "fpr",
     ) -> None:
         self.alpha = float(alpha)
+        self.mode = mode
         if score_func == "chi2":
             self.score_func = sklearn.feature_selection.chi2
         elif score_func == "f_classif":
             self.score_func = sklearn.feature_selection.f_classif
         elif score_func == "mutual_info":
             self.score_func = sklearn.feature_selection.mutual_info_classif
+            self.mode = "percentile"
         else:
             raise ValueError(
                 "score_func must be one of 'chi2', 'f_classif', 'mutual_info', but got {}".format(
                     score_func
                 )
             )
-        self.mode = mode
 
         super().__init__(
             param=self.alpha,
@@ -839,17 +842,18 @@ class select_rates_regression(sklearn.feature_selection.GenericUnivariateSelect)
         mode: str = "fpr",
     ) -> None:
         self.alpha = float(alpha)
+        self.mode = mode
         if score_func == "f_regression":
             self.score_func = sklearn.feature_selection.f_regression
         elif score_func == "mutual_info":
             self.score_func = sklearn.feature_selection.mutual_info_regression
+            self.mode = "percentile"
         else:
             raise ValueError(
                 "score_func must be one of 'f_regression', 'mutual_info', but got {}".format(
                     score_func
                 )
             )
-        self.mode = mode
 
         super().__init__(
             param=self.alpha,

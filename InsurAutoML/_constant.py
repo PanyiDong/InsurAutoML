@@ -1,5 +1,5 @@
 """
-File Name: _constant.py
+File: _constant.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_constant.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 10:05:01 pm
+Last Modified: Tuesday, 15th November 2022 4:03:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -241,7 +241,7 @@ REGRESSION_ESTIMATORS = [
 REGRESSION_CRITERIA = [
     "MSE",
     "MAE",
-    "MSLE",
+    # "MSLE", # not general since it needs non-negative values
     "neg_R2",
     "MAX",
 ]
