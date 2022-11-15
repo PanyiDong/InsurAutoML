@@ -1,10 +1,10 @@
-name: NN
+name: build_nn
 on:
   - pull_request
   - push
 jobs:
   run:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     env:
       OS: ubuntu-latest
       PYTHON: "3.9"
