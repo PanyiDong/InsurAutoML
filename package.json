@@ -29,24 +29,21 @@
         "mlflow==1.21.0",
         "tensorboardX",
         "hyperopt==0.2.5",
-        "auto-sklearn==0.14.6;platform_system=='Linux'",
-        "scikit-learn==0.24.2;platform_system=='Linux'",
-        "scikit-learn>1.0.0;platform_system=='Windows'",
-        "scikit-learn>1.0.0;platform_system=='MacOS'"
+        "scikit-learn>=1.1.0"
     ],
     "extras_require": {
-        "lightweight": [],
-        "normal": [
+        "normal": [],
+        "extended": [
             "lightgbm",
             "xgboost",
             "pygam",
+            "flaml",
+            "nevergrad",
+            "optuna",
             "rpy2"
         ],
         "nn": [
             "gensim",
-            "lightgbm",
-            "xgboost",
-            "pygam",
             "torch",
             "nni",
             "rpy2"
