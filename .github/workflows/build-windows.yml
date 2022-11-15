@@ -16,5 +16,6 @@ jobs:
           python-version: 3.9
       - name: "run builds (without neural network)"
         run: |
+          python -m pip install --upgrade pip
           pip install pytest
           pip install -e .[normal]
