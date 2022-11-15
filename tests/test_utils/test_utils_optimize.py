@@ -1,5 +1,5 @@
 """
-File Name: test_utils_optimize.py
+File: test_utils_optimize.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /tests/test_utils/test_utils_optimize.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: test_utils_optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:23:35 pm
+Last Modified: Tuesday, 15th November 2022 5:17:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 def test_get_algo():
 
     from InsurAutoML._utils._optimize import get_algo
@@ -47,10 +48,10 @@ def test_get_algo():
     get_algo("Repeater")
     get_algo("ConcurrencyLimiter")
 
-    try:
-        get_algo("AxSearch")
-    except ImportError:
-        pass
+    # try:
+    #     get_algo("AxSearch")
+    # except ImportError:
+    #     pass
 
     try:
         get_algo("BlendSearch")

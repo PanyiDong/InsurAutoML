@@ -11,7 +11,7 @@ File: test_nn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:42:24 pm
+Last Modified: Tuesday, 15th November 2022 5:19:05 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,37 +39,37 @@ SOFTWARE.
 """
 
 # need nn installation
-# import torch
+import torch
 
 
-# def test_MetaData():
+def test_MetaData():
 
-#     from InsurAutoML._utils._nn._multiProc import MultiPreprocessing
-#     from InsurAutoML._datasets import PROD
+    from InsurAutoML._utils._nn._multiProc import MultiPreprocessing
+    from InsurAutoML._datasets import PROD
 
-#     data = PROD(split=["train"])
+    data = PROD(split=["train"])
 
-#     X_train, y_train = data["train"]
-#     proc = MultiPreprocessing(method="FusEmbed")
-#     proc.fit(X_train)
+    X_train, y_train = data["train"]
+    proc = MultiPreprocessing(method="FusEmbed")
+    proc.fit(X_train)
 
-#     trans_X_train = proc.transform(X_train)
+    trans_X_train = proc.transform(X_train)
 
-#     assert "txt" in trans_X_train.keys(), "The text data is not properly transformed."
-#     assert isinstance(
-#         trans_X_train["txt"], torch.Tensor
-#     ), "The text data is not properly transformed."
+    assert "txt" in trans_X_train.keys(), "The text data is not properly transformed."
+    assert isinstance(
+        trans_X_train["txt"], torch.Tensor
+    ), "The text data is not properly transformed."
 
-#     assert (
-#         "cat" in trans_X_train.keys()
-#     ), "The categorical data is not properly transformed."
-#     assert isinstance(
-#         trans_X_train["cat"], torch.Tensor
-#     ), "The categorical data is not properly transformed."
+    assert (
+        "cat" in trans_X_train.keys()
+    ), "The categorical data is not properly transformed."
+    assert isinstance(
+        trans_X_train["cat"], torch.Tensor
+    ), "The categorical data is not properly transformed."
 
-#     assert (
-#         "con" in trans_X_train.keys()
-#     ), "The continuous data is not properly transformed."
-#     assert isinstance(
-#         trans_X_train["con"], torch.Tensor
-#     ), "The continuous data is not properly transformed."
+    assert (
+        "con" in trans_X_train.keys()
+    ), "The continuous data is not properly transformed."
+    assert isinstance(
+        trans_X_train["con"], torch.Tensor
+    ), "The continuous data is not properly transformed."

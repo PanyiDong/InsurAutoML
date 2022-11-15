@@ -11,7 +11,7 @@ File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:31:06 pm
+Last Modified: Tuesday, 15th November 2022 5:18:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -130,6 +130,17 @@ EXTRA_DICT = {
         "nni",
         # "transformers",
         # "datasets",
+    ],
+    "dev": [
+        "lightgbm",
+        "xgboost",
+        "pygam",
+        "flaml",
+        "nevergrad",
+        "optuna",
+        "gensim",
+        "torch",
+        "nni",
     ],
 }
 
