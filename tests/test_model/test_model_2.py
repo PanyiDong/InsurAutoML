@@ -11,7 +11,7 @@ File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 8:30:42 am
+Last Modified: Wednesday, 16th November 2022 11:43:50 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,20 +65,7 @@ def test_add_classifier():
 
 def test_add_regressor():
 
-    # from My_AutoML._model._sklearn import HistGradientBoostingRegressor
-    import importlib
-
-    # if autosklearn in installed, use autosklearn version for testing
-    # else, use sklearn version for testing
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
-    else:
-        from InsurAutoML._model._autosklearn import (
-            LibSVM_SVR,
-            MLPRegressor,
-            SGDRegressor,
-        )
+    from InsurAutoML._model import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 

@@ -11,7 +11,7 @@ File: test_hpo_3.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 11:04:08 pm
+Last Modified: Wednesday, 16th November 2022 11:34:48 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -75,6 +75,7 @@ def test_heart():
     mol = InsurAutoML.AutoTabular(
         model_name="heart",
         search_algo="GridSearch",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -103,6 +104,7 @@ def test_insurance():
     mol = InsurAutoML.AutoTabular(
         model_name="insurance",
         objective="MAE",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -160,6 +162,7 @@ def test_stroke_import_version():
     mol = InsurAutoML.AutoTabular(
         model_name="stroke",
         objective="auc",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -173,25 +176,37 @@ def test_stroke_import_version():
     assert (
         os.path.exists("tmp/stroke/optimal_setting.txt") == True
     ), "Classification for Stroke data (import_version) failed to find optimal setting."
-
-
-def test_stroke_loading():
-
-    # test load_data here
-    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
-    data = data["healthcare-dataset-stroke-data"]
-
-    features = list(data.columns)
-    features.remove("stroke")
-    response = ["stroke"]
-
+    
+    # test loading
     mol = InsurAutoML.AutoTabular(
         model_name="stroke",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
 
     assert mol._fitted == True, "AutoTabular with loading failed to fit."
+
+
+# Update: Nov. 16, 2022
+# loading combined with above test
+# def test_stroke_loading():
+
+#     # test load_data here
+#     data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+#     data = data["healthcare-dataset-stroke-data"]
+
+#     features = list(data.columns)
+#     features.remove("stroke")
+#     response = ["stroke"]
+
+#     mol = InsurAutoML.AutoTabular(
+#         model_name="stroke",
+#         timeout=60,
+#     )
+#     mol.fit(data[features], data[response])
+
+#     assert mol._fitted == True, "AutoTabular with loading failed to fit."
 
 
 def test_stroke_with_limit():
@@ -215,6 +230,7 @@ def test_stroke_with_limit():
         validation=False,
         search_algo="GridSearch",
         objective="precision",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -236,6 +252,7 @@ def test_single():
         n_estimators=1,
         model_name="insurance_single",
         objective="MAE",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -263,6 +280,7 @@ def test_stacking():
         ensemble_strategy="stacking",
         model_name="insurance_stacking",
         objective="MAE",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -291,6 +309,7 @@ def test_bagging():
         ensemble_strategy="bagging",
         model_name="insurance_bagging",
         objective="MAE",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -319,6 +338,7 @@ def test_boosting():
         ensemble_strategy="boosting",
         model_name="insurance_boosting",
         objective="MAE",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -441,6 +461,7 @@ def test_search_CFO():
         model_name="heart_cfo",
         search_algo="CFO",
         ensemble_strategy="stacking",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -469,6 +490,7 @@ def test_search_HyperOpt():
         model_name="heart_hyperopt",
         search_algo="HyperOpt",
         ensemble_strategy="stacking",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])
@@ -497,6 +519,7 @@ def test_search_Nevergrad():
         model_name="heart_nevergrad",
         search_algo="Nevergrad",
         ensemble_strategy="stacking",
+        max_evals = 5,
         timeout=60,
     )
     mol.fit(data[features], data[response])

@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 2:54:00 pm
+Last Modified: Wednesday, 16th November 2022 11:46:06 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -763,64 +763,64 @@ methods for classification prediction modeling. Expert systems with applications
 """
 
 
-class SvetnikRF:
+# class SvetnikRF:
 
-    """
-    Implementation of feature selection method [1], combined cross validation and RandomForest for feature
-    selection.
+#     """
+#     Implementation of feature selection method [1], combined cross validation and RandomForest for feature
+#     selection.
 
-    [1] Svetnik, V., Liaw, A., Tong, C., & Wang, T. (2004, June). Application of Breiman’s random forest to
-    modeling structure-activity relationships of pharmaceutical molecules. In International workshop on multiple
-    Classifier systems (pp. 334-343). Springer, Berlin, Heidelberg.
+#     [1] Svetnik, V., Liaw, A., Tong, C., & Wang, T. (2004, June). Application of Breiman’s random forest to
+#     modeling structure-activity relationships of pharmaceutical molecules. In International workshop on multiple
+#     Classifier systems (pp. 334-343). Springer, Berlin, Heidelberg.
 
-    Parameters
-    ----------
+#     Parameters
+#     ----------
 
-    """
+#     """
 
-    def __init__(
-        self,
-        cv: int = 5,
-        repeat: int = 20,
-        seed: int = 1,
-    ) -> None:
-        self.cv = cv
-        self.repeat = repeat
-        # self.seed = seed
-        np.random.seed(seed)
+#     def __init__(
+#         self,
+#         cv: int = 5,
+#         repeat: int = 20,
+#         seed: int = 1,
+#     ) -> None:
+#         self.cv = cv
+#         self.repeat = repeat
+#         # self.seed = seed
+#         np.random.seed(seed)
 
-    def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> SvetnikRF:
+#     def fit(
+#         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+#     ) -> SvetnikRF:
 
-        # check if X is a dataframe
-        # need to use index
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+#         # check if X is a dataframe
+#         # need to use index
+#         if not isinstance(X, pd.DataFrame):
+#             X = pd.DataFrame(X)
 
-        # initialize the feature selection record
-        selection_record = {}
+#         # initialize the feature selection record
+#         selection_record = {}
 
-        for _ in range(self.repeat):
-            index_split = np.array_split(np.random.choice(X.index), self.cv)
-            for i in range(self.cv):
-                test_index = index_split[i]
-                train_index = np.setdiff1d(X.index, test_index)
-                selected_features = list(X.columns)  # initialize the selected features
-                feature_importance = None
+#         for _ in range(self.repeat):
+#             index_split = np.array_split(np.random.choice(X.index), self.cv)
+#             for i in range(self.cv):
+#                 test_index = index_split[i]
+#                 train_index = np.setdiff1d(X.index, test_index)
+#                 selected_features = list(X.columns)  # initialize the selected features
+#                 feature_importance = None
 
-                while len(selected_features) >= 3:
-                    from sklearn.ensemble import RandomForestClassifier
+#                 while len(selected_features) >= 3:
+#                     from sklearn.ensemble import RandomForestClassifier
 
-                    mol = RandomForestClassifier(
-                        n_estimators=100,
-                    )
-                    mol.fit(
-                        X.loc[train_index, selected_features],
-                        y.loc[train_index, selected_features],
-                    )
+#                     mol = RandomForestClassifier(
+#                         n_estimators=100,
+#                     )
+#                     mol.fit(
+#                         X.loc[train_index, selected_features],
+#                         y.loc[train_index, selected_features],
+#                     )
 
-                    if feature_importance is None:
-                        feature_importance = mol.feature_importances_
+#                     if feature_importance is None:
+#                         feature_importance = mol.feature_importances_
 
-        raise NotImplementedError("Not implemented yet!")
+#         raise NotImplementedError("Not implemented yet!")

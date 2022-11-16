@@ -11,7 +11,7 @@ File: test_metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:37:47 pm
+Last Modified: Wednesday, 16th November 2022 11:54:23 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,6 +55,12 @@ def test_MetaData():
         ("Object", "Text"): ["Product_Description"],
         ("Int", "Categorical"): ["Product_Type"],
     }
+
+    X_train["Product_Type"] = X_train["Product_Type"].astype(str)
+    metadata.update(X_train)
+
+    metadata.force_update(["Product_Type"], [("Int", "Categorical")])
+    print(metadata)
 
     assert (
         metadata.metadata[("Int", "Numerical")] == expected_return[("Int", "Numerical")]

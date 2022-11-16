@@ -18,4 +18,4 @@ jobs:
           python -m pip install --upgrade pip
           pip install pytest
           pip install -e .[dev]
-          pytest tests/
+          pytest tests/test_hpo

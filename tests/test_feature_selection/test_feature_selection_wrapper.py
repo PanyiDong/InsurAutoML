@@ -1,5 +1,5 @@
 """
-File Name: test_feature_selection_wrapper.py
+File: test_feature_selection_wrapper.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /tests/test_feature_selection/test_feature_selection_wrapper.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: test_feature_selection_wrapper.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:22:10 pm
+Last Modified: Wednesday, 16th November 2022 11:42:50 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -118,13 +118,7 @@ def test_feature_selection_RBFSampler():
 
 def test_feature_selection_densifier():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import densifier
-    else:
-        from InsurAutoML._feature_selection._autosklearn import densifier
+    from InsurAutoML._feature_selection import densifier
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -135,20 +129,6 @@ def test_feature_selection_densifier():
     _X = feature_selection.transform(X)
 
     assert feature_selection._fitted == True, "Fitted should be True"
-
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import densifier
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = densifier()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
 
 
 # def test_feature_selection_fast_ica():
@@ -168,13 +148,7 @@ def test_feature_selection_densifier():
 
 def test_feature_selection_feature_agglomeration():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import feature_agglomeration
-    else:
-        from InsurAutoML._feature_selection._autosklearn import feature_agglomeration
+    from InsurAutoML._feature_selection import feature_agglomeration
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -186,30 +160,10 @@ def test_feature_selection_feature_agglomeration():
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import feature_agglomeration
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = feature_agglomeration()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
-
 
 def test_feature_selection_kernel_pca():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import kernel_pca
-    else:
-        from InsurAutoML._feature_selection._autosklearn import kernel_pca
+    from InsurAutoML._feature_selection import kernel_pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -221,30 +175,10 @@ def test_feature_selection_kernel_pca():
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import kernel_pca
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = kernel_pca()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
-
 
 def test_feature_selection_kitchen_sinks():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import kitchen_sinks
-    else:
-        from InsurAutoML._feature_selection._autosklearn import kitchen_sinks
+    from InsurAutoML._feature_selection import kitchen_sinks
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -256,30 +190,10 @@ def test_feature_selection_kitchen_sinks():
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import kitchen_sinks
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = kitchen_sinks()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
-
 
 def test_feature_selection_nystroem_sampler():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import nystroem_sampler
-    else:
-        from InsurAutoML._feature_selection._autosklearn import nystroem_sampler
+    from InsurAutoML._feature_selection import nystroem_sampler
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -291,30 +205,10 @@ def test_feature_selection_nystroem_sampler():
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import nystroem_sampler
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = nystroem_sampler()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
-
 
 def test_feature_selection_pca():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import pca
-    else:
-        from InsurAutoML._feature_selection._autosklearn import pca
+    from InsurAutoML._feature_selection import pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -326,30 +220,10 @@ def test_feature_selection_pca():
 
     assert feature_selection._fitted == True, "Fitted should be True"
 
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import pca
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = pca()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
-
 
 def test_feature_selection_random_trees_embedding():
 
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._feature_selection._sklearn import random_trees_embedding
-    else:
-        from InsurAutoML._feature_selection._autosklearn import random_trees_embedding
+    from InsurAutoML._feature_selection import random_trees_embedding
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -360,17 +234,3 @@ def test_feature_selection_random_trees_embedding():
     _X = feature_selection.transform(X)
 
     assert feature_selection._fitted == True, "Fitted should be True"
-
-    # add tests for sklearn methods when autosklearn is installed
-    if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import random_trees_embedding
-
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
-        X = data.iloc[:, :-1]
-        y = data.iloc[:, -1]
-
-        feature_selection = random_trees_embedding()
-        feature_selection.fit(X, y)
-        _X = feature_selection.transform(X)
-
-        assert feature_selection._fitted == True, "Fitted should be True"
