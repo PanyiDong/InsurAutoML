@@ -1,4 +1,4 @@
-name: nn_test
+name: dev_test
 on:
   - pull_request
 jobs:
