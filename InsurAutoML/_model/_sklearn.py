@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 11:02:08 pm
+Last Modified: Tuesday, 15th November 2022 11:32:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1389,7 +1389,7 @@ class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
         min_weight_fraction_leaf: float = 0.0,
         max_depth: int = 3,
         min_impurity_decrease: float = 0.0,
-        max_features: str = "auto",
+        max_features: float = 1.0,
         max_leaf_nodes: int = 31,
         validation_fraction: float = 0.1,
         n_iter_no_change: int = 10,

@@ -11,7 +11,7 @@ File: test_utils_optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 6:12:36 pm
+Last Modified: Tuesday, 15th November 2022 11:30:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,10 +53,10 @@ def test_get_algo():
     # except ImportError:
     #     pass
 
-    try:
-        get_algo("BlendSearch")
-    except ImportError:
-        pass
+    # try:
+    #     get_algo("BlendSearch")
+    # except ImportError:
+    #     pass
 
     try:
         get_algo("CFO")
@@ -73,7 +73,7 @@ def test_get_algo():
     except ImportError:
         pass
 
-    get_algo(get_algo)
+    # get_algo(get_algo)
 
     assert True, "The get_algo method is not correctly done."
 
