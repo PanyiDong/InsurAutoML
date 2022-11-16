@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 10:26:14 pm
+Last Modified: Wednesday, 16th November 2022 12:55:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -424,7 +424,7 @@ class RegressorEnsemble(formatting):
         # calculate predictions for all pipelines
         pred_list = np.asarray(
             [
-                pipeline.predict(X[feature_subset])
+                pipeline.predict(X[feature_subset]).flatten()
                 for (name, pipeline), feature_subset in zip(
                     self.estimators, self.features
                 )
