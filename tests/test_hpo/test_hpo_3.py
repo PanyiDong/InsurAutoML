@@ -1,5 +1,5 @@
 """
-File Name: test_hpo_3.py
+File: test_hpo_3.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /tests/test_hpo/test_hpo_3.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: test_hpo_3.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:22:31 pm
+Last Modified: Tuesday, 15th November 2022 6:30:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -234,7 +234,7 @@ def test_single():
 
     mol = InsurAutoML.AutoTabular(
         n_estimators=1,
-        model_name="insurance",
+        model_name="insurance_single",
         objective="MAE",
         timeout=60,
     )
@@ -242,11 +242,11 @@ def test_single():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
+        os.path.exists("tmp/insurance_single/init.txt") == True
     ), "Regression for Insurance data failed to initiated."
     assert mol._fitted == True, "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+        os.path.exists("tmp/insurance_single/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
     
 def test_stacking():
@@ -261,7 +261,7 @@ def test_stacking():
 
     mol = InsurAutoML.AutoTabular(
         ensemble_strategy="stacking",
-        model_name="insurance",
+        model_name="insurance_stacking",
         objective="MAE",
         timeout=60,
     )
@@ -269,11 +269,11 @@ def test_stacking():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
+        os.path.exists("tmp/insurance_stacking/init.txt") == True
     ), "Regression for Insurance data failed to initiated."
     assert mol._fitted == True, "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+        os.path.exists("tmp/insurance_stacking/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
 
 
@@ -289,7 +289,7 @@ def test_bagging():
 
     mol = InsurAutoML.AutoTabular(
         ensemble_strategy="bagging",
-        model_name="insurance",
+        model_name="insurance_bagging",
         objective="MAE",
         timeout=60,
     )
@@ -297,11 +297,11 @@ def test_bagging():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
+        os.path.exists("tmp/insurance_bagging/init.txt") == True
     ), "Regression for Insurance data failed to initiated."
     assert mol._fitted == True, "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+        os.path.exists("tmp/insurance_bagging/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
 
 
@@ -317,7 +317,7 @@ def test_boosting():
 
     mol = InsurAutoML.AutoTabular(
         ensemble_strategy="boosting",
-        model_name="insurance",
+        model_name="insurance_boosting",
         objective="MAE",
         timeout=60,
     )
@@ -325,11 +325,11 @@ def test_boosting():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/insurance/init.txt") == True
+        os.path.exists("tmp/insurance_boosting/init.txt") == True
     ), "Regression for Insurance data failed to initiated."
     assert mol._fitted == True, "Regression for Insurance data failed to fit."
     assert (
-        os.path.exists("tmp/insurance/optimal_setting.txt") == True
+        os.path.exists("tmp/insurance_boosting/optimal_setting.txt") == True
     ), "Regression for Insurance data failed to find optimal setting."
 
 def test_search_Optuna():
@@ -343,7 +343,7 @@ def test_search_Optuna():
     response = ["HeartDisease"]
 
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_optuna_stacking",
         search_algo="Optuna",
         ensemble_strategy="stacking",
         timeout=60,
@@ -353,15 +353,15 @@ def test_search_Optuna():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_optuna_stacking/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_optuna_stacking/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_optuna_bagging",
         search_algo="Optuna",
         ensemble_strategy="bagging",
         timeout=60,
@@ -371,15 +371,15 @@ def test_search_Optuna():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_optuna_bagging/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_optuna_bagging/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_optuna_boosting",
         search_algo="Optuna",
         ensemble_strategy="boosting",
         timeout=60,
@@ -389,11 +389,11 @@ def test_search_Optuna():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_optuna_boosting/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_optuna_boosting/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
 def test_search_BlendSearch():
@@ -407,7 +407,7 @@ def test_search_BlendSearch():
     response = ["HeartDisease"]
 
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_blendsearch",
         search_algo="BlendSearch",
         ensemble_strategy="stacking",
         timeout=60,
@@ -417,11 +417,11 @@ def test_search_BlendSearch():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_blendsearch/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_blendsearch/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
 def test_search_CFO():
@@ -435,7 +435,7 @@ def test_search_CFO():
     response = ["HeartDisease"]
 
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_cfo",
         search_algo="CFO",
         ensemble_strategy="stacking",
         timeout=60,
@@ -445,11 +445,11 @@ def test_search_CFO():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_cfo/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_cfo/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
 def test_search_HyperOpt():
@@ -463,7 +463,7 @@ def test_search_HyperOpt():
     response = ["HeartDisease"]
 
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_hyperopt",
         search_algo="HyperOpt",
         ensemble_strategy="stacking",
         timeout=60,
@@ -473,11 +473,11 @@ def test_search_HyperOpt():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_hyperopt/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_hyperopt/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
 def test_search_Nevergrad():
@@ -491,7 +491,7 @@ def test_search_Nevergrad():
     response = ["HeartDisease"]
 
     mol = InsurAutoML.AutoTabular(
-        model_name="heart",
+        model_name="heart_nevergrad",
         search_algo="Nevergrad",
         ensemble_strategy="stacking",
         timeout=60,
@@ -501,10 +501,10 @@ def test_search_Nevergrad():
     y_pred = mol.predict(data[features])
 
     assert (
-        os.path.exists("tmp/heart/init.txt") == True
+        os.path.exists("tmp/heart_nevergrad/init.txt") == True
     ), "Classification for Heart data failed to initiated."
     assert mol._fitted == True, "Classification for Heart data failed to fit."
     assert (
-        os.path.exists("tmp/heart/optimal_setting.txt") == True
+        os.path.exists("tmp/heart_nevergrad/optimal_setting.txt") == True
     ), "Classification for Heart data failed to find optimal setting."
     
