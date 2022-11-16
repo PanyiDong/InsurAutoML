@@ -1,17 +1,17 @@
 """
-File: _lightgbm.py
+File Name: _lightgbm.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/_lightgbm.py
-File Created: Friday, 15th April 2022 12:19:01 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_lightgbm.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:08 pm
+Last Modified: Monday, 14th November 2022 8:15:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union
+import numpy as np
 import pandas as pd
 from lightgbm import LGBMClassifier, LGBMRegressor
 
@@ -89,18 +93,18 @@ class LightGBM_Base:
 
     def __init__(
         self,
-        task_type="classification",
-        objective="regression",
-        boosting="gbdt",
-        n_estimators=100,
-        max_depth=-1,
-        num_leaves=31,
-        min_data_in_leaf=20,
-        learning_rate=0.1,
-        tree_learner="serial",
-        num_iterations=100,
-        seed=1,
-    ):
+        task_type: str = "classification",
+        objective: str = "regression",
+        boosting: str = "gbdt",
+        n_estimators: int = 100,
+        max_depth: int = -1,
+        num_leaves: int = 31,
+        min_data_in_leaf: int = 20,
+        learning_rate: float = 0.1,
+        tree_learner: str = "serial",
+        num_iterations: int = 100,
+        seed: int = 1,
+    ) -> None:
         self.task_type = task_type
         self.objective = objective
         self.boosting = boosting
@@ -115,7 +119,11 @@ class LightGBM_Base:
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> LightGBM_Base:
 
         # get binary classification and multiclass classification
         if self.task_type == "classification":
@@ -205,11 +213,15 @@ class LightGBM_Base:
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict_proba(X)
 
@@ -247,17 +259,17 @@ class LightGBM_Classifier(LightGBM_Base):
 
     def __init__(
         self,
-        objective="multiclass",
-        boosting="gbdt",
-        n_estimators=100,
-        max_depth=-1,
-        num_leaves=31,
-        min_data_in_leaf=20,
-        learning_rate=0.1,
-        tree_learner="serial",
-        num_iterations=100,
-        seed=1,
-    ):
+        objective: str = "multiclass",
+        boosting: str = "gbdt",
+        n_estimators: int = 100,
+        max_depth: int = -1,
+        num_leaves: int = 31,
+        min_data_in_leaf: int = 20,
+        learning_rate: float = 0.1,
+        tree_learner: str = "serial",
+        num_iterations: int = 100,
+        seed: int = 1,
+    ) -> None:
         self.objective = objective
         self.boosting = boosting
         self.n_estimators = n_estimators
@@ -285,7 +297,11 @@ class LightGBM_Classifier(LightGBM_Base):
             seed=self.seed,
         )
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> LightGBM_Classifier:
 
         super().fit(X, y)
 
@@ -293,11 +309,15 @@ class LightGBM_Classifier(LightGBM_Base):
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return super().predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return super().predict_proba(X)
 
@@ -335,17 +355,17 @@ class LightGBM_Regressor(LightGBM_Base):
 
     def __init__(
         self,
-        objective="regression",
-        boosting="gbdt",
-        n_estimators=100,
-        max_depth=-1,
-        num_leaves=31,
-        min_data_in_leaf=20,
-        learning_rate=0.1,
-        tree_learner="serial",
-        num_iterations=100,
-        seed=1,
-    ):
+        objective: str = "regression",
+        boosting: str = "gbdt",
+        n_estimators: int = 100,
+        max_depth: int = -1,
+        num_leaves: int = 31,
+        min_data_in_leaf: int = 20,
+        learning_rate: float = 0.1,
+        tree_learner: str = "serial",
+        num_iterations: int = 100,
+        seed: int = 1,
+    ) -> None:
         self.objective = objective
         self.boosting = boosting
         self.n_estimators = n_estimators
@@ -373,7 +393,11 @@ class LightGBM_Regressor(LightGBM_Base):
             seed=self.seed,
         )
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> LightGBM_Regressor:
 
         super().fit(X, y)
 
@@ -381,10 +405,14 @@ class LightGBM_Regressor(LightGBM_Base):
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return super().predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         raise NotImplementedError("predict_proba is not implemented for regression.")

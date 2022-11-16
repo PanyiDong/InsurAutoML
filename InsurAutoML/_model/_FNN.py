@@ -1,17 +1,17 @@
 """
-File: _FNN.py
+File Name: _FNN.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/_FNN.py
-File Created: Tuesday, 5th April 2022 11:46:17 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_FNN.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:14 pm
+Last Modified: Monday, 14th November 2022 8:14:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union
 import warnings
 import numpy as np
 import pandas as pd
@@ -88,13 +91,13 @@ class MLP_Model(nn.Module):
 
     def __init__(
         self,
-        input_size,
-        hidden_layer,
-        hidden_size,
-        output_size,
-        softmax=False,
-        activation="ReLU",
-    ):
+        input_size: int,
+        hidden_layer: int,
+        hidden_size: int,
+        output_size: int,
+        softmax: bool = False,
+        activation: str = "ReLU",
+    ) -> None:
         super().__init__()
         self.input_size = input_size
         self.hidden_layer = hidden_layer
@@ -103,12 +106,18 @@ class MLP_Model(nn.Module):
         self.output_size = output_size
 
         # specify activation function
-        if activation == "ReLU":
-            self.activation = nn.ReLU()
-        elif activation == "Tanh":
-            self.activation = nn.Tanh()
-        elif activation == "Sigmoid":
-            self.activation = nn.Sigmoid()
+        if activation in ["ReLU", "Tanh", "Sigmoid"]:
+            self.activation = getattr(nn, activation)()
+        # if activation == "ReLU":
+        #     self.activation = nn.ReLU()
+        # elif activation == "Tanh":
+        #     self.activation = nn.Tanh()
+        # elif activation == "Sigmoid":
+        #     self.activation = nn.Sigmoid()
+        else:
+            raise ValueError(
+                "Activation function not supported, please choose from [ReLU, Tanh, Sigmoid]"
+            )
 
         self.forward_model = []  # sequential model
 
@@ -132,7 +141,7 @@ class MLP_Model(nn.Module):
 
         self.forward_model = nn.Sequential(*self.forward_model)
 
-    def forward(self, X):
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
 
         return self.forward_model(X)
 
@@ -176,20 +185,20 @@ class MLP_Base:
 
     def __init__(
         self,
-        input_size,
-        hidden_layer,
-        hidden_size,
-        output_size,
-        softmax=False,
-        activation="ReLU",
-        learning_rate=None,
-        optimizer="Adam",
-        criteria="MSE",
-        batch_size=32,
-        num_epochs=20,
-        is_cuda=True,
-        seed=1,
-    ):
+        input_size: int,
+        hidden_layer: int,
+        hidden_size: int,
+        output_size: int,
+        softmax: bool = False,
+        activation: str = "ReLU",
+        learning_rate: float = None,
+        optimizer: str = "Adam",
+        criteria: str = "MSE",
+        batch_size: int = 32,
+        num_epochs: int = 20,
+        is_cuda: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.input_size = input_size
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -206,7 +215,11 @@ class MLP_Base:
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> MLP_Base:
 
         # set seed
         torch.manual_seed(self.seed)
@@ -273,7 +286,7 @@ class MLP_Base:
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         # load test dataset to DataLoader
         if isinstance(X, pd.DataFrame):
@@ -326,18 +339,18 @@ class MLP_Classifier(MLP_Base):
 
     def __init__(
         self,
-        hidden_layer,
-        hidden_size,
-        softmax=True,
-        activation="ReLU",
-        learning_rate=None,
-        optimizer="Adam",
-        criteria="CrossEntropy",
-        batch_size=32,
-        num_epochs=20,
-        is_cuda=True,
-        seed=1,
-    ):
+        hidden_layer: int,
+        hidden_size: int,
+        softmax: bool = True,
+        activation: str = "ReLU",
+        learning_rate: float = None,
+        optimizer: str = "Adam",
+        criteria: str = "CrossEntropy",
+        batch_size: int = 32,
+        num_epochs: int = 20,
+        is_cuda: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
         self.softmax = softmax
@@ -352,7 +365,11 @@ class MLP_Classifier(MLP_Base):
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> MLP_Classifier:
 
         self.input_size = X.shape[1]  # number of features as input size
         self.output_size = len(pd.unique(y))  # unique classes as output size
@@ -389,12 +406,12 @@ class MLP_Classifier(MLP_Base):
 
         return super().fit(X, y)
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         # need to wrap predict function to convert output format
         return assign_classes(super().predict(X))
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         # not need to use argmax to select the one class
         # but to return full probability
@@ -435,18 +452,18 @@ class MLP_Regressor(MLP_Base):
 
     def __init__(
         self,
-        hidden_layer,
-        hidden_size,
-        softmax=False,
-        activation="ReLU",
-        learning_rate=None,
-        optimizer="Adam",
-        criteria="MSE",
-        batch_size=32,
-        num_epochs=20,
-        is_cuda=True,
-        seed=1,
-    ):
+        hidden_layer: int,
+        hidden_size: int,
+        softmax: bool = False,
+        activation: str = "ReLU",
+        learning_rate: float = None,
+        optimizer: str = "Adam",
+        criteria: str = "MSE",
+        batch_size: int = 32,
+        num_epochs: int = 20,
+        is_cuda: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
         self.softmax = softmax
@@ -461,7 +478,11 @@ class MLP_Regressor(MLP_Base):
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> MLP_Regressor:
 
         self.input_size = X.shape[1]  # number of features as input size
         self.output_size = 1  # output size is 1 (regression purpose)
@@ -498,10 +519,10 @@ class MLP_Regressor(MLP_Base):
 
         return super().fit(X, y)
 
-    def predict(self, X):
+    def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         return super().predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
         return NotImplementedError("predict_proba is not implemented for regression.")

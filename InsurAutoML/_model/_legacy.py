@@ -1,17 +1,17 @@
 """
-File: _legacy.py
+File Name: _legacy.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/_legacy.py
-File Created: Friday, 8th April 2022 9:18:08 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_legacy.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:26:08 pm
+Last Modified: Monday, 14th November 2022 8:15:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

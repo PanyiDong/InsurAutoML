@@ -679,8 +679,8 @@ static CYTHON_INLINE float __PYX_NAN() {
   #endif
 #endif
 
-#define __PYX_HAVE__My_AutoML___utils___c___base
-#define __PYX_HAVE_API__My_AutoML___utils___c___base
+#define __PYX_HAVE__InsurAutoML___utils___c___base
+#define __PYX_HAVE_API__InsurAutoML___utils___c___base
 /* Early includes */
 #include <string.h>
 #include <stdio.h>
@@ -923,7 +923,7 @@ static const char *__pyx_filename;
 
 
 static const char *__pyx_f[] = {
-  "My_AutoML/_utils/_c/_base.pyx",
+  "InsurAutoML/_utils/_c/_base.pyx",
   "__init__.pxd",
   "type.pxd",
 };
@@ -1153,23 +1153,23 @@ typedef npy_double __pyx_t_5numpy_double_t;
  */
 typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
-/* "My_AutoML/_utils/_c/_base.pyx":51
+/* "InsurAutoML/_utils/_c/_base.pyx":53
  * cnp.import_array()
  * 
  * ctypedef cnp.npy_float FLOAT             # <<<<<<<<<<<<<<
  * ctypedef cnp.npy_intp INTP
  * 
  */
-typedef npy_float __pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT;
+typedef npy_float __pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT;
 
-/* "My_AutoML/_utils/_c/_base.pyx":52
+/* "InsurAutoML/_utils/_c/_base.pyx":54
  * 
  * ctypedef cnp.npy_float FLOAT
  * ctypedef cnp.npy_intp INTP             # <<<<<<<<<<<<<<
  * 
  * # cimport numpy as np
  */
-typedef npy_intp __pyx_t_9My_AutoML_6_utils_2_c_5_base_INTP;
+typedef npy_intp __pyx_t_11InsurAutoML_6_utils_2_c_5_base_INTP;
 /* Declarations.proto */
 #if CYTHON_CCOMPLEX
   #ifdef __cplusplus
@@ -1232,43 +1232,43 @@ typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
  * cdef inline object PyArray_MultiIterNew1(a):
  */
 typedef npy_cdouble __pyx_t_5numpy_complex_t;
-struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_guess;
-struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_index;
-struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_list;
+struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess;
+struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index;
+struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list;
 
-/* "My_AutoML/_utils/_c/_base.pyx":61
+/* "InsurAutoML/_utils/_c/_base.pyx":63
  * 
  * # set response to [0, 1] class, random guess at 0.5
  * cdef int random_guess(             # <<<<<<<<<<<<<<
  *     float number,
  *     int seed= 1,
  */
-struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_guess {
+struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess {
   int __pyx_n;
   int seed;
 };
 
-/* "My_AutoML/_utils/_c/_base.pyx":76
+/* "InsurAutoML/_utils/_c/_base.pyx":78
  * # Return random index of a list (unique values only)
  * # from total draw n, default total = n
  * cdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
  *     int n,
  *     int total=0,
  */
-struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_index {
+struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index {
   int __pyx_n;
   int total;
   int seed;
 };
 
-/* "My_AutoML/_utils/_c/_base.pyx":101
+/* "InsurAutoML/_utils/_c/_base.pyx":103
  * 
  * # Return randomly shuffle of a list (unique values only)
  * cdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
  *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
  *     int seed=1
  */
-struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_list {
+struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list {
   int __pyx_n;
   int seed;
 };
@@ -1786,13 +1786,13 @@ static PyTypeObject *__pyx_ptype_5numpy_character = 0;
 static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE int __pyx_f_5numpy_import_array(void); /*proto*/
 
-/* Module declarations from 'My_AutoML._utils._c._base' */
-static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT = { "FLOAT", NULL, sizeof(__pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT), { 0 }, 0, 'R', 0, 0 };
-#define __Pyx_MODULE_NAME "My_AutoML._utils._c._base"
-extern int __pyx_module_is_main_My_AutoML___utils___c___base;
-int __pyx_module_is_main_My_AutoML___utils___c___base = 0;
+/* Module declarations from 'InsurAutoML._utils._c._base' */
+static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT = { "FLOAT", NULL, sizeof(__pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT), { 0 }, 0, 'R', 0, 0 };
+#define __Pyx_MODULE_NAME "InsurAutoML._utils._c._base"
+extern int __pyx_module_is_main_InsurAutoML___utils___c___base;
+int __pyx_module_is_main_InsurAutoML___utils___c___base = 0;
 
-/* Implementation of 'My_AutoML._utils._c._base' */
+/* Implementation of 'InsurAutoML._utils._c._base' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_ImportError;
 static const char __pyx_k_np[] = "np";
@@ -1824,7 +1824,7 @@ static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_permutation[] = "permutation";
 static const char __pyx_k_Invalid_List[] = "Invalid List!";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
-static const char __pyx_k_File__base_pyx_Author_Panyi_Don[] = "\nFile: _base.pyx\nAuthor: Panyi Dong\nGitHub: https://github.com/PanyiDong/\nMathematics Department, University of Illinois at Urbana-Champaign (UIUC)\n\nProject: My_AutoML\nLast Version: 0.2.1\nRelative Path: /My_AutoML/_utils/_base.pyx\nFile Created: Saturday, 24th September 2022 11:13:27 pm\nAuthor: Panyi Dong (panyid2@illinois.edu)\n\n-----\nLast Modified: Sunday, 25th September 2022 7:51:14 pm\nModified By: Panyi Dong (panyid2@illinois.edu)\n\n-----\nMIT License\n\nCopyright (c) 2022 - 2022, Panyi Dong\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
+static const char __pyx_k_File_Name__base_pyx_Author_Pany[] = "\nFile Name: _base.pyx\nAuthor: Panyi Dong\nGitHub: https://github.com/PanyiDong/\nMathematics Department, University of Illinois at Urbana-Champaign (UIUC)\n\nProject: InsurAutoML\nLatest Version: 0.2.3\nRelative Path: /InsurAutoML/_utils/_c/_base.pyx\nFile Created: Monday, 24th October 2022 11:56:57 pm\nAuthor: Panyi Dong (panyid2@illinois.edu)\n\n-----\nLast Modified: Monday, 14th November 2022 8:16:52 pm\nModified By: Panyi Dong (panyid2@illinois.edu)\n\n-----\nMIT License\n\nCopyright (c) 2022 - 2022, Panyi Dong\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
 static const char __pyx_k_Total_number_of_samples_must_be[] = "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_Input_is_multi_dimensional_array[] = "Input is multi-dimensional array, return min location of the first dimension.";
@@ -1874,7 +1874,7 @@ static PyObject *__pyx_tuple__3;
 static PyObject *__pyx_tuple__4;
 /* Late includes */
 
-/* "My_AutoML/_utils/_c/_base.pyx":61
+/* "InsurAutoML/_utils/_c/_base.pyx":63
  * 
  * # set response to [0, 1] class, random guess at 0.5
  * cdef int random_guess(             # <<<<<<<<<<<<<<
@@ -1882,7 +1882,7 @@ static PyObject *__pyx_tuple__4;
  *     int seed= 1,
  */
 
-static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_number, struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_guess *__pyx_optional_args) {
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_number, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess *__pyx_optional_args) {
   int __pyx_v_seed = ((int)1);
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -1902,37 +1902,37 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
     }
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":65
+  /* "InsurAutoML/_utils/_c/_base.pyx":67
  *     int seed= 1,
  * ):
  *     if seed != None:             # <<<<<<<<<<<<<<
  *         np.random.seed(seed)
  *     if number > 0.5:
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 65, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 67, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_3) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":66
+    /* "InsurAutoML/_utils/_c/_base.pyx":68
  * ):
  *     if seed != None:
  *         np.random.seed(seed)             # <<<<<<<<<<<<<<
  *     if number > 0.5:
  *         return 1
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
@@ -1947,12 +1947,12 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
     __pyx_t_2 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_5, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_4);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":65
+    /* "InsurAutoML/_utils/_c/_base.pyx":67
  *     int seed= 1,
  * ):
  *     if seed != None:             # <<<<<<<<<<<<<<
@@ -1961,7 +1961,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":67
+  /* "InsurAutoML/_utils/_c/_base.pyx":69
  *     if seed != None:
  *         np.random.seed(seed)
  *     if number > 0.5:             # <<<<<<<<<<<<<<
@@ -1971,7 +1971,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
   __pyx_t_3 = ((__pyx_v_number > 0.5) != 0);
   if (__pyx_t_3) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":68
+    /* "InsurAutoML/_utils/_c/_base.pyx":70
  *         np.random.seed(seed)
  *     if number > 0.5:
  *         return 1             # <<<<<<<<<<<<<<
@@ -1981,7 +1981,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
     __pyx_r = 1;
     goto __pyx_L0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":67
+    /* "InsurAutoML/_utils/_c/_base.pyx":69
  *     if seed != None:
  *         np.random.seed(seed)
  *     if number > 0.5:             # <<<<<<<<<<<<<<
@@ -1990,7 +1990,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":69
+  /* "InsurAutoML/_utils/_c/_base.pyx":71
  *     if number > 0.5:
  *         return 1
  *     elif number < 0.5:             # <<<<<<<<<<<<<<
@@ -2000,7 +2000,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
   __pyx_t_3 = ((__pyx_v_number < 0.5) != 0);
   if (__pyx_t_3) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":70
+    /* "InsurAutoML/_utils/_c/_base.pyx":72
  *         return 1
  *     elif number < 0.5:
  *         return 0             # <<<<<<<<<<<<<<
@@ -2010,7 +2010,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
     __pyx_r = 0;
     goto __pyx_L0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":69
+    /* "InsurAutoML/_utils/_c/_base.pyx":71
  *     if number > 0.5:
  *         return 1
  *     elif number < 0.5:             # <<<<<<<<<<<<<<
@@ -2019,7 +2019,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":72
+  /* "InsurAutoML/_utils/_c/_base.pyx":74
  *         return 0
  *     else:
  *         return np.random.randint(0, 2)             # <<<<<<<<<<<<<<
@@ -2027,24 +2027,24 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
  * # Return random index of a list (unique values only)
  */
   /*else*/ {
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 72, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_random); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_random); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_randint); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 72, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_randint); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 72, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 74, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_r = __pyx_t_6;
     goto __pyx_L0;
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":61
+  /* "InsurAutoML/_utils/_c/_base.pyx":63
  * 
  * # set response to [0, 1] class, random guess at 0.5
  * cdef int random_guess(             # <<<<<<<<<<<<<<
@@ -2058,14 +2058,14 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
   __Pyx_XDECREF(__pyx_t_2);
   __Pyx_XDECREF(__pyx_t_4);
   __Pyx_XDECREF(__pyx_t_5);
-  __Pyx_WriteUnraisable("My_AutoML._utils._c._base.random_guess", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
+  __Pyx_WriteUnraisable("InsurAutoML._utils._c._base.random_guess", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-/* "My_AutoML/_utils/_c/_base.pyx":76
+/* "InsurAutoML/_utils/_c/_base.pyx":78
  * # Return random index of a list (unique values only)
  * # from total draw n, default total = n
  * cdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
@@ -2073,7 +2073,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_numb
  *     int total=0,
  */
 
-static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __pyx_v_n, struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_index *__pyx_optional_args) {
+static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int __pyx_v_n, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index *__pyx_optional_args) {
   int __pyx_v_total = ((int)0);
   int __pyx_v_seed = ((int)1);
   PyArrayObject *__pyx_v_output = 0;
@@ -2101,36 +2101,36 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     }
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":81
+  /* "InsurAutoML/_utils/_c/_base.pyx":83
  *     int seed=1
  * ):
  *     if seed is not None:             # <<<<<<<<<<<<<<
  *         np.random.seed(seed)
  *     if total == 0:
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 81, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_2 = (__pyx_t_1 != Py_None);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":82
+    /* "InsurAutoML/_utils/_c/_base.pyx":84
  * ):
  *     if seed is not None:
  *         np.random.seed(seed)             # <<<<<<<<<<<<<<
  *     if total == 0:
  *         total = n
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 82, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_random); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 82, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_random); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 82, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 82, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_6 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
@@ -2145,12 +2145,12 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     __pyx_t_1 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_6, __pyx_t_5) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5);
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":81
+    /* "InsurAutoML/_utils/_c/_base.pyx":83
  *     int seed=1
  * ):
  *     if seed is not None:             # <<<<<<<<<<<<<<
@@ -2159,7 +2159,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":83
+  /* "InsurAutoML/_utils/_c/_base.pyx":85
  *     if seed is not None:
  *         np.random.seed(seed)
  *     if total == 0:             # <<<<<<<<<<<<<<
@@ -2169,7 +2169,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   __pyx_t_3 = ((__pyx_v_total == 0) != 0);
   if (__pyx_t_3) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":84
+    /* "InsurAutoML/_utils/_c/_base.pyx":86
  *         np.random.seed(seed)
  *     if total == 0:
  *         total = n             # <<<<<<<<<<<<<<
@@ -2178,7 +2178,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  */
     __pyx_v_total = __pyx_v_n;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":83
+    /* "InsurAutoML/_utils/_c/_base.pyx":85
  *     if seed is not None:
  *         np.random.seed(seed)
  *     if total == 0:             # <<<<<<<<<<<<<<
@@ -2187,38 +2187,38 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":85
+  /* "InsurAutoML/_utils/_c/_base.pyx":87
  *     if total == 0:
  *         total = n
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)             # <<<<<<<<<<<<<<
  * 
  *     if total < n:
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, ((PyObject *)(&PyInt_Type))) < 0) __PYX_ERR(0, 85, __pyx_L1_error)
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 85, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, ((PyObject *)(&PyInt_Type))) < 0) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 87, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 85, __pyx_L1_error)
+  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 87, __pyx_L1_error)
   __pyx_v_output = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":87
+  /* "InsurAutoML/_utils/_c/_base.pyx":89
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)
  * 
  *     if total < n:             # <<<<<<<<<<<<<<
@@ -2228,18 +2228,18 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   __pyx_t_3 = ((__pyx_v_total < __pyx_v_n) != 0);
   if (unlikely(__pyx_t_3)) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":89
+    /* "InsurAutoML/_utils/_c/_base.pyx":91
  *     if total < n:
  *         raise ValueError(
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)             # <<<<<<<<<<<<<<
  *         )
  *     elif n == 0 :
  */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Total_number_of_samples_must_be, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Total_number_of_samples_must_be, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 89, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 89, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 91, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_7 = NULL;
     __pyx_t_8 = 0;
@@ -2256,7 +2256,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_4};
-      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -2266,7 +2266,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_4};
-      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -2274,7 +2274,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     } else
     #endif
     {
-      __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 91, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       if (__pyx_t_7) {
         __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -2285,27 +2285,27 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
       PyTuple_SET_ITEM(__pyx_t_9, 1+__pyx_t_8, __pyx_t_4);
       __pyx_t_5 = 0;
       __pyx_t_4 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":88
+    /* "InsurAutoML/_utils/_c/_base.pyx":90
  * 
  *     if total < n:
  *         raise ValueError(             # <<<<<<<<<<<<<<
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
  *         )
  */
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 90, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 88, __pyx_L1_error)
+    __PYX_ERR(0, 90, __pyx_L1_error)
 
-    /* "My_AutoML/_utils/_c/_base.pyx":87
+    /* "InsurAutoML/_utils/_c/_base.pyx":89
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)
  * 
  *     if total < n:             # <<<<<<<<<<<<<<
@@ -2314,7 +2314,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":91
+  /* "InsurAutoML/_utils/_c/_base.pyx":93
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
  *         )
  *     elif n == 0 :             # <<<<<<<<<<<<<<
@@ -2324,16 +2324,16 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   __pyx_t_3 = ((__pyx_v_n == 0) != 0);
   if (unlikely(__pyx_t_3)) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":93
+    /* "InsurAutoML/_utils/_c/_base.pyx":95
  *     elif n == 0 :
  *         raise ValueError(
  *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)             # <<<<<<<<<<<<<<
  *         )
  * 
  */
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Number_of_samples_to_be_drawn_mu, __pyx_n_s_format); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 93, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Number_of_samples_to_be_drawn_mu, __pyx_n_s_format); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 95, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
-    __pyx_t_9 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 93, __pyx_L1_error)
+    __pyx_t_9 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 95, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __pyx_t_4 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_6))) {
@@ -2348,25 +2348,25 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_6, __pyx_t_4, __pyx_t_9) : __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_9);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 93, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":92
+    /* "InsurAutoML/_utils/_c/_base.pyx":94
  *         )
  *     elif n == 0 :
  *         raise ValueError(             # <<<<<<<<<<<<<<
  *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
  *         )
  */
-    __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 92, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 94, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_Raise(__pyx_t_6, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __PYX_ERR(0, 92, __pyx_L1_error)
+    __PYX_ERR(0, 94, __pyx_L1_error)
 
-    /* "My_AutoML/_utils/_c/_base.pyx":91
+    /* "InsurAutoML/_utils/_c/_base.pyx":93
  *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
  *         )
  *     elif n == 0 :             # <<<<<<<<<<<<<<
@@ -2375,26 +2375,26 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":96
+  /* "InsurAutoML/_utils/_c/_base.pyx":98
  *         )
  * 
  *     output = np.random.choice(total, n, replace=False)             # <<<<<<<<<<<<<<
  * 
  *     return output
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_6, __pyx_n_s_np); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_random); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_6, __pyx_n_s_random); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_choice); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_choice); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_9 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(2); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_1);
@@ -2402,19 +2402,19 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   PyTuple_SET_ITEM(__pyx_t_4, 1, __pyx_t_9);
   __pyx_t_1 = 0;
   __pyx_t_9 = 0;
-  __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 96, __pyx_L1_error)
+  __pyx_t_9 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_9);
-  if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_replace, Py_False) < 0) __PYX_ERR(0, 96, __pyx_L1_error)
-  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_4, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 96, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_9, __pyx_n_s_replace, Py_False) < 0) __PYX_ERR(0, 98, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_6, __pyx_t_4, __pyx_t_9); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 96, __pyx_L1_error)
+  if (!(likely(((__pyx_t_1) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_1, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 98, __pyx_L1_error)
   __Pyx_DECREF_SET(__pyx_v_output, ((PyArrayObject *)__pyx_t_1));
   __pyx_t_1 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":98
+  /* "InsurAutoML/_utils/_c/_base.pyx":100
  *     output = np.random.choice(total, n, replace=False)
  * 
  *     return output             # <<<<<<<<<<<<<<
@@ -2426,7 +2426,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   __pyx_r = __pyx_v_output;
   goto __pyx_L0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":76
+  /* "InsurAutoML/_utils/_c/_base.pyx":78
  * # Return random index of a list (unique values only)
  * # from total draw n, default total = n
  * cdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
@@ -2442,7 +2442,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   __Pyx_XDECREF(__pyx_t_6);
   __Pyx_XDECREF(__pyx_t_7);
   __Pyx_XDECREF(__pyx_t_9);
-  __Pyx_AddTraceback("My_AutoML._utils._c._base.random_index", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_index", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   __pyx_L0:;
   __Pyx_XDECREF((PyObject *)__pyx_v_output);
@@ -2451,7 +2451,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
   return __pyx_r;
 }
 
-/* "My_AutoML/_utils/_c/_base.pyx":101
+/* "InsurAutoML/_utils/_c/_base.pyx":103
  * 
  * # Return randomly shuffle of a list (unique values only)
  * cdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
@@ -2459,7 +2459,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_index(int __p
  *     int seed=1
  */
 
-static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayObject *__pyx_v_vlist, struct __pyx_opt_args_9My_AutoML_6_utils_2_c_5_base_random_list *__pyx_optional_args) {
+static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(PyArrayObject *__pyx_v_vlist, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list *__pyx_optional_args) {
   int __pyx_v_seed = ((int)1);
   PyArrayObject *__pyx_v_output = 0;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
@@ -2487,41 +2487,41 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
   __pyx_pybuffernd_vlist.rcbuffer = &__pyx_pybuffer_vlist;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 101, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 103, __pyx_L1_error)
   }
   __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
 
-  /* "My_AutoML/_utils/_c/_base.pyx":105
+  /* "InsurAutoML/_utils/_c/_base.pyx":107
  *     int seed=1
  * ):
  *     if seed != None:             # <<<<<<<<<<<<<<
  *         np.random.seed(seed)
  * 
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 105, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 105, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 105, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 107, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_3) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":106
+    /* "InsurAutoML/_utils/_c/_base.pyx":108
  * ):
  *     if seed != None:
  *         np.random.seed(seed)             # <<<<<<<<<<<<<<
  * 
  *     cdef cnp.ndarray output = np.zeros(len(vlist), dtype=float)
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 106, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
@@ -2536,12 +2536,12 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
     __pyx_t_2 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_5, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_4);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 106, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":105
+    /* "InsurAutoML/_utils/_c/_base.pyx":107
  *     int seed=1
  * ):
  *     if seed != None:             # <<<<<<<<<<<<<<
@@ -2550,51 +2550,51 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":108
+  /* "InsurAutoML/_utils/_c/_base.pyx":110
  *         np.random.seed(seed)
  * 
  *     cdef cnp.ndarray output = np.zeros(len(vlist), dtype=float)             # <<<<<<<<<<<<<<
  *     output = np.random.permutation(vlist)
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_6 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 108, __pyx_L1_error)
-  __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_6 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_6 == ((Py_ssize_t)-1))) __PYX_ERR(0, 110, __pyx_L1_error)
+  __pyx_t_2 = PyInt_FromSsize_t(__pyx_t_6); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_4 = PyTuple_New(1); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_GIVEREF(__pyx_t_2);
   PyTuple_SET_ITEM(__pyx_t_4, 0, __pyx_t_2);
   __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 108, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_dtype, ((PyObject *)(&PyFloat_Type))) < 0) __PYX_ERR(0, 108, __pyx_L1_error)
-  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 108, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_2, __pyx_n_s_dtype, ((PyObject *)(&PyFloat_Type))) < 0) __PYX_ERR(0, 110, __pyx_L1_error)
+  __pyx_t_5 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_4, __pyx_t_2); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 110, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 108, __pyx_L1_error)
+  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 110, __pyx_L1_error)
   __pyx_v_output = ((PyArrayObject *)__pyx_t_5);
   __pyx_t_5 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":109
+  /* "InsurAutoML/_utils/_c/_base.pyx":111
  * 
  *     cdef cnp.ndarray output = np.zeros(len(vlist), dtype=float)
  *     output = np.random.permutation(vlist)             # <<<<<<<<<<<<<<
  * 
  *     return output
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 109, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 109, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_permutation); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 109, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_permutation); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __pyx_t_4 = NULL;
@@ -2609,14 +2609,14 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
   }
   __pyx_t_5 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_2, __pyx_t_4, ((PyObject *)__pyx_v_vlist)) : __Pyx_PyObject_CallOneArg(__pyx_t_2, ((PyObject *)__pyx_v_vlist));
   __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
-  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 109, __pyx_L1_error)
+  if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 109, __pyx_L1_error)
+  if (!(likely(((__pyx_t_5) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_5, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 111, __pyx_L1_error)
   __Pyx_DECREF_SET(__pyx_v_output, ((PyArrayObject *)__pyx_t_5));
   __pyx_t_5 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":111
+  /* "InsurAutoML/_utils/_c/_base.pyx":113
  *     output = np.random.permutation(vlist)
  * 
  *     return output             # <<<<<<<<<<<<<<
@@ -2628,7 +2628,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
   __pyx_r = __pyx_v_output;
   goto __pyx_L0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":101
+  /* "InsurAutoML/_utils/_c/_base.pyx":103
  * 
  * # Return randomly shuffle of a list (unique values only)
  * cdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
@@ -2648,7 +2648,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_AddTraceback("My_AutoML._utils._c._base.random_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = 0;
   goto __pyx_L2;
   __pyx_L0:;
@@ -2660,7 +2660,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
   return __pyx_r;
 }
 
-/* "My_AutoML/_utils/_c/_base.pyx":114
+/* "InsurAutoML/_utils/_c/_base.pyx":116
  * 
  * # Return location of minimum values
  * cdef int minloc(             # <<<<<<<<<<<<<<
@@ -2668,7 +2668,7 @@ static PyArrayObject *__pyx_f_9My_AutoML_6_utils_2_c_5_base_random_list(PyArrayO
  * ):
  */
 
-static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_vlist) {
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_vlist) {
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
   __Pyx_Buffer __pyx_pybuffer_vlist;
   int __pyx_r;
@@ -2696,37 +2696,37 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
   __pyx_pybuffernd_vlist.rcbuffer = &__pyx_pybuffer_vlist;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 114, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 116, __pyx_L1_error)
   }
   __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
 
-  /* "My_AutoML/_utils/_c/_base.pyx":119
+  /* "InsurAutoML/_utils/_c/_base.pyx":121
  * 
  *     # make sure input is np.array
  *     if not isinstance(vlist, np.ndarray):             # <<<<<<<<<<<<<<
  *         vlist = np.array(vlist)
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 119, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ndarray); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 119, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ndarray); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = PyObject_IsInstance(((PyObject *)__pyx_v_vlist), __pyx_t_2); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 119, __pyx_L1_error)
+  __pyx_t_3 = PyObject_IsInstance(((PyObject *)__pyx_v_vlist), __pyx_t_2); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 121, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = ((!(__pyx_t_3 != 0)) != 0);
   if (__pyx_t_4) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":120
+    /* "InsurAutoML/_utils/_c/_base.pyx":122
  *     # make sure input is np.array
  *     if not isinstance(vlist, np.ndarray):
  *         vlist = np.array(vlist)             # <<<<<<<<<<<<<<
  * 
  *     if len(vlist) == 0:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 120, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 122, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_array); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 120, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_array); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 122, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_1 = NULL;
@@ -2741,18 +2741,18 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
     }
     __pyx_t_2 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_1, ((PyObject *)__pyx_v_vlist)) : __Pyx_PyObject_CallOneArg(__pyx_t_5, ((PyObject *)__pyx_v_vlist));
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 120, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 122, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 120, __pyx_L1_error)
+    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 122, __pyx_L1_error)
     __pyx_t_6 = ((PyArrayObject *)__pyx_t_2);
     {
       __Pyx_BufFmt_StackElem __pyx_stack[1];
       __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
-      __pyx_t_7 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_t_6, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack);
+      __pyx_t_7 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_t_6, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack);
       if (unlikely(__pyx_t_7 < 0)) {
         PyErr_Fetch(&__pyx_t_8, &__pyx_t_9, &__pyx_t_10);
-        if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) {
+        if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) {
           Py_XDECREF(__pyx_t_8); Py_XDECREF(__pyx_t_9); Py_XDECREF(__pyx_t_10);
           __Pyx_RaiseBufferFallbackError();
         } else {
@@ -2761,13 +2761,13 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
         __pyx_t_8 = __pyx_t_9 = __pyx_t_10 = 0;
       }
       __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
-      if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 120, __pyx_L1_error)
+      if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 122, __pyx_L1_error)
     }
     __pyx_t_6 = 0;
     __Pyx_DECREF_SET(__pyx_v_vlist, ((PyArrayObject *)__pyx_t_2));
     __pyx_t_2 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":119
+    /* "InsurAutoML/_utils/_c/_base.pyx":121
  * 
  *     # make sure input is np.array
  *     if not isinstance(vlist, np.ndarray):             # <<<<<<<<<<<<<<
@@ -2776,31 +2776,31 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":122
+  /* "InsurAutoML/_utils/_c/_base.pyx":124
  *         vlist = np.array(vlist)
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError("Invalid List!")
  *     else :
  */
-  __pyx_t_11 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 122, __pyx_L1_error)
+  __pyx_t_11 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 124, __pyx_L1_error)
   __pyx_t_4 = ((__pyx_t_11 == 0) != 0);
   if (unlikely(__pyx_t_4)) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":123
+    /* "InsurAutoML/_utils/_c/_base.pyx":125
  * 
  *     if len(vlist) == 0:
  *         raise ValueError("Invalid List!")             # <<<<<<<<<<<<<<
  *     else :
  *         # check whether multi-dimensional array
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 123, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 125, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 123, __pyx_L1_error)
+    __PYX_ERR(0, 125, __pyx_L1_error)
 
-    /* "My_AutoML/_utils/_c/_base.pyx":122
+    /* "InsurAutoML/_utils/_c/_base.pyx":124
  *         vlist = np.array(vlist)
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
@@ -2809,7 +2809,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":126
+  /* "InsurAutoML/_utils/_c/_base.pyx":128
  *     else :
  *         # check whether multi-dimensional array
  *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
@@ -2817,23 +2817,23 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
  *                 "Input is multi-dimensional array, return min location of the first dimension."
  */
   /*else*/ {
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_vlist), __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 126, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_vlist), __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 128, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_11 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 126, __pyx_L1_error)
+    __pyx_t_11 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 128, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_4 = ((__pyx_t_11 > 1) != 0);
     if (__pyx_t_4) {
 
-      /* "My_AutoML/_utils/_c/_base.pyx":127
+      /* "InsurAutoML/_utils/_c/_base.pyx":129
  *         # check whether multi-dimensional array
  *         if len((<object> vlist).shape) > 1:
  *             warnings.warn(             # <<<<<<<<<<<<<<
  *                 "Input is multi-dimensional array, return min location of the first dimension."
  *             )
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_warnings); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_warnings); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 129, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_warn); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 127, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_warn); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 129, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_t_5 = NULL;
@@ -2848,12 +2848,12 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
       }
       __pyx_t_2 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_5, __pyx_kp_s_Input_is_multi_dimensional_array) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s_Input_is_multi_dimensional_array);
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 127, __pyx_L1_error)
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 129, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "My_AutoML/_utils/_c/_base.pyx":126
+      /* "InsurAutoML/_utils/_c/_base.pyx":128
  *     else :
  *         # check whether multi-dimensional array
  *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
@@ -2862,38 +2862,38 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
  */
     }
 
-    /* "My_AutoML/_utils/_c/_base.pyx":131
+    /* "InsurAutoML/_utils/_c/_base.pyx":133
  *             )
  * 
  *         return np.argmin(vlist, axis=0)             # <<<<<<<<<<<<<<
  * 
  * 
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 131, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 133, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_argmin); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 131, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_argmin); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 133, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 131, __pyx_L1_error)
+    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 133, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_INCREF(((PyObject *)__pyx_v_vlist));
     __Pyx_GIVEREF(((PyObject *)__pyx_v_vlist));
     PyTuple_SET_ITEM(__pyx_t_2, 0, ((PyObject *)__pyx_v_vlist));
-    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 131, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 133, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_axis, __pyx_int_0) < 0) __PYX_ERR(0, 131, __pyx_L1_error)
-    __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 131, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_axis, __pyx_int_0) < 0) __PYX_ERR(0, 133, __pyx_L1_error)
+    __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 133, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_12);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_12); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 131, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_12); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 133, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
     __pyx_r = __pyx_t_7;
     goto __pyx_L0;
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":114
+  /* "InsurAutoML/_utils/_c/_base.pyx":116
  * 
  * # Return location of minimum values
  * cdef int minloc(             # <<<<<<<<<<<<<<
@@ -2913,7 +2913,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_WriteUnraisable("My_AutoML._utils._c._base.minloc", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
+  __Pyx_WriteUnraisable("InsurAutoML._utils._c._base.minloc", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_r = 0;
   goto __pyx_L2;
   __pyx_L0:;
@@ -2924,7 +2924,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
   return __pyx_r;
 }
 
-/* "My_AutoML/_utils/_c/_base.pyx":135
+/* "InsurAutoML/_utils/_c/_base.pyx":137
  * 
  * # Return location of maximum values
  * cdef int maxloc(             # <<<<<<<<<<<<<<
@@ -2932,7 +2932,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_v
  * ):
  */
 
-static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_vlist) {
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_vlist) {
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
   __Pyx_Buffer __pyx_pybuffer_vlist;
   int __pyx_r;
@@ -2960,37 +2960,37 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
   __pyx_pybuffernd_vlist.rcbuffer = &__pyx_pybuffer_vlist;
   {
     __Pyx_BufFmt_StackElem __pyx_stack[1];
-    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 135, __pyx_L1_error)
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 137, __pyx_L1_error)
   }
   __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
 
-  /* "My_AutoML/_utils/_c/_base.pyx":140
+  /* "InsurAutoML/_utils/_c/_base.pyx":142
  * 
  *     # make sure input is np.array
  *     if not isinstance(vlist, np.ndarray):             # <<<<<<<<<<<<<<
  *         vlist = np.array(vlist)
  * 
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 140, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ndarray); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 140, __pyx_L1_error)
+  __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_ndarray); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_2);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = PyObject_IsInstance(((PyObject *)__pyx_v_vlist), __pyx_t_2); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 140, __pyx_L1_error)
+  __pyx_t_3 = PyObject_IsInstance(((PyObject *)__pyx_v_vlist), __pyx_t_2); if (unlikely(__pyx_t_3 == ((int)-1))) __PYX_ERR(0, 142, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   __pyx_t_4 = ((!(__pyx_t_3 != 0)) != 0);
   if (__pyx_t_4) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":141
+    /* "InsurAutoML/_utils/_c/_base.pyx":143
  *     # make sure input is np.array
  *     if not isinstance(vlist, np.ndarray):
  *         vlist = np.array(vlist)             # <<<<<<<<<<<<<<
  * 
  *     if len(vlist) == 0:
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 141, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 143, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_array); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 141, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_array); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 143, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_t_1 = NULL;
@@ -3005,18 +3005,18 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
     }
     __pyx_t_2 = (__pyx_t_1) ? __Pyx_PyObject_Call2Args(__pyx_t_5, __pyx_t_1, ((PyObject *)__pyx_v_vlist)) : __Pyx_PyObject_CallOneArg(__pyx_t_5, ((PyObject *)__pyx_v_vlist));
     __Pyx_XDECREF(__pyx_t_1); __pyx_t_1 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 141, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 143, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 141, __pyx_L1_error)
+    if (!(likely(((__pyx_t_2) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_2, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 143, __pyx_L1_error)
     __pyx_t_6 = ((PyArrayObject *)__pyx_t_2);
     {
       __Pyx_BufFmt_StackElem __pyx_stack[1];
       __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
-      __pyx_t_7 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_t_6, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack);
+      __pyx_t_7 = __Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_t_6, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack);
       if (unlikely(__pyx_t_7 < 0)) {
         PyErr_Fetch(&__pyx_t_8, &__pyx_t_9, &__pyx_t_10);
-        if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_9My_AutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) {
+        if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) {
           Py_XDECREF(__pyx_t_8); Py_XDECREF(__pyx_t_9); Py_XDECREF(__pyx_t_10);
           __Pyx_RaiseBufferFallbackError();
         } else {
@@ -3025,13 +3025,13 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
         __pyx_t_8 = __pyx_t_9 = __pyx_t_10 = 0;
       }
       __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
-      if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 141, __pyx_L1_error)
+      if (unlikely(__pyx_t_7 < 0)) __PYX_ERR(0, 143, __pyx_L1_error)
     }
     __pyx_t_6 = 0;
     __Pyx_DECREF_SET(__pyx_v_vlist, ((PyArrayObject *)__pyx_t_2));
     __pyx_t_2 = 0;
 
-    /* "My_AutoML/_utils/_c/_base.pyx":140
+    /* "InsurAutoML/_utils/_c/_base.pyx":142
  * 
  *     # make sure input is np.array
  *     if not isinstance(vlist, np.ndarray):             # <<<<<<<<<<<<<<
@@ -3040,31 +3040,31 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":143
+  /* "InsurAutoML/_utils/_c/_base.pyx":145
  *         vlist = np.array(vlist)
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError("Invalid List!")
  *     else :
  */
-  __pyx_t_11 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 143, __pyx_L1_error)
+  __pyx_t_11 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 145, __pyx_L1_error)
   __pyx_t_4 = ((__pyx_t_11 == 0) != 0);
   if (unlikely(__pyx_t_4)) {
 
-    /* "My_AutoML/_utils/_c/_base.pyx":144
+    /* "InsurAutoML/_utils/_c/_base.pyx":146
  * 
  *     if len(vlist) == 0:
  *         raise ValueError("Invalid List!")             # <<<<<<<<<<<<<<
  *     else :
  *         # check whether multi-dimensional array
  */
-    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 144, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 146, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_Raise(__pyx_t_2, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __PYX_ERR(0, 144, __pyx_L1_error)
+    __PYX_ERR(0, 146, __pyx_L1_error)
 
-    /* "My_AutoML/_utils/_c/_base.pyx":143
+    /* "InsurAutoML/_utils/_c/_base.pyx":145
  *         vlist = np.array(vlist)
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
@@ -3073,7 +3073,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
  */
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":147
+  /* "InsurAutoML/_utils/_c/_base.pyx":149
  *     else :
  *         # check whether multi-dimensional array
  *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
@@ -3081,23 +3081,23 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
  *                 "Input is multi-dimensional array, return max location of the first dimension."
  */
   /*else*/ {
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_vlist), __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 147, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(((PyObject *)__pyx_v_vlist), __pyx_n_s_shape); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 149, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_11 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 147, __pyx_L1_error)
+    __pyx_t_11 = PyObject_Length(__pyx_t_2); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 149, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __pyx_t_4 = ((__pyx_t_11 > 1) != 0);
     if (__pyx_t_4) {
 
-      /* "My_AutoML/_utils/_c/_base.pyx":148
+      /* "InsurAutoML/_utils/_c/_base.pyx":150
  *         # check whether multi-dimensional array
  *         if len((<object> vlist).shape) > 1:
  *             warnings.warn(             # <<<<<<<<<<<<<<
  *                 "Input is multi-dimensional array, return max location of the first dimension."
  *             )
  */
-      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_warnings); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 148, __pyx_L1_error)
+      __Pyx_GetModuleGlobalName(__pyx_t_5, __pyx_n_s_warnings); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 150, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_5);
-      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_warn); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 148, __pyx_L1_error)
+      __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_warn); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 150, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_1);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
       __pyx_t_5 = NULL;
@@ -3112,12 +3112,12 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
       }
       __pyx_t_2 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_5, __pyx_kp_s_Input_is_multi_dimensional_array_2) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_kp_s_Input_is_multi_dimensional_array_2);
       __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 148, __pyx_L1_error)
+      if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 150, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_2);
       __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-      /* "My_AutoML/_utils/_c/_base.pyx":147
+      /* "InsurAutoML/_utils/_c/_base.pyx":149
  *     else :
  *         # check whether multi-dimensional array
  *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
@@ -3126,36 +3126,36 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
  */
     }
 
-    /* "My_AutoML/_utils/_c/_base.pyx":152
+    /* "InsurAutoML/_utils/_c/_base.pyx":154
  *             )
  * 
  *         return np.argmax(vlist, axis=0)             # <<<<<<<<<<<<<<
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_argmax); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 152, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_argmax); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 152, __pyx_L1_error)
+    __pyx_t_2 = PyTuple_New(1); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_INCREF(((PyObject *)__pyx_v_vlist));
     __Pyx_GIVEREF(((PyObject *)__pyx_v_vlist));
     PyTuple_SET_ITEM(__pyx_t_2, 0, ((PyObject *)__pyx_v_vlist));
-    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 152, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_axis, __pyx_int_0) < 0) __PYX_ERR(0, 152, __pyx_L1_error)
-    __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 152, __pyx_L1_error)
+    if (PyDict_SetItem(__pyx_t_5, __pyx_n_s_axis, __pyx_int_0) < 0) __PYX_ERR(0, 154, __pyx_L1_error)
+    __pyx_t_12 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_2, __pyx_t_5); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_12);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_12); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 152, __pyx_L1_error)
+    __pyx_t_7 = __Pyx_PyInt_As_int(__pyx_t_12); if (unlikely((__pyx_t_7 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 154, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
     __pyx_r = __pyx_t_7;
     goto __pyx_L0;
   }
 
-  /* "My_AutoML/_utils/_c/_base.pyx":135
+  /* "InsurAutoML/_utils/_c/_base.pyx":137
  * 
  * # Return location of maximum values
  * cdef int maxloc(             # <<<<<<<<<<<<<<
@@ -3175,7 +3175,7 @@ static int __pyx_f_9My_AutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_v
     __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
     __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
   __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
-  __Pyx_WriteUnraisable("My_AutoML._utils._c._base.maxloc", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
+  __Pyx_WriteUnraisable("InsurAutoML._utils._c._base.maxloc", __pyx_clineno, __pyx_lineno, __pyx_filename, 1, 0);
   __pyx_r = 0;
   goto __pyx_L2;
   __pyx_L0:;
@@ -4221,7 +4221,7 @@ static PyModuleDef_Slot __pyx_moduledef_slots[] = {
 static struct PyModuleDef __pyx_moduledef = {
     PyModuleDef_HEAD_INIT,
     "_base",
-    __pyx_k_File__base_pyx_Author_Panyi_Don, /* m_doc */
+    __pyx_k_File_Name__base_pyx_Author_Pany, /* m_doc */
   #if CYTHON_PEP489_MULTI_PHASE_INIT
     0, /* m_size */
   #else
@@ -4287,7 +4287,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 88, __pyx_L1_error)
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 90, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 945, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
@@ -4298,25 +4298,25 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "My_AutoML/_utils/_c/_base.pyx":72
+  /* "InsurAutoML/_utils/_c/_base.pyx":74
  *         return 0
  *     else:
  *         return np.random.randint(0, 2)             # <<<<<<<<<<<<<<
  * 
  * # Return random index of a list (unique values only)
  */
-  __pyx_tuple_ = PyTuple_Pack(2, __pyx_int_0, __pyx_int_2); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 72, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(2, __pyx_int_0, __pyx_int_2); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 74, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
-  /* "My_AutoML/_utils/_c/_base.pyx":123
+  /* "InsurAutoML/_utils/_c/_base.pyx":125
  * 
  *     if len(vlist) == 0:
  *         raise ValueError("Invalid List!")             # <<<<<<<<<<<<<<
  *     else :
  *         # check whether multi-dimensional array
  */
-  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_Invalid_List); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 123, __pyx_L1_error)
+  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_Invalid_List); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 125, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
@@ -4628,7 +4628,7 @@ if (!__Pyx_RefNanny) {
   Py_INCREF(__pyx_m);
   #else
   #if PY_MAJOR_VERSION < 3
-  __pyx_m = Py_InitModule4("_base", __pyx_methods, __pyx_k_File__base_pyx_Author_Panyi_Don, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
+  __pyx_m = Py_InitModule4("_base", __pyx_methods, __pyx_k_File_Name__base_pyx_Author_Pany, 0, PYTHON_API_VERSION); Py_XINCREF(__pyx_m);
   #else
   __pyx_m = PyModule_Create(&__pyx_moduledef);
   #endif
@@ -4646,14 +4646,14 @@ if (!__Pyx_RefNanny) {
   #if PY_MAJOR_VERSION < 3 && (__PYX_DEFAULT_STRING_ENCODING_IS_ASCII || __PYX_DEFAULT_STRING_ENCODING_IS_DEFAULT)
   if (__Pyx_init_sys_getdefaultencoding_params() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
-  if (__pyx_module_is_main_My_AutoML___utils___c___base) {
+  if (__pyx_module_is_main_InsurAutoML___utils___c___base) {
     if (PyObject_SetAttr(__pyx_m, __pyx_n_s_name, __pyx_n_s_main) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   }
   #if PY_MAJOR_VERSION >= 3
   {
     PyObject *modules = PyImport_GetModuleDict(); if (unlikely(!modules)) __PYX_ERR(0, 1, __pyx_L1_error)
-    if (!PyDict_GetItemString(modules, "My_AutoML._utils._c._base")) {
-      if (unlikely(PyDict_SetItemString(modules, "My_AutoML._utils._c._base", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
+    if (!PyDict_GetItemString(modules, "InsurAutoML._utils._c._base")) {
+      if (unlikely(PyDict_SetItemString(modules, "InsurAutoML._utils._c._base", __pyx_m) < 0)) __PYX_ERR(0, 1, __pyx_L1_error)
     }
   }
   #endif
@@ -4674,54 +4674,54 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "My_AutoML/_utils/_c/_base.pyx":42
+  /* "InsurAutoML/_utils/_c/_base.pyx":44
  * 
  * 
  * import warnings             # <<<<<<<<<<<<<<
  * import cython
  * import numpy as np
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_warnings, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_warnings, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_warnings, __pyx_t_1) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_warnings, __pyx_t_1) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":44
+  /* "InsurAutoML/_utils/_c/_base.pyx":46
  * import warnings
  * import cython
  * import numpy as np             # <<<<<<<<<<<<<<
  * import pandas as pd
  * 
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":45
+  /* "InsurAutoML/_utils/_c/_base.pyx":47
  * import cython
  * import numpy as np
  * import pandas as pd             # <<<<<<<<<<<<<<
  * 
  * cimport numpy as cnp
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_pandas, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_pandas, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_pd, __pyx_t_1) < 0) __PYX_ERR(0, 45, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_pd, __pyx_t_1) < 0) __PYX_ERR(0, 47, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "My_AutoML/_utils/_c/_base.pyx":49
+  /* "InsurAutoML/_utils/_c/_base.pyx":51
  * cimport numpy as cnp
  * 
  * cnp.import_array()             # <<<<<<<<<<<<<<
  * 
  * ctypedef cnp.npy_float FLOAT
  */
-  __pyx_t_2 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 49, __pyx_L1_error)
+  __pyx_t_2 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 51, __pyx_L1_error)
 
-  /* "My_AutoML/_utils/_c/_base.pyx":1
+  /* "InsurAutoML/_utils/_c/_base.pyx":1
  * """             # <<<<<<<<<<<<<<
- * File: _base.pyx
+ * File Name: _base.pyx
  * Author: Panyi Dong
  */
   __pyx_t_1 = __Pyx_PyDict_NewPresized(0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 1, __pyx_L1_error)
@@ -4744,11 +4744,11 @@ if (!__Pyx_RefNanny) {
   __Pyx_XDECREF(__pyx_t_1);
   if (__pyx_m) {
     if (__pyx_d) {
-      __Pyx_AddTraceback("init My_AutoML._utils._c._base", __pyx_clineno, __pyx_lineno, __pyx_filename);
+      __Pyx_AddTraceback("init InsurAutoML._utils._c._base", __pyx_clineno, __pyx_lineno, __pyx_filename);
     }
     Py_CLEAR(__pyx_m);
   } else if (!PyErr_Occurred()) {
-    PyErr_SetString(PyExc_ImportError, "init My_AutoML._utils._c._base");
+    PyErr_SetString(PyExc_ImportError, "init InsurAutoML._utils._c._base");
   }
   __pyx_L0:;
   __Pyx_RefNannyFinishContext();

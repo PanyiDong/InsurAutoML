@@ -16,4 +16,4 @@ htmlcov/*
 .pytest_cache/
 test.py
 *.so
-VERSION
+*.json

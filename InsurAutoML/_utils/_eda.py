@@ -1,17 +1,17 @@
 """
-File: _eda.py
+File Name: _eda.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_eda.py
-File Created: Sunday, 7th August 2022 10:52:06 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/_eda.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:51:03 pm
+Last Modified: Monday, 14th November 2022 9:24:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Union
 import os
 import glob
 import warnings
@@ -50,7 +51,14 @@ import matplotlib.pyplot as plt
 from InsurAutoML._utils._data import feature_type
 
 
-def EDA(X, y=None, plot=True, save=True, path="tmp/EDA", skip=True):
+def EDA(
+    X: Union[pd.DataFrame, np.ndarray],
+    y: Union[pd.DataFrame, np.ndarray] = None,
+    plot: bool = True,
+    save: bool = True,
+    path: str = "tmp/EDA",
+    skip: bool = True,
+) -> None:
 
     # Check if the path exists
     if not os.path.exists(path):

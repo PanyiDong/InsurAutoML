@@ -1,9 +1,10 @@
-name: NN
+name: build_nn
 on:
   - pull_request
+  - push
 jobs:
   run:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     env:
       OS: ubuntu-latest
       PYTHON: "3.9"
@@ -13,7 +14,8 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: 3.9
-      - name: "run tests (with neural network)"
+      - name: "run builds (with neural network)"
         run: |
+          python -m pip install --upgrade pip
           pip install pytest
           pip install -e .[nn]

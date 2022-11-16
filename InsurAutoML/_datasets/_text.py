@@ -1,17 +1,17 @@
 """
-File: __text.py
+File Name: _text.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_data/__text.py
-File Created: Saturday, 6th August 2022 10:49:48 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_datasets/_text.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 7th August 2022 9:52:21 am
+Last Modified: Monday, 14th November 2022 6:59:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from datasets import load_dataset
 

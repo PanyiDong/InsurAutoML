@@ -1,17 +1,17 @@
 """
-File: _ML.py
+File Name: _ML.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/_ML.py
-File Created: Tuesday, 5th April 2022 10:50:27 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_ML.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:39 pm
+Last Modified: Monday, 14th November 2022 7:51:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, List, Callable, Dict
 import numpy as np
 import pandas as pd
 
@@ -163,38 +166,38 @@ class AutoTabularRegressor(AutoTabularBase):
 
     def __init__(
         self,
-        n_estimators=5,
-        ensemble_strategy="stacking",
-        timeout=360,
-        max_evals=64,
-        allow_error_prop=0.1,
-        temp_directory="tmp",
-        delete_temp_after_terminate=False,
-        save=True,
-        model_name="model",
-        ignore_warning=True,
-        encoder="auto",
-        imputer="auto",
-        balancing="auto",
-        scaling="auto",
-        feature_selection="auto",
-        models="auto",
-        validation=True,
-        valid_size=0.15,
-        objective="MSE",
-        search_algo="HyperOpt",
-        search_algo_settings={},
-        search_scheduler="FIFOScheduler",
-        search_scheduler_settings={},
-        logger=["Logger"],
-        progress_reporter=None,
-        full_status=False,
-        verbose=1,
-        cpu_threads=None,
-        use_gpu=None,
-        reset_index=True,
-        seed=1,
-    ):
+        n_estimators: int = 5,
+        ensemble_strategy: str = "stacking",
+        timeout: int = 360,
+        max_evals: int = 64,
+        allow_error_prop: float = 0.1,
+        temp_directory: str = "tmp",
+        delete_temp_after_terminate: bool = False,
+        save: bool = True,
+        model_name: str = "model",
+        ignore_warning: bool = True,
+        encoder: Union[str, List[str]] = "auto",
+        imputer: Union[str, List[str]] = "auto",
+        balancing: Union[str, List[str]] = "auto",
+        scaling: Union[str, List[str]] = "auto",
+        feature_selection: Union[str, List[str]] = "auto",
+        models: Union[str, List[str]] = "auto",
+        validation: bool = True,
+        valid_size: float = 0.15,
+        objective: Union[str, Callable] = "MSE",
+        search_algo: str = "HyperOpt",
+        search_algo_settings: Dict = {},
+        search_scheduler: str = "FIFOScheduler",
+        search_scheduler_settings: Dict = {},
+        logger: Union[str, List[str]] = ["Logger"],
+        progress_reporter: str = None,
+        full_status: bool = False,
+        verbose: int = 1,
+        cpu_threads: int = None,
+        use_gpu: bool = None,
+        reset_index: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
@@ -264,7 +267,9 @@ class AutoTabularRegressor(AutoTabularBase):
             seed=self.seed,
         )
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> AutoTabularRegressor:
 
         super().fit(X, y)
 
@@ -272,7 +277,7 @@ class AutoTabularRegressor(AutoTabularBase):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         return super().predict(X)
 
@@ -395,38 +400,38 @@ class AutoTabularClassifier(AutoTabularBase):
 
     def __init__(
         self,
-        n_estimators=5,
-        ensemble_strategy="stacking",
-        timeout=360,
-        max_evals=64,
-        allow_error_prop=0.1,
-        temp_directory="tmp",
-        delete_temp_after_terminate=False,
-        save=True,
-        model_name="model",
-        ignore_warning=True,
-        encoder="auto",
-        imputer="auto",
-        balancing="auto",
-        scaling="auto",
-        feature_selection="auto",
-        models="auto",
-        validation=True,
-        valid_size=0.15,
-        objective="accuracy",
-        search_algo="HyperOpt",
-        search_algo_settings={},
-        search_scheduler="FIFOScheduler",
-        search_scheduler_settings={},
-        logger=["Logger"],
-        progress_reporter=None,
-        full_status=False,
-        verbose=1,
-        cpu_threads=None,
-        use_gpu=None,
-        reset_index=True,
-        seed=1,
-    ):
+        n_estimators: int = 5,
+        ensemble_strategy: str = "stacking",
+        timeout: int = 360,
+        max_evals: int = 64,
+        allow_error_prop: float = 0.1,
+        temp_directory: str = "tmp",
+        delete_temp_after_terminate: bool = False,
+        save: bool = True,
+        model_name: str = "model",
+        ignore_warning: bool = True,
+        encoder: Union[str, List[str]] = "auto",
+        imputer: Union[str, List[str]] = "auto",
+        balancing: Union[str, List[str]] = "auto",
+        scaling: Union[str, List[str]] = "auto",
+        feature_selection: Union[str, List[str]] = "auto",
+        models: Union[str, List[str]] = "auto",
+        validation: bool = True,
+        valid_size: float = 0.15,
+        objective: Union[str, Callable] = "accuracy",
+        search_algo: str = "HyperOpt",
+        search_algo_settings: Dict = {},
+        search_scheduler: str = "FIFOScheduler",
+        search_scheduler_settings: Dict = {},
+        logger: Union[str, List[str]] = ["Logger"],
+        progress_reporter: str = None,
+        full_status: bool = False,
+        verbose: int = 1,
+        cpu_threads: int = None,
+        use_gpu: bool = None,
+        reset_index: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
@@ -496,7 +501,9 @@ class AutoTabularClassifier(AutoTabularBase):
             seed=self.seed,
         )
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> AutoTabularClassifier:
 
         super().fit(X, y)
 
@@ -504,7 +511,7 @@ class AutoTabularClassifier(AutoTabularBase):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         return super().predict(X)
 
@@ -632,38 +639,38 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
     def __init__(
         self,
-        n_estimators=5,
-        ensemble_strategy="stacking",
-        timeout=360,
-        max_evals=64,
-        allow_error_prop=0.1,
-        temp_directory="tmp",
-        delete_temp_after_terminate=False,
-        save=True,
-        model_name="model",
-        ignore_warning=True,
-        encoder="auto",
-        imputer="auto",
-        balancing="auto",
-        scaling="auto",
-        feature_selection="auto",
-        models="auto",
-        validation=True,
-        valid_size=0.15,
-        objective=None,
-        search_algo="HyperOpt",
-        search_algo_settings={},
-        search_scheduler="FIFOScheduler",
-        search_scheduler_settings={},
-        logger=["Logger"],
-        progress_reporter=None,
-        full_status=False,
-        verbose=1,
-        cpu_threads=None,
-        use_gpu=None,
-        reset_index=True,
-        seed=1,
-    ):
+        n_estimators: int = 5,
+        ensemble_strategy: str = "stacking",
+        timeout: int = 360,
+        max_evals: int = 64,
+        allow_error_prop: float = 0.1,
+        temp_directory: str = "tmp",
+        delete_temp_after_terminate: bool = False,
+        save: bool = True,
+        model_name: str = "model",
+        ignore_warning: bool = True,
+        encoder: Union[str, List[str]] = "auto",
+        imputer: Union[str, List[str]] = "auto",
+        balancing: Union[str, List[str]] = "auto",
+        scaling: Union[str, List[str]] = "auto",
+        feature_selection: Union[str, List[str]] = "auto",
+        models: Union[str, List[str]] = "auto",
+        validation: bool = True,
+        valid_size: float = 0.15,
+        objective: Union[str, Callable] = None,
+        search_algo: str = "HyperOpt",
+        search_algo_settings: Dict = {},
+        search_scheduler: str = "FIFOScheduler",
+        search_scheduler_settings: Dict = {},
+        logger: Union[str, List[str]] = ["Logger"],
+        progress_reporter: str = None,
+        full_status: bool = False,
+        verbose: int = 1,
+        cpu_threads: int = None,
+        use_gpu: bool = None,
+        reset_index: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
@@ -698,11 +705,17 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit(self, X, y=None):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
+    ) -> AutoTabular:
 
-        if isinstance(y, pd.DataFrame) or isinstance(y, np.ndarray):
+        if (
+            isinstance(y, pd.DataFrame)
+            or isinstance(y, pd.Series)
+            or isinstance(y, np.ndarray)
+        ):
             self._type = type_of_task(y)
-        elif y == None:
+        elif not y:
             self._type = "Unsupervised"
 
         if self._type in ["binary", "multiclass"]:  # assign classification tasks
@@ -785,7 +798,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         if self.model:
             return self.model.predict(X)

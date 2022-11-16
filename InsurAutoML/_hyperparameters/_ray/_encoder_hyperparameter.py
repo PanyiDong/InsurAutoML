@@ -1,17 +1,17 @@
 """
-File: _encoder_hyperparameter.py
+File Name: _encoder_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_ray/_encoder_hyperparameter.py
-File Created: Wednesday, 6th April 2022 10:06:01 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hyperparameters/_ray/_encoder_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 31st July 2022 8:19:10 pm
+Last Modified: Monday, 14th November 2022 8:03:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,11 +39,25 @@ SOFTWARE.
 """
 
 from ray import tune
+from InsurAutoML._utils._base import format_hyper_dict
+
+
+DATAENCODING = {
+    "encoder": "DataEncoding",
+    "dummy_coding": tune.choice([True, False]),
+}
 
 # encoder
+# initialize the hyperparameter dictionary
 encoder_hyperparameter = [
-    {
-        "encoder_1": "DataEncoding",
-        "DataEncoding_dummy_coding": tune.choice([True, False]),
-    },
+    DATAENCODING,
 ]
+
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# encoder_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "encoder")
+#     for order, dict in enumerate(encoder_hyperparameter)
+# ]
+
+if __name__ == "__main__":
+    pass

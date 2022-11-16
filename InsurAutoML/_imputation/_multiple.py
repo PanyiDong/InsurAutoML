@@ -1,17 +1,17 @@
 """
-File: _multiple.py
+File Name: _multiple.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_imputation/_multiple.py
-File Created: Tuesday, 5th April 2022 11:50:03 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_imputation/_multiple.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:24 pm
+Last Modified: Monday, 14th November 2022 8:13:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,10 +38,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, List
 import numpy as np
 import pandas as pd
 import warnings
 
+from InsurAutoML._constant import UNI_CLASS
 from InsurAutoML._utils import random_index, random_list
 from ._base import SimpleImputer
 
@@ -63,14 +67,16 @@ class ExpectationMaximization:
     seed: random seed, default = 1
     """
 
-    def __init__(self, iterations=50, threshold=0.01, seed=1):
+    def __init__(
+        self, iterations: int = 50, threshold: float = 0.01, seed: int = 1
+    ) -> None:
         self.iterations = iterations
         self.threshold = threshold
         self.seed = seed
 
         self._fitted = False  # whether the imputer has been fitted
 
-    def fill(self, X):
+    def fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         self.iterations = int(self.iterations)
         self.threshold = float(self.threshold)
@@ -85,7 +91,7 @@ class ExpectationMaximization:
 
         return _X
 
-    def _fill(self, X):
+    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         features = list(X.columns)
         np.random.seed(self.seed)
@@ -111,7 +117,7 @@ class ExpectationMaximization:
 
         return X
 
-    def _EM_iter(self, X, index, column):
+    def _EM_iter(self, X: pd.DataFrame, index: Union[int, str], column: str):
 
         _mark = 1
         for _ in range(self.iterations):
@@ -150,12 +156,12 @@ class KNNImputer:
 
     def __init__(
         self,
-        n_neighbors=None,
-        method="mean",
-        fold=10,
-        uni_class=31,
-        seed=1,
-    ):
+        n_neighbors: int = None,
+        method: str = "mean",
+        fold: int = 10,
+        uni_class: int = UNI_CLASS,
+        seed: int = 1,
+    ) -> None:
         self.n_neighbors = n_neighbors
         self.method = method
         self.fold = fold
@@ -164,7 +170,7 @@ class KNNImputer:
 
         self._fitted = False  # whether the imputer has been fitted
 
-    def fill(self, X):
+    def fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         features = list(X.columns)
         for _column in features:
@@ -181,7 +187,7 @@ class KNNImputer:
 
         return _X
 
-    def _fill(self, X):
+    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         features = list(X.columns)
 
@@ -234,8 +240,8 @@ class KNNImputer:
         return X
 
     def _cross_validation_knn(
-        self, _train, _test, random_features
-    ):  # cross validation to return error
+        self, _train: pd.DataFrame, _test: pd.DataFrame, random_features: List[str]
+    ) -> List[Union[float, np.ndarray]]:  # cross validation to return error
 
         from sklearn.neighbors import KNeighborsRegressor
 
@@ -264,7 +270,9 @@ class KNNImputer:
 
         return _err
 
-    def _knn_impute(self, X, random_features, k):
+    def _knn_impute(
+        self, X: pd.DataFrame, random_features: List[str], k: int
+    ) -> pd.DataFrame:
 
         from sklearn.neighbors import KNeighborsRegressor
 
@@ -303,14 +311,16 @@ class MissForestImputer:
     uni_class: column with unique classes less than uni_class will be considered as categorical, default = 31
     """
 
-    def __init__(self, threshold=0, method="mean", uni_class=31):
+    def __init__(
+        self, threshold: float = 0, method: str = "mean", uni_class: int = UNI_CLASS
+    ) -> None:
         self.threshold = threshold
         self.method = method
         self.uni_class = uni_class
 
         self._fitted = False  # whether the imputer has been fitted
 
-    def _RFImputer(self, X):
+    def _RFImputer(self, X: pd.DataFrame) -> pd.DataFrame:
 
         from sklearn.ensemble import RandomForestRegressor
 
@@ -340,7 +350,7 @@ class MissForestImputer:
         return X
 
     # calcualte the difference between data newly imputed and before imputation
-    def _delta_cal(self, X_new, X_old):
+    def _delta_cal(self, X_new: pd.DataFrame, X_old: pd.DataFrame) -> float:
 
         if (X_new.shape[0] != X_old.shape[0]) or (X_new.shape[1] != X_old.shape[1]):
             raise ValueError("New and old data must have same size, get different!")
@@ -375,7 +385,7 @@ class MissForestImputer:
         elif len(_categorical_features) > 0:
             return _F_nume / _F_deno
 
-    def fill(self, X):
+    def fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         _X = X.copy(deep=True)
         if _X.isnull().values.any():
@@ -387,7 +397,7 @@ class MissForestImputer:
 
         return _X
 
-    def _fill(self, X):
+    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         features = list(X.columns)
 
@@ -452,14 +462,14 @@ class MICE:
     every random draw from the minority class will increase the random seed by 1
     """
 
-    def __init__(self, cycle=10, method="mean", seed=1):
+    def __init__(self, cycle: int = 10, method: str = "mean", seed: int = 1) -> None:
         self.method = method
         self.cycle = cycle
         self.seed = seed
 
         self._fitted = False  # whether the imputer has been fitted
 
-    def fill(self, X):
+    def fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         self.cycle = int(self.cycle)
 
@@ -474,7 +484,7 @@ class MICE:
 
         return _X
 
-    def _fill(self, X):
+    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
 
         features = list(X.columns)
 
@@ -516,7 +526,9 @@ class MICE:
 
         return X
 
-    def _cycle_impute(self, X, random_features):
+    def _cycle_impute(
+        self, X: pd.DataFrame, random_features: List[str]
+    ) -> pd.DataFrame:
 
         from sklearn.linear_model import LinearRegression, LogisticRegression, LassoCV
 

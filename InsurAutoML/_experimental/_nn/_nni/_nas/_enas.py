@@ -1,17 +1,17 @@
 """
-File: _enas.py
+File Name: _enas.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_nn/_nni/_nas/_enas.py
-File Created: Wednesday, 20th July 2022 2:48:16 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_enas.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 6th August 2022 10:45:57 pm
+Last Modified: Monday, 14th November 2022 8:26:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from nni.nas.pytorch import mutables
+import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii.oneshot.pytorch.random import PathSamplingInputChoice
 
 from ._ops import (
@@ -67,7 +67,7 @@ from ._utils import how_to_init
 # CNN related components/structures
 
 
-class CNNCell(nn.Module):
+class CNNCell(nninn.Module):
     def __init__(
         self,
         cellName,
@@ -76,14 +76,14 @@ class CNNCell(nn.Module):
     ):
         super().__init__()
 
-        self.input = mutables.InputChoice(
+        self.input = nninn.InputChoice(
             choose_from=previousLabel,
             n_chosen=1,
             return_mask=True,
             key=cellName + "_input",
         )
 
-        self.operation = mutables.LayerChoice(
+        self.operation = nninn.LayerChoice(
             [
                 SepConvBN(channel, channel, kernel_size=3, stride=1),
                 SepConvBN(channel, channel, kernel_size=5, stride=2),
@@ -107,7 +107,7 @@ class CNNCell(nn.Module):
             return self.operation(_input), _mask
 
 
-class CNNNode(mutables.MutableScope):
+class CNNNode(nninn.MutableScope):
     def __init__(
         self,
         nodeName,
@@ -151,7 +151,7 @@ class CNNBaseLayer(nn.Module):
         # name of the node, whether reduction is used
         name_prefix = "reduced" if reduction else "normal"
         # node labels initialization
-        node_labels = [mutables.InputChoice.NO_KEY, mutables.InputChoice.NO_KEY]
+        node_labels = [nninn.InputChoice.NO_KEY, nninn.InputChoice.NO_KEY]
 
         # initialize nodes
         self.nodes = nn.ModuleList()
@@ -317,7 +317,7 @@ class CNNBaseSpace(nn.Module):
 # CNN full space
 
 
-class CNNFullLayer(mutables.MutableScope):
+class CNNFullLayer(nninn.MutableScope):
     def __init__(
         self,
         key,
@@ -331,7 +331,7 @@ class CNNFullLayer(mutables.MutableScope):
         self.out_channels = out_channels
 
         # layer choices
-        self.layer = mutables.LayerChoice(
+        self.layer = nninn.LayerChoice(
             [
                 FullConvBN(
                     in_channels,
@@ -376,7 +376,7 @@ class CNNFullLayer(mutables.MutableScope):
 
         # whether to skip connection from previous layer
         if len(previous_labels) > 0:
-            self.skipconnect = mutables.InputChoice(
+            self.skipconnect = nninn.InputChoice(
                 choose_from=previous_labels, n_chosen=None
             )
         else:
@@ -490,7 +490,7 @@ class RNNCell(nn.Module):
     ):
         super().__init__()
 
-        self.input = mutables.InputChoice(
+        self.input = nninn.InputChoice(
             choose_from=previousLabel,
             n_chosen=1,
             return_mask=True,
@@ -501,7 +501,7 @@ class RNNCell(nn.Module):
         self.hiddenWeight = nn.Parameter(torch.Tensor(outputSize, outputSize))
         self.bias = nn.Parameter(torch.Tensor(outputSize))
 
-        self.operation = mutables.LayerChoice(
+        self.operation = nninn.LayerChoice(
             [
                 nn.ReLU(),
                 nn.Sigmoid(),
@@ -537,7 +537,7 @@ class RNNCell(nn.Module):
             return (self.operation(output), hidden), mask
 
 
-class RNNNode(mutables.MutableScope):
+class RNNNode(nninn.MutableScope):
     def __init__(
         self,
         nodeName,

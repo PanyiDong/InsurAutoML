@@ -1,17 +1,17 @@
 """
-File: _imputer_hyperparameter.py
+File Name: _imputer_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_ray/_imputer_hyperparameter.py
-File Created: Wednesday, 6th April 2022 10:06:01 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hyperparameters/_ray/_imputer_hyperparameter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:24:14 pm
+Last Modified: Monday, 14th November 2022 8:03:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,32 +39,71 @@ SOFTWARE.
 """
 
 from ray import tune
+from InsurAutoML._utils._base import format_hyper_dict
+
+SIMPLEIMPUTER = {
+    "imputer": "SimpleImputer",
+    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+}
+DUMMYIMPUTER = {"imputer": "DummyImputer"}
+JOINTIMPUTER = {"imputer": "JointImputer"}
+EXPECTATIONMAXIMIZATION = {
+    "imputer": "ExpectationMaximization",
+    "iterations": tune.qrandint(10, 100, 1),
+    "threshold": tune.uniform(1e-5, 1),
+}
+KNNIMPUTER = {
+    "imputer": "KNNImputer",
+    "n_neighbors": tune.qrandint(1, 15, 1),
+    "fold": tune.qrandint(5, 15, 1),
+}
+MISSFORESTIMPUTER = {
+    "imputer": "MissForestImputer",
+    "threshold": tune.loguniform(1e-5, 10),
+    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+}
+MICE = {
+    "imputer": "MICE",
+    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+    "cycle": tune.qrandint(5, 20, 1),
+}
+GAIN = {
+    "imputer": "GAIN",
+}
+AAIKNN = {
+    "imputer": "AAI_kNN",
+}
+KMI = {
+    "imputer": "KMI",
+}
+CMI = {
+    "imputer": "CMI",
+}
+KPROTOTYPENN = {
+    "imputer": "k_Prototype_NN",
+}
 
 # imputer
 imputer_hyperparameter = [
-    {
-        "imputer_1": "SimpleImputer",
-        "SimpleImputer_method": tune.choice(
-            ["mean", "zero", "median", "most frequent"]
-        ),
-    },
-    {"imputer_2": "DummyImputer"},
-    {"imputer_3": "JointImputer"},
-    {
-        "imputer_4": "ExpectationMaximization",
-        "ExpectationMaximization_iterations": tune.qrandint(10, 100, 1),
-        "ExpectationMaximization_threshold": tune.uniform(1e-5, 1),
-    },
-    {
-        "imputer_5": "KNNImputer",
-        "KNNImputer_n_neighbors": tune.qrandint(1, 15, 1),
-        "KNNImputer_fold": tune.qrandint(5, 15, 1),
-    },
-    {"imputer_6": "MissForestImputer"},
-    {"imputer_7": "MICE", "MICE_cycle": tune.qrandint(5, 20, 1)},
-    {"imputer_8": "GAIN"},
-    # {"imputer_9": "AAI_kNN"},
-    # {"imputer_10": "KMI"},
-    # {"imputer_11": "CMI"},
-    # {"imputer_12": "k_Prototype_NN"},
+    SIMPLEIMPUTER,
+    DUMMYIMPUTER,
+    JOINTIMPUTER,
+    EXPECTATIONMAXIMIZATION,
+    KNNIMPUTER,
+    MISSFORESTIMPUTER,
+    MICE,
+    GAIN,
+    # AAIKNN, # this methods are not efficient enough
+    # KMI,
+    # CMI,
+    # KPROTOTYPENN,
 ]
+
+# deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
+# imputer_hyperparameter = [
+#     format_hyper_dict(dict, order + 1, ref = "imputer")
+#     for order, dict in enumerate(imputer_hyperparameter)
+# ]
+
+if __name__ == "__main__":
+    pass

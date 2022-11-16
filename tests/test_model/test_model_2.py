@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
+Project: InsurAutoML
+Latest Version: 0.2.3
 Relative Path: /tests/test_model/test_model_2.py
-File Created: Sunday, 25th September 2022 11:31:02 pm
+File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:52:08 pm
+Last Modified: Wednesday, 16th November 2022 11:43:50 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -65,20 +65,7 @@ def test_add_classifier():
 
 def test_add_regressor():
 
-    # from My_AutoML._model._sklearn import HistGradientBoostingRegressor
-    import importlib
-
-    # if autosklearn in installed, use autosklearn version for testing
-    # else, use sklearn version for testing
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is None:
-        from InsurAutoML._model._sklearn import LibSVM_SVR, MLPRegressor, SGDRegressor
-    else:
-        from InsurAutoML._model._autosklearn import (
-            LibSVM_SVR,
-            MLPRegressor,
-            SGDRegressor,
-        )
+    from InsurAutoML._model import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -100,7 +87,6 @@ def test_add_regressor():
     # ), "Model HistGradientBoostingRegressor has not been fitted."
 
     model = LibSVM_SVR()
-
     model.fit(X, y)
     y_pred = model.predict(X)
     try:

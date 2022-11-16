@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/__init__.py
-File Created: Friday, 8th April 2022 9:04:05 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/__init__.py
+File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 1st May 2022 11:42:24 am
+Last Modified: Tuesday, 15th November 2022 4:18:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -60,148 +60,114 @@ problem solved
 
 import importlib
 
+# Update: Nov 15, 2022
+# autosklearn decrypted, no need to consider it
 # check whether auto-sklearn has been installed
 # if not, import the compatible models from sklearn
-autosklearn_spec = importlib.util.find_spec("autosklearn")
-sklearn_spec = importlib.util.find_spec("sklearn")
-if autosklearn_spec is not None:
-    from ._autosklearn import (
-        # autosklearn classifiers
-        AdaboostClassifier,
-        BernoulliNB,
-        DecisionTreeClassifier,
-        ExtraTreesClassifier,
-        GaussianNB,
-        HistGradientBoostingClassifier,
-        KNearestNeighborsClassifier,
-        LDA,
-        LibLinear_SVC,
-        LibSVM_SVC,
-        MLPClassifier,
-        MultinomialNB,
-        PassiveAggressive,
-        QDA,
-        RandomForestClassifier,
-        SGDClassifier,
-        # autosklearn regressors
-        AdaboostRegressor,
-        ARDRegression,
-        DecisionTreeRegressor,
-        ExtraTreesRegressor,
-        GaussianProcess,
-        HistGradientBoostingRegressor,
-        KNearestNeighborsRegressor,
-        LibLinear_SVR,
-        LibSVM_SVR,
-        MLPRegressor,
-        RandomForestRegressor,
-        SGDRegressor,
-    )
+# autosklearn_spec = importlib.util.find_spec("autosklearn")
+# sklearn_spec = importlib.util.find_spec("sklearn")
+# if autosklearn_spec is not None:
+#     from ._autosklearn import (
+#         # autosklearn classifiers
+#         AdaboostClassifier,
+#         BernoulliNB,
+#         DecisionTreeClassifier,
+#         ExtraTreesClassifier,
+#         GaussianNB,
+#         HistGradientBoostingClassifier,
+#         KNearestNeighborsClassifier,
+#         LDA,
+#         LibLinear_SVC,
+#         LibSVM_SVC,
+#         MLPClassifier,
+#         MultinomialNB,
+#         PassiveAggressive,
+#         QDA,
+#         RandomForestClassifier,
+#         SGDClassifier,
+#         # autosklearn regressors
+#         AdaboostRegressor,
+#         ARDRegression,
+#         DecisionTreeRegressor,
+#         ExtraTreesRegressor,
+#         GaussianProcess,
+#         HistGradientBoostingRegressor,
+#         KNearestNeighborsRegressor,
+#         LibLinear_SVR,
+#         LibSVM_SVR,
+#         MLPRegressor,
+#         RandomForestRegressor,
+#         SGDRegressor,
+#     )
 
-    # classification models from autosklearn
-    classifiers["AdaboostClassifier"] = AdaboostClassifier
-    classifiers["BernoulliNB"] = BernoulliNB
-    classifiers["DecisionTree"] = DecisionTreeClassifier
-    classifiers["ExtraTreesClassifier"] = ExtraTreesClassifier
-    classifiers["GaussianNB"] = GaussianNB
-    classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
-    classifiers["KNearestNeighborsClassifier"] = KNearestNeighborsClassifier
-    classifiers["LDA"] = LDA
-    classifiers["LibLinear_SVC"] = LibLinear_SVC
-    classifiers["LibSVM_SVC"] = LibSVM_SVC
-    classifiers["MLPClassifier"] = MLPClassifier
-    classifiers["MultinomialNB"] = MultinomialNB
-    classifiers["PassiveAggressive"] = PassiveAggressive
-    classifiers["QDA"] = QDA
-    classifiers["RandomForest"] = RandomForestClassifier
-    classifiers["SGD"] = SGDClassifier
+#     # classification models from autosklearn
+#     classifiers["AdaboostClassifier"] = AdaboostClassifier
+#     classifiers["BernoulliNB"] = BernoulliNB
+#     classifiers["DecisionTree"] = DecisionTreeClassifier
+#     classifiers["ExtraTreesClassifier"] = ExtraTreesClassifier
+#     classifiers["GaussianNB"] = GaussianNB
+#     classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
+#     classifiers["KNearestNeighborsClassifier"] = KNearestNeighborsClassifier
+#     classifiers["LDA"] = LDA
+#     classifiers["LibLinear_SVC"] = LibLinear_SVC
+#     classifiers["LibSVM_SVC"] = LibSVM_SVC
+#     classifiers["MLPClassifier"] = MLPClassifier
+#     classifiers["MultinomialNB"] = MultinomialNB
+#     classifiers["PassiveAggressive"] = PassiveAggressive
+#     classifiers["QDA"] = QDA
+#     classifiers["RandomForest"] = RandomForestClassifier
+#     classifiers["SGD"] = SGDClassifier
 
-    # regression models from autosklearn
-    regressors["AdaboostRegressor"] = AdaboostRegressor
-    regressors["ARDRegression"] = ARDRegression
-    regressors["DecisionTree"] = DecisionTreeRegressor
-    regressors["ExtraTreesRegressor"] = ExtraTreesRegressor
-    regressors["GaussianProcess"] = GaussianProcess
-    regressors["HistGradientBoostingRegressor"] = HistGradientBoostingRegressor
-    regressors["KNearestNeighborsRegressor"] = KNearestNeighborsRegressor
-    regressors["LibLinear_SVR"] = LibLinear_SVR
-    regressors["LibSVM_SVR"] = LibSVM_SVR
-    regressors["MLPRegressor"] = MLPRegressor
-    regressors["RandomForest"] = RandomForestRegressor
-    regressors["SGD"] = SGDRegressor
+#     # regression models from autosklearn
+#     regressors["AdaboostRegressor"] = AdaboostRegressor
+#     regressors["ARDRegression"] = ARDRegression
+#     regressors["DecisionTree"] = DecisionTreeRegressor
+#     regressors["ExtraTreesRegressor"] = ExtraTreesRegressor
+#     regressors["GaussianProcess"] = GaussianProcess
+#     regressors["HistGradientBoostingRegressor"] = HistGradientBoostingRegressor
+#     regressors["KNearestNeighborsRegressor"] = KNearestNeighborsRegressor
+#     regressors["LibLinear_SVR"] = LibLinear_SVR
+#     regressors["LibSVM_SVR"] = LibSVM_SVR
+#     regressors["MLPRegressor"] = MLPRegressor
+#     regressors["RandomForest"] = RandomForestRegressor
+#     regressors["SGD"] = SGDRegressor
 
-# if sklearn is also not installed, raise an error
-elif sklearn_spec is None:
-    raise ImportError("Neither auto-sklearn nor sklearn is installed.")
-# else import the compatible models from sklearn
-else:
-    from ._sklearn import (
-        # sklearn classifiers
-        AdaboostClassifier,
-        BernoulliNB,
-        DecisionTreeClassifier,
-        ExtraTreesClassifier,
-        GaussianNB,
-        HistGradientBoostingClassifier,
-        KNearestNeighborsClassifier,
-        LDA,
-        LibLinear_SVC,
-        LibSVM_SVC,
-        MLPClassifier,
-        MultinomialNB,
-        PassiveAggressive,
-        QDA,
-        RandomForestClassifier,
-        SGDClassifier,
-        # sklearn regressors
-        AdaboostRegressor,
-        ARDRegression,
-        DecisionTreeRegressor,
-        ExtraTreesRegressor,
-        GaussianProcess,
-        HistGradientBoostingRegressor,
-        KNearestNeighborsRegressor,
-        LibLinear_SVR,
-        LibSVM_SVR,
-        MLPRegressor,
-        RandomForestRegressor,
-        SGDRegressor,
-    )
-
-    # classification models from autosklearn
-    classifiers["AdaboostClassifier"] = AdaboostClassifier
-    classifiers["BernoulliNB"] = BernoulliNB
-    classifiers["DecisionTree"] = DecisionTreeClassifier
-    classifiers["ExtraTreesClassifier"] = ExtraTreesClassifier
-    classifiers["GaussianNB"] = GaussianNB
-    classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
-    classifiers["KNearestNeighborsClassifier"] = KNearestNeighborsClassifier
-    classifiers["LDA"] = LDA
-    classifiers["LibLinear_SVC"] = LibLinear_SVC
-    classifiers["LibSVM_SVC"] = LibSVM_SVC
-    classifiers["MLPClassifier"] = MLPClassifier
-    classifiers["MultinomialNB"] = MultinomialNB
-    classifiers["PassiveAggressive"] = PassiveAggressive
-    classifiers["QDA"] = QDA
-    classifiers["RandomForest"] = RandomForestClassifier
-    classifiers["SGD"] = SGDClassifier
-
-    # regression models from autosklearn
-    regressors["AdaboostRegressor"] = AdaboostRegressor
-    regressors["ARDRegression"] = ARDRegression
-    regressors["DecisionTree"] = DecisionTreeRegressor
-    regressors["ExtraTreesRegressor"] = ExtraTreesRegressor
-    regressors["GaussianProcess"] = GaussianProcess
-    regressors["HistGradientBoostingRegressor"] = HistGradientBoostingRegressor
-    regressors["KNearestNeighborsRegressor"] = KNearestNeighborsRegressor
-    regressors["LibLinear_SVR"] = LibLinear_SVR
-    regressors["LibSVM_SVR"] = LibSVM_SVR
-    regressors["MLPRegressor"] = MLPRegressor
-    regressors["RandomForest"] = RandomForestRegressor
-    regressors["SGD"] = SGDRegressor
-
-# additional models from sklearn
+# # if sklearn is also not installed, raise an error
+# elif sklearn_spec is None:
+#     raise ImportError("Neither auto-sklearn nor sklearn is installed.")
+# # else import the compatible models from sklearn
+# else:
 from ._sklearn import (
+    # sklearn classifiers
+    AdaboostClassifier,
+    BernoulliNB,
+    DecisionTreeClassifier,
+    ExtraTreesClassifier,
+    GaussianNB,
+    HistGradientBoostingClassifier,
+    KNearestNeighborsClassifier,
+    LDA,
+    LibLinear_SVC,
+    LibSVM_SVC,
+    MLPClassifier,
+    MultinomialNB,
+    PassiveAggressive,
+    QDA,
+    RandomForestClassifier,
+    SGDClassifier,
+    # sklearn regressors
+    AdaboostRegressor,
+    ARDRegression,
+    DecisionTreeRegressor,
+    ExtraTreesRegressor,
+    GaussianProcess,
+    HistGradientBoostingRegressor,
+    KNearestNeighborsRegressor,
+    LibLinear_SVR,
+    LibSVM_SVR,
+    MLPRegressor,
+    RandomForestRegressor,
+    SGDRegressor,
     # sklearn classifiers
     LogisticRegression,
     # ComplementNB,
@@ -218,12 +184,40 @@ from ._sklearn import (
 )
 
 # classification models from sklearn
+classifiers["AdaboostClassifier"] = AdaboostClassifier
+classifiers["BernoulliNB"] = BernoulliNB
+classifiers["DecisionTree"] = DecisionTreeClassifier
+classifiers["ExtraTreesClassifier"] = ExtraTreesClassifier
+classifiers["GaussianNB"] = GaussianNB
+classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
+classifiers["KNearestNeighborsClassifier"] = KNearestNeighborsClassifier
+classifiers["LDA"] = LDA
+classifiers["LibLinear_SVC"] = LibLinear_SVC
+classifiers["LibSVM_SVC"] = LibSVM_SVC
+classifiers["MLPClassifier"] = MLPClassifier
+classifiers["MultinomialNB"] = MultinomialNB
+classifiers["PassiveAggressive"] = PassiveAggressive
+classifiers["QDA"] = QDA
+classifiers["RandomForest"] = RandomForestClassifier
+classifiers["SGD"] = SGDClassifier
 classifiers["LogisticRegression"] = LogisticRegression
 # classifiers["ComplementNB"] = ComplementNB
 # classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
 classifiers["GradientBoostingClassifier"] = GradientBoostingClassifier
 
 # regression models from sklearn
+regressors["AdaboostRegressor"] = AdaboostRegressor
+regressors["ARDRegression"] = ARDRegression
+regressors["DecisionTree"] = DecisionTreeRegressor
+regressors["ExtraTreesRegressor"] = ExtraTreesRegressor
+regressors["GaussianProcess"] = GaussianProcess
+regressors["HistGradientBoostingRegressor"] = HistGradientBoostingRegressor
+regressors["KNearestNeighborsRegressor"] = KNearestNeighborsRegressor
+regressors["LibLinear_SVR"] = LibLinear_SVR
+regressors["LibSVM_SVR"] = LibSVM_SVR
+regressors["MLPRegressor"] = MLPRegressor
+regressors["RandomForest"] = RandomForestRegressor
+regressors["SGD"] = SGDRegressor
 regressors["LinearRegression"] = LinearRegression
 regressors["Lasso"] = Lasso
 regressors["RidgeRegression"] = Ridge

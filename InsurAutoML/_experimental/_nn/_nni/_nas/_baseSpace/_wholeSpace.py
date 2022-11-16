@@ -1,17 +1,17 @@
 """
-File: _baseModel.py
+File Name: _wholeSpace.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_nas/_nninn/_baseModel.py
-File Created: Sunday, 17th July 2022 9:21:02 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_baseSpace/_wholeSpace.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 11th October 2022 3:40:54 pm
+Last Modified: Monday, 14th November 2022 8:26:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,9 +42,11 @@ import nni
 import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper
 
-from ._utils import ACTIVATIONS, RNN_TYPES, how_to_init
+from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
 
 
+##################################################################################################
+# MLP Space
 @model_wrapper
 class MLPBaseSpace(nninn.Module):
     def __init__(
@@ -114,6 +116,79 @@ class MLPBaseSpace(nninn.Module):
         for m in self.modules():
             if isinstance(m, nninn.Linear):
                 how_to_init(m, how)
+
+
+@model_wrapper
+class MLPLintSpace(nninn.Module):
+    def __init__(
+        self,
+        inputSize,
+        outputSize,
+    ):
+        super().__init__()
+
+        # initialize the structure of the neural network
+        self.net = []
+
+        # add input layer
+        self.net.append(
+            nninn.Linear(
+                inputSize,
+                nninn.ValueChoice([4, 8, 16, 32, 64], label="hiddenSize_at_layer_0"),
+            )
+        )
+
+        # add hidden layers
+        # each hidden layer has a linear layer, a activation layer and possibly a dropout layer
+        self.net.append(
+            nninn.Repeat(
+                lambda index: nninn.Sequential(
+                    nninn.Linear(
+                        nninn.ValueChoice(
+                            [4, 8, 16, 32, 64],
+                            label=f"hiddenSize_at_layer_{index}",
+                        ),
+                        nninn.ValueChoice(
+                            [4, 8, 16, 32, 64],
+                            label=f"hiddenSize_at_layer_{index + 1}",
+                        ),
+                    ),
+                    nninn.LayerChoice(
+                        ACTIVATIONS, label=f"activation_at_layer_{index}"
+                    ),
+                    nninn.Dropout(
+                        nninn.ValueChoice(
+                            [0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}"
+                        )
+                    ),
+                ),
+                nninn.ValueChoice([1, 2], label="num_hidden_layers"),
+                label="hidden_layers",
+            )
+        )
+
+        # add output layer
+        # use lazy linear to automatically initialize the input size
+        self.net.append(nninn.LazyLinear(outputSize))
+
+        # add softmax layer
+        self.net.append(nninn.Softmax())
+
+        self.net = nninn.Sequential(*self.net)
+
+    def forward(self, X):
+
+        return self.net(X)
+
+    def init_weight(self, how="xavier_normal"):
+
+        for m in self.modules():
+            if isinstance(m, nninn.Linear):
+                how_to_init(m, how)
+
+
+##################################################################################################
+# RNN Space
 
 
 @nni.trace

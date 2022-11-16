@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_feature_selection/_hybrid.py
-File Created: Monday, 8th August 2022 8:44:16 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_feature_selection/_hybrid.py
+File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:47 pm
+Last Modified: Wednesday, 16th November 2022 11:46:06 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, List, Tuple, Callable
 from itertools import combinations
 from collections import Counter
 import warnings
@@ -79,17 +82,17 @@ class CBFS:
 
     def __init__(
         self,
-        copula="empirical",
-        n_components=None,
-        n_prop=None,
-    ):
+        copula: str = "empirical",
+        n_components: int = None,
+        n_prop: float = None,
+    ) -> None:
         self.copula = copula
         self.n_components = n_components
         self.n_prop = n_prop
 
         self._fitted = False
 
-    def Empirical_Copula(self, data):
+    def Empirical_Copula(self, data: pd.DataFrame) -> List[float]:
 
         # make sure it's a dataframe
         if not isinstance(data, pd.DataFrame):
@@ -106,7 +109,13 @@ class CBFS:
 
         return p
 
-    def select_feature(self, X, y, selected_features, unselected_features):
+    def select_feature(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selected_features: List[str],
+        unselected_features: List[str],
+    ) -> Tuple[float, str]:
 
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
@@ -151,7 +160,17 @@ class CBFS:
             test_item[maxloc(results)][0],
         )  # use 0 to select item instead of tuple
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> CBFS:
+
+        # check if X is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -186,7 +205,13 @@ class CBFS:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
+        # check if X is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         return X.iloc[:, self.selected_features]
 
@@ -218,7 +243,7 @@ class GeneticAlgorithm:
 
     n_generations: Number of looping generation for GA, default = 10
 
-    feature_selection: Feature selection methods to generate a pool of selections, default = 'auto'
+    fs_method: Feature selection methods to generate a pool of selections, default = 'auto'
     support ('auto', 'random', 'Entropy', 't_statistics', 'SVM_RFE')
 
     n_initial: Number of random feature selection rules to initialize, default = 10
@@ -254,27 +279,27 @@ class GeneticAlgorithm:
 
     def __init__(
         self,
-        n_components=None,
-        n_prop=None,
-        n_generations=10,
-        feature_selection="random",
-        n_initial=10,
-        fitness_func=None,
-        fitness_fit="SVM",
-        fitness_weight=0.9,
-        n_pair=5,
-        ga_selection="Roulette Wheel",
-        p_crossover=1,
-        ga_crossover="Single-point",
-        crossover_n=None,
-        p_mutation=0.001,
-        mutation_n=None,
-        seed=1,
-    ):
+        n_components: int = None,
+        n_prop: float = None,
+        n_generations: int = 10,
+        fs_method: str = "random",
+        n_initial: int = 10,
+        fitness_func: Callable = None,
+        fitness_fit: str = "SVM",
+        fitness_weight: float = 0.9,
+        n_pair: int = 5,
+        ga_selection: str = "Roulette Wheel",
+        p_crossover: float = 1.0,
+        ga_crossover: str = "Single-point",
+        crossover_n: int = None,
+        p_mutation: float = 0.001,
+        mutation_n: int = None,
+        seed: int = 1,
+    ) -> None:
         self.n_components = n_components
         self.n_prop = n_prop
         self.n_generations = n_generations
-        self.feature_selection = feature_selection
+        self.fs_method = fs_method
         self.n_initial = n_initial
         self.fitness_func = fitness_func
         self.fitness_fit = fitness_fit
@@ -296,7 +321,12 @@ class GeneticAlgorithm:
 
         self._fitted = False
 
-    def _random(self, X, y, n):
+    def _random(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         # randomly select n features from X
         _, p = X.shape
@@ -316,7 +346,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _entropy(self, X, y, n):
+    def _entropy(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         # call Mutual Information from FeatureFilter
         _score = MI(X, y)
@@ -330,7 +365,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _t_statistics(self, X, y, n):
+    def _t_statistics(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
         if len(np.unique(y)) == 2:
@@ -349,7 +389,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _SVM_RFE(self, X, y, n):
+    def _SVM_RFE(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        n: int,
+    ) -> List[int]:
 
         from sklearn.feature_selection import RFE
 
@@ -374,7 +419,12 @@ class GeneticAlgorithm:
 
         return _selected
 
-    def _cal_fitness(self, X, y, selection):
+    def _cal_fitness(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selection: List[int],
+    ) -> float:
 
         if not self.fitness_func:  # fit selected features and calcualte accuracy score
             if self.fitness_fit == "Linear":
@@ -451,7 +501,12 @@ class GeneticAlgorithm:
         else:
             return self.fitness_func(X, y, selection)
 
-    def _GeneticAlgorithm(self, X, y, selection_pool):
+    def _GeneticAlgorithm(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selection_pool: List[List[int]],
+    ) -> List[int]:
 
         n, p = X.shape
 
@@ -527,8 +582,9 @@ class GeneticAlgorithm:
                 np.random.rand() < self.p_mutation
             ):  # only certain probability of executing mutation
                 if not self.mutation_n:
-                    self.mutation_n = int(
-                        p / 10
+                    # make sure it's at least 1
+                    self.mutation_n = max(
+                        1, int(p / 10)
                     )  # default number of mutation point is first quarter point
                 else:
                     if self.mutation_n > p:
@@ -553,7 +609,7 @@ class GeneticAlgorithm:
 
     def _early_stopping(
         self,
-    ):  # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
+    ) -> bool:  # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
 
         if len(self._fitness) < 10:
             return False
@@ -570,9 +626,17 @@ class GeneticAlgorithm:
             else:
                 return False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> GeneticAlgorithm:
 
         np.random.seed(self.seed)  # set random seed
+
+        # check if X is dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         n, p = X.shape
         # check whether n_components/n_prop is valid
@@ -609,9 +673,9 @@ class GeneticAlgorithm:
 
         # select feature selection methods
         # if auto, all default methods will be used; if not, use predefined one
-        if self.feature_selection == "auto":
+        if self.fs_method == "auto":
             self._feature_sel_methods = self._auto_sel
-        elif self.feature_selection == "random":
+        elif self.fs_method == "random":
             self.n_initial = int(self.n_initial)
             self._feature_sel_methods = {}
             for i in range(
@@ -619,15 +683,15 @@ class GeneticAlgorithm:
             ):  # get n_initial random feature selection rule
                 self._feature_sel_methods["random_" + str(i + 1)] = self._random
         else:
-            self.feature_selection = (
-                [self.feature_selection]
-                if not isinstance(self.feature_selection, list)
-                else self.feature_selection
+            self.fs_method = (
+                [self.fs_method]
+                if not isinstance(self.fs_method, list)
+                else self.fs_method
             )
             self._feature_sel_methods = {}
 
             # check if all methods are available
-            for _method in self.feature_selection:
+            for _method in self.fs_method:
                 if _method not in [*self._auto_sel]:
                     raise ValueError(
                         "Not recognizing feature selection methods, only support {}, get {}.".format(
@@ -642,7 +706,9 @@ class GeneticAlgorithm:
 
         return self
 
-    def _fit(self, X, y):
+    def _fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> GeneticAlgorithm:
 
         # generate the feature selection pool using
         _sel_methods = [*self._feature_sel_methods]
@@ -669,7 +735,13 @@ class GeneticAlgorithm:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
+        # check if X is dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         # check for all/no feature removed cases
         if self.selection_.count(self.selection_[0]) == len(self.selection_):
@@ -691,62 +763,64 @@ methods for classification prediction modeling. Expert systems with applications
 """
 
 
-class SvetnikRF:
+# class SvetnikRF:
 
-    """
-    Implementation of feature selection method [1], combined cross validation and RandomForest for feature
-    selection.
+#     """
+#     Implementation of feature selection method [1], combined cross validation and RandomForest for feature
+#     selection.
 
-    [1] Svetnik, V., Liaw, A., Tong, C., & Wang, T. (2004, June). Application of Breiman’s random forest to
-    modeling structure-activity relationships of pharmaceutical molecules. In International workshop on multiple
-    Classifier systems (pp. 334-343). Springer, Berlin, Heidelberg.
+#     [1] Svetnik, V., Liaw, A., Tong, C., & Wang, T. (2004, June). Application of Breiman’s random forest to
+#     modeling structure-activity relationships of pharmaceutical molecules. In International workshop on multiple
+#     Classifier systems (pp. 334-343). Springer, Berlin, Heidelberg.
 
-    Parameters
-    ----------
+#     Parameters
+#     ----------
 
-    """
+#     """
 
-    def __init__(
-        self,
-        cv=5,
-        repeat=20,
-        seed=1,
-    ):
-        self.cv = cv
-        self.repeat = repeat
-        # self.seed = seed
-        np.random.seed(seed)
+#     def __init__(
+#         self,
+#         cv: int = 5,
+#         repeat: int = 20,
+#         seed: int = 1,
+#     ) -> None:
+#         self.cv = cv
+#         self.repeat = repeat
+#         # self.seed = seed
+#         np.random.seed(seed)
 
-    def fit(self, X, y):
+#     def fit(
+#         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+#     ) -> SvetnikRF:
 
-        # check if X is a dataframe
-        # need to use index
-        if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+#         # check if X is a dataframe
+#         # need to use index
+#         if not isinstance(X, pd.DataFrame):
+#             X = pd.DataFrame(X)
 
-        # initialize the feature selection record
-        selection_record = {}
+#         # initialize the feature selection record
+#         selection_record = {}
 
-        for _ in range(self.repeat):
-            index_split = np.array_split(np.random.choice(X.index), self.cv)
-            for i in range(self.cv):
-                test_index = index_split[i]
-                train_index = np.setdiff1d(X.index, test_index)
-                selected_features = list(X.columns)  # initialize the selected features
-                feature_importance = None
+#         for _ in range(self.repeat):
+#             index_split = np.array_split(np.random.choice(X.index), self.cv)
+#             for i in range(self.cv):
+#                 test_index = index_split[i]
+#                 train_index = np.setdiff1d(X.index, test_index)
+#                 selected_features = list(X.columns)  # initialize the selected features
+#                 feature_importance = None
 
-                while len(selected_features) >= 3:
-                    from sklearn.ensemble import RandomForestClassifier
+#                 while len(selected_features) >= 3:
+#                     from sklearn.ensemble import RandomForestClassifier
 
-                    mol = RandomForestClassifier(
-                        n_estimators=100,
-                    )
-                    mol.fit(
-                        X.loc[train_index, selected_features],
-                        y.loc[train_index, selected_features],
-                    )
+#                     mol = RandomForestClassifier(
+#                         n_estimators=100,
+#                     )
+#                     mol.fit(
+#                         X.loc[train_index, selected_features],
+#                         y.loc[train_index, selected_features],
+#                     )
 
-                    if feature_importance is None:
-                        feature_importance = mol.feature_importances_
+#                     if feature_importance is None:
+#                         feature_importance = mol.feature_importances_
 
-        raise NotImplementedError("Not implemented yet!")
+#         raise NotImplementedError("Not implemented yet!")

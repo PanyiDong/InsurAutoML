@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_constant.py
-File Created: Sunday, 10th April 2022 4:50:47 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_constant.py
+File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 27th April 2022 5:53:01 pm
+Last Modified: Tuesday, 15th November 2022 4:03:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import logging
+
+LOGGINGLEVEL = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
+
+FULLTYPE_MAPPING = {
+    ("Int", "Numerical"): "con",
+    ("Int", "Categorical"): "cat",
+    ("Float", ""): "con",
+    ("Datetime", ""): "",
+    ("Object", "Categorical"): "cat",
+    ("Object", "Text"): "txt",
+    ("Path", ""): "img",
+}
+
+UNIQUE_FULLTYPE = list(FULLTYPE_MAPPING.keys())
 
 # encoders
 ENCODERS = ["DataEncoding"]
@@ -225,7 +241,17 @@ REGRESSION_ESTIMATORS = [
 REGRESSION_CRITERIA = [
     "MSE",
     "MAE",
-    "MSLE",
+    # "MSLE", # not general since it needs non-negative values
     "neg_R2",
     "MAX",
 ]
+
+# methods corresponding process must have
+METHOD_MAPPING = {
+    "encoder": ["fit", "refit"],
+    "imputer": ["fill"],
+    "balancing": ["fit_transform"],
+    "scaling": ["fit", "transform", "fit_transform"],
+    "feature_selection": ["fit", "transform"],
+    "model": ["fit", "predict"],
+}

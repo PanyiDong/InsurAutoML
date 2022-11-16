@@ -1,17 +1,17 @@
 """
-File: _gam.py
+File Name: _gam.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_model/_gam.py
-File Created: Friday, 15th April 2022 8:18:07 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_gam.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 10th May 2022 7:18:39 pm
+Last Modified: Monday, 14th November 2022 8:15:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,19 +38,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union
+import numpy as np
+import pandas as pd
+
 
 class GAM_Classifier:
     def __init__(
         self,
-        type="logistic",
-        tol=1e-4,
-    ):
+        type: str = "logistic",
+        tol: float = 1e-4,
+    ) -> None:
         self.type = type
         self.tol = tol
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> GAM_Classifier:
 
         if self.type == "logistic":
             from pygam import LogisticGAM
@@ -63,11 +73,15 @@ class GAM_Classifier:
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict_proba(X)
 
@@ -75,15 +89,19 @@ class GAM_Classifier:
 class GAM_Regressor:
     def __init__(
         self,
-        type="linear",
-        tol=1e-4,
-    ):
+        type: str = "linear",
+        tol: float = 1e-4,
+    ) -> None:
         self.type = type
         self.tol = tol
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> GAM_Regressor:
 
         if self.type == "linear":
             from pygam import LinearGAM
@@ -108,10 +126,14 @@ class GAM_Regressor:
 
         return self
 
-    def predict(self, X):
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return self.model.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         raise NotImplementedError("predict_proba is not implemented for regression.")

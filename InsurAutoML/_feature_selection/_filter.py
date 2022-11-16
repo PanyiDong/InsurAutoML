@@ -1,17 +1,17 @@
 """
-File: _filter.py
+File Name: _filter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_feature_selection/_filter.py
-File Created: Monday, 8th August 2022 8:43:53 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_feature_selection/_filter.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:55:54 pm
+Last Modified: Monday, 14th November 2022 7:01:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, List
 from itertools import combinations
 import warnings
 import numpy as np
@@ -73,17 +76,21 @@ class FeatureFilter:
 
     def __init__(
         self,
-        criteria="Pearson",
-        n_components=None,
-        n_prop=None,
-    ):
+        criteria: str = "Pearson",
+        n_components: int = None,
+        n_prop: float = None,
+    ) -> None:
         self.criteria = criteria
         self.n_components = n_components
         self.n_prop = n_prop
 
         self._fitted = False
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> FeatureFilter:
 
         # check whether y is empty
         if isinstance(y, pd.DataFrame):
@@ -107,7 +114,13 @@ class FeatureFilter:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+
+        # check if input is a dataframe
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -145,15 +158,21 @@ class mRMR:
 
     def __init__(
         self,
-        n_components=None,
-        n_prop=None,
-    ):
+        n_components: int = None,
+        n_prop: float = None,
+    ) -> None:
         self.n_components = n_components
         self.n_prop = n_prop
 
         self._fitted = False
 
-    def select_feature(self, X, y, selected_features, unselected_features):
+    def select_feature(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray],
+        selected_features: List,
+        unselected_features: List,
+    ) -> str:
 
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
@@ -177,7 +196,17 @@ class mRMR:
 
         return test_item[maxloc(results)][0]  # use 0 to select item instead of tuple
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> mRMR:
+
+        # check if inputs are dataframes
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+        if not isinstance(y, pd.DataFrame):
+            y = pd.DataFrame(y)
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -207,7 +236,9 @@ class mRMR:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return X.iloc[:, self.select_features]
 
@@ -227,7 +258,11 @@ class FOCI:
     ):
         self._fitted = False
 
-    def fit(self, X, y=None):
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, np.ndarray] = None,
+    ) -> FOCI:
 
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -268,6 +303,8 @@ class FOCI:
 
         return self
 
-    def transform(self, X):
+    def transform(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
 
         return X[self.select_features]

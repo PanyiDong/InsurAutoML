@@ -1,17 +1,17 @@
 """
-File: test_regression.py
+File: test_hpo.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /tests/test_hpo/test_regression.py
-File Created: Sunday, 10th April 2022 12:00:04 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /tests/test_hpo/test_hpo.py
+File: test_hpo.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:57 pm
+Last Modified: Tuesday, 15th November 2022 5:50:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import os
 
 from InsurAutoML import load_data
 
@@ -418,12 +420,18 @@ def test_objective_5():
         objective="precision",
         validation=True,
         valid_size=0.15,
-        full_status=False,
+        full_status=True,
         reset_index=True,
         _iter=1,
         seed=1,
     )
     result = clf.step()
+    
+    if not os.path.exists("tmp"):
+        os.mkdir("tmp")
+    
+    clf.save_checkpoint("tmp")
+    clf.load_checkpoint("tmp")
     clf.reset_config(params)
 
     assert isinstance(result, dict), "Objective function should return a dict."

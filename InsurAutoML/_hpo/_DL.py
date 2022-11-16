@@ -1,17 +1,17 @@
 """
-File: _DL.py
+File Name: _DL.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/_DL.py
-File Created: Tuesday, 5th April 2022 10:50:34 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_DL.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:21:48 pm
+Last Modified: Monday, 14th November 2022 7:51:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

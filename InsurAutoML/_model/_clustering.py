@@ -1,17 +1,17 @@
 """
-File: _clustering.py
+File Name: _clustering.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_model/_clustering.py
-File Created: Monday, 20th June 2022 12:21:59 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_model/_clustering.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 20th June 2022 12:25:31 am
+Last Modified: Monday, 14th November 2022 8:14:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----

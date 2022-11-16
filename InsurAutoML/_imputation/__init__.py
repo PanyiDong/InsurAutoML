@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_imputation/__init__.py
-File Created: Tuesday, 5th April 2022 11:49:07 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_imputation/__init__.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th April 2022 5:57:03 pm
+Last Modified: Monday, 14th November 2022 8:07:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from ._base import SimpleImputer, DummyImputer, JointImputer
 from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/_base.py
-File Created: Tuesday, 5th April 2022 10:49:30 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_base.py
+File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:32 pm
+Last Modified: Tuesday, 15th November 2022 9:09:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,9 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# import ray
-from ray import tune
+from __future__ import annotations
+import logging
 
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+
+from typing import Union, List, Callable, Dict, Tuple
 import os
 import datetime
 import copy
@@ -51,15 +54,18 @@ import random
 import numpy as np
 import pandas as pd
 
+# import ray
+from ray import tune
+
 from InsurAutoML._hpo._utils import (
     TabularObjective,
     Pipeline,
     ClassifierEnsemble,
     RegressorEnsemble,
 )
-from InsurAutoML._constant import UNI_CLASS, MAX_TIME
+from InsurAutoML._constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL
 from InsurAutoML._base import no_processing
-from InsurAutoML._utils._base import type_of_script
+from InsurAutoML._utils._base import type_of_script, format_hyper_dict
 from InsurAutoML._utils._file import (
     save_methods,
     load_methods,
@@ -69,6 +75,7 @@ from InsurAutoML._utils._data import (
     str2list,
     str2dict,
 )
+from InsurAutoML._utils._metadata import MetaData
 from InsurAutoML._utils._optimize import (
     get_algo,
     get_scheduler,
@@ -76,6 +83,7 @@ from InsurAutoML._utils._optimize import (
     get_progress_reporter,
     TimePlateauStopper,
     ray_status,
+    check_status,
 )
 
 # filter certain warnings
@@ -85,6 +93,8 @@ warnings.filterwarnings("ignore", message="Variables are collinear")
 # warnings.filterwarnings(
 #     "ignore", message="The TensorboardX logger cannot be instantiated"
 # )
+# Update: Nov 15, 2022
+# autosklearn decrypted, sklearn new versions supported
 # I wish to use sklearn v1.0 for new features
 # but there's conflicts between autosklearn models and sklearn models
 # mae <-> absolute_error, mse <-> squared_error inconsistency
@@ -105,7 +115,20 @@ else:
     device_count = 0
 
 
-class AutoTabularBase:
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    handler = logging.FileHandler(log_file)
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+
+class AutoTabularBase(MetaData):
 
     """ "
     Base class module for AutoTabular (for classification and regression tasks)
@@ -234,39 +257,39 @@ class AutoTabularBase:
 
     def __init__(
         self,
-        task_mode="classification",
-        n_estimators=5,
-        ensemble_strategy="stacking",
-        timeout=360,
-        max_evals=64,
-        allow_error_prop=0.1,
-        temp_directory="tmp",
-        delete_temp_after_terminate=False,
-        save=True,
-        model_name="model",
-        ignore_warning=True,
-        encoder="auto",
-        imputer="auto",
-        balancing="auto",
-        scaling="auto",
-        feature_selection="auto",
-        models="auto",
-        validation=True,
-        valid_size=0.15,
-        objective="accuracy",
-        search_algo="HyperOpt",
-        search_algo_settings={},
-        search_scheduler="FIFOScheduler",
-        search_scheduler_settings={},
-        logger=["Logger"],
-        progress_reporter=None,
-        full_status=False,
-        verbose=1,
-        cpu_threads=None,
-        use_gpu=None,
-        reset_index=True,
-        seed=1,
-    ):
+        task_mode: str = "classification",
+        n_estimators: int = 5,
+        ensemble_strategy: str = "stacking",
+        timeout: int = 360,
+        max_evals: int = 64,
+        allow_error_prop: float = 0.1,
+        temp_directory: str = "tmp",
+        delete_temp_after_terminate: bool = False,
+        save: bool = True,
+        model_name: str = "model",
+        ignore_warning: bool = True,
+        encoder: Union[str, List[str]] = "auto",
+        imputer: Union[str, List[str]] = "auto",
+        balancing: Union[str, List[str]] = "auto",
+        scaling: Union[str, List[str]] = "auto",
+        feature_selection: Union[str, List[str]] = "auto",
+        models: Union[str, List[str]] = "auto",
+        validation: bool = True,
+        valid_size: float = 0.15,
+        objective: Union[str, Callable] = "accuracy",
+        search_algo: str = "HyperOpt",
+        search_algo_settings: Dict = {},
+        search_scheduler: str = "FIFOScheduler",
+        search_scheduler_settings: Dict = {},
+        logger: List[str] = ["Logger"],
+        progress_reporter: str = None,
+        full_status: bool = False,
+        verbose: int = 1,
+        cpu_threads: int = None,
+        use_gpu: bool = None,
+        reset_index: bool = True,
+        seed: int = 1,
+    ) -> None:
         self.task_mode = task_mode
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -303,7 +326,9 @@ class AutoTabularBase:
         self._iter = 0  # record iteration number
         self._fitted = False  # record whether the model has been fitted
 
-    def get_hyperparameter_space(self, X, y):
+    def get_hyperparameter_space(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, np.ndarray]
+    ) -> Tuple[Dict]:
 
         # initialize default search options
         # and select the search options based on the input restrictions
@@ -327,11 +352,17 @@ class AutoTabularBase:
             encoder = {}  # if specified, check if encoders in default encoders
             for _encoder in self.encoder:
                 if _encoder not in [*self._all_encoders]:
-                    raise ValueError(
+                    self._logger.error(
                         "Only supported encoders are {}, get {}.".format(
                             [*self._all_encoders], _encoder
-                        )
+                        ),
+                        ValueError,
                     )
+                    # raise ValueError(
+                    #     "Only supported encoders are {}, get {}.".format(
+                    #         [*self._all_encoders], _encoder
+                    #     )
+                    # )
                 encoder[_encoder] = self._all_encoders[_encoder]
 
         # Imputer: fill missing values
@@ -557,7 +588,10 @@ class AutoTabularBase:
         # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
 
         # all hyperparameters for imputers
-        _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
+        if "no_processing" in imputer.keys():
+            _all_imputers_hyperparameters = [{"imputer": "no_processing"}]
+        else:
+            _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
         # include additional hyperparameters
         _all_imputers_hyperparameters += add_imputer_hyperparameter
 
@@ -596,8 +630,8 @@ class AutoTabularBase:
                         CLASSIFICATION_CRITERIA,
                     )
 
-                    item["SFS_estimator"] = tune.choice(CLASSIFICATION_ESTIMATORS)
-                    item["SFS_criteria"] = tune.choice(CLASSIFICATION_CRITERIA)
+                    item["estimator"] = tune.choice(CLASSIFICATION_ESTIMATORS)
+                    item["criteria"] = tune.choice(CLASSIFICATION_CRITERIA)
                     break
         elif self.task_mode == "regression":
             for item in _all_feature_selection_hyperparameters:
@@ -607,8 +641,8 @@ class AutoTabularBase:
                         REGRESSION_CRITERIA,
                     )
 
-                    item["SFS_estimator"] = tune.choice(REGRESSION_ESTIMATORS)
-                    item["SFS_criteria"] = tune.choice(REGRESSION_CRITERIA)
+                    item["estimator"] = tune.choice(REGRESSION_ESTIMATORS)
+                    item["criteria"] = tune.choice(REGRESSION_CRITERIA)
                     break
 
         # # initialize feature selection hyperparameter space
@@ -637,17 +671,65 @@ class AutoTabularBase:
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
                         from InsurAutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
 
-                        item["LightGBM_Classifier_objective"] = tune.choice(
-                            LIGHTGBM_BINARY_CLASSIFICATION
-                        )
+                        item["objective"] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
                     else:
                         from InsurAutoML._constant import (
                             LIGHTGBM_MULTICLASS_CLASSIFICATION,
                         )
 
-                        item["LightGBM_Classifier_objective"] = tune.choice(
+                        item["objective"] = tune.choice(
                             LIGHTGBM_MULTICLASS_CLASSIFICATION
                         )
+
+        # check status of hyperparameter space
+        check_status(encoder, _all_encoders_hyperparameters, ref="encoder")
+        check_status(imputer, _all_imputers_hyperparameters, ref="imputer")
+        check_status(balancing, _all_balancings_hyperparameters, ref="balancing")
+        check_status(scaling, _all_scalings_hyperparameters, ref="scaling")
+        check_status(
+            feature_selection,
+            _all_feature_selection_hyperparameters,
+            ref="feature_selection",
+        )
+        check_status(models, _all_models_hyperparameters, ref="model")
+
+        # format default search space
+        _all_encoders_hyperparameters = [
+            format_hyper_dict(
+                dict, order + 1, ref="encoder", search_algo=self.search_algo
+            )
+            for order, dict in enumerate(_all_encoders_hyperparameters)
+        ]
+        _all_imputers_hyperparameters = [
+            format_hyper_dict(
+                dict, order + 1, ref="imputer", search_algo=self.search_algo
+            )
+            for order, dict in enumerate(_all_imputers_hyperparameters)
+        ]
+        _all_balancings_hyperparameters = [
+            format_hyper_dict(
+                dict, order + 1, ref="balancing", search_algo=self.search_algo
+            )
+            for order, dict in enumerate(_all_balancings_hyperparameters)
+        ]
+        _all_scalings_hyperparameters = [
+            format_hyper_dict(
+                dict, order + 1, ref="scaling", search_algo=self.search_algo
+            )
+            for order, dict in enumerate(_all_scalings_hyperparameters)
+        ]
+        _all_feature_selection_hyperparameters = [
+            format_hyper_dict(
+                dict, order + 1, ref="feature_selection", search_algo=self.search_algo
+            )
+            for order, dict in enumerate(_all_feature_selection_hyperparameters)
+        ]
+        _all_models_hyperparameters = [
+            format_hyper_dict(
+                dict, order + 1, ref="model", search_algo=self.search_algo
+            )
+            for order, dict in enumerate(_all_models_hyperparameters)
+        ]
 
         # generate the hyperparameter space
         hyperparameter_space = _get_hyperparameter_space(
@@ -665,6 +747,7 @@ class AutoTabularBase:
             _all_models_hyperparameters,
             models,
             self.task_mode,
+            self.search_algo,
         )  # _X to choose whether include imputer
         # others are the combinations of default hyperparameter space & methods selected
 
@@ -750,13 +833,15 @@ class AutoTabularBase:
     #     return self
 
     # select optimal settings and fit on optimal hyperparameters
-    def _fit_optimal(self, idx, optimal_point, best_path):
+    def _fit_optimal(
+        self, idx: int, optimal_point: Dict, best_path: str
+    ) -> Tuple(str, Pipeline):
 
         # optimal encoder
         optimal_encoder_hyperparameters = optimal_point["encoder"]
         # find optimal encoder key
         for _key in optimal_encoder_hyperparameters.keys():
-            if "encoder_" in _key:
+            if "encoder" in _key:
                 _encoder_key = _key
                 break
         optimal_encoder = optimal_encoder_hyperparameters[_encoder_key]
@@ -771,7 +856,7 @@ class AutoTabularBase:
         optimal_imputer_hyperparameters = optimal_point["imputer"]
         # find optimal imputer key
         for _key in optimal_imputer_hyperparameters.keys():
-            if "imputer_" in _key:
+            if "imputer" in _key:
                 _imputer_key = _key
                 break
         optimal_imputer = optimal_imputer_hyperparameters[_imputer_key]
@@ -786,7 +871,7 @@ class AutoTabularBase:
         optimal_balancing_hyperparameters = optimal_point["balancing"]
         # find optimal balancing key
         for _key in optimal_balancing_hyperparameters.keys():
-            if "balancing_" in _key:
+            if "balancing" in _key:
                 _balancing_key = _key
                 break
         optimal_balancing = optimal_balancing_hyperparameters[_balancing_key]
@@ -801,7 +886,7 @@ class AutoTabularBase:
         optimal_scaling_hyperparameters = optimal_point["scaling"]
         # find optimal scaling key
         for _key in optimal_scaling_hyperparameters.keys():
-            if "scaling_" in _key:
+            if "scaling" in _key:
                 _scaling_key = _key
                 break
         optimal_scaling = optimal_scaling_hyperparameters[_scaling_key]
@@ -816,7 +901,7 @@ class AutoTabularBase:
         optimal_feature_selection_hyperparameters = optimal_point["feature_selection"]
         # find optimal feature_selection key
         for _key in optimal_feature_selection_hyperparameters.keys():
-            if "feature_selection_" in _key:
+            if "feature_selection" in _key:
                 _feature_selection_key = _key
                 break
         optimal_feature_selection = optimal_feature_selection_hyperparameters[
@@ -835,7 +920,7 @@ class AutoTabularBase:
         optimal_model_hyperparameters = optimal_point["model"]  # optimal model selected
         # find optimal model key
         for _key in optimal_model_hyperparameters.keys():
-            if "model_" in _key:
+            if "model" in _key:
                 _model_key = _key
                 break
         optimal_model = optimal_model_hyperparameters[
@@ -978,7 +1063,9 @@ class AutoTabularBase:
 
         return ("pipe_" + str(idx + 1), Pipeline(**pip_setting))
 
-    def _fit_ensemble(self, trial_id, config, iter=None, features=None):
+    def _fit_ensemble(
+        self, trial_id: str, config: Dict, iter: int = None, features: List[str] = None
+    ) -> None:
 
         # initialize ensemble list
         try:
@@ -1043,7 +1130,44 @@ class AutoTabularBase:
                 strategy=self.ensemble_strategy,
             )
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> AutoTabularBase:
+
+        # initialize temp directory
+        # check if temp directory exists, if exists, empty it
+        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
+            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+        if not os.path.isdir(self.temp_directory):
+            os.makedirs(self.temp_directory)
+        os.makedirs(os.path.join(self.temp_directory, self.model_name))
+
+        # # set up logging file
+        # if not os.path.exists(
+        #     os.path.join(self.temp_directory, self.model_name, "logging.conf")
+        # ):
+        #     with open(
+        #         os.path.join(self.temp_directory, self.model_name, "logging.conf"), "w"
+        #     ) as fp:
+        #         pass
+        # logging.config.fileConfig(
+        #     os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+        #     disable_existing_loggers=False,
+        # )
+        # # set up verbosity of logging
+        self._logger = setup_logger(
+            __name__,
+            os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+            level=logging.INFO,
+        )
+        # logging.basicConfig(level=LOGGINGLEVEL[self.verbose])
+        # self._logger = logging.getLogger(__name__)
+
+        self._logger.info(
+            "[INFO] {} Experiment: {}. Status: Start preparing AutoTabular...".format(
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+            )
+        )
 
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
@@ -1059,6 +1183,22 @@ class AutoTabularBase:
                 y = pd.DataFrame(y)
             except:
                 raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
+
+        # get data metadata
+        super(AutoTabularBase, self).__init__(X)
+        # check if there's unsupported data type
+        # if datetime ,recommend to remove
+        if ("Datetime", "") in self.metadata.keys():
+            warnings.warn(
+                "Found datatime data type columns {}, it's better to remove those columns".format(
+                    *self.metadata[("Datetime", "")]
+                )
+            )
+        # TODO: when NLP and Image supported, redirect to corresponding model
+        if ("Object", "Text") in self.metadata.keys():
+            raise NotImplementedError("Text data type is not supported yet.")
+        if ("Path", "") in self.metadata.keys():
+            raise NotImplementedError("Image data type is not supported yet.")
 
         # get features and response names
         if isinstance(X, pd.DataFrame):  # expect multiple features
@@ -1152,9 +1292,10 @@ class AutoTabularBase:
         else:
             try:
                 X = pd.DataFrame(X)
-                print(
-                    "[INFO] {} X is not a dataframe, converted to dataframe.".format(
-                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+                self._logger.info(
+                    "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
                     )
                 )
             except:
@@ -1182,16 +1323,27 @@ class AutoTabularBase:
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
 
+        self._logger.info(
+            "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+            )
+        )
+
         # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
         # if the model is already trained, read the setting
         if os.path.exists(self.model_name):
-
-            print(
-                "[INFO] {} Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+            self._logger.info(
+                "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                    self.model_name,
                 )
             )
+            # print(
+            #     "[INFO] {} Stored model found, load previous model.".format(
+            #         datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
+            #     )
+            # )
             # self.load_model(_X, _y)
             # (
             #     self._fit_encoder,
@@ -1206,14 +1358,6 @@ class AutoTabularBase:
             self._fitted = True  # successfully fitted the model
 
             return self
-
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
         # write basic information to init.txt
         with open(
@@ -1248,14 +1392,13 @@ class AutoTabularBase:
 
         # special requirement for Nevergrad, need a algorithm setting
         if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
-            warnings.warn("No algorithm setting for Nevergrad find, use NGOpt.")
+            self._logger.warn(
+                "No algorithm setting for Nevergrad find, use OnePlusOne."
+            )
+            # warnings.warn("No algorithm setting for Nevergrad find, use OnePlusOne.")
             import nevergrad as ng
 
-            self.search_algo_settings = {"optimizer": ng.optimizers.NGOpt}
-            # raise AttributeError(
-            #     "Search algorithm Nevergrad requires Nevergrad optimizer. \
-            #     Example: self.search_algo_settings = {'optimizer': nevergrad.optimizers.NGOpt}."
-            # )
+            self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
 
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
@@ -1274,7 +1417,7 @@ class AutoTabularBase:
         stopper = TimePlateauStopper(
             timeout=self.timeout,
             metric="loss",
-            std=0.1,
+            std_ratio=0.1,
             num_results=4,
             grace_period=4,
             mode="min",
@@ -1294,7 +1437,8 @@ class AutoTabularBase:
 
         # ensemble settings
         if self.n_estimators == 1:
-            warnings.warn("Set n_estimators to 1, no ensemble will be used.")
+            self._logger.warn("Set n_estimators to 1, no ensemble will be used.")
+            # warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
             # get progress reporter
             progress_reporter = get_progress_reporter(
@@ -1341,40 +1485,88 @@ class AutoTabularBase:
             # subtrial directory
             self.sub_directory = self.temp_directory
 
+            self._logger.info(
+                "[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
+
             # optimization process
             # partially activated objective function
-            fit_analysis = tune.run(
-                trainer,
-                config=hyperparameter_space,
-                name=self.model_name,  # name of the tuning process, use model_name
-                resume="AUTO",
-                checkpoint_freq=8,  # disable checkpoint
-                checkpoint_at_end=True,
-                keep_checkpoints_num=4,
-                checkpoint_score_attr="loss",
-                mode="min",  # always call a minimization process
-                search_alg=algo(**self.search_algo_settings),
-                scheduler=scheduler(**self.search_scheduler_settings),
-                reuse_actors=True,
-                raise_on_failed_trial=False,
-                metric="loss",
-                num_samples=self.max_evals,
-                max_failures=self.max_error,
-                stop=stopper,  # use stopper
-                callbacks=logger,
-                # time_budget_s=self.timeout,  # included in stopper
-                progress_reporter=progress_reporter,
-                verbose=self.verbose,
-                trial_dirname_creator=trial_str_creator,
-                local_dir=self.sub_directory,
-                log_to_file=True,
-            )
+            # special treatment for optuna, embed search space in search algorithm
+            if self.search_algo in ["Optuna"]:
+                fit_analysis = tune.run(
+                    trainer,
+                    # config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    # mode="min",  # always call a minimization process
+                    search_alg=algo(
+                        space=hyperparameter_space,
+                        mode="min",  # always call a minimization process
+                        metric="loss",
+                        **self.search_algo_settings,
+                    ),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    # metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
+            else:
+                fit_analysis = tune.run(
+                    trainer,
+                    config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(**self.search_algo_settings),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
 
             # shut down ray
             # ray.shutdown()
             # # check if ray is shutdown
             # assert ray.is_initialized() == False, "Ray is not shutdown."
             rayStatus.ray_shutdown()
+
+            self._logger.info(
+                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # get the best config settings
             best_trial_id = str(
@@ -1431,35 +1623,76 @@ class AutoTabularBase:
 
             # optimization process
             # partially activated objective function
-            fit_analysis = tune.run(
-                trainer,
-                config=hyperparameter_space,
-                name=self.model_name,  # name of the tuning process, use model_name
-                resume="AUTO",
-                checkpoint_freq=8,  # disable checkpoint
-                checkpoint_at_end=True,
-                keep_checkpoints_num=4,
-                checkpoint_score_attr="loss",
-                mode="min",  # always call a minimization process
-                search_alg=algo(**self.search_algo_settings),
-                scheduler=scheduler(**self.search_scheduler_settings),
-                reuse_actors=True,
-                raise_on_failed_trial=False,
-                metric="loss",
-                num_samples=self.max_evals,
-                max_failures=self.max_error,
-                stop=stopper,  # use stopper
-                callbacks=logger,
-                # time_budget_s=self.timeout,  # included in stopper
-                progress_reporter=progress_reporter,
-                verbose=self.verbose,
-                trial_dirname_creator=trial_str_creator,
-                local_dir=self.sub_directory,
-                log_to_file=True,
-            )
+            # special treatment for optuna, embed search space in search algorithm
+            if self.search_algo in ["Optuna"]:
+                fit_analysis = tune.run(
+                    trainer,
+                    # config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    # mode="min",  # always call a minimization process
+                    search_alg=algo(
+                        space=hyperparameter_space,
+                        mode="min",  # always call a minimization process
+                        metric="loss",
+                        **self.search_algo_settings,
+                    ),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    # metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
+            else:
+                fit_analysis = tune.run(
+                    trainer,
+                    config=hyperparameter_space,
+                    name=self.model_name,  # name of the tuning process, use model_name
+                    resume="AUTO",
+                    checkpoint_freq=8,  # disable checkpoint
+                    checkpoint_at_end=True,
+                    keep_checkpoints_num=4,
+                    checkpoint_score_attr="loss",
+                    mode="min",  # always call a minimization process
+                    search_alg=algo(**self.search_algo_settings),
+                    scheduler=scheduler(**self.search_scheduler_settings),
+                    reuse_actors=True,
+                    raise_on_failed_trial=False,
+                    metric="loss",
+                    num_samples=self.max_evals,
+                    max_failures=self.max_error,
+                    stop=stopper,  # use stopper
+                    callbacks=logger,
+                    # time_budget_s=self.timeout,  # included in stopper
+                    progress_reporter=progress_reporter,
+                    verbose=self.verbose,
+                    trial_dirname_creator=trial_str_creator,
+                    local_dir=self.sub_directory,
+                    log_to_file=True,
+                )
 
             # shut down ray
             rayStatus.ray_shutdown()
+
+            self._logger.info(
+                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # get all configs, trial_id
             analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
@@ -1542,39 +1775,84 @@ class AutoTabularBase:
 
                 # optimization process
                 # partially activated objective function
-                fit_analysis = tune.run(
-                    trainer,
-                    config=hyperparameter_space,
-                    name=self.model_name
-                    + "_"
-                    + self.ensemble_strategy
-                    + "_"
-                    + str(_n + 1),  # name of the tuning process, use model_name
-                    resume="AUTO",
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(**self.search_algo_settings),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=True,
-                )
+                # special treatment for optuna, embed search space in search algorithm
+                if self.search_algo in ["Optuna"]:
+                    fit_analysis = tune.run(
+                        trainer,
+                        # config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        # mode="min",  # always call a minimization process
+                        search_alg=algo(
+                            space=hyperparameter_space,
+                            metric="loss",
+                            mode="min",  # always call a minimization process
+                            **self.search_algo_settings,
+                        ),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        # metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
+                else:
+                    fit_analysis = tune.run(
+                        trainer,
+                        config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        mode="min",  # always call a minimization process
+                        search_alg=algo(**self.search_algo_settings),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
 
                 # shut down ray
                 rayStatus.ray_shutdown()
+
+                self._logger.info(
+                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                    )
+                )
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1586,7 +1864,9 @@ class AutoTabularBase:
                 # select optimal settings and fit optimal pipeline
                 self._fit_ensemble(
                     best_trial_id,
-                    fit_analysis.best_config,
+                    fit_analysis.get_best_config(
+                        metric="loss", mode="min", scope="all"
+                    ),
                     iter=_n,
                     features=feature_subset,
                 )
@@ -1646,39 +1926,83 @@ class AutoTabularBase:
 
                 # optimization process
                 # partially activated objective function
-                fit_analysis = tune.run(
-                    trainer,
-                    config=hyperparameter_space,
-                    name=self.model_name
-                    + "_"
-                    + self.ensemble_strategy
-                    + "_"
-                    + str(_n + 1),  # name of the tuning process, use model_name
-                    resume="AUTO",
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(**self.search_algo_settings),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=True,
-                )
+                if self.search_algo in ["Optuna"]:
+                    fit_analysis = tune.run(
+                        trainer,
+                        # config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        # mode="min",  # always call a minimization process
+                        search_alg=algo(
+                            hyperparameter_space,
+                            metric="loss",
+                            mode="min",  # always call a minimization process
+                            **self.search_algo_settings,
+                        ),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        # metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
+                else:
+                    fit_analysis = tune.run(
+                        trainer,
+                        config=hyperparameter_space,
+                        name=self.model_name
+                        + "_"
+                        + self.ensemble_strategy
+                        + "_"
+                        + str(_n + 1),  # name of the tuning process, use model_name
+                        resume="AUTO",
+                        checkpoint_freq=8,  # disable checkpoint
+                        checkpoint_at_end=True,
+                        keep_checkpoints_num=4,
+                        checkpoint_score_attr="loss",
+                        mode="min",  # always call a minimization process
+                        search_alg=algo(**self.search_algo_settings),
+                        scheduler=scheduler(**self.search_scheduler_settings),
+                        reuse_actors=True,
+                        raise_on_failed_trial=False,
+                        metric="loss",
+                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
+                        max_failures=self.max_error,
+                        stop=stopper,  # use stopper
+                        callbacks=logger,
+                        # time_budget_s=self.timeout,  # included in stopper
+                        progress_reporter=progress_reporter,
+                        verbose=self.verbose,
+                        trial_dirname_creator=trial_str_creator,
+                        local_dir=self.sub_directory,
+                        log_to_file=True,
+                    )
 
                 # shut down ray
                 rayStatus.ray_shutdown()
+
+                self._logger.info(
+                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                    )
+                )
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1688,7 +2012,13 @@ class AutoTabularBase:
                 )
 
                 # select optimal settings and fit optimal pipeline
-                self._fit_ensemble(best_trial_id, fit_analysis.best_config, iter=_n)
+                self._fit_ensemble(
+                    best_trial_id,
+                    fit_analysis.get_best_config(
+                        metric="loss", mode="min", scope="all"
+                    ),
+                    iter=_n,
+                )
 
                 # make sure the ensemble is fitted
                 # usually, most of the methods are already fitted
@@ -1699,7 +2029,7 @@ class AutoTabularBase:
                 _y_pred = self._ensemble.estimators[-1][1].predict(_X)
 
         # make sure the ensemble is fitted
-        # usually, most of the methods are already fitted
+        # usually, every method is already fitted
         # but all pipelines need to be checked and set to fitted
         self._ensemble.fit(_X, _y)
 
@@ -1711,18 +2041,29 @@ class AutoTabularBase:
         if self.delete_temp_after_terminate:
             shutil.rmtree(self.temp_directory)
 
+        self._logger.info(
+            "[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name
+            )
+        )
+
         self._fitted = True
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         if self.reset_index:
             # reset index to avoid indexing error
             X.reset_index(drop=True, inplace=True)
 
+        # check if fitted
+        if not self._fitted:
+            raise ValueError("Pipeline not fitted yet! Call fit() first.")
+
         _X = X.copy()
 
+        # since pipeline is converted to ensemble, no need to predict on each component
         # may need preprocessing for test data, the preprocessing should be the same as in fit part
         # Encoding
         # # convert string types to numerical type
@@ -1746,5 +2087,4 @@ class AutoTabularBase:
         # # use model to predict
         # return self._fit_model.predict(_X)
 
-        # since use ensemble to predict, all are wrapped in the ensemble
         return self._ensemble.predict(_X)

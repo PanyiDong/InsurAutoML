@@ -1,17 +1,17 @@
 """
-File: _encoding.py
+File Name: _encoding.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_encoding/_encoding.py
-File Created: Friday, 25th February 2022 6:13:42 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_encoding/_encoding.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:56:43 pm
+Last Modified: Monday, 14th November 2022 7:00:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,8 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+from __future__ import annotations
 
 import numpy as np
 import pandas as pd
@@ -66,13 +68,13 @@ class DataEncoding(formatting):
 
     """
 
-    def __init__(self, dummy_coding=False, transform=False):
+    def __init__(self, dummy_coding: bool = False, transform: bool = False) -> None:
         self.dummy_coding = dummy_coding
         self.transform = transform
 
         self._fitted = False  # record whether the method is fitted
 
-    def fit(self, _df):
+    def fit(self, _df: pd.DataFrame) -> pd.DataFrame:
         df = _df.copy(deep=True)
         features = list(df.columns)
         self.category = pd.DataFrame()
@@ -149,7 +151,7 @@ class DataEncoding(formatting):
 
         return df
 
-    def refit(self, _df):
+    def refit(self, _df: pd.DataFrame) -> pd.DataFrame:
         df = _df.copy(deep=True)
         if self.category.empty:
             return df
@@ -231,12 +233,12 @@ class CategoryShift:
     seed: random seed
     """
 
-    def __init__(self, seed=1):
+    def __init__(self, seed: int = 1) -> None:
         self.seed = seed
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit(self, X):
+    def fit(self, X: pd.DataFrame) -> None:
 
         # Check data type
         columns = list(X.columns)
@@ -248,7 +250,7 @@ class CategoryShift:
 
         self._fitted = True
 
-    def transform(self, X):
+    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
 
         _X = X.copy(deep=True)
         _X += 3

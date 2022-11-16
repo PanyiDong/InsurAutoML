@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_hyperopt/_regressor_hyperparameter.py
-File Created: Tuesday, 5th April 2022 11:06:33 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hyperparameters/_hyperopt/_regressor_hyperparameter.py
+File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:23:10 pm
+Last Modified: Tuesday, 15th November 2022 4:10:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ from hyperopt.pyll import scope
 
 # regressor hyperparameters
 regressor_hyperparameter = [
-    # extract from autosklearn
+    # extract from sklearn
     {
         "model": "AdaboostRegressor",
         "n_estimators": scope.int(

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
+Project: InsurAutoML
+Latest Version: 0.2.3
 Relative Path: /tests/test_utils/test_utils_optimize.py
-File Created: Sunday, 25th September 2022 11:39:59 pm
+File: test_utils_optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:52:30 pm
+Last Modified: Tuesday, 15th November 2022 11:30:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,32 +48,32 @@ def test_get_algo():
     get_algo("Repeater")
     get_algo("ConcurrencyLimiter")
 
-    try:
-        get_algo("AxSearch")
-    except ImportError:
-        pass
+    # try:
+    #     get_algo("AxSearch")
+    # except ImportError:
+    #     pass
 
-    try:
-        get_algo("BlendSearch")
-    except ImportError:
-        pass
+    # try:
+    #     get_algo("BlendSearch")
+    # except ImportError:
+    #     pass
 
     try:
         get_algo("CFO")
     except ImportError:
         pass
 
-    try:
-        get_algo("HEBO")
-    except ImportError:
-        pass
+    # try:
+    #     get_algo("HEBO")
+    # except ImportError:
+    #     pass
 
     try:
         get_algo("Nevergrad")
     except ImportError:
         pass
 
-    get_algo(get_algo)
+    # get_algo(get_algo)
 
     assert True, "The get_algo method is not correctly done."
 
@@ -173,3 +173,24 @@ def test_get_metrics():
         assert isinstance(
             get_metrics(item), Callable
         ), "The metrics are not correctly called."
+
+
+def test_check_func():
+
+    from InsurAutoML._utils._optimize import check_func
+    from InsurAutoML._model import LogisticRegression
+
+    assert (
+        check_func(LogisticRegression, ref="model") == None
+    ), "The check_func method is not correctly done."
+
+
+def test_check_status():
+
+    from InsurAutoML._utils._optimize import check_status
+    from InsurAutoML._hyperparameters import regressor_hyperparameter
+    from InsurAutoML._model import regressors
+
+    assert (
+        check_status(regressors, regressor_hyperparameter, ref="model") == None
+    ), "The check_status method is not correctly done."

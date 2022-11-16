@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hpo/_legacy.py
-File Created: Thursday, 7th April 2022 4:00:35 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_legacy.py
+File: _legacy.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:27 pm
+Last Modified: Tuesday, 15th November 2022 4:20:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,18 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+import logging
+
+logger = logging.getLogger(__name__)
+
+logger.warn(
+    "This module is deprecated and will be removed in the future. Please use updated versions instead."
+)
+warnings.warn(
+    "This module is deprecated and will be removed in the future. Please use updated versions instead.",
+    DeprecationWarning,
+)
 
 import os
 import ast

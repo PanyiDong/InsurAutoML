@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_hpo/_utils.py
-File Created: Tuesday, 10th May 2022 10:27:56 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_hpo/_utils.py
+File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 24th October 2022 10:53:23 pm
+Last Modified: Wednesday, 16th November 2022 12:55:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,8 +38,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+import logging
+
+logger = logging.getLogger(__name__)
+
 import warnings
-from typing import Callable
+from typing import Callable, Union, List, Tuple, Dict, Any
 import scipy
 import numpy as np
 import pandas as pd
@@ -64,13 +69,13 @@ class Pipeline:
 
     def __init__(
         self,
-        encoder=None,
-        imputer=None,
-        balancing=None,
-        scaling=None,
-        feature_selection=None,
-        model=None,
-    ):
+        encoder: Callable = None,
+        imputer: Callable = None,
+        balancing: Callable = None,
+        scaling: Callable = None,
+        feature_selection: Callable = None,
+        model: Callable = None,
+    ) -> None:
         self.encoder = encoder
         self.imputer = imputer
         self.balancing = balancing
@@ -80,7 +85,9 @@ class Pipeline:
 
         self._fitted = False  # whether the pipeline is fitted
 
-    def fit(self, X, y=None):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series] = None
+    ) -> Pipeline:
 
         # loop all components, make sure they are fitted
         # if they are not fitted, fit them
@@ -126,7 +133,7 @@ class Pipeline:
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         if not self._fitted:
             raise ValueError("Pipeline is not fitted!")
@@ -143,7 +150,9 @@ class Pipeline:
 
         return self.model.predict(X)
 
-    def predict_proba(self, X):
+    def predict_proba(
+        self, X: pd.DataFrame
+    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
         if not self._fitted:
             raise ValueError("Pipeline is not fitted!")
@@ -175,12 +184,12 @@ class ClassifierEnsemble(formatting):
 
     def __init__(
         self,
-        estimators,
-        voting="hard",
-        weights=None,
-        features=None,
-        strategy="stacking",
-    ):
+        estimators: List[Tuple[str, Pipeline]],
+        voting: str = "hard",
+        weights: List[float] = None,
+        features: List[str] = [],
+        strategy: str = "stacking",
+    ) -> None:
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
@@ -194,7 +203,9 @@ class ClassifierEnsemble(formatting):
 
         self._fitted = False
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> ClassifierEnsemble:
 
         # check for voting type
         if not self.voting in ["hard", "soft"]:
@@ -216,8 +227,6 @@ class ClassifierEnsemble(formatting):
         if len(self.features) == 0:
             self.features = [X.columns for _ in range(len(self.estimators))]
 
-        # remember all unique labels
-        super(ClassifierEnsemble, self).fit(y)
         # remember the name of response
         if isinstance(y, pd.Series):
             self._response = [y.name]
@@ -226,6 +235,9 @@ class ClassifierEnsemble(formatting):
         elif isinstance(y, np.ndarray):
             y = pd.DataFrame(y, columns=["response"])
             self._response = ["response"]
+
+        # remember all unique labels
+        super(ClassifierEnsemble, self).fit(y)
 
         # check for estimators type
         if not isinstance(self.estimators, list):
@@ -246,7 +258,7 @@ class ClassifierEnsemble(formatting):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> pd.DataFrame:
 
         if not self._fitted:
             raise ValueError("Ensemble is not fitted!")
@@ -261,6 +273,13 @@ class ClassifierEnsemble(formatting):
                     )
                 ]
             ).T
+            # if larger than 2d, take until get 2d array
+            while True:
+                if len(pred_list.shape) > 2:
+                    pred_list = pred_list[0]
+                else:
+                    break
+
             if self.strategy == "stacking" or self.strategy == "bagging":
                 pred = np.apply_along_axis(
                     lambda x: np.argmax(np.bincount(x, weights=self.weights)),
@@ -310,17 +329,22 @@ class RegressorEnsemble(formatting):
 
     def __init__(
         self,
-        estimators,
-        voting="mean",
-        weights=None,
-        features=None,
-        strategy="stacking",
-    ):
+        estimators: List[Tuple[str, Pipeline]],
+        voting: str = "mean",
+        weights: List[float] = None,
+        features: List[str] = [],
+        strategy: str = "stacking",
+    ) -> None:
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
         self.features = features
         self.strategy = strategy
+
+        # initialize the formatting
+        super(RegressorEnsemble, self).__init__(
+            inplace=False,
+        )
 
         self._fitted = False
 
@@ -331,7 +355,9 @@ class RegressorEnsemble(formatting):
             "min": np.min,
         }
 
-    def fit(self, X, y):
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> RegressorEnsemble:
 
         # check for voting type
         if self.voting in ["mean", "median", "max", "min"]:
@@ -349,6 +375,18 @@ class RegressorEnsemble(formatting):
             if self.weights is not None
             else None
         )
+
+        # remember the name of response
+        if isinstance(y, pd.Series):
+            self._response = [y.name]
+        elif isinstance(y, pd.DataFrame):
+            self._response = list(y.columns)
+        elif isinstance(y, np.ndarray):
+            y = pd.DataFrame(y, columns=["response"])
+            self._response = ["response"]
+
+        # remember all unique labels
+        super(RegressorEnsemble, self).fit(y)
 
         # if bagging, features much be provided
         if self.strategy == "bagging" and len(self.features) == 0:
@@ -378,7 +416,7 @@ class RegressorEnsemble(formatting):
 
         return self
 
-    def predict(self, X):
+    def predict(self, X: pd.DataFrame) -> pd.DataFrame:
 
         if not self._fitted:
             raise ValueError("Ensemble is not fitted!")
@@ -386,49 +424,65 @@ class RegressorEnsemble(formatting):
         # calculate predictions for all pipelines
         pred_list = np.asarray(
             [
-                pipeline.predict(X[feature_subset])
+                pipeline.predict(X[feature_subset]).flatten()
                 for (name, pipeline), feature_subset in zip(
                     self.estimators, self.features
                 )
             ]
         ).T
+        # if larger than 2d, take until get 2d array
+        while True:
+            if len(pred_list.shape) > 2:
+                pred_list = pred_list[0]
+            else:
+                break
 
         if self.strategy == "stacking" or self.strategy == "bagging":
             # if weights not included, not use weights
             try:
-                return self.voting(pred_list, axis=1, weights=self.weights)
+                pred = self.voting(pred_list, axis=1, weights=self.weights)
             except:
                 # if weights included, but not available in voting function, warn users
                 if self.weights is not None:
-                    warnings.warn("weights are not used in voting method")
-                return self.voting(pred_list, axis=1)
+                    logger.warn("weights are not used in voting method")
+                    # warnings.warn("weights are not used in voting method")
+                pred = self.voting(pred_list, axis=1)
         elif self.strategy == "boosting":
-            return np.sum(pred_list, axis=1)
+            pred = np.sum(pred_list, axis=1)
+
+        # make sure all predictions are seen
+        if isinstance(pred, pd.DataFrame):
+            return super(RegressorEnsemble, self).refit(pred)
+        # if not dataframe, convert to dataframe for formatting
+        else:
+            return super(RegressorEnsemble, self).refit(
+                pd.DataFrame(pred, columns=self._response)
+            )
 
 
 class TabularObjective(tune.Trainable):
     def setup(
         self,
-        config,
-        _X=None,
-        _y=None,
-        encoder=None,
-        imputer=None,
-        balancing=None,
-        scaling=None,
-        feature_selection=None,
-        models=None,
-        model_name="model",
-        task_mode="classification",
-        objective="accuracy",
-        validation=True,
-        valid_size=0.15,
-        full_status=False,
-        reset_index=True,
-        timeout=36,
-        _iter=1,
-        seed=1,
-    ):
+        config: Dict,
+        _X: pd.DataFrame = None,
+        _y: pd.DataFrame = None,
+        encoder: Dict[str, Callable] = None,
+        imputer: Dict[str, Callable] = None,
+        balancing: Dict[str, Callable] = None,
+        scaling: Dict[str, Callable] = None,
+        feature_selection: Dict[str, Callable] = None,
+        models: Dict[str, Callable] = None,
+        model_name: str = "model",
+        task_mode: str = "classification",
+        objective: str = "accuracy",
+        validation: bool = True,
+        valid_size: float = 0.15,
+        full_status: bool = False,
+        reset_index: bool = True,
+        timeout: int = 36,
+        _iter: int = 1,
+        seed: int = 1,
+    ) -> None:
         # assign hyperparameter arguments
         self.encoder = encoder
         self.imputer = imputer
@@ -454,7 +508,7 @@ class TabularObjective(tune.Trainable):
         if isinstance(self._X, pd.DataFrame):
             self.dict2config(config)
 
-    def step(self):
+    def step(self) -> Dict[str, Any]:
 
         # try:
         #     self.status_dict = self._objective()
@@ -486,108 +540,148 @@ class TabularObjective(tune.Trainable):
 
         return self.status_dict
 
-    def reset_config(self, new_config):
+    def reset_config(self, new_config: Dict) -> bool:
 
         self.dict2config(new_config)
 
         return True
 
     # convert dict hyperparameter to actual classes
-    def dict2config(self, params):
+    def dict2config(self, params: Dict) -> None:
 
         # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
         # select encoder and set hyperparameters
+        # make sure only those keys are used
+
+        for key in list(params.keys()):
+            if key not in [
+                "encoder",
+                "imputer",
+                "balancing",
+                "scaling",
+                "feature_selection",
+                "model",
+                "task_type",
+            ]:
+                params.pop(key, None)
 
         # issue 1: https://github.com/PanyiDong/My_AutoML/issues/1
         # HyperOpt hyperparameter space conflicts with ray.tune
 
         # while setting hyperparameters space,
         # the method name is injected into the hyperparameter space
-        # so, before fitting, these indications are removed
+        # so, before fitting, these indications are remove
 
         # must have encoder
         self._encoder_hyper = params["encoder"].copy()
         # find corresponding encoder key
-        for key in self._encoder_hyper.keys():
-            if "encoder_" in key:
-                _encoder_key = key
-                break
-        self._encoder = self._encoder_hyper[_encoder_key]
-        del self._encoder_hyper[_encoder_key]
-        # remove indications
-        self._encoder_hyper = {
-            k.replace(self._encoder + "_", ""): self._encoder_hyper[k]
-            for k in self._encoder_hyper
-        }
+        try:
+            for key in self._encoder_hyper.keys():
+                if "encoder_" in key:
+                    _encoder_key = key
+                    break
+            self._encoder = self._encoder_hyper[_encoder_key]
+            del self._encoder_hyper[_encoder_key]
+            # remove indications
+            self._encoder_hyper = {
+                k.replace(self._encoder + "_", ""): self._encoder_hyper[k]
+                for k in self._encoder_hyper
+            }
+        # if not get above format, use default format
+        except:
+            self._encoder = self._encoder_hyper["encoder"]
+            del self._encoder_hyper["encoder"]
         self.enc = self.encoder[self._encoder](**self._encoder_hyper)
 
         # select imputer and set hyperparameters
         self._imputer_hyper = params["imputer"].copy()
         # find corresponding imputer key
-        for key in self._imputer_hyper.keys():
-            if "imputer_" in key:
-                _imputer_key = key
-                break
-        self._imputer = self._imputer_hyper[_imputer_key]
-        del self._imputer_hyper[_imputer_key]
-        # remove indications
-        self._imputer_hyper = {
-            k.replace(self._imputer + "_", ""): self._imputer_hyper[k]
-            for k in self._imputer_hyper
-        }
+        try:
+            for key in self._imputer_hyper.keys():
+                if "imputer_" in key:
+                    _imputer_key = key
+                    break
+            self._imputer = self._imputer_hyper[_imputer_key]
+            del self._imputer_hyper[_imputer_key]
+            # remove indications
+            self._imputer_hyper = {
+                k.replace(self._imputer + "_", ""): self._imputer_hyper[k]
+                for k in self._imputer_hyper
+            }
+        # if not get above format, use default format
+        except:
+            self._imputer = self._imputer_hyper["imputer"]
+            del self._imputer_hyper["imputer"]
         self.imp = self.imputer[self._imputer](**self._imputer_hyper)
 
         # select balancing and set hyperparameters
         # must have balancing, since no_preprocessing is included
         self._balancing_hyper = params["balancing"].copy()
         # find corresponding balancing key
-        for key in self._balancing_hyper.keys():
-            if "balancing_" in key:
-                _balancing_key = key
-                break
-        self._balancing = self._balancing_hyper[_balancing_key]
-        del self._balancing_hyper[_balancing_key]
-        # remove indications
-        self._balancing_hyper = {
-            k.replace(self._balancing + "_", ""): self._balancing_hyper[k]
-            for k in self._balancing_hyper
-        }
+        try:
+            for key in self._balancing_hyper.keys():
+                if "balancing_" in key:
+                    _balancing_key = key
+                    break
+            self._balancing = self._balancing_hyper[_balancing_key]
+            del self._balancing_hyper[_balancing_key]
+            # remove indications
+            self._balancing_hyper = {
+                k.replace(self._balancing + "_", ""): self._balancing_hyper[k]
+                for k in self._balancing_hyper
+            }
+        # if not get above format, use default format
+        except:
+            self._balancing = self._balancing_hyper["balancing"]
+            del self._balancing_hyper["balancing"]
         self.blc = self.balancing[self._balancing](**self._balancing_hyper)
 
         # select scaling and set hyperparameters
         # must have scaling, since no_preprocessing is included
         self._scaling_hyper = params["scaling"].copy()
         # find corresponding scaling key
-        for key in self._scaling_hyper.keys():
-            if "scaling_" in key:
-                _scaling_key = key
-                break
-        self._scaling = self._scaling_hyper[_scaling_key]
-        del self._scaling_hyper[_scaling_key]
-        # remove indications
-        self._scaling_hyper = {
-            k.replace(self._scaling + "_", ""): self._scaling_hyper[k]
-            for k in self._scaling_hyper
-        }
+        try:
+            for key in self._scaling_hyper.keys():
+                if "scaling_" in key:
+                    _scaling_key = key
+                    break
+            self._scaling = self._scaling_hyper[_scaling_key]
+            del self._scaling_hyper[_scaling_key]
+            # remove indications
+            self._scaling_hyper = {
+                k.replace(self._scaling + "_", ""): self._scaling_hyper[k]
+                for k in self._scaling_hyper
+            }
+        # if not get above format, use default format
+        except:
+            self._scaling = self._scaling_hyper["scaling"]
+            del self._scaling_hyper["scaling"]
         self.scl = self.scaling[self._scaling](**self._scaling_hyper)
 
         # select feature selection and set hyperparameters
         # must have feature selection, since no_preprocessing is included
         self._feature_selection_hyper = params["feature_selection"].copy()
         # find corresponding feature_selection key
-        for key in self._feature_selection_hyper.keys():
-            if "feature_selection_" in key:
-                _feature_selection_key = key
-                break
-        self._feature_selection = self._feature_selection_hyper[_feature_selection_key]
-        del self._feature_selection_hyper[_feature_selection_key]
-        # remove indications
-        self._feature_selection_hyper = {
-            k.replace(self._feature_selection + "_", ""): self._feature_selection_hyper[
-                k
+        try:
+            for key in self._feature_selection_hyper.keys():
+                if "feature_selection_" in key:
+                    _feature_selection_key = key
+                    break
+            self._feature_selection = self._feature_selection_hyper[
+                _feature_selection_key
             ]
-            for k in self._feature_selection_hyper
-        }
+            del self._feature_selection_hyper[_feature_selection_key]
+            # remove indications
+            self._feature_selection_hyper = {
+                k.replace(
+                    self._feature_selection + "_", ""
+                ): self._feature_selection_hyper[k]
+                for k in self._feature_selection_hyper
+            }
+        # if not get above format, use default format
+        except:
+            self._feature_selection = self._feature_selection_hyper["feature_selection"]
+            del self._feature_selection_hyper["feature_selection"]
         self.fts = self.feature_selection[self._feature_selection](
             **self._feature_selection_hyper
         )
@@ -596,17 +690,22 @@ class TabularObjective(tune.Trainable):
         # must have a model
         self._model_hyper = params["model"].copy()
         # find corresponding model key
-        for key in self._model_hyper.keys():
-            if "model_" in key:
-                _model_key = key
-                break
-        self._model = self._model_hyper[_model_key]
-        del self._model_hyper[_model_key]
-        # remove indications
-        self._model_hyper = {
-            k.replace(self._model + "_", ""): self._model_hyper[k]
-            for k in self._model_hyper
-        }
+        try:
+            for key in self._model_hyper.keys():
+                if "model_" in key:
+                    _model_key = key
+                    break
+            self._model = self._model_hyper[_model_key]
+            del self._model_hyper[_model_key]
+            # remove indications
+            self._model_hyper = {
+                k.replace(self._model + "_", ""): self._model_hyper[k]
+                for k in self._model_hyper
+            }
+        # if not get above format, use default format
+        except:
+            self._model = self._model_hyper["model"]
+            del self._model_hyper["model"]
         self.mol = self.models[self._model](
             **self._model_hyper
         )  # call the model using passed parameters
@@ -643,15 +742,16 @@ class TabularObjective(tune.Trainable):
             f.write("Model Hyperparameters:")
             print(self._model_hyper, file=f, end="\n\n")
 
-    def save_checkpoint(self, tmp_checkpoint_dir):
+    def save_checkpoint(self, tmp_checkpoint_dir: str) -> str:
         checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
 
         with open(checkpoint_path, "w") as out_f:
             json.dump(self.status_dict, out_f)
 
+        # need to return the path of checkpoints to be further processed
         return tmp_checkpoint_dir
 
-    def load_checkpoint(self, tmp_checkpoint_dir):
+    def load_checkpoint(self, tmp_checkpoint_dir: str) -> None:
         checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
 
         with open(checkpoint_path, "r") as inp_f:
@@ -670,7 +770,7 @@ class TabularObjective(tune.Trainable):
     @ignore_warnings(category=ConvergenceWarning)
     def _objective(
         self,
-    ):
+    ) -> Dict[str, Any]:
 
         # different evaluation metrics for classification and regression
         # notice: if add metrics that is larger the better, need to add - sign

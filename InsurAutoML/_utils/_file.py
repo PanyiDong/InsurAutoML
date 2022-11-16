@@ -1,17 +1,17 @@
 """
-File: _file.py
+File Name: _file.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/_file.py
-File Created: Wednesday, 6th April 2022 6:25:09 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/_file.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 17th April 2022 1:02:29 am
+Last Modified: Monday, 14th November 2022 9:27:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,25 +38,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Dict, List
 import os
 import pickle
 
 # save model
 def save_model(
-    encoder,
-    encoder_hyperparameters,
-    imputer,
-    imputer_hyperparameters,
-    balancing,
-    balancing_hyperparameters,
-    scaling,
-    scaling_hyperparameters,
-    feature_selection,
-    feature_selection_hyperparameters,
-    model,
-    model_hyperparameters,
-    model_name,
-):
+    encoder: str,
+    encoder_hyperparameters: Dict,
+    imputer: str,
+    imputer_hyperparameters: Dict,
+    balancing: str,
+    balancing_hyperparameters: Dict,
+    scaling: str,
+    scaling_hyperparameters: Dict,
+    feature_selection: str,
+    feature_selection_hyperparameters: Dict,
+    model: str,
+    model_hyperparameters: Dict,
+    model_name: str,
+) -> None:
     with open(model_name, "w") as f:
         f.write("{}\n".format(encoder))
         print(encoder_hyperparameters, file=f, end="\n")
@@ -73,7 +74,7 @@ def save_model(
 
 
 # save list of methods
-def save_methods(file_name, methods):
+def save_methods(file_name: str, methods: List) -> None:
 
     """
     Parameters
@@ -89,7 +90,7 @@ def save_methods(file_name, methods):
 
 
 # load methods
-def load_methods(file_name):
+def load_methods(file_name: str) -> List:
 
     """
     Parameters
@@ -109,10 +110,11 @@ def load_methods(file_name):
 
     return results
 
+
 # find exact folder path
-def find_exact_path(path, spec_str) :
-    
+def find_exact_path(path: str, spec_str: str) -> str:
+
     for folder in os.listdir(path):
-        
+
         if spec_str in os.path.join(path, folder):
             return os.path.join(path, folder)

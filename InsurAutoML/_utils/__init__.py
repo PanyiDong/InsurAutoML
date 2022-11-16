@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_utils/__init__.py
-File Created: Wednesday, 6th April 2022 12:00:12 am
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_utils/__init__.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 25th September 2022 11:11:35 pm
+Last Modified: Monday, 14th November 2022 8:17:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -77,6 +77,7 @@ from ._data import (
     remove_index_columns,
     get_missing_matrix,
 )
+from ._metadata import MetaData
 from ._file import save_model
 from ._stat import (
     nan_cov,

@@ -1,17 +1,17 @@
 """
-File: __tabular.py
+File Name: _tabular.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_data/__tabular.py
-File Created: Saturday, 6th August 2022 10:49:36 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_datasets/_tabular.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th August 2022 8:49:52 am
+Last Modified: Monday, 14th November 2022 6:58:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,9 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
 import os
 import requests
 import pandas as pd
+from typing import Union, Tuple, List, Dict
 
 URL_PREFIX = "https://github.com/EpistasisLab/pmlb/raw/master/datasets"
 SUFFIX = ".tsv.gz"
@@ -49,15 +52,15 @@ SUFFIX = ".tsv.gz"
 class BaseTabularDataset:
     def __init__(
         self,
-        data_name,
-        data_path="tmp",
-        download=True,
-    ):
+        data_name: str,
+        data_path: str = "tmp",
+        download: bool = True,
+    ) -> None:
         self.data_name = data_name
         self.data_path = data_path
         self.download = download
 
-    def get_data(self):
+    def get_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
         if os.path.exists(
             os.path.join(
@@ -103,90 +106,102 @@ class BaseTabularDataset:
 ##################################################################################################################### Tabular Classification Dataset
 
 
-def ADULT(data_path="tmp", download=True):
+def ADULT(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("adult", data_path, download)
 
     return data_loader.get_data()
 
 
-def AUTO(data_path="tmp", download=True):
+def AUTO(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("auto", data_path, download)
 
     return data_loader.get_data()
 
 
-def BREAST(data_path="tmp", download=True):
+def BREAST(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("breast", data_path, download)
 
     return data_loader.get_data()
 
 
-def CAR_EVALUATION(data_path="tmp", download=True):
+def CAR_EVALUATION(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("car_evaluation", data_path, download)
 
     return data_loader.get_data()
 
 
-def NURSERY(data_path="tmp", download=True):
+def NURSERY(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("nursery", data_path, download)
 
     return data_loader.get_data()
 
 
-def PAGE_BLOCKS(data_path="tmp", download=True):
+def PAGE_BLOCKS(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("page_blocks", data_path, download)
 
     return data_loader.get_data()
 
 
-def HEART():
+def HEART() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/heart.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def EMPLOYEE():
+def EMPLOYEE() -> Tuple[pd.DataFrame, pd.DataFrame]:
     dataset = pd.read_csv("Appendix/Employee.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def STROKE():
+def STROKE() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def HEART2020():
+def HEART2020() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/heart_2020_cleaned.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def TRAVEL_INSURANCE():
+def TRAVEL_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/TravelInsurancePrediction.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def IMBALANCED_INSURANCE():
+def IMBALANCED_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/ImbalancedInsurance.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def HEALTH_INSURANCE():
+def HEALTH_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/HealthInsurance.csv")
 
@@ -196,35 +211,41 @@ def HEALTH_INSURANCE():
 ##################################################################################################################### Tabular Regression Dataset
 
 
-def CPU_ACT(data_path="tmp", download=True):
+def CPU_ACT(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("197_cpu_act", data_path, download)
 
     return data_loader.get_data()
 
 
-def WIND(data_path="tmp", download=True):
+def WIND(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("503_wind", data_path, download)
 
     return data_loader.get_data()
 
 
-def HOUSES(data_path="tmp", download=True):
+def HOUSES(
+    data_path: str = "tmp", download: bool = True
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     data_loader = BaseTabularDataset("537_houses", data_path, download)
 
     return data_loader.get_data()
 
 
-def INSURANCE():
+def INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/insurance.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def MEDICAL_PREMIUM():
+def MEDICAL_PREMIUM() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
     dataset = pd.read_csv("Appendix/Medicalpremium.csv")
 
@@ -235,7 +256,9 @@ def MEDICAL_PREMIUM():
 
 
 # Machine Hack Product Sentiment Dataset
-def PROD(split="train", save=True, data_path="tmp"):
+def PROD(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_product_sentiment"
     DATANAME = "machine_hack_product_sentiment"
@@ -243,7 +266,7 @@ def PROD(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
+        # split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.csv").replace("\\", "/")
@@ -253,7 +276,11 @@ def PROD(split="train", save=True, data_path="tmp"):
             )
         # else, download it
         else:
-            dataset = pd.read_csv(os.path.join(URL, f"{split}.csv").replace("\\", "/"))
+            dataset = pd.read_csv(
+                os.path.join(
+                    URL, "{}.csv".format("dev" if split == "test" else split)
+                ).replace("\\", "/")
+            )
             # whether need to save
             if save:
                 # if folder not exists, create it
@@ -269,8 +296,8 @@ def PROD(split="train", save=True, data_path="tmp"):
                 )
         return dataset.iloc[:, :-1], dataset.iloc[:, -1]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
+        # if "test" in split:
+        #     split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
@@ -285,7 +312,9 @@ def PROD(split="train", save=True, data_path="tmp"):
                 )
             else:
                 dataset[_split] = pd.read_csv(
-                    os.path.join(URL, f"{_split}.csv").replace("\\", "/")
+                    os.path.join(
+                        URL, "{}.csv".format("dev" if _split == "test" else _split)
+                    ).replace("\\", "/")
                 )
                 # whether need to save
                 if save:
@@ -309,7 +338,9 @@ def PROD(split="train", save=True, data_path="tmp"):
 
 
 # Jigsaw unintended bias in toxicity classification dataset
-def JIGSAW(split="train", save=True, data_path="tmp"):
+def JIGSAW(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/jigsaw_unintended_bias"
     DATANAME = "jigsaw_unintended_bias"
@@ -317,7 +348,7 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
+        # split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
@@ -328,7 +359,9 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
         # else, download it
         else:
             dataset = pd.read_parquet(
-                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+                os.path.join(
+                    URL, "{}.pq".format("dev" if split == "test" else split)
+                ).replace("\\", "/")
             )
             # whether need to save
             if save:
@@ -343,8 +376,8 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
                 )
         return dataset.loc[:, dataset.columns != "target"], dataset["target"]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
+        # if "test" in split:
+        #     split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
@@ -357,7 +390,9 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
                 )
             else:
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                    os.path.join(
+                        URL, "{}.pq".format("dev" if _split == "test" else _split)
+                    ).replace("\\", "/")
                 )
                 # whether need to save
                 if save:
@@ -384,12 +419,13 @@ def JIGSAW(split="train", save=True, data_path="tmp"):
 
 
 # Jigsaw unintended bias in toxicity classification 100K dataset
-def JIGSAW100K(split="train", save=True, data_path="tmp"):
+def JIGSAW100K(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/jigsaw_unintended_bias100K"
     DATANAME = "jigsaw_unintended_bias100K"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -456,12 +492,13 @@ def JIGSAW100K(split="train", save=True, data_path="tmp"):
 
 
 # Melbourne Airbnb dataset
-def AIRBNB(split="train", save=True, data_path="tmp"):
+def AIRBNB(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/airbnb_melbourne"
     DATANAME = "airbnb_melbourne"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -527,12 +564,13 @@ def AIRBNB(split="train", save=True, data_path="tmp"):
 
 
 # IMDB Genre Prediction dataset
-def IMDBGenre(split="train", save=True, data_path="tmp"):
+def IMDBGenre(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/imdb_genre_prediction"
     DATANAME = "imdb_genre_prediction"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -604,12 +642,13 @@ def IMDBGenre(split="train", save=True, data_path="tmp"):
 
 
 # Fake Job Posting Prediction dataset
-def FakeJob(split="train", save=True, data_path="tmp"):
+def FakeJob(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/fake_job_postings"
     DATANAME = "fake_job_postings"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -681,12 +720,13 @@ def FakeJob(split="train", save=True, data_path="tmp"):
 
 
 # Fake Job Posting Prediction dataset 2
-def FakeJob2(split="train", save=True, data_path="tmp"):
+def FakeJob2(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/fake_job_postings2"
     DATANAME = "fake_job_postings2"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -758,12 +798,13 @@ def FakeJob2(split="train", save=True, data_path="tmp"):
 
 
 # Kick Starter Success Prediction dataset
-def KickStarter(split="train", save=True, data_path="tmp"):
+def KickStarter(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/kick_starter_funding"
     DATANAME = "kick_starter_funding"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -835,12 +876,13 @@ def KickStarter(split="train", save=True, data_path="tmp"):
 
 
 # WINE Variety Classification dataset
-def WINEReview(split="train", save=True, data_path="tmp"):
+def WINEReview(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/wine_reviews"
     DATANAME = "wine_reviews"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -912,12 +954,13 @@ def WINEReview(split="train", save=True, data_path="tmp"):
 
 
 # News Channel Classification dataset
-def NewsChannel(split="train", save=True, data_path="tmp"):
+def NewsChannel(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_channel"
     DATANAME = "news_channel"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -991,12 +1034,13 @@ def NewsChannel(split="train", save=True, data_path="tmp"):
 ##################################################################################################################### Tabular Regression Dataset with text features
 
 # women clothing reviews dataset
-def WomenCloth(split="train", save=True, data_path="tmp"):
+def WomenCloth(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/women_clothing_review"
     DATANAME = "women_clothing_review"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1063,7 +1107,9 @@ def WomenCloth(split="train", save=True, data_path="tmp"):
 
 
 # Mercari Price Suggestion dataset
-def MERCARI(split="train", save=True, data_path="tmp"):
+def MERCARI(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/mercari_price_suggestion"
     DATANAME = "mercari_price_suggestion"
@@ -1071,7 +1117,7 @@ def MERCARI(split="train", save=True, data_path="tmp"):
     # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
-        split = "dev" if split == "test" else split
+        # split = "dev" if split == "test" else split
         # if file exists, read it
         if os.path.exists(
             os.path.join(data_path, DATANAME, f"{split}.pq").replace("\\", "/")
@@ -1082,7 +1128,9 @@ def MERCARI(split="train", save=True, data_path="tmp"):
         # else, download it
         else:
             dataset = pd.read_parquet(
-                os.path.join(URL, f"{split}.pq").replace("\\", "/")
+                os.path.join(
+                    URL, "{}.pq".format("dev" if split == "test" else split)
+                ).replace("\\", "/")
             )
             # whether need to save
             if save:
@@ -1097,8 +1145,8 @@ def MERCARI(split="train", save=True, data_path="tmp"):
                 )
         return dataset.loc[:, dataset.columns != "price"], dataset["price"]
     elif isinstance(split, list):
-        if "test" in split:
-            split = list(map(lambda x: "dev" if x == "test" else x, split))
+        # if "test" in split:
+        #     split = list(map(lambda x: "dev" if x == "test" else x, split))
 
         dataset = {}
         # if file exists, read it
@@ -1111,7 +1159,9 @@ def MERCARI(split="train", save=True, data_path="tmp"):
                 )
             else:
                 dataset[_split] = pd.read_parquet(
-                    os.path.join(URL, f"{_split}.pq").replace("\\", "/")
+                    os.path.join(
+                        URL, "{}.pq".format("dev" if _split == "test" else _split)
+                    ).replace("\\", "/")
                 )
                 # whether need to save
                 if save:
@@ -1138,12 +1188,13 @@ def MERCARI(split="train", save=True, data_path="tmp"):
 
 
 # Mercari Price Suggestion 100K dataset
-def MERCARI100K(split="train", save=True, data_path="tmp"):
+def MERCARI100K(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/mercari_price_suggestion100K"
     DATANAME = "mercari_price_suggestion100K"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1210,12 +1261,13 @@ def MERCARI100K(split="train", save=True, data_path="tmp"):
 
 
 # Innerwear (sold by American Eagle) Price Prediction
-def AE(split="train", save=True, data_path="tmp"):
+def AE(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/ae_price_prediction"
     DATANAME = "ae_price_prediction"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1278,12 +1330,13 @@ def AE(split="train", save=True, data_path="tmp"):
 
 
 # JC Penney Price Prediction dataset
-def JCPenney(split="train", save=True, data_path="tmp"):
+def JCPenney(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/jc_penney_products"
     DATANAME = "jc_penney_products"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1355,12 +1408,13 @@ def JCPenney(split="train", save=True, data_path="tmp"):
 
 
 # News Popularity Regression dataset
-def NewsPopularity(split="train", save=True, data_path="tmp"):
+def NewsPopularity(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_popularity"
     DATANAME = "news_popularity"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1432,12 +1486,13 @@ def NewsPopularity(split="train", save=True, data_path="tmp"):
 
 
 # News Popularity Regression dataset 2
-def NewsPopularity2(split="train", save=True, data_path="tmp"):
+def NewsPopularity2(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_popularity2"
     DATANAME = "news_popularity2"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1509,12 +1564,13 @@ def NewsPopularity2(split="train", save=True, data_path="tmp"):
 
 
 # Book Price Regression dataset
-def BookPrice(split="train", save=True, data_path="tmp"):
+def BookPrice(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_competitions/predict_the_price_of_books"
     DATANAME = "predict_the_price_of_books"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1586,12 +1642,13 @@ def BookPrice(split="train", save=True, data_path="tmp"):
 
 
 # Data Science Salary Classification dataset
-def DSSalary(split="train", save=True, data_path="tmp"):
+def DSSalary(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_competitions/predict_the_data_scientists_salary_in_india_hackathon"
     DATANAME = "predict_the_data_scientists_salary"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it
@@ -1663,12 +1720,13 @@ def DSSalary(split="train", save=True, data_path="tmp"):
 
 
 # California House Price dataset
-def CAHousePrice(split="train", save=True, data_path="tmp"):
+def CAHousePrice(
+    split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
+) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
 
     URL = "https://automl-mm-bench.s3.amazonaws.com/kaggle-california-house-prices"
     DATANAME = "california_house_prices"
 
-    # need to convert test to dev for reading
     # if string, only one split needed
     if isinstance(split, str):
         # if file exists, read it

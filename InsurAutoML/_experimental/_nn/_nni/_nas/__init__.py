@@ -1,17 +1,17 @@
 """
-File: __init__.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Last Version: 0.2.1
-Relative Path: /My_AutoML/_utils/_enas/__init__.py
-File Created: Friday, 15th July 2022 6:09:12 pm
+Project: InsurAutoML
+Latest Version: 0.2.3
+Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/__init__.py
+File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 19th July 2022 11:34:57 pm
+Last Modified: Monday, 14th November 2022 8:26:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from ._trainer import Trainer
 from ._baseSpace import MLPBaseSpace, RNNBaseSpace

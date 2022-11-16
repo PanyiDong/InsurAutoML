@@ -1,4 +1,4 @@
-name: nn_test
+name: dev_test
 on:
   - pull_request
 jobs:
@@ -15,6 +15,7 @@ jobs:
           python-version: 3.9
       - name: "run tests (with neural network)"
         run: |
+          python -m pip install --upgrade pip
           pip install pytest
-          pip install -e .[nn]
-          pytest tests/
+          pip install -e .[dev]
+          pytest tests/test_hpo
