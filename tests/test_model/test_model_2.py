@@ -1,5 +1,5 @@
 """
-File Name: test_model_2.py
+File: test_model_2.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /tests/test_model/test_model_2.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:23:03 pm
+Last Modified: Wednesday, 16th November 2022 8:30:42 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -100,7 +100,6 @@ def test_add_regressor():
     # ), "Model HistGradientBoostingRegressor has not been fitted."
 
     model = LibSVM_SVR()
-
     model.fit(X, y)
     y_pred = model.predict(X)
     try:

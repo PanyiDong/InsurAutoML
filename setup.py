@@ -11,7 +11,7 @@ File: setup.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 5:18:50 pm
+Last Modified: Wednesday, 16th November 2022 8:31:31 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -244,7 +244,8 @@ R_HOME = get_r_home()
 if not R_HOME:
     raise RuntimeError("""The R home directory could not be determined.""")
 
-if not os.environ.get("R_HOME"):
+# only install for Linux
+if not os.environ.get("R_HOME") and sys.platform == "linux":
     os.environ["R_HOME"] = R_HOME
     EXTRA_DICT["extended"].append("rpy2")
     EXTRA_DICT["nn"].append("rpy2")
