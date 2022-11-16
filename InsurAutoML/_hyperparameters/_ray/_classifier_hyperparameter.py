@@ -11,7 +11,7 @@ File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:08:31 pm
+Last Modified: Tuesday, 15th November 2022 8:57:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,12 +38,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+# Update: Nov. 15, 2022
+# sklearn > 1.0.0 is required for this module.
 # NOTE:
 # As sklearn enters version 1.0, some of the losses have changed its name,
 # hyperparameters will change accordingly
-import sklearn
+# import sklearn
 
-sklearn_1_0_0 = sklearn.__version__ <= "1.0.0"
+# sklearn_1_0_0 = sklearn.__version__ <= "1.0.0"
 
 from ray import tune
 
@@ -237,15 +239,14 @@ GRADIENTBOOSTINGCLASSIFIER = {
     "learning_rate": tune.loguniform(0.01, 1),
     "n_estimators": tune.qlograndint(10, 500, 1),
     "subsample": tune.uniform(0.1, 1),
-    "criterion": tune.choice(["mse", "mae"])
-    if sklearn_1_0_0
-    else tune.choice(["friedman_mse", "squared_error"]),
+    "criterion": tune.choice(["friedman_mse", "squared_error"]),
     "min_samples_split": tune.qrandint(2, 20, 1),
     "min_samples_leaf": tune.qlograndint(1, 200, 1),
     "min_weight_fraction_leaf": tune.uniform(0.0, 0.5),
     "max_depth": tune.randint(1, 31),
     "min_impurity_decrease": tune.uniform(0.0, 1.0),
-    "max_features": tune.choice(["sqrt", "log2", tune.uniform(0.0, 1.0)]),
+    # "max_features": tune.choice(["sqrt", "log2", tune.uniform(0.0, 1.0)]),
+    "max_features": tune.uniform(0.0, 1.0),
     "max_leaf_nodes": tune.qlograndint(3, 2047, 1),
     "validation_fraction": tune.uniform(0.01, 0.4),
     "n_iter_no_change": tune.qrandint(1, 20, 1),

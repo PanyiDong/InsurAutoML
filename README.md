@@ -195,7 +195,7 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 >
 > 6. objective: metrics use to evaluate trials' performance
 >
-> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch`, `HyperOpt`, `Optuna`, `BlendSearch`, `CFO` and `Nevergrad` are now supported. Default is set to `HyperOpt`. The use of `BlendSearch`, `CFO` and `Nevergrad` requires additional packages, see the error message for installation guide when using. This will be all algorithms that will be supported in short time.
+> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch`, `HyperOpt`, `Optuna`, `CFO` and `Nevergrad` are now supported. Default is set to `HyperOpt`. The use of `CFO` and `Nevergrad` requires additional packages, see the error message for installation guide when using. This will be all algorithms that will be supported in short time.
 >
 > 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
 

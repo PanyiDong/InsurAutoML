@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:18:00 pm
+Last Modified: Tuesday, 15th November 2022 11:03:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -585,7 +585,7 @@ def _optuna_get_hyperparameter_space(
         task_mode = task_mode,
     )
     
-def _nevergrad_get_hyperparameter_space(
+def _converted_get_hyperparameter_space(
     X: pd.DataFrame,
     encoders_hyperparameters: Dict,
     encoder: Dict,
@@ -600,17 +600,24 @@ def _nevergrad_get_hyperparameter_space(
     models_hyperparameters: Dict,
     models: Dict,
     task_mode: str,
+    search_algo: str = "Nevergrad",
 ) -> Dict:
-    # check installation of optuna
-    nevergrad_spec = importlib.util.find_spec("nevergrad")
-    if nevergrad_spec is None:
-        raise ImportError(
-            "nevergrad not installed. Please install it first to use Nevergrad. \
-            Command to install: pip install nevergrad"
-        )
+    # Note: Nov. 15, 2022
+    # this will be checked in get_algo, no need to check here
+    # # check installation of optuna
+    # nevergrad_spec = importlib.util.find_spec("nevergrad")
+    # if nevergrad_spec is None:
+    #     raise ImportError(
+    #         "nevergrad not installed. Please install it first to use Nevergrad. \
+    #         Command to install: pip install nevergrad"
+    #     )
         
-    import nevergrad as ng
-    from ray.tune.suggest.nevergrad import NevergradSearch
+    if search_algo == "Nevergrad":
+        from ray.tune.suggest.nevergrad import NevergradSearch
+        searcher = NevergradSearch
+    elif search_algo == "BlendSearch":
+        from ray.tune.suggest.flaml import BlendSearch
+        searcher = BlendSearch
     
     # encoding space
     # get all method names in hyperparameter space
@@ -622,7 +629,7 @@ def _nevergrad_get_hyperparameter_space(
             [encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"]]
         )
         _encoding_hyperparameter.append(
-            NevergradSearch.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
+            searcher.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
         )
         
     # raise error if no encoding hyperparameters are found
@@ -640,7 +647,7 @@ def _nevergrad_get_hyperparameter_space(
             [imputers_hyperparameters[all_imputers.index(_imputer)]["imputer"]]
         )
         _imputer_hyperparameter.append(
-            NevergradSearch.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
+            searcher.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
         )
         
     # raise error if no encoding hyperparameters are found
@@ -658,7 +665,7 @@ def _nevergrad_get_hyperparameter_space(
             [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
         )
         _balancing_hyperparameter.append(
-            NevergradSearch.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
+            searcher.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
         )
         
     # raise error if no encoding hyperparameters are found
@@ -676,7 +683,7 @@ def _nevergrad_get_hyperparameter_space(
             [scalings_hyperparameters[all_scalings.index(_scaling)]["scaling"]]
         )
         _scaling_hyperparameter.append(
-            NevergradSearch.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
+            searcher.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
         )
         
     # raise error if no encoding hyperparameters are found
@@ -698,7 +705,7 @@ def _nevergrad_get_hyperparameter_space(
             ]["feature_selection"]]
         )
         _feature_selection_hyperparameter.append(
-            NevergradSearch.convert_search_space(
+            searcher.convert_search_space(
                 feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
             )
         )
@@ -718,7 +725,7 @@ def _nevergrad_get_hyperparameter_space(
             [models_hyperparameters[all_models.index(_model)]["model"]]
         )
         _model_hyperparameter.append(
-            NevergradSearch.convert_search_space(models_hyperparameters[all_models.index(_model)])
+            searcher.convert_search_space(models_hyperparameters[all_models.index(_model)])
         )
         
     # raise error if no encoding hyperparameters are found
@@ -901,7 +908,8 @@ def _get_hyperparameter_space(
     task_mode: str,
     search_aglo: str,
 ) -> Union[Dict, Callable]:
-    if search_aglo in ["RandomSearch", "GridSearch", "BlendSearch", "CFO"]:
+    if search_aglo in ["RandomSearch", "GridSearch", "CFO"]:
+        # BlendSearch can start from iter #2
         return _base_get_hyperparameter_space(
             X,
             encoders_hyperparameters,
@@ -955,7 +963,7 @@ def _get_hyperparameter_space(
             )
     elif search_aglo in ["Nevergrad"] :
         with DisableLogger() :
-            return _nevergrad_get_hyperparameter_space(
+            return _converted_get_hyperparameter_space(
                 X,
                 encoders_hyperparameters,
                 encoder,
@@ -970,6 +978,7 @@ def _get_hyperparameter_space(
                 models_hyperparameters,
                 models,
                 task_mode,
+                search_algo = search_aglo,
             )
     # elif search_aglo in ["Scikit-Optimize"] :
     #     return _skopt_get_hyperparameter_space(
@@ -1051,26 +1060,26 @@ def get_algo(search_algo: str) -> Callable:
     #     from ray.tune.suggest.bohb import TuneBOHB
 
     #     algo = TuneBOHB
-    elif search_algo == "BlendSearch":
+    # elif search_algo == "BlendSearch":
 
-        # check whether flaml is installed
-        flaml_spec = importlib.util.find_spec("flaml")
-        if flaml_spec is None:
-            raise ImportError(
-                "flaml not installed. Please install it first to use BlendSearch. \nCommand to install: pip install flaml"
-            )
+    #     # check whether flaml is installed
+    #     flaml_spec = importlib.util.find_spec("flaml")
+    #     if flaml_spec is None:
+    #         raise ImportError(
+    #             "flaml not installed. Please install it first to use BlendSearch. \nCommand to install: pip install 'flaml[blendsearch]'"
+    #         )
 
-        # Blend Search
-        from ray.tune.suggest.flaml import BlendSearch
+    #     # Blend Search
+    #     from ray.tune.suggest.flaml import BlendSearch
 
-        algo = BlendSearch
+    #     algo = BlendSearch
     elif search_algo == "CFO":
 
         # check whether flaml is installed
         flaml_spec = importlib.util.find_spec("flaml")
         if flaml_spec is None:
             raise ImportError(
-                "flaml not installed. Please install it first to use BlendSearch. \nCommand to install: pip install 'flaml[blendsearch]'"
+                "flaml not installed. Please install it first to use CFO. \nCommand to install: pip install flaml"
             )
 
         # Blend Search

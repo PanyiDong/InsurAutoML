@@ -11,7 +11,7 @@ File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:21:15 pm
+Last Modified: Tuesday, 15th November 2022 9:09:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1864,7 +1864,9 @@ class AutoTabularBase(MetaData):
                 # select optimal settings and fit optimal pipeline
                 self._fit_ensemble(
                     best_trial_id,
-                    fit_analysis.best_config,
+                    fit_analysis.get_best_config(
+                        metric="loss", mode="min", scope="all"
+                    ),
                     iter=_n,
                     features=feature_subset,
                 )
@@ -2010,7 +2012,13 @@ class AutoTabularBase(MetaData):
                 )
 
                 # select optimal settings and fit optimal pipeline
-                self._fit_ensemble(best_trial_id, fit_analysis.best_config, iter=_n)
+                self._fit_ensemble(
+                    best_trial_id,
+                    fit_analysis.get_best_config(
+                        metric="loss", mode="min", scope="all"
+                    ),
+                    iter=_n,
+                )
 
                 # make sure the ensemble is fitted
                 # usually, most of the methods are already fitted

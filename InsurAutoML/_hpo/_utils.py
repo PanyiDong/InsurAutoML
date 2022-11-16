@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 2:30:23 pm
+Last Modified: Tuesday, 15th November 2022 10:26:14 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -552,6 +552,7 @@ class TabularObjective(tune.Trainable):
         # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
         # select encoder and set hyperparameters
         # make sure only those keys are used
+
         for key in list(params.keys()):
             if key not in [
                 "encoder",
@@ -935,7 +936,7 @@ class TabularObjective(tune.Trainable):
                 )
             else:
                 raise TypeError("Only accept numpy array or pandas dataframe!")
-            
+
             self.mol.fit(_X_train_obj, _y_train_obj.values.ravel())
             os.remove("objective_process.txt")
 

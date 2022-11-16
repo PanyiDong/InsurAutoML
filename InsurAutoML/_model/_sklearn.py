@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 2:40:23 pm
+Last Modified: Tuesday, 15th November 2022 11:02:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -56,11 +56,13 @@ import sklearn.gaussian_process
 import sklearn.neural_network
 import sklearn.calibration
 
+# Update: Nov. 15, 2022
+# sklearn > 1.0.0 is required for this module.
 # need to enable hist gradient boosting features first
 # no need for sklearn version >= 1.0.0
-sklearn_1_0_0 = sklearn.__version__ < "1.0.0"
-if sklearn_1_0_0:
-    from sklearn.experimental import enable_hist_gradient_boosting
+# sklearn_1_0_0 = sklearn.__version__ < "1.0.0"
+# if sklearn_1_0_0:
+#     from sklearn.experimental import enable_hist_gradient_boosting
 
 from InsurAutoML._constant import MAX_ITER
 from InsurAutoML._utils._base import is_none
@@ -1409,6 +1411,14 @@ class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
         self.n_iter_no_change = int(n_iter_no_change)
         self.tol = float(tol)
 
+        self._fitted = False  # whether the model is fitted
+
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> GradientBoostingClassifier:
+
         super().__init__(
             loss=self.loss,
             learning_rate=self.learning_rate,
@@ -1420,20 +1430,12 @@ class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,
             max_depth=self.max_depth,
             min_impurity_decrease=self.min_impurity_decrease,
-            max_features=self.max_features,
+            max_features=max(1, int(X.shape[1] ** self.max_features)),
             max_leaf_nodes=self.max_leaf_nodes,
             validation_fraction=self.validation_fraction,
             n_iter_no_change=self.n_iter_no_change,
             tol=self.tol,
         )
-
-        self._fitted = False  # whether the model is fitted
-
-    def fit(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    ) -> GradientBoostingClassifier:
 
         super().fit(X, y)
 
@@ -2684,7 +2686,7 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
 class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor):
     def __init__(
         self,
-        loss: str = "ls" if sklearn_1_0_0 else "squared_error",  # for default arguments
+        loss: str = "squared_error",  # for default arguments
         learning_rate: float = 0.1,
         n_estimators: int = 100,
         subsample: float = 1.0,

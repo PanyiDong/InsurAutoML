@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 2:50:35 pm
+Last Modified: Tuesday, 15th November 2022 9:06:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -124,7 +124,7 @@ class extra_trees_preproc_for_classification:
             criterion=self.criterion,
             min_samples_leaf=self.min_samples_leaf,
             min_samples_split=self.min_samples_split,
-            max_features=int(X.shape[1] * self.max_features),
+            max_features=max(1, int(X.shape[1] * self.max_features)),
             bootstrap=self.bootstrap,
             max_leaf_nodes=self.max_leaf_nodes,
             max_depth=self.max_depth,
