@@ -1,5 +1,5 @@
 """
-File Name: _metadata.py
+File: _metadata.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_metadata.py
-File Created: Saturday, 12th November 2022 12:48:12 am
+File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:17:50 pm
+Last Modified: Tuesday, 15th November 2022 6:11:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -269,7 +269,8 @@ class MetaData:
         elif "float" in str(_dtype):
 
             # in case int registed as float
-            if max(np.abs(data - data.astype(int))) < 1e-6:
+            # if nan values, fillna first, since those values will not impact our judgement
+            if max(np.abs(data.fillna(0) - data.fillna(0).astype(int))) < 1e-6:
                 warnings.warn(
                     "The column {} is registered as float, but it is actually int. Convert it to int".format(
                         _column

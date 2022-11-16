@@ -11,7 +11,7 @@ File: test_utils_optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 5:17:27 pm
+Last Modified: Tuesday, 15th November 2022 6:12:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,10 +63,10 @@ def test_get_algo():
     except ImportError:
         pass
 
-    try:
-        get_algo("HEBO")
-    except ImportError:
-        pass
+    # try:
+    #     get_algo("HEBO")
+    # except ImportError:
+    #     pass
 
     try:
         get_algo("Nevergrad")
