@@ -49,6 +49,8 @@ from typing import Any, Dict, Tuple, List
 from InsurAutoML._constant import UNI_CLASS, UNIQUE_FULLTYPE
 
 # get subtype of int
+
+
 def meta_map_int(data: pd.Series) -> str:
     if len(np.unique(data)) <= min(UNI_CLASS, 0.1 * len(data)):
         return "Categorical"
@@ -66,7 +68,7 @@ def meta_map_object(data: pd.Series) -> str:
         txt_avg_len = pd.Series(data.unique()).str.split().str.len().mean()
         if txt_avg_len >= 3:
             return "Text"
-    except:
+    except BaseException:
         return "Categorical"
 
 
@@ -100,9 +102,12 @@ class get_details:
     def _get_details_categorical(data: pd.Series) -> Dict[str, dict]:
         return {
             "unique_cout": {
-                key: value for key, value in zip(*np.unique(data, return_counts=True))
-            }
-        }
+                key: value for key,
+                value in zip(
+                    *
+                    np.unique(
+                        data,
+                        return_counts=True))}}
 
 
 class MetaData:
@@ -129,7 +134,8 @@ class MetaData:
 
     def _check_metadata(self):
         if not hasattr(self, "metadata"):
-            raise AttributeError("Metadata not generated yet. Please use get() first.")
+            raise AttributeError(
+                "Metadata not generated yet. Please use get() first.")
 
     def get(self, data: Any) -> Dict[Tuple, List] or dict:
 
@@ -190,9 +196,7 @@ class MetaData:
         if len(names) != len(fulltypes):
             raise ValueError(
                 "Length of names and fulltypes must be the same. Got {} and {}.".format(
-                    len(names), len(fulltypes)
-                )
-            )
+                    len(names), len(fulltypes)))
 
         for name, fulltype in zip(names, fulltypes):
             # remove registered metadata
@@ -211,7 +215,11 @@ class MetaData:
 
         return self.metadata
 
-    def register(self, name: str, fulltype: dict, details: dict = None) -> None:
+    def register(
+            self,
+            name: str,
+            fulltype: dict,
+            details: dict = None) -> None:
 
         # check whether metadata generated
         self._check_metadata()
@@ -233,12 +241,10 @@ class MetaData:
         # convert to dataframe
         try:
             data = pd.DataFrame(data)
-        except:
+        except BaseException:
             raise TypeError(
                 "The input data type {} cannot be converted to a dataframe.".format(
-                    type(data)
-                )
-            )
+                    type(data)))
         data.columns = ["col_" + str(i) for i in range(data.shape[1])]
 
         return self.get_from_df(data)
@@ -250,9 +256,7 @@ class MetaData:
             if key not in ref:
                 raise TypeError(
                     "The fulltype {} is not supported. All supported fulltypes are {}".format(
-                        key, ref
-                    )
-                )
+                        key, ref))
 
     @staticmethod
     def _get_fulltype(data: pd.Series) -> str:
@@ -269,7 +273,8 @@ class MetaData:
         elif "float" in str(_dtype):
 
             # in case int registed as float
-            # if nan values, fillna first, since those values will not impact our judgement
+            # if nan values, fillna first, since those values will not impact
+            # our judgement
             if max(np.abs(data.fillna(0) - data.fillna(0).astype(int))) < 1e-6:
                 warnings.warn(
                     "The column {} is registered as float, but it is actually int. Convert it to int".format(

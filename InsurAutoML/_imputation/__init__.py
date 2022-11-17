@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import importlib
 from ._base import SimpleImputer, DummyImputer, JointImputer
 from ._multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
 
@@ -59,7 +60,6 @@ imputers = {
 }
 # Markov Chain Monte Carlo (MCMC)
 
-import importlib
 
 # check tensorflow/pytorch installed only import nn-based methods
 # when tensorflow/pytorch is installed

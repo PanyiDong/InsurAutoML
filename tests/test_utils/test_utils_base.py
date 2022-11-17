@@ -113,7 +113,8 @@ def test_is_date():
         }
     )
 
-    assert is_date(test, rule="all"), "The is_date method is not correctly done."
+    assert is_date(
+        test, rule="all"), "The is_date method is not correctly done."
 
 
 def test_feature_rounding():
@@ -136,7 +137,7 @@ def test_feature_rounding():
 
     assert (
         feature_rounding(test) == target_data
-    ).all().all() == True, "The feature_rounding method is not correctly done."
+    ).all().all(), "The feature_rounding method is not correctly done."
 
 
 def test_timer():
@@ -153,7 +154,8 @@ def test_timer():
     timer.stop()
 
     assert timer.sum() / timer.avg() == 2.0, "The timer is not correctly done."
-    assert timer.cumsum()[-1] == timer.sum(), "The timer is not correctly done."
+    assert timer.cumsum(
+    )[-1] == timer.sum(), "The timer is not correctly done."
 
 
 def test_minloc():
@@ -202,15 +204,16 @@ def test_has_method():
 
     mol = LogisticRegression()
 
-    assert has_method(mol, "fit") == True, "The has_method function is not correct."
-    assert has_method(mol, "__fit") == False, "The has_method function is not correct."
+    assert has_method(mol, "fit"), "The has_method function is not correct."
+    assert has_method(
+        mol, "__fit") == False, "The has_method function is not correct."
 
 
 def test_is_none():
 
     from InsurAutoML._utils._base import is_none
 
-    assert is_none(None) == True, "The is_none function is not correct."
+    assert is_none(None), "The is_none function is not correct."
     assert is_none("not none") == False, "The is_none function is not correct."
 
 
@@ -224,6 +227,5 @@ def test_format_hyper_dict():
     assert (
         format_hyper_dict(input, 1, ref="encoder", search_algo="RandomSearch") == input
     ), "The format_hyper_dict function is not correct."
-    assert (
-        format_hyper_dict(input, 1, ref="encoder", search_algo="HyperOpt") == expected
-    ), "The format_hyper_dict function is not correct."
+    assert (format_hyper_dict(input, 1, ref="encoder", search_algo="HyperOpt")
+            == expected), "The format_hyper_dict function is not correct."

@@ -38,10 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import importlib
-
-datasets_spec = importlib.util.find_spec("datasets")
-
 from ._tabular import (
     ADULT,  # Classification
     AUTO,
@@ -82,6 +78,9 @@ from ._tabular import (
     DSSalary,
     CAHousePrice,
 )
+import importlib
+
+datasets_spec = importlib.util.find_spec("datasets")
 
 
 # datasets for Neural Network

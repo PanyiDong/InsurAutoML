@@ -76,5 +76,5 @@ def test_MetaData():
         assert isinstance(
             trans_X_train["con"], torch.Tensor
         ), "The continuous data is not properly transformed."
-    except:
+    except BaseException:
         assert True, "The nn package is not installed."

@@ -46,11 +46,11 @@ import pandas as pd
 import autosklearn.pipeline.components.classification as apcc
 import autosklearn.pipeline.components.regression as apcr
 
-####################################################################################################################
+##########################################################################
 # models from autosklearn
 # wrap for some-degree of flexibility (initialization, _fitted, etc.)
 
-####################################################################################################################
+##########################################################################
 # classifiers
 
 
@@ -294,7 +294,8 @@ class GaussianNB(apcc.gaussian_nb.GaussianNB):
         return super().predict_proba(X)
 
 
-class HistGradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifier):
+class HistGradientBoostingClassifier(
+        apcc.gradient_boosting.GradientBoostingClassifier):
     def __init__(
         self,
         loss: str = "auto",
@@ -365,7 +366,8 @@ class HistGradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClas
         return super().predict_proba(X)
 
 
-class KNearestNeighborsClassifier(apcc.k_nearest_neighbors.KNearestNeighborsClassifier):
+class KNearestNeighborsClassifier(
+        apcc.k_nearest_neighbors.KNearestNeighborsClassifier):
     def __init__(
         self,
         n_neighbors: int = 1,
@@ -910,7 +912,7 @@ class SGDClassifier(apcc.sgd.SGD):
         return super().predict_proba(X)
 
 
-####################################################################################################################
+##########################################################################
 # regressors
 
 
@@ -958,7 +960,8 @@ class AdaboostRegressor(apcr.adaboost.AdaboostRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class ARDRegression(apcr.ard_regression.ARDRegression):
@@ -1017,7 +1020,8 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
@@ -1076,7 +1080,8 @@ class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
@@ -1138,7 +1143,8 @@ class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class GaussianProcess(apcr.gaussian_process.GaussianProcess):
@@ -1182,7 +1188,8 @@ class GaussianProcess(apcr.gaussian_process.GaussianProcess):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
@@ -1253,10 +1260,12 @@ class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
-class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegressor):
+class KNearestNeighborsRegressor(
+        apcr.k_nearest_neighbors.KNearestNeighborsRegressor):
     def __init__(
         self,
         n_neighbors: int = 1,
@@ -1297,7 +1306,8 @@ class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegre
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
@@ -1353,7 +1363,8 @@ class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
@@ -1418,7 +1429,8 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class MLPRegressor(apcr.mlp.MLPRegressor):
@@ -1501,7 +1513,8 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class RandomForestRegressor(apcr.random_forest.RandomForest):
@@ -1563,7 +1576,8 @@ class RandomForestRegressor(apcr.random_forest.RandomForest):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class SGDRegressor(apcr.sgd.SGD):
@@ -1634,4 +1648,5 @@ class SGDRegressor(apcr.sgd.SGD):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")

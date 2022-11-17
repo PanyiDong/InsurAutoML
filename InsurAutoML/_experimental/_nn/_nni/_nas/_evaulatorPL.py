@@ -40,6 +40,10 @@ SOFTWARE.
 
 # pytorch-lightning version of evaluator
 
+from ._utils import get_optimizer, get_criterion, get_scheduler
+import nni.retiarii.evaluator.pytorch.lightning as pl
+import nni
+import torch
 import importlib
 
 pl_spec = importlib.util.find_spec("pytorch_lightning")
@@ -47,14 +51,7 @@ pl_spec = importlib.util.find_spec("pytorch_lightning")
 if pl_spec is None:
     raise ImportError(
         "Use of pytorch-lightning evaluator requires pytorch-lightning to be installed. \
-        Use `pip install pytorch-lightning` to install."
-    )
-
-import torch
-import nni
-import nni.retiarii.evaluator.pytorch.lightning as pl
-
-from ._utils import get_optimizer, get_criterion, get_scheduler
+        Use `pip install pytorch-lightning` to install.")
 
 
 @nni.trace
@@ -109,11 +106,13 @@ class plEvaluator(pl.LightningModule):
             }
 
     def on_validation_epoch_end(self):
-        nni.report_intermediate_result(self.trainer.callback_metrics["val_loss"].item())
+        nni.report_intermediate_result(
+            self.trainer.callback_metrics["val_loss"].item())
 
     def teardown(self, stage):
         if stage == "fit":
-            nni.report_final_result(self.trainer.callback_metrics["val_loss"].item())
+            nni.report_final_result(
+                self.trainer.callback_metrics["val_loss"].item())
 
 
 @nni.trace
@@ -136,7 +135,9 @@ def get_evaluator(
             optimizer_lr=optimizer_lr,
             lr_scheduler=lr_scheduler,
         ),
-        trainer=pl.Trainer(max_epochs=num_epochs, gpus=torch.cuda.device_count()),
+        trainer=pl.Trainer(
+            max_epochs=num_epochs,
+            gpus=torch.cuda.device_count()),
         train_dataloader=pl.DataLoader(
             train_set,
             batch_size=batchSize,

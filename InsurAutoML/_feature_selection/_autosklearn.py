@@ -45,7 +45,7 @@ import pandas as pd
 from typing import Union
 import autosklearn.pipeline.components.feature_preprocessing as askfs
 
-########################################################################################
+##########################################################################
 # wrap autosklearn feature selection methods
 # can be initialized without specifying hyperparameters
 
@@ -465,7 +465,8 @@ class polynomial(askfs.polynomial.PolynomialFeatures):
         return super().transform(X)
 
 
-class random_trees_embedding(askfs.random_trees_embedding.RandomTreesEmbedding):
+class random_trees_embedding(
+        askfs.random_trees_embedding.RandomTreesEmbedding):
     def __init__(
         self,
         n_estimators: int = 5,
@@ -614,7 +615,8 @@ class select_rates_classification(
         return super().transform(X)
 
 
-class select_rates_regression(askfs.select_rates_regression.SelectRegressionRates):
+class select_rates_regression(
+        askfs.select_rates_regression.SelectRegressionRates):
     def __init__(
         self,
         alpha: float = 0.3,

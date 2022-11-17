@@ -54,7 +54,7 @@ import warnings
 
 from InsurAutoML._utils._base import is_none
 
-###################################################################################################################
+##########################################################################
 # sklearn replacement of feature selection
 
 
@@ -103,7 +103,8 @@ class extra_trees_preproc_for_classification:
         self.min_samples_split = int(min_samples_split)
         self.max_features = max_features
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.max_depth = None if is_none(max_depth) else int(max_depth)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.min_impurity_decrease = float(min_impurity_decrease)
@@ -170,7 +171,8 @@ class extra_trees_preproc_for_regression:
         self.min_samples_split = int(min_samples_split)
         self.max_features = max_features
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.max_depth = None if is_none(max_depth) else int(max_depth)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
 
@@ -229,7 +231,8 @@ class fast_ica(sklearn.decomposition.FastICA):
         self.algorithm = algorithm
         self.whiten = whiten
         self.fun = fun
-        self.n_components = None if is_none(n_components) else int(n_components)
+        self.n_components = None if is_none(
+            n_components) else int(n_components)
 
         super().__init__(
             algorithm=self.algorithm,
@@ -321,7 +324,8 @@ class kernel_pca(sklearn.decomposition.KernelPCA):
         degree: int = 3,
         coef0: float = 0.5,
     ) -> None:
-        self.n_components = None if is_none(n_components) else int(n_components)
+        self.n_components = None if is_none(
+            n_components) else int(n_components)
         self.kernel = kernel
         self.gamma = None if is_none(gamma) else float(gamma)
         self.degree = int(degree)
@@ -448,7 +452,8 @@ class liblinear_svc_preprocessor:
         )
         estimator.fit(X, y)
 
-        self.selector = SelectFromModel(estimator, threshold="mean", prefit=True)
+        self.selector = SelectFromModel(
+            estimator, threshold="mean", prefit=True)
 
         self._fitted = True
 
@@ -620,7 +625,8 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
         self.min_samples_split = int(min_samples_split)
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.bootstrap = bootstrap
 
         super().__init__(
@@ -657,7 +663,8 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
         return super().transform(X)
 
 
-class select_percentile_classification(sklearn.feature_selection.SelectPercentile):
+class select_percentile_classification(
+        sklearn.feature_selection.SelectPercentile):
     def __init__(
         self,
         percentile: int = 90,
@@ -767,7 +774,8 @@ class select_percentile_regression(sklearn.feature_selection.SelectPercentile):
         return super().transform(X)
 
 
-class select_rates_classification(sklearn.feature_selection.GenericUnivariateSelect):
+class select_rates_classification(
+        sklearn.feature_selection.GenericUnivariateSelect):
     def __init__(
         self,
         alpha: float = 0.3,
@@ -834,7 +842,8 @@ class select_rates_classification(sklearn.feature_selection.GenericUnivariateSel
         return super().transform(X)
 
 
-class select_rates_regression(sklearn.feature_selection.GenericUnivariateSelect):
+class select_rates_regression(
+        sklearn.feature_selection.GenericUnivariateSelect):
     def __init__(
         self,
         alpha: float = 0.3,

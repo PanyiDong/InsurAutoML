@@ -102,7 +102,8 @@ def test_remove_index_columns():
     )
 
     remove_data_0 = remove_index_columns(data.values, axis=0, threshold=0.8)
-    remove_data_1 = remove_index_columns(data, axis=1, threshold=0.8, save=True)
+    remove_data_1 = remove_index_columns(
+        data, axis=1, threshold=0.8, save=True)
 
     assert isinstance(
         remove_data_0, pd.DataFrame

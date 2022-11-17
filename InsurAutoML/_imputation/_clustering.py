@@ -113,7 +113,8 @@ class AAI_kNN(formatting, MinMaxScale):
     # calculate Pearson Correlation Coefficient/PCC
     # PCC = \sum_{i}(x_{i}-\mu_{x})(y_{i}-\mu_{y}) /
     # \sqrt{\sum_{i}(x_{i}-\mu_{x})^{2}\sum_{i}(y_{i}-\mu_{y})^{2}}
-    def Pearson_Correlation_Coefficient(self, x: np.ndarray, y: np.ndarray) -> float:
+    def Pearson_Correlation_Coefficient(
+            self, x: np.ndarray, y: np.ndarray) -> float:
 
         # convert to numpy array
         x = np.array(x)
@@ -125,7 +126,8 @@ class AAI_kNN(formatting, MinMaxScale):
 
         # get numerator and denominator
         numerator = np.nansum((x - u_x) * (y - u_y))
-        denominator = np.sqrt(np.nansum((x - u_x) ** 2) * np.nansum((y - u_y) ** 2))
+        denominator = np.sqrt(np.nansum((x - u_x) ** 2)
+                              * np.nansum((y - u_y) ** 2))
 
         # special case of denominator being 0
         if denominator == 0:
@@ -168,11 +170,11 @@ class AAI_kNN(formatting, MinMaxScale):
                 )
             elif self.similarity == "COS":
                 similarity_list.append(
-                    self.Cosine_based_similarity(test.values, train.loc[index].values)
-                )
+                    self.Cosine_based_similarity(
+                        test.values, train.loc[index].values))
 
         # get index of k largest similarity in list
-        k_order = np.argsort(similarity_list)[-self.k :]
+        k_order = np.argsort(similarity_list)[-self.k:]
         # convert similarity list order to data index
         k_index = [list(train.index)[i] for i in k_order]
 
@@ -227,7 +229,8 @@ class AAI_kNN(formatting, MinMaxScale):
                 )
 
                 # normalize k_similarity
-                k_similarity = [item / sum(k_similarity) for item in k_similarity]
+                k_similarity = [item / sum(k_similarity)
+                                for item in k_similarity]
 
                 # get kNN row mean
                 k_means = [np.nanmean(_X.loc[_index, :]) for _index in k_index]
@@ -298,7 +301,7 @@ class AAI_kNN(formatting, MinMaxScale):
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
-            except:
+            except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(X))
 
         _X = X.copy(deep=self.deep_copy)
@@ -308,8 +311,9 @@ class AAI_kNN(formatting, MinMaxScale):
 
         # initialize number of working threads
         self.threads = (
-            multiprocessing.cpu_count() if self.threads == -1 else int(self.threads)
-        )
+            multiprocessing.cpu_count() if self.threads == -
+            1 else int(
+                self.threads))
 
         if _X[self.columns].isnull().values.any():
             _X = self._fill(_X)
@@ -363,10 +367,10 @@ class AAI_kNN(formatting, MinMaxScale):
 
 
 """
-For clustering methods, if get warning of empty mean (all cluster 
-have nan for the feature) or reduction in number of clusters (get 
-empty cluster), number of cluster is too large compared to the 
-data size and should be decreased. However, no error will be 
+For clustering methods, if get warning of empty mean (all cluster
+have nan for the feature) or reduction in number of clusters (get
+empty cluster), number of cluster is too large compared to the
+data size and should be decreased. However, no error will be
 raised, and all observations will be correctly assigned.
 """
 
@@ -475,7 +479,8 @@ class CMI(formatting, MinMaxScale):
         )
 
     # get k_means for group k
-    def _get_k_means(self, data: pd.DataFrame, k: int) -> Union[float, np.ndarray]:
+    def _get_k_means(self, data: pd.DataFrame,
+                     k: int) -> Union[float, np.ndarray]:
 
         # get observations in _k group
         group_data = data.loc[np.where(self.group_assign == k)[0], :]
@@ -494,7 +499,8 @@ class CMI(formatting, MinMaxScale):
         result = []
         for _index in index_list:
             # get distance between row and every k groups
-            distance = [self._distance(data.loc[_index, :], _k) for _k in range(self.k)]
+            distance = [self._distance(data.loc[_index, :], _k)
+                        for _k in range(self.k)]
             # assign the row to closest range group
             result.append(np.argsort(distance)[0])
 
@@ -527,7 +533,11 @@ class CMI(formatting, MinMaxScale):
 
             # parallelized k means calculation
             pool = Pool(processes=min(int(self.k), self.threads))
-            self.k_means = pool.map(partial(self._get_k_means, _X), list(range(self.k)))
+            self.k_means = pool.map(
+                partial(
+                    self._get_k_means, _X), list(
+                    range(
+                        self.k)))
             pool.close()
             pool.join()
 
@@ -539,7 +549,8 @@ class CMI(formatting, MinMaxScale):
 
             while True:
                 # store the group assignment
-                # need deep copy, or the stored assignment will change accordingly
+                # need deep copy, or the stored assignment will change
+                # accordingly
                 previous_group_assign = self.group_assign.copy()
 
                 # assign each observation to new group based on k_means
@@ -549,7 +560,8 @@ class CMI(formatting, MinMaxScale):
                     partial(self._get_group_assign, _X), divide_index
                 )
                 # flatten 2d list to 1d
-                self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+                self.group_assign = np.array(
+                    np.concatenate(self.group_assign).flat)
                 pool.close()
                 pool.join()
 
@@ -588,7 +600,8 @@ class CMI(formatting, MinMaxScale):
                 partial(self._get_group_assign, _X), divide_index
             )
             # flatten 2d list to 1d
-            self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+            self.group_assign = np.array(
+                np.concatenate(self.group_assign).flat)
             pool.close()
             pool.join()
 
@@ -647,7 +660,7 @@ class CMI(formatting, MinMaxScale):
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
-            except:
+            except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
         _X = X.copy(deep=self.deep_copy)
@@ -657,8 +670,9 @@ class CMI(formatting, MinMaxScale):
 
         # initialize number of working threads
         self.threads = (
-            multiprocessing.cpu_count() if self.threads == -1 else int(self.threads)
-        )
+            multiprocessing.cpu_count() if self.threads == -
+            1 else int(
+                self.threads))
 
         if _X[self.columns].isnull().values.any():
             _X = self._fill(_X)
@@ -703,10 +717,12 @@ class CMI(formatting, MinMaxScale):
                 else:  # if fitted, use self.train
                     # after imputation, there should be no missing in train
                     # so take all of them
-                    non_missing_index = np.where(self.group_assign_train == _k)[0]
+                    non_missing_index = np.where(
+                        self.group_assign_train == _k)[0]
 
                 # parallelize imputation
-                divide_missing_index = np.array_split(missing_index, self.threads)
+                divide_missing_index = np.array_split(
+                    missing_index, self.threads)
                 pool = Pool(self.threads)
                 imputation = pool.map(
                     partial(self.Pool_task, _X, _column, non_missing_index, n),
@@ -818,7 +834,12 @@ class k_Prototype_NN(formatting, MinMaxScale):
                 np.nansum((row - k_centroids) ** 2, axis=1, dtype=np.float64)
             )
         elif self.distance == "l1":
-            return np.nansum(np.abs(row - k_centroids), axis=1, dtype=np.float64)
+            return np.nansum(
+                np.abs(
+                    row -
+                    k_centroids),
+                axis=1,
+                dtype=np.float64)
 
     # calculate dissimilarity difference between row
     # and k group
@@ -832,7 +853,8 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
         # simple dissimilarity, number of different categories
         if self.dissimilarity == "simple":
-            return np.sum((row.values != k_centroids.values).astype(int), axis=1)
+            return np.sum(
+                (row.values != k_centroids.values).astype(int), axis=1)
         # weighted dissimilarity, weighted based on number of unique categories
         elif self.dissimilarity == "weighted":
             # set difference between row and k_centroids
@@ -854,7 +876,8 @@ class k_Prototype_NN(formatting, MinMaxScale):
                     # get the category
                     cate = k_centroids.loc[_k, _column]
                     # find the corresponding count
-                    centroids_count[_k, idx] = self.categorical_table[_column][cate]
+                    centroids_count[_k,
+                                    idx] = self.categorical_table[_column][cate]
 
             # calculate the weights based on number of categories
             weight = np.empty([k, p])
@@ -966,7 +989,8 @@ class k_Prototype_NN(formatting, MinMaxScale):
             self.group_assign = np.zeros(n)
             # initialize the corresponding centroids
             # use dataframe to match the column names
-            self.k_centroids = pd.DataFrame(index=range(self.k), columns=_X.columns)
+            self.k_centroids = pd.DataFrame(
+                index=range(self.k), columns=_X.columns)
             # random initialization
             for _column in list(_X.columns):
                 self.k_centroids[_column] = (
@@ -993,7 +1017,8 @@ class k_Prototype_NN(formatting, MinMaxScale):
                     divide_list,
                 )
                 # flatten 2d list to 1d
-                self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+                self.group_assign = np.array(
+                    np.concatenate(self.group_assign).flat)
                 pool.close()
                 pool.join()
 
@@ -1024,9 +1049,11 @@ class k_Prototype_NN(formatting, MinMaxScale):
                     self.k = len(self.k_centroids)
 
                 # stopping criteria
-                # check whether same k (in case delete centroids in the process)
+                # check whether same k (in case delete centroids in the
+                # process)
                 if len(previous_k_centroids) == len(self.k_centroids):
-                    if np.all(previous_k_centroids.values == self.k_centroids.values):
+                    if np.all(previous_k_centroids.values ==
+                              self.k_centroids.values):
                         break
         # if fitted, use the trained k_centroids assigning groups
         else:
@@ -1035,12 +1062,15 @@ class k_Prototype_NN(formatting, MinMaxScale):
             divide_list = np.array_split(list(_X.index), self.threads)
             self.group_assign = pool.map(
                 partial(
-                    self._get_group_assign, _X, numerical_columns, categorical_columns
-                ),
+                    self._get_group_assign,
+                    _X,
+                    numerical_columns,
+                    categorical_columns),
                 divide_list,
             )
             # flatten 2d list to 1d
-            self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+            self.group_assign = np.array(
+                np.concatenate(self.group_assign).flat)
             pool.close()
             pool.join()
 
@@ -1053,11 +1083,11 @@ class k_Prototype_NN(formatting, MinMaxScale):
         # on train dataset, fit the models
         if k not in self.models.keys():
             self.models[k] = KNNImputer(n_neighbors=1)
-            self.models[k].fit(data.loc[np.where(self.group_assign == k)[0], :])
+            self.models[k].fit(
+                data.loc[np.where(self.group_assign == k)[0], :])
         # impute the missing values
         data.loc[np.where(self.group_assign == k)[0], :] = self.models[k].transform(
-            data.loc[np.where(self.group_assign == k)[0], :]
-        )
+            data.loc[np.where(self.group_assign == k)[0], :])
 
         return data.loc[np.where(self.group_assign == k)[0], :]
 
@@ -1067,7 +1097,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
-            except:
+            except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
         _X = X.copy(deep=self.deep_copy)
@@ -1077,8 +1107,9 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
         # initialize number of working threads
         self.threads = (
-            multiprocessing.cpu_count() if self.threads == -1 else int(self.threads)
-        )
+            multiprocessing.cpu_count() if self.threads == -
+            1 else int(
+                self.threads))
 
         if _X[self.columns].isnull().values.any():
             _X = self._fill(_X)
@@ -1117,7 +1148,11 @@ class k_Prototype_NN(formatting, MinMaxScale):
         # use the clustered groups to impute
         # parallelized the imputation process according to clusters
         pool = Pool(processes=min(int(self.k), self.threads))
-        pool_data = pool.map(partial(self._kNN_impute, _X), list(range(self.k)))
+        pool_data = pool.map(
+            partial(
+                self._kNN_impute, _X), list(
+                range(
+                    self.k)))
         # concat pool_data and order according to index
         _X = pd.concat(pool_data).sort_index()
         pool.close()

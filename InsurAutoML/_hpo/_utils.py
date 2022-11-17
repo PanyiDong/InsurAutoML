@@ -39,26 +39,25 @@ SOFTWARE.
 """
 
 from __future__ import annotations
+from InsurAutoML._utils._data import train_test_split
+from InsurAutoML._utils._file import save_methods
+from InsurAutoML._utils._data import formatting
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils._testing import ignore_warnings
+from ray import tune
+import json
+import os
+import pandas as pd
+import numpy as np
+import scipy
+from typing import Callable, Union, List, Tuple, Dict, Any
+import warnings
 import logging
 
 logger = logging.getLogger(__name__)
 
-import warnings
-from typing import Callable, Union, List, Tuple, Dict, Any
-import scipy
-import numpy as np
-import pandas as pd
 
 # from logging import warning
-import os
-import json
-from ray import tune
-from sklearn.utils._testing import ignore_warnings
-from sklearn.exceptions import ConvergenceWarning
-
-from InsurAutoML._utils._data import formatting
-from InsurAutoML._utils._file import save_methods
-from InsurAutoML._utils._data import train_test_split
 
 
 class Pipeline:
@@ -133,7 +132,10 @@ class Pipeline:
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+    def predict(self,
+                X: pd.DataFrame) -> Union[pd.DataFrame,
+                                          pd.Series,
+                                          np.ndarray]:
 
         if not self._fitted:
             raise ValueError("Pipeline is not fitted!")
@@ -208,7 +210,7 @@ class ClassifierEnsemble(formatting):
     ) -> ClassifierEnsemble:
 
         # check for voting type
-        if not self.voting in ["hard", "soft"]:
+        if self.voting not in ["hard", "soft"]:
             raise ValueError("voting must be either 'hard' or 'soft'")
 
         # format the weights
@@ -441,8 +443,9 @@ class RegressorEnsemble(formatting):
             # if weights not included, not use weights
             try:
                 pred = self.voting(pred_list, axis=1, weights=self.weights)
-            except:
-                # if weights included, but not available in voting function, warn users
+            except BaseException:
+                # if weights included, but not available in voting function,
+                # warn users
                 if self.weights is not None:
                     logger.warn("weights are not used in voting method")
                     # warnings.warn("weights are not used in voting method")
@@ -588,7 +591,7 @@ class TabularObjective(tune.Trainable):
                 for k in self._encoder_hyper
             }
         # if not get above format, use default format
-        except:
+        except BaseException:
             self._encoder = self._encoder_hyper["encoder"]
             del self._encoder_hyper["encoder"]
         self.enc = self.encoder[self._encoder](**self._encoder_hyper)
@@ -609,7 +612,7 @@ class TabularObjective(tune.Trainable):
                 for k in self._imputer_hyper
             }
         # if not get above format, use default format
-        except:
+        except BaseException:
             self._imputer = self._imputer_hyper["imputer"]
             del self._imputer_hyper["imputer"]
         self.imp = self.imputer[self._imputer](**self._imputer_hyper)
@@ -631,7 +634,7 @@ class TabularObjective(tune.Trainable):
                 for k in self._balancing_hyper
             }
         # if not get above format, use default format
-        except:
+        except BaseException:
             self._balancing = self._balancing_hyper["balancing"]
             del self._balancing_hyper["balancing"]
         self.blc = self.balancing[self._balancing](**self._balancing_hyper)
@@ -653,7 +656,7 @@ class TabularObjective(tune.Trainable):
                 for k in self._scaling_hyper
             }
         # if not get above format, use default format
-        except:
+        except BaseException:
             self._scaling = self._scaling_hyper["scaling"]
             del self._scaling_hyper["scaling"]
         self.scl = self.scaling[self._scaling](**self._scaling_hyper)
@@ -679,7 +682,7 @@ class TabularObjective(tune.Trainable):
                 for k in self._feature_selection_hyper
             }
         # if not get above format, use default format
-        except:
+        except BaseException:
             self._feature_selection = self._feature_selection_hyper["feature_selection"]
             del self._feature_selection_hyper["feature_selection"]
         self.fts = self.feature_selection[self._feature_selection](
@@ -703,7 +706,7 @@ class TabularObjective(tune.Trainable):
                 for k in self._model_hyper
             }
         # if not get above format, use default format
-        except:
+        except BaseException:
             self._model = self._model_hyper["model"]
             del self._model_hyper["model"]
         self.mol = self.models[self._model](
@@ -735,7 +738,9 @@ class TabularObjective(tune.Trainable):
             f.write("Scaling method: {}\n".format(self._scaling))
             f.write("Scaling Hyperparameters:")
             print(self._scaling_hyper, file=f, end="\n\n")
-            f.write("Feature Selection method: {}\n".format(self._feature_selection))
+            f.write(
+                "Feature Selection method: {}\n".format(
+                    self._feature_selection))
             f.write("Feature Selection Hyperparameters:")
             print(self._feature_selection_hyper, file=f, end="\n\n")
             f.write("Model: {}\n".format(self._model))
@@ -806,9 +811,7 @@ class TabularObjective(tune.Trainable):
             else:
                 raise ValueError(
                     'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
-                )
+                        self.task_mode, self.objective))
         elif self.task_mode == "classification":
             # evaluation for predictions
             if self.objective == "accuracy":
@@ -838,9 +841,7 @@ class TabularObjective(tune.Trainable):
             else:
                 raise ValueError(
                     'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
-                )
+                        self.task_mode, self.objective))
 
         if self.validation:
             # only perform train_test_split when validation
@@ -863,14 +864,16 @@ class TabularObjective(tune.Trainable):
             # encoding
             _X_train_obj = self.enc.fit(_X_train_obj)
             _X_test_obj = self.enc.refit(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Encoding finished, in imputation process.")
 
             # imputer
             _X_train_obj = self.imp.fill(_X_train_obj)
             _X_test_obj = self.imp.fill(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Imputation finished, in scaling process.")
 
@@ -878,7 +881,8 @@ class TabularObjective(tune.Trainable):
             _X_train_obj, _y_train_obj = self.blc.fit_transform(
                 _X_train_obj, _y_train_obj
             )
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Balancing finished, in scaling process.")
             # make sure the classes are integers (belongs to certain classes)
@@ -890,7 +894,8 @@ class TabularObjective(tune.Trainable):
             self.scl.fit(_X_train_obj, _y_train_obj)
             _X_train_obj = self.scl.transform(_X_train_obj)
             _X_test_obj = self.scl.transform(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Scaling finished, in feature selection process.")
 
@@ -898,20 +903,24 @@ class TabularObjective(tune.Trainable):
             self.fts.fit(_X_train_obj, _y_train_obj)
             _X_train_obj = self.fts.transform(_X_train_obj)
             _X_test_obj = self.fts.transform(_X_test_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write(
-                    "Feature selection finished, in {} model.".format(self.task_mode)
-                )
+                    "Feature selection finished, in {} model.".format(
+                        self.task_mode))
 
             # fit model
-            if scipy.sparse.issparse(_X_train_obj):  # check if returns sparse matrix
+            if scipy.sparse.issparse(
+                    _X_train_obj):  # check if returns sparse matrix
                 _X_train_obj = _X_train_obj.toarray()
             if scipy.sparse.issparse(_X_test_obj):
                 _X_test_obj = _X_test_obj.toarray()
 
             # store the preprocessed train/test datasets
-            if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
+            if isinstance(
+                    _X_train_obj,
+                    np.ndarray):  # in case numpy array is returned
                 pd.concat(
                     [pd.DataFrame(_X_train_obj), _y_train_obj],
                     axis=1,
@@ -962,11 +971,13 @@ class TabularObjective(tune.Trainable):
             )
 
             with open("testing_objective.txt", "w") as f:
-                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
+                f.write(
+                    "Loss from objective function is: {:.6f}\n".format(_loss))
                 f.write("Loss is calculate using {}.".format(self.objective))
             self._iter += 1
 
-            # since we tries to minimize the objective function, take negative accuracy here
+            # since we tries to minimize the objective function, take negative
+            # accuracy here
             if self.full_status:
                 # tune.report(
                 #     encoder=_encoder,
@@ -1021,44 +1032,50 @@ class TabularObjective(tune.Trainable):
 
             # encoding
             _X_obj = self.enc.fit(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Encoding finished, in imputation process.")
 
             # imputer
             _X_obj = self.imp.fill(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Imputation finished, in scaling process.")
 
             # balancing
             _X_obj, _y_obj = self.blc.fit_transform(_X_obj, _y_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Balancing finished, in feature selection process.")
 
             # scaling
             self.scl.fit(_X_obj, _y_obj)
             _X_obj = self.scl.transform(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Scaling finished, in balancing process.")
 
             # feature selection
             self.fts.fit(_X_obj, _y_obj)
             _X_obj = self.fts.transform(_X_obj)
-            # with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
+            # with open(obj_tmp_directory + "/objective_process.txt", "w") as
+            # f:
             with open("objective_process.txt", "w") as f:
                 f.write(
-                    "Feature selection finished, in {} model.".format(self.task_mode)
-                )
+                    "Feature selection finished, in {} model.".format(
+                        self.task_mode))
 
             # fit model
             if scipy.sparse.issparse(_X_obj):  # check if returns sparse matrix
                 _X_obj = _X_obj.toarray()
 
             # store the preprocessed train/test datasets
-            if isinstance(_X_obj, np.ndarray):  # in case numpy array is returned
+            if isinstance(
+                    _X_obj, np.ndarray):  # in case numpy array is returned
                 pd.concat(
                     [pd.DataFrame(_X_obj), _y_obj],
                     axis=1,
@@ -1096,9 +1113,11 @@ class TabularObjective(tune.Trainable):
                 [self.enc, self.imp, self.blc, self.scl, self.fts, self.mol],
             )
 
-            # with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
+            # with open(obj_tmp_directory + "/testing_objective.txt", "w") as
+            # f:
             with open("testing_objective.txt", "w") as f:
-                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
+                f.write(
+                    "Loss from objective function is: {:.6f}\n".format(_loss))
                 f.write("Loss is calculate using {}.".format(self.objective))
             self._iter += 1
 

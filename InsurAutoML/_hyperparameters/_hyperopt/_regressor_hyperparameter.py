@@ -132,11 +132,17 @@ regressor_hyperparameter = [
             "GradientBoosting_learning_rate", np.log(0.01), np.log(1)
         ),
         "min_samples_leaf": scope.int(
-            hp.loguniform("GradientBoosting_min_samples_leaf", np.log(1), np.log(200))
+            hp.loguniform(
+                "GradientBoosting_min_samples_leaf",
+                np.log(1),
+                np.log(200))
         ),
         "max_depth": hp.choice("GradientBoosting_max_depth", [None]),
         "max_leaf_nodes": scope.int(
-            hp.loguniform("GradientBoosting_max_leaf_nodes", np.log(3), np.log(2047))
+            hp.loguniform(
+                "GradientBoosting_max_leaf_nodes",
+                np.log(3),
+                np.log(2047))
         ),
         "max_bins": hp.choice("GradientBoosting_max_bins", [255]),
         "l2_regularization": hp.loguniform(
@@ -200,7 +206,10 @@ regressor_hyperparameter = [
             hp.quniform("MLPRegressor_hidden_layer_depth", 1, 3, 1)
         ),
         "num_nodes_per_layer": scope.int(
-            hp.loguniform("MLPRegressor_num_nodes_per_layer", np.log(16), np.log(264))
+            hp.loguniform(
+                "MLPRegressor_num_nodes_per_layer",
+                np.log(16),
+                np.log(264))
         ),
         "activation": hp.choice("MLPRegressor_activation", ["tanh", "relu"]),
         "alpha": hp.loguniform("MLPRegressor_alpha", np.log(1e-7), np.log(1e-1)),

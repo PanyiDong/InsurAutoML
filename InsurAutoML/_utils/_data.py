@@ -50,11 +50,13 @@ from ._base import random_index
 from InsurAutoML._constant import UNI_CLASS
 
 # string list to list
+
+
 def str2list(item: str) -> list:
 
     try:
         return ast.literal_eval(item)
-    except:
+    except BaseException:
         return item
 
 
@@ -63,7 +65,7 @@ def str2dict(item: str) -> dict:
 
     try:
         return json.loads(item)
-    except:
+    except BaseException:
         return item
 
 
@@ -71,7 +73,6 @@ def str2dict(item: str) -> dict:
 def train_test_split(
     X: Any, y: Any, test_perc: float = 0.15, seed: int = 1
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
-
     """
     return order: X_train, X_test, y_train, y_test
     """
@@ -90,7 +91,8 @@ def train_test_split(
 
 
 # transform between numpy array and pandas dataframe
-# to deal with some problems where dataframe will be converted to array using sklearn objects
+# to deal with some problems where dataframe will be converted to array
+# using sklearn objects
 class as_dataframe:
     def __init__(self) -> None:
         self.design_matrix = None  # record the values of dataframe
@@ -115,9 +117,9 @@ class as_dataframe:
                 raise TypeError("Input should be numpy array!")
 
         try:
-            _empty = (columns == None).all()
+            _empty = (columns is None).all()
         except AttributeError:
-            _empty = columns == None
+            _empty = columns is None
 
         if _empty:
             columns = self.columns
@@ -125,9 +127,7 @@ class as_dataframe:
         if len(columns) != X.shape[1]:
             raise ValueError(
                 "Columns of array {} does not match length of columns {}!".format(
-                    X.shape[1], len(columns)
-                )
-            )
+                    X.shape[1], len(columns)))
 
         return pd.DataFrame(X, columns=columns)
 
@@ -205,17 +205,25 @@ class formatting:
     """
 
     def __init__(
-        self,
-        columns: List = [],
-        numerics: List[str] = [
-            "int16",
-            "int32",
-            "int64",
-            "float16",
-            "float32",
-            "float64",
-        ],
-        nas: List = [np.nan, None, "nan", "NaN", "NA", "novalue", "None", "none"],
+            self,
+            columns: List = [],
+            numerics: List[str] = [
+                "int16",
+                "int32",
+                "int64",
+                "float16",
+                "float32",
+                "float64",
+            ],
+            nas: List = [
+                np.nan,
+                None,
+                "nan",
+                "NaN",
+                "NA",
+                "novalue",
+                "None",
+                "none"],
         allow_string: bool = False,
         inplace: bool = True,
     ) -> None:
@@ -236,7 +244,8 @@ class formatting:
         raw_unique = pd.unique(data)
         # remove missing types
         # since nan != nan, convert it to string for comparison
-        unique_values = [item for item in raw_unique if str(item) not in self.nas]
+        unique_values = [
+            item for item in raw_unique if str(item) not in self.nas]
 
         # add unique values to unique_table
         self.unique_table[data.name] = unique_values
@@ -254,7 +263,7 @@ class formatting:
     # make sure the category seen in observed data
     def unify_cate(self, x: Any, list: List) -> Any:
 
-        if not x in list and str(x) not in self.nas:
+        if x not in list and str(x) not in self.nas:
             x = np.argmin(np.abs([item - x for item in list]))
 
         return x
@@ -265,7 +274,7 @@ class formatting:
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
-            except:
+            except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
         # if not specified, get all columns
@@ -298,7 +307,8 @@ class formatting:
                     )
 
                     # get unique category mapping, from numerical-> categorical
-                    unique_map = dict(zip(unique_num, self.unique_table[_column]))
+                    unique_map = dict(
+                        zip(unique_num, self.unique_table[_column]))
                     X[_column] = X[_column].map(
                         unique_map
                     )  # convert numerical-> categorical
@@ -316,7 +326,6 @@ def unify_nan(
     nas: List[str] = ["novalue", "None", "none"],
     replace: bool = False,
 ) -> pd.DataFrame:
-
     """
     unify missing values
     can specify columns. If None, all missing columns will unify
@@ -387,7 +396,6 @@ def remove_index_columns(
     reset_index: bool = True,
     save: bool = False,
 ) -> pd.DataFrame:
-
     """
     delete columns/indexes with majority being nan values
     limited/no information these columns/indexes provided
@@ -421,7 +429,7 @@ def remove_index_columns(
     if not isinstance(data, pd.DataFrame):
         try:
             data = pd.DataFrame(data)
-        except:
+        except BaseException:
             raise TypeError("Expect a dataframe, get {}.".format(type(data)))
 
     n, p = data.shape  # number of observations/features in the dataset
@@ -443,20 +451,17 @@ def remove_index_columns(
             if len(columns) != len(threshold):
                 raise ValueError(
                     "Columns and threshold should be same size, get {} and {}.".format(
-                        len(columns), len(threshold)
-                    )
-                )
+                        len(columns), len(threshold)))
             for _column, _threshold in zip(columns, threshold):
-                # only delete column when missing percentage larger than threshold
+                # only delete column when missing percentage larger than
+                # threshold
                 if data[_column].isnull().values.sum() / n >= _threshold:
                     remove_column.append(_column)
         elif axis == 0:  # remove index
             if len(index) != len(threshold):
                 raise ValueError(
                     "Indexes and threshold should be same size, get {} and {}.".format(
-                        len(index), len(threshold)
-                    )
-                )
+                        len(index), len(threshold)))
             for _index, _threshold in zip(index, threshold):
                 if data.loc[_index, :].isnull().values.sum() / p >= _threshold:
                     remove_index.append(_index)
@@ -498,7 +503,6 @@ def get_missing_matrix(
     nas: List[str] = ["nan", "NaN", "NaT", "NA", "novalue", "None", "none"],
     missing: int = 1,
 ) -> pd.DataFrame:
-
     """
     Get missing matrix for datasets
 
@@ -555,7 +559,8 @@ def get_missing_matrix(
 
 
 # determine whether the data contains imbalanced data
-# if value, returns the column header and majority class from the unbalanced dataset
+# if value, returns the column header and majority class from the
+# unbalanced dataset
 def is_imbalance(
     data: pd.DataFrame, threshold: float, value: bool = False
 ) -> Union[bool, Tuple[str, float]]:
@@ -572,10 +577,8 @@ def is_imbalance(
                 return False
 
         for _value in unique_values:
-            if (
-                len(data.loc[data[_column] == _value, _column]) / len(data[_column])
-                > threshold
-            ):
+            if (len(data.loc[data[_column] == _value, _column]
+                    ) / len(data[_column]) > threshold):
                 if value:
                     return _column, _value
                 else:
@@ -589,7 +592,10 @@ def is_imbalance(
 # return the distance between sample and the table sample points
 # notice: the distance betwen sample and sample itself will be included, be aware to deal with it
 # supported norm ['l1', 'l2']
-def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> List:
+def LinkTable(
+        sample: pd.DataFrame,
+        table: pd.DataFrame,
+        norm: str = "l2") -> List:
 
     if sample.shape[1] != table.shape[1]:
         raise ValueError("Not same size of columns!")
@@ -684,9 +690,7 @@ def plotHighDimCluster(
     if X.shape[1] <= 3:
         raise ValueError(
             "X must be high dimensional data, dimension = {} have no need for this plotting".format(
-                X.shape[1]
-            )
-        )
+                X.shape[1]))
 
     if len(X) != len(y):
         raise ValueError("X and y must have the same length")
@@ -699,7 +703,8 @@ def plotHighDimCluster(
         pca = PCA(n_components=dim)
         project_result = pca.fit_transform(X)
     elif method == "TSNE":
-        # if too many number of features, use PCA first to reduce computational cost
+        # if too many number of features, use PCA first to reduce computational
+        # cost
         if X.shape[1] > 100:
             from sklearn.decomposition import PCA
             from sklearn.manifold import TSNE
@@ -727,7 +732,13 @@ def plotHighDimCluster(
     if dim == 3:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
-        ax.scatter(df["PCA_0"], df["PCA_1"], df["PCA_2"], c=y, cmap="RdYlBu", alpha=0.4)
+        ax.scatter(
+            df["PCA_0"],
+            df["PCA_1"],
+            df["PCA_2"],
+            c=y,
+            cmap="RdYlBu",
+            alpha=0.4)
         ax.set_xlabel("PCA_1")
         ax.set_ylabel("PCA_2")
         ax.set_zlabel("PCA_3")
@@ -781,7 +792,7 @@ def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
 def text_preprocessing(text: str) -> list:
 
     # remove anything inside brackets
-    extract_txt = re.sub("[\(\[].*?[\)\]]", "", text)
+    extract_txt = re.sub(r"[\(\[].*?[\)\]]", "", text)
     # get only alphabets and numerics info
     use_txt = re.sub("[^a-zA-Z0-9]", " ", extract_txt)
     # get tokens of the text
@@ -839,8 +850,11 @@ def text2vec(
             from gensim.models import Word2Vec
 
             model = Word2Vec(
-                preprocessed_df, vector_size=dim, window=5, min_count=1, workers=4
-            )
+                preprocessed_df,
+                vector_size=dim,
+                window=5,
+                min_count=1,
+                workers=4)
             KeyVectors = model.wv
             print(KeyVectors)
         else:

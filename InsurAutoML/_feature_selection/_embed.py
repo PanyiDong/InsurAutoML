@@ -107,7 +107,7 @@ class PCA_FeatureSelection:
         n, p = X.shape
 
         # Deal with default n_componets = None
-        if self.n_components == None:
+        if self.n_components is None:
             if self.solver != "truncated":
                 n_components = min(n, p)
             else:
@@ -137,7 +137,9 @@ class PCA_FeatureSelection:
                 X, n_components, self.fit_solver
             )
         else:
-            raise ValueError("Not recognizing solver = {}!".format(self.fit_solver))
+            raise ValueError(
+                "Not recognizing solver = {}!".format(
+                    self.fit_solver))
 
         self._fitted = True
 
@@ -171,8 +173,7 @@ class PCA_FeatureSelection:
             )
         elif not isinstance(n_components, numbers.Integral):
             raise ValueError(
-                "Expect integer n_components, but get {:.6f}".format(n_components)
-            )
+                "Expect integer n_components, but get {:.6f}".format(n_components))
 
         # center the data
         self._x_mean = np.mean(X, axis=0)
@@ -201,7 +202,8 @@ class PCA_FeatureSelection:
             # their variance is always greater than n_components float
             # passed.
             ratio_cumsum = stable_cumsum(_var_ratio)
-            n_components = np.searchsorted(ratio_cumsum, n_components, side="right") + 1
+            n_components = np.searchsorted(
+                ratio_cumsum, n_components, side="right") + 1
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
         if n_components < min(n, p):
@@ -386,9 +388,7 @@ class RBFSampler:
         if self.n_components > n_features:
             warnings.warn(
                 "N_components {} is larger than n_features {}, will set to n_features.".format(
-                    self.n_components, n_features
-                )
-            )
+                    self.n_components, n_features))
             self.n_components = n_features
         else:
             self.n_components = self.n_components
@@ -396,7 +396,9 @@ class RBFSampler:
         if not self.seed:
             self.seed = np.random.seed(int(time.time()))
         elif not isinstance(self.seed, int):
-            raise ValueError("Seed must be integer, receive {}".format(self.seed))
+            raise ValueError(
+                "Seed must be integer, receive {}".format(
+                    self.seed))
 
         self._random_weights = np.random.normal(
             0, np.sqrt(2 * self.gamma), size=(n_features, self.n_components)

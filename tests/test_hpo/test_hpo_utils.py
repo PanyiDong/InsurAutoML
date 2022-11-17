@@ -74,7 +74,7 @@ def test_pipeline():
 
     pip.fit(data[features], data[response])
 
-    assert pip._fitted == True, "Pipeline is not fitted."
+    assert pip._fitted, "Pipeline is not fitted."
 
     pred = pip.predict_proba(data[features])
 

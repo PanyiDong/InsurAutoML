@@ -71,49 +71,53 @@ test = DataLoader(test, batch_size=32)
 
 torch.autograd.set_detect_anomaly(True)
 
-for _ in range(10) :
-    
+for _ in range(10):
+
     hidden = torch.randn(2, 32, outputSize)
     inputList, log_probs, entropy = controller.sample()
     print(inputList)
-    layer = CustomRNN(inputList, inputSize, outputSize, num_layers=2, batch_first=True)
+    layer = CustomRNN(
+        inputList,
+        inputSize,
+        outputSize,
+        num_layers=2,
+        batch_first=True)
 
     controller_optimizer = optim.Adam(controller.parameters(), lr=0.001)
     model_loss = nn.CrossEntropyLoss()
     controller_loss = nn.SmoothL1Loss()
-    
-    with torch.no_grad() :
+
+    with torch.no_grad():
         for X, y in valid:
             output, hidden = layer(X, hidden)
             output = output[:, -1, :]
             pre_controller_loss = model_loss(output, y)
-            
+
     model_optimizer = optim.SGD(layer.parameters(), lr=0.001)
-    
-    for _ in range(2) :
+
+    for _ in range(2):
         hidden = torch.randn(2, 32, outputSize)
-        for X, y in train :
-            hidden = repackage_hidden(hidden) # detach gradient
+        for X, y in train:
+            hidden = repackage_hidden(hidden)  # detach gradient
             model_optimizer.zero_grad()
             output, hidden = layer(X, hidden)
             output = output[:, -1, :]
             loss = model_loss(output, y)
             loss.backward(retain_graph=True)
             model_optimizer.step()
-            
-    with torch.no_grad() :
+
+    with torch.no_grad():
         for X, y in valid:
             output, hidden = layer(X, hidden)
             output = output[:, -1, :]
             after_controller_loss = model_loss(output, y)
-            
+
     # calculate reward
     np_entropy = entropy.detach().cpu().numpy()
-            
+
     controller_optimizer.zero_grad()
     # controller_loss = torch.mul(inputList, pre_controller_loss.item() - after_controller_loss.item())
     after_controller_loss.backward(retain_graph=True)
     controller_optimizer.step()
-    
+
     print(inputList, after_controller_loss.item())
-            

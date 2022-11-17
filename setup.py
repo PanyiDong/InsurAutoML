@@ -36,6 +36,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from pathlib import Path
 import os
 import sys
 import glob
@@ -145,6 +146,8 @@ EXTRA_DICT = {
 }
 
 # check R installation
+
+
 def r_home_from_subprocess() -> Optional[str]:
     """Return the R home directory from calling 'R RHOME'."""
     cmd = ("R", "RHOME")
@@ -187,14 +190,9 @@ def r_home_from_registry() -> Optional[str]:
                         return None
 
                 latest = max(
-                    (
-                        v
-                        for v in (
-                            get_version(i) for i in range(winreg.QueryInfoKey(hkey)[0])
-                        )
-                        if v is not None
-                    )
-                )
+                    (v for v in (
+                        get_version(i) for i in range(
+                            winreg.QueryInfoKey(hkey)[0])) if v is not None))
 
                 with winreg.OpenKeyEx(hkey, f"{latest}") as subkey:
                     r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
@@ -283,7 +281,6 @@ SETUP_ARGS = {
 EXT_MODULES = []
 
 # get long description
-from pathlib import Path
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
@@ -431,8 +428,8 @@ def get_requirements():
 
     with open(r"requirements.txt", "w") as fp:
         dep_list = [
-            item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["extended"]
-        ]
+            item.split(";")[0] for item in INSTALL_LIST +
+            EXTRA_DICT["extended"]]
         dep_list = list(set(dep_list))
         for item in dep_list:
             # write each item on a new line
@@ -442,7 +439,8 @@ def get_requirements():
         os.remove("requirements_nn.txt")
 
     with open(r"requirements_nn.txt", "w") as fp:
-        dep_list = [item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["nn"]]
+        dep_list = [item.split(";")[0]
+                    for item in INSTALL_LIST + EXTRA_DICT["nn"]]
         dep_list = list(set(dep_list))
         for item in dep_list:
             # write each item on a new line

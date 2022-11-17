@@ -59,24 +59,24 @@ Allowed components:
 6. add_regressors         and   add_regressor_hyperparameter
 7. add_classifiers        and   add_classifier_hyperparameter
 
-Each of the methods is stored in corresponding dictionaries, 
+Each of the methods is stored in corresponding dictionaries,
 hyperparameters stored in corresponding lists.
 
-For methods, the keys are the name of the methods, which should be the same 
+For methods, the keys are the name of the methods, which should be the same
 as the method name in the corresponding class.
 
 For hyperparameters, the identification key should be procedure + "_add_" + order,
 e.g. "encoder_add_1" for the first encoder added to the pipeline while the value is the
 name of the method, corresponding the ones stored in dictionaries. For other key/values,
-keys should be method name + "_" + hyperparameter name, e.g. "DataEncoding_dummy_coding" 
+keys should be method name + "_" + hyperparameter name, e.g. "DataEncoding_dummy_coding"
 for the hyperparameter "dummy_coding" of the method "DataEncoding". The value should be
 the range of the hyperparameter.
 
-Below is a workable example for you to follow. You just need to add your own methods, 
+Below is a workable example for you to follow. You just need to add your own methods,
 if not, leave it as it is.
 """
 
-####################################################################################################################
+##########################################################################
 # Template of self-defined models and hyperparameters
 
 # from ray import tune
@@ -188,7 +188,7 @@ if not, leave it as it is.
 #     LOGISTICREGRESSION,
 # ]
 
-####################################################################################################################
+##########################################################################
 # Format of additional models and hyperparameters
 
 add_encoders = {}

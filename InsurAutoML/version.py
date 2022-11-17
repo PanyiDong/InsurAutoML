@@ -47,6 +47,6 @@ def _get_version():
             version = fh.read().strip()
             if version:
                 return version
-    except:
+    except BaseException:
         pass
     return "unknown (git checkout)"

@@ -65,6 +65,8 @@ if datasets_spec is not None:
 # text preprocessing
 # build a vocabulary from text using torchtext methods
 # fixed length sequence needed
+
+
 def text_preprocessing_torchtext(
     data: Union[pd.DataFrame, TensorDataset],
     batch_size: int = 32,
@@ -91,7 +93,7 @@ def text_preprocessing_torchtext(
     vocab.set_default_index(vocab["<unk>"])
 
     # tokenize data and build vocab
-    text_pipeline = lambda x: vocab(tokenizer(x))
+    def text_pipeline(x): return vocab(tokenizer(x))
     # label_pipeline = lambda x: int(x) - 1
 
     # return tensordataset text, label, and offset (optional)
@@ -124,8 +126,10 @@ def text_preprocessing_torchtext(
 
     # load data to DataLoader
     data_loader = DataLoader(
-        data_tensor, batch_size=batch_size, shuffle=shuffle, drop_first=drop_first
-    )
+        data_tensor,
+        batch_size=batch_size,
+        shuffle=shuffle,
+        drop_first=drop_first)
 
     return data_loader, vocab
 
@@ -140,7 +144,6 @@ def text_preprocessing_transformers(
     return_token_type_ids: bool = False,
     return_tensors: str = "pt",
 ) -> DataLoader:
-
     """
     Parameters
     ----------
@@ -234,10 +237,13 @@ def text_preprocessing_transformers(
         return train_loader
     elif mode == "test":
         # limit data parts to use
-        selected_data = tokenized_data.set_format(type="torch", columns=["input_ids"])
+        selected_data = tokenized_data.set_format(
+            type="torch", columns=["input_ids"])
 
         # load data to DataLoader
-        test_tensor = TensorDataset(torch.as_tensor(selected_data["input_ids"]))
+        test_tensor = TensorDataset(
+            torch.as_tensor(
+                selected_data["input_ids"]))
         test_loader = DataLoader(
             test_tensor, batch_size=batch_size, shuffle=False, drop_last=True
         )

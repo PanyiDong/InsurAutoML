@@ -49,8 +49,10 @@ from dateutil.parser import parse
 from InsurAutoML._constant import UNI_CLASS
 
 # set response to [0, 1] class, random guess at 0.5
-def random_guess(number: float, seed: int=1) -> int:
-    if seed != None:
+
+
+def random_guess(number: float, seed: int = 1) -> int:
+    if seed is not None:
         np.random.seed(seed)
     if number > 0.5:
         return 1
@@ -62,7 +64,7 @@ def random_guess(number: float, seed: int=1) -> int:
 
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-def random_index(n: int, total: int=None, seed: int=1) -> np.ndarray:
+def random_index(n: int, total: int = None, seed: int = 1) -> np.ndarray:
     if seed is not None:
         np.random.seed(seed)
     if total is None:
@@ -72,14 +74,12 @@ def random_index(n: int, total: int=None, seed: int=1) -> np.ndarray:
     if total < n:
         raise ValueError(
             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
-                total, n
-            )
-        )
+                total,
+                n))
     # if number of samples is 0, raise error
     elif n == 0:
         raise ValueError(
-            "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
-        )
+            "Number of samples to be drawn must be greater than 0. Got n={}.".format(n))
 
     # NOTE: Sep. 25, 2022
     # Use native numpy function to speed up. Original code is decrypted.
@@ -95,8 +95,8 @@ def random_index(n: int, total: int=None, seed: int=1) -> np.ndarray:
 
 
 # Return randomly shuffle of a list (unique values only)
-def random_list(vlist: list, seed: int=1) -> np.ndarray:
-    if seed != None:
+def random_list(vlist: list, seed: int = 1) -> np.ndarray:
+    if seed is not None:
         np.random.seed(seed)
 
     # NOTE: Sep. 25, 2022
@@ -113,8 +113,9 @@ def random_list(vlist: list, seed: int=1) -> np.ndarray:
 
 # check if values in the dataframe is time string
 # rule = 'any' will consider the column as date type as long as one value is date type,
-# rule = 'all' will consider the column as date type only when all values are date type.
-def is_date(df: pd.DataFrame, rule: str="any") -> List[bool]:
+# rule = 'all' will consider the column as date type only when all values
+# are date type.
+def is_date(df: pd.DataFrame, rule: str = "any") -> List[bool]:
     def _is_date(string, fuzzy=False):
         try:
             parse(string, fuzzy=fuzzy)
@@ -132,8 +133,11 @@ def is_date(df: pd.DataFrame, rule: str="any") -> List[bool]:
         return all(_check)
 
 
-# Round data for categorical features (in case after preprocessing/modification, the data changed)
-def feature_rounding(X: pd.DataFrame, uni_class: int=UNI_CLASS) -> pd.DataFrame:
+# Round data for categorical features (in case after
+# preprocessing/modification, the data changed)
+def feature_rounding(
+        X: pd.DataFrame,
+        uni_class: int = UNI_CLASS) -> pd.DataFrame:
 
     features = list(X.columns)
     _X = X.copy(deep=True)
@@ -212,7 +216,7 @@ def maxloc(vlist: List) -> int:
 
 # return the index of Boolean list or {0, 1} list
 # default 1 consider as True
-def True_index(X: List, _true: List=[True, 1]) -> List[int]:
+def True_index(X: List, _true: List = [True, 1]) -> List[int]:
 
     result = [i for i, value in enumerate(X) if value in _true]
 
@@ -271,7 +275,7 @@ def type_of_script() -> str:
             return "jupyter"
         if "terminal" in ipy_str:
             return "ipython"
-    except:
+    except BaseException:
         return "terminal"
 
 
@@ -281,66 +285,106 @@ def has_method(obj: Callable, name: str) -> bool:
 
 
 # check if is None
-def is_none(item: Any, pat: List=[None, "None", "none", "NONE"]) -> bool:
+def is_none(item: Any, pat: List = [None, "None", "none", "NONE"]) -> bool:
 
     if item in pat:
         return True
     else:
         return False
-    
-# format the output of a hyperparameter dictionary by RandomSearch, GridSearch, HyperOpt
-def _hyperopt_format_hyper_dict(dict: Dict, order: int, ref: str = "encoder") -> Dict :
+
+# format the output of a hyperparameter dictionary by RandomSearch,
+# GridSearch, HyperOpt
+
+
+def _hyperopt_format_hyper_dict(
+        dict: Dict,
+        order: int,
+        ref: str = "encoder") -> Dict:
     header = dict.pop(ref)
     result = {"{}_{}".format(ref, order): header}
-    result.update({header + "_" + str(key): val for key, val in dict.items() if key != ref})
-    
+    result.update({header + "_" + str(key): val for key,
+                   val in dict.items() if key != ref})
+
     return result
 
 # format the output of a hyperparameter dictionary by Optuna
-def _base_format_hyper_dict(dict: Dict, order: int, ref: str = "encoder") -> Dict :
-    
-    return dict
-    
-def format_hyper_dict(dict: Dict, order: int, ref: str = "encoder", search_algo: str = "RandomSearch") -> Dict :
-    if search_algo in [
-        "RandomSearch", "GridSearch", "Optuna", "BlendSearch", "CFO", "Scikit-Optimize", "Nevergrad"
-    ]:
-        return _base_format_hyper_dict(dict, order, ref)
-    elif search_algo in ["HyperOpt"] :
-        return _hyperopt_format_hyper_dict(dict, order, ref)
-    else :
-        raise NotImplementedError("Search algorithm {} is not implemented!".format(search_algo))
 
-def _optuna_distribution_to_suggest(trial: Any, method: str, key: str, value: Any) -> Any:
-    
+
+def _base_format_hyper_dict(
+        dict: Dict,
+        order: int,
+        ref: str = "encoder") -> Dict:
+
+    return dict
+
+
+def format_hyper_dict(
+        dict: Dict,
+        order: int,
+        ref: str = "encoder",
+        search_algo: str = "RandomSearch") -> Dict:
+    if search_algo in [
+        "RandomSearch",
+        "GridSearch",
+        "Optuna",
+        "BlendSearch",
+        "CFO",
+        "Scikit-Optimize",
+            "Nevergrad"]:
+        return _base_format_hyper_dict(dict, order, ref)
+    elif search_algo in ["HyperOpt"]:
+        return _hyperopt_format_hyper_dict(dict, order, ref)
+    else:
+        raise NotImplementedError(
+            "Search algorithm {} is not implemented!".format(search_algo))
+
+
+def _optuna_distribution_to_suggest(
+        trial: Any,
+        method: str,
+        key: str,
+        value: Any) -> Any:
+
     import optuna.distributions as distributions
-    if isinstance(value, distributions.UniformDistribution) :
+    if isinstance(value, distributions.UniformDistribution):
         return trial.suggest_uniform(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.LogUniformDistribution) :
-        return trial.suggest_loguniform(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.DiscreteUniformDistribution) :
-        return trial.suggest_discrete_uniform(method + "_" + key, value.low, value.high, value.q)
-    elif isinstance(value, distributions.IntUniformDistribution) :
+    elif isinstance(value, distributions.LogUniformDistribution):
+        return trial.suggest_loguniform(
+            method + "_" + key, value.low, value.high)
+    elif isinstance(value, distributions.DiscreteUniformDistribution):
+        return trial.suggest_discrete_uniform(
+            method + "_" + key, value.low, value.high, value.q)
+    elif isinstance(value, distributions.IntUniformDistribution):
         return trial.suggest_int(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.CategoricalDistribution) :
+    elif isinstance(value, distributions.CategoricalDistribution):
         return trial.suggest_categorical(method + "_" + key, value.choices)
-    elif isinstance(value, distributions.IntLogUniformDistribution) :
+    elif isinstance(value, distributions.IntLogUniformDistribution):
         return trial.suggest_int(method + "_" + key, value.low, value.high)
-    else :
-        raise TypeError("Distribution {} is not supported!".format(type(value)))
-    
-def distribution_to_suggest(trial: Any, method: str, key: str, value: Any, algo: str = "Optuna") -> Any:
-    
-    if algo == "Optuna" :
+    else:
+        raise TypeError(
+            "Distribution {} is not supported!".format(
+                type(value)))
+
+
+def distribution_to_suggest(
+        trial: Any,
+        method: str,
+        key: str,
+        value: Any,
+        algo: str = "Optuna") -> Any:
+
+    if algo == "Optuna":
         return _optuna_distribution_to_suggest(trial, method, key, value)
     # elif algo == "Nevergrad" :
     #     return _nevergrad_distribution_to_suggest(trial, method, key, value)
-    else :
-        raise NotImplementedError("Search algorithm {} is not implemented!".format(algo))
-    
-class DisableLogger() :
+    else:
+        raise NotImplementedError(
+            "Search algorithm {} is not implemented!".format(algo))
+
+
+class DisableLogger():
     def __enter__(self) -> None:
         logging.disable(logging.CRITICAL)
+
     def __exit__(self, exitype, value, traceback) -> None:
         logging.disable(logging.NOTSET)
-        

@@ -38,37 +38,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
-logger = logging.getLogger(__name__)
-
-from typing import Dict, Callable, Union, List, Any
-import warnings
-from inspect import isclass
-import copy
-import time
-from collections import defaultdict, deque
-from functools import partial
-import numpy as np
-import pandas as pd
-import ray
-from ray import tune
-from ray.tune import Stopper
-import importlib
-
-# from wrapt_timeout_decorator import *
-
+from InsurAutoML._constant import (
+    METHOD_MAPPING
+)
 from InsurAutoML._utils._base import (
     has_method,
     distribution_to_suggest,
     DisableLogger,
 )
-from InsurAutoML._constant import (
-    METHOD_MAPPING
-)
+import importlib
+from ray.tune import Stopper
+from ray import tune
+import ray
+import pandas as pd
+import numpy as np
+from functools import partial
+from collections import defaultdict, deque
+import time
+import copy
+from inspect import isclass
+import warnings
+from typing import Dict, Callable, Union, List, Any
+import logging
+logger = logging.getLogger(__name__)
+
+
+# from wrapt_timeout_decorator import *
+
 
 # create hyperparameter space using ray.tune.choice
 # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
 # only chosen ones will be added to hyperparameter space
+
 def _base_get_hyperparameter_space(
     X: pd.DataFrame,
     encoders_hyperparameters: Dict,
@@ -90,8 +91,9 @@ def _base_get_hyperparameter_space(
     all_encoders = [item["encoder"] for item in encoders_hyperparameters]
     _encoding_hyperparameter = []
     for _encoder in [*encoder]:
-        _encoding_hyperparameter.append(encoders_hyperparameters[all_encoders.index(_encoder)])
-        
+        _encoding_hyperparameter.append(
+            encoders_hyperparameters[all_encoders.index(_encoder)])
+
     # raise error if no encoding hyperparameters are found
     if len(_encoding_hyperparameter) == 0:
         raise ValueError(
@@ -99,14 +101,15 @@ def _base_get_hyperparameter_space(
         )
 
     _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
-    
+
     # imputation space
     # get all method names in hyperparameter space
     all_imputers = [item["imputer"] for item in imputers_hyperparameters]
     _imputer_hyperparameter = []
     for _imputer in [*imputer]:
-        _imputer_hyperparameter.append(imputers_hyperparameters[all_imputers.index(_imputer)])
-        
+        _imputer_hyperparameter.append(
+            imputers_hyperparameters[all_imputers.index(_imputer)])
+
     # raise error if no encoding hyperparameters are found
     if len(_imputer_hyperparameter) == 0:
         raise ValueError(
@@ -114,14 +117,15 @@ def _base_get_hyperparameter_space(
         )
 
     _imputer_hyperparameter = tune.choice(_imputer_hyperparameter)
-    
+
     # balancing space
     # get all method names in hyperparameter space
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        _balancing_hyperparameter.append(balancings_hyperparameters[all_balancings.index(_balancing)])
-        
+        _balancing_hyperparameter.append(
+            balancings_hyperparameters[all_balancings.index(_balancing)])
+
     # raise error if no encoding hyperparameters are found
     if len(_balancing_hyperparameter) == 0:
         raise ValueError(
@@ -129,14 +133,15 @@ def _base_get_hyperparameter_space(
         )
 
     _balancing_hyperparameter = tune.choice(_balancing_hyperparameter)
-    
+
     # scaling space
     # get all method names in hyperparameter space
     all_scalings = [item["scaling"] for item in scalings_hyperparameters]
     _scaling_hyperparameter = []
     for _scaling in [*scaling]:
-        _scaling_hyperparameter.append(scalings_hyperparameters[all_scalings.index(_scaling)])
-        
+        _scaling_hyperparameter.append(
+            scalings_hyperparameters[all_scalings.index(_scaling)])
+
     # raise error if no encoding hyperparameters are found
     if len(_scaling_hyperparameter) == 0:
         raise ValueError(
@@ -144,24 +149,26 @@ def _base_get_hyperparameter_space(
         )
 
     _scaling_hyperparameter = tune.choice(_scaling_hyperparameter)
-    
+
     # feature selection space
     # get all method names in hyperparameter space
-    all_feature_selections = [item["feature_selection"] for item in feature_selection_hyperparameters]
+    all_feature_selections = [item["feature_selection"]
+                              for item in feature_selection_hyperparameters]
     _feature_selection_hyperparameter = []
     for _feature_selection in [*feature_selection]:
         _feature_selection_hyperparameter.append(
             feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
         )
-        
+
     # raise error if no encoding hyperparameters are found
     if len(_feature_selection_hyperparameter) == 0:
         raise ValueError(
             "No feature selection hyperparameters are found. Please check your encoders."
         )
 
-    _feature_selection_hyperparameter = tune.choice(_feature_selection_hyperparameter)
-    
+    _feature_selection_hyperparameter = tune.choice(
+        _feature_selection_hyperparameter)
+
     # model space
     # get all method names in hyperparameter space
     all_models = [item["model"] for item in models_hyperparameters]
@@ -170,7 +177,7 @@ def _base_get_hyperparameter_space(
         _model_hyperparameter.append(
             models_hyperparameters[all_models.index(_model)]
         )
-        
+
     # raise error if no encoding hyperparameters are found
     if len(_model_hyperparameter) == 0:
         raise ValueError(
@@ -178,7 +185,7 @@ def _base_get_hyperparameter_space(
         )
 
     _model_hyperparameter = tune.choice(_model_hyperparameter)
-    
+
     # the pipeline search space
     # select one of the method/hyperparameter setting from each part
     return {
@@ -190,6 +197,7 @@ def _base_get_hyperparameter_space(
         "feature_selection": _feature_selection_hyperparameter,
         "model": _model_hyperparameter,
     }
+
 
 def _hyerpot_get_hyperparameter_space(
     X: pd.DataFrame,
@@ -248,7 +256,8 @@ def _hyerpot_get_hyperparameter_space(
                         _imputer_key = _key
                         break
                 if item[_imputer_key] == _imputer:
-                    # create a copy of hyperparameters, avoid changes on original
+                    # create a copy of hyperparameters, avoid changes on
+                    # original
                     _item = copy.deepcopy(item)
                     # convert string to tune.choice
                     _item[_imputer_key] = tune.choice([_item[_imputer_key]])
@@ -344,7 +353,8 @@ def _hyerpot_get_hyperparameter_space(
             "No feature selection hyperparameters are found. Please check your feature selections."
         )
 
-    _feature_selection_hyperparameter = tune.choice(_feature_selection_hyperparameter)
+    _feature_selection_hyperparameter = tune.choice(
+        _feature_selection_hyperparameter)
 
     # model selection and hyperparameter optimization space
     _model_hyperparameter = []
@@ -383,7 +393,8 @@ def _hyerpot_get_hyperparameter_space(
         "feature_selection": _feature_selection_hyperparameter,
         "model": _model_hyperparameter,
     }
-    
+
+
 def _optuna_get_hyperparameter_space(
     X: pd.DataFrame,
     encoders_hyperparameters: Dict,
@@ -407,103 +418,96 @@ def _optuna_get_hyperparameter_space(
             "optuna not installed. Please install it first to use Optuna. \
             Command to install: pip install optuna"
         )
-        
+
     import optuna
     from ray.tune.suggest.optuna import OptunaSearch
-        
+
     # config space
     # encoding space
     # get all method names in hyperparameter space
     all_encoders = [item["encoder"] for item in encoders_hyperparameters]
     _encoding_hyperparameter = []
     for _encoder in [*encoder]:
-        _encoding_hyperparameter.append(
-            OptunaSearch.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
-        )
-        
+        _encoding_hyperparameter.append(OptunaSearch.convert_search_space(
+            encoders_hyperparameters[all_encoders.index(_encoder)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_encoding_hyperparameter) == 0:
         raise ValueError(
             "No encoding hyperparameters are found. Please check your encoders."
         )
-    
+
     # imputation space
     # get all method names in hyperparameter space
     all_imputers = [item["imputer"] for item in imputers_hyperparameters]
     _imputer_hyperparameter = []
     for _imputer in [*imputer]:
-        _imputer_hyperparameter.append(
-            OptunaSearch.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
-        )
-        
+        _imputer_hyperparameter.append(OptunaSearch.convert_search_space(
+            imputers_hyperparameters[all_imputers.index(_imputer)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_imputer_hyperparameter) == 0:
         raise ValueError(
             "No imputer hyperparameters are found. Please check your encoders."
         )
-    
+
     # balancing space
     # get all method names in hyperparameter space
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        _balancing_hyperparameter.append(
-            OptunaSearch.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
-        )
-        
+        _balancing_hyperparameter.append(OptunaSearch.convert_search_space(
+            balancings_hyperparameters[all_balancings.index(_balancing)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_balancing_hyperparameter) == 0:
         raise ValueError(
             "No balancing hyperparameters are found. Please check your encoders."
         )
-    
+
     # scaling space
     # get all method names in hyperparameter space
     all_scalings = [item["scaling"] for item in scalings_hyperparameters]
     _scaling_hyperparameter = []
     for _scaling in [*scaling]:
-        _scaling_hyperparameter.append(
-            OptunaSearch.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
-        )
-        
+        _scaling_hyperparameter.append(OptunaSearch.convert_search_space(
+            scalings_hyperparameters[all_scalings.index(_scaling)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_scaling_hyperparameter) == 0:
         raise ValueError(
             "No scaling hyperparameters are found. Please check your encoders."
         )
-    
+
     # feature selection space
     # get all method names in hyperparameter space
-    all_feature_selections = [item["feature_selection"] for item in feature_selection_hyperparameters]
+    all_feature_selections = [item["feature_selection"]
+                              for item in feature_selection_hyperparameters]
     _feature_selection_hyperparameter = []
     for _feature_selection in [*feature_selection]:
-        _feature_selection_hyperparameter.append(
-            OptunaSearch.convert_search_space(
-                feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
-            )
-        )
-        
+        _feature_selection_hyperparameter.append(OptunaSearch.convert_search_space(
+            feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_feature_selection_hyperparameter) == 0:
         raise ValueError(
             "No feature selection hyperparameters are found. Please check your encoders."
         )
-    
+
     # model space
     # get all method names in hyperparameter space
     all_models = [item["model"] for item in models_hyperparameters]
     _model_hyperparameter = []
     for _model in [*models]:
-        _model_hyperparameter.append(
-            OptunaSearch.convert_search_space(models_hyperparameters[all_models.index(_model)])
-        )
-        
+        _model_hyperparameter.append(OptunaSearch.convert_search_space(
+            models_hyperparameters[all_models.index(_model)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_model_hyperparameter) == 0:
         raise ValueError(
             "No model hyperparameters are found. Please check your encoders."
         )
-        
+
     def search_space(
         trial: optuna.Trial,
         _encoder,
@@ -519,46 +523,59 @@ def _optuna_get_hyperparameter_space(
         _feature_selection_hyperparameter,
         _model_hyperparameter,
         task_mode,
-    ) :
+    ):
         encoder = trial.suggest_categorical("encoder", _encoder)
         imputer = trial.suggest_categorical("imputer", _imputer)
         balancing = trial.suggest_categorical("balancing", _balancing)
         scaling = trial.suggest_categorical("scaling", _scaling)
-        feature_selection = trial.suggest_categorical("feature_selection", _feature_selection)
+        feature_selection = trial.suggest_categorical(
+            "feature_selection", _feature_selection)
         model = trial.suggest_categorical("model", _models)
-        
+
         # the pipeline search space
         # select one of the method/hyperparameter setting from each part
         encoder_hyper = {}
         encoder_hyper["encoder"] = encoder
-        for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
-            encoder_hyper[key] = distribution_to_suggest(trial, encoder, key, value, algo = "Optuna")
-            
+        for key, value in _encoding_hyperparameter[[
+                *_encoder].index(encoder)].items():
+            encoder_hyper[key] = distribution_to_suggest(
+                trial, encoder, key, value, algo="Optuna")
+
         imputer_hyper = {}
         imputer_hyper["imputer"] = imputer
-        for key, value in _imputer_hyperparameter[[*_imputer].index(imputer)].items():
-            imputer_hyper[key] = distribution_to_suggest(trial, imputer, key, value, algo = "Optuna")
-            
+        for key, value in _imputer_hyperparameter[[
+                *_imputer].index(imputer)].items():
+            imputer_hyper[key] = distribution_to_suggest(
+                trial, imputer, key, value, algo="Optuna")
+
         balancing_hyper = {}
         balancing_hyper["balancing"] = balancing
-        for key, value in _balancing_hyperparameter[[*_balancing].index(balancing)].items():
-            balancing_hyper[key] = distribution_to_suggest(trial, balancing, key, value, algo = "Optuna")
-            
+        for key, value in _balancing_hyperparameter[[
+                *_balancing].index(balancing)].items():
+            balancing_hyper[key] = distribution_to_suggest(
+                trial, balancing, key, value, algo="Optuna")
+
         scaling_hyper = {}
         scaling_hyper["scaling"] = scaling
-        for key, value in _scaling_hyperparameter[[*_scaling].index(scaling)].items():
-            scaling_hyper[key] = distribution_to_suggest(trial, scaling, key, value, algo = "Optuna")
-            
+        for key, value in _scaling_hyperparameter[[
+                *_scaling].index(scaling)].items():
+            scaling_hyper[key] = distribution_to_suggest(
+                trial, scaling, key, value, algo="Optuna")
+
         feature_selection_hyper = {}
         feature_selection_hyper["feature_selection"] = feature_selection
-        for key, value in _feature_selection_hyperparameter[[*_feature_selection].index(feature_selection)].items():
-            feature_selection_hyper[key] = distribution_to_suggest(trial, feature_selection, key, value, algo = "Optuna")
-            
+        for key, value in _feature_selection_hyperparameter[[
+                *_feature_selection].index(feature_selection)].items():
+            feature_selection_hyper[key] = distribution_to_suggest(
+                trial, feature_selection, key, value, algo="Optuna")
+
         model_hyper = {}
         model_hyper["model"] = model
-        for key, value in _model_hyperparameter[[*_models].index(model)].items():
-            model_hyper[key] = distribution_to_suggest(trial, model, key, value, algo = "Optuna")
-            
+        for key, value in _model_hyperparameter[[
+                *_models].index(model)].items():
+            model_hyper[key] = distribution_to_suggest(
+                trial, model, key, value, algo="Optuna")
+
         return {
             "task_type": "tabular_" + task_mode,
             "encoder": encoder_hyper,
@@ -568,23 +585,25 @@ def _optuna_get_hyperparameter_space(
             "feature_selection": feature_selection_hyper,
             "model": model_hyper,
         }
-    
-    return partial(search_space,
-        _encoder = encoder,
-        _imputer = imputer,
-        _balancing = balancing,
-        _scaling = scaling,
-        _feature_selection = feature_selection,
-        _models = models,
-        _encoding_hyperparameter = _encoding_hyperparameter,
-        _imputer_hyperparameter = _imputer_hyperparameter,
-        _balancing_hyperparameter = _balancing_hyperparameter,
-        _scaling_hyperparameter = _scaling_hyperparameter,
-        _feature_selection_hyperparameter = _feature_selection_hyperparameter,
-        _model_hyperparameter = _model_hyperparameter,
-        task_mode = task_mode,
+
+    return partial(
+        search_space,
+        _encoder=encoder,
+        _imputer=imputer,
+        _balancing=balancing,
+        _scaling=scaling,
+        _feature_selection=feature_selection,
+        _models=models,
+        _encoding_hyperparameter=_encoding_hyperparameter,
+        _imputer_hyperparameter=_imputer_hyperparameter,
+        _balancing_hyperparameter=_balancing_hyperparameter,
+        _scaling_hyperparameter=_scaling_hyperparameter,
+        _feature_selection_hyperparameter=_feature_selection_hyperparameter,
+        _model_hyperparameter=_model_hyperparameter,
+        task_mode=task_mode,
     )
-    
+
+
 def _converted_get_hyperparameter_space(
     X: pd.DataFrame,
     encoders_hyperparameters: Dict,
@@ -611,14 +630,14 @@ def _converted_get_hyperparameter_space(
     #         "nevergrad not installed. Please install it first to use Nevergrad. \
     #         Command to install: pip install nevergrad"
     #     )
-        
+
     if search_algo == "Nevergrad":
         from ray.tune.suggest.nevergrad import NevergradSearch
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
         from ray.tune.suggest.flaml import BlendSearch
         searcher = BlendSearch
-    
+
     # encoding space
     # get all method names in hyperparameter space
     all_encoders = [item["encoder"] for item in encoders_hyperparameters]
@@ -626,75 +645,68 @@ def _converted_get_hyperparameter_space(
     for _encoder in [*encoder]:
         # need a layer of hyperparameter space to retain it
         encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"] = tune.choice(
-            [encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"]]
-        )
-        _encoding_hyperparameter.append(
-            searcher.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
-        )
-        
+            [encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"]])
+        _encoding_hyperparameter.append(searcher.convert_search_space(
+            encoders_hyperparameters[all_encoders.index(_encoder)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_encoding_hyperparameter) == 0:
         raise ValueError(
             "No encoding hyperparameters are found. Please check your encoders."
         )
-    
+
     # imputation space
     # get all method names in hyperparameter space
     all_imputers = [item["imputer"] for item in imputers_hyperparameters]
     _imputer_hyperparameter = []
     for _imputer in [*imputer]:
         imputers_hyperparameters[all_imputers.index(_imputer)]["imputer"] = tune.choice(
-            [imputers_hyperparameters[all_imputers.index(_imputer)]["imputer"]]
-        )
-        _imputer_hyperparameter.append(
-            searcher.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
-        )
-        
+            [imputers_hyperparameters[all_imputers.index(_imputer)]["imputer"]])
+        _imputer_hyperparameter.append(searcher.convert_search_space(
+            imputers_hyperparameters[all_imputers.index(_imputer)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_imputer_hyperparameter) == 0:
         raise ValueError(
             "No imputer hyperparameters are found. Please check your encoders."
         )
-    
+
     # balancing space
     # get all method names in hyperparameter space
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
         balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = tune.choice(
-            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
-        )
-        _balancing_hyperparameter.append(
-            searcher.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
-        )
-        
+            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]])
+        _balancing_hyperparameter.append(searcher.convert_search_space(
+            balancings_hyperparameters[all_balancings.index(_balancing)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_balancing_hyperparameter) == 0:
         raise ValueError(
             "No balancing hyperparameters are found. Please check your encoders."
         )
-    
+
     # scaling space
     # get all method names in hyperparameter space
     all_scalings = [item["scaling"] for item in scalings_hyperparameters]
     _scaling_hyperparameter = []
     for _scaling in [*scaling]:
         scalings_hyperparameters[all_scalings.index(_scaling)]["scaling"] = tune.choice(
-            [scalings_hyperparameters[all_scalings.index(_scaling)]["scaling"]]
-        )
-        _scaling_hyperparameter.append(
-            searcher.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
-        )
-        
+            [scalings_hyperparameters[all_scalings.index(_scaling)]["scaling"]])
+        _scaling_hyperparameter.append(searcher.convert_search_space(
+            scalings_hyperparameters[all_scalings.index(_scaling)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_scaling_hyperparameter) == 0:
         raise ValueError(
             "No scaling hyperparameters are found. Please check your encoders."
         )
-    
+
     # feature selection space
     # get all method names in hyperparameter space
-    all_feature_selections = [item["feature_selection"] for item in feature_selection_hyperparameters]
+    all_feature_selections = [item["feature_selection"]
+                              for item in feature_selection_hyperparameters]
     _feature_selection_hyperparameter = []
     for _feature_selection in [*feature_selection]:
         feature_selection_hyperparameters[
@@ -704,36 +716,31 @@ def _converted_get_hyperparameter_space(
                 all_feature_selections.index(_feature_selection)
             ]["feature_selection"]]
         )
-        _feature_selection_hyperparameter.append(
-            searcher.convert_search_space(
-                feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
-            )
-        )
-        
+        _feature_selection_hyperparameter.append(searcher.convert_search_space(
+            feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_feature_selection_hyperparameter) == 0:
         raise ValueError(
             "No feature selection hyperparameters are found. Please check your encoders."
         )
-    
+
     # model space
     # get all method names in hyperparameter space
     all_models = [item["model"] for item in models_hyperparameters]
     _model_hyperparameter = []
     for _model in [*models]:
         models_hyperparameters[all_models.index(_model)]["model"] = tune.choice(
-            [models_hyperparameters[all_models.index(_model)]["model"]]
-        )
-        _model_hyperparameter.append(
-            searcher.convert_search_space(models_hyperparameters[all_models.index(_model)])
-        )
-        
+            [models_hyperparameters[all_models.index(_model)]["model"]])
+        _model_hyperparameter.append(searcher.convert_search_space(
+            models_hyperparameters[all_models.index(_model)]))
+
     # raise error if no encoding hyperparameters are found
     if len(_model_hyperparameter) == 0:
         raise ValueError(
             "No model hyperparameters are found. Please check your encoders."
         )
-    
+
     # the pipeline search space
     # select one of the method/hyperparameter setting from each part
     return {
@@ -744,8 +751,8 @@ def _converted_get_hyperparameter_space(
         "scaling": tune.choice(_scaling_hyperparameter),
         "feature_selection": tune.choice(_feature_selection_hyperparameter),
         "model": tune.choice(_model_hyperparameter),
-    }    
-    
+    }
+
 # Update: Nov. 9, 2022
 # skopt have quite different idea of hyperparameter space, so it's not used here.
 # def _skopt_get_hyperparameter_space(
@@ -771,9 +778,9 @@ def _converted_get_hyperparameter_space(
 #             "skopt not installed. Please install it first to use Scikit-Optimize. \
 #             Command to install: pip install scikit-optimize"
 #         )
-        
+
 #     from ray.tune.suggest.skopt import SkOptSearch
-    
+
 #     # encoding space
 #     # get all method names in hyperparameter space
 #     all_encoders = [item["encoder"] for item in encoders_hyperparameters]
@@ -782,7 +789,7 @@ def _converted_get_hyperparameter_space(
 #         _encoding_hyperparameter.append(
 #             SkOptSearch.convert_search_space(encoders_hyperparameters[all_encoders.index(_encoder)])
 #         )
-        
+
 #     # raise error if no encoding hyperparameters are found
 #     if len(_encoding_hyperparameter) == 0:
 #         raise ValueError(
@@ -790,7 +797,7 @@ def _converted_get_hyperparameter_space(
 #         )
 
 #     _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
-    
+
 #     # imputation space
 #     # get all method names in hyperparameter space
 #     all_imputers = [item["imputer"] for item in imputers_hyperparameters]
@@ -799,7 +806,7 @@ def _converted_get_hyperparameter_space(
 #         _imputer_hyperparameter.append(
 #             SkOptSearch.convert_search_space(imputers_hyperparameters[all_imputers.index(_imputer)])
 #         )
-        
+
 #     # raise error if no encoding hyperparameters are found
 #     if len(_imputer_hyperparameter) == 0:
 #         raise ValueError(
@@ -807,7 +814,7 @@ def _converted_get_hyperparameter_space(
 #         )
 
 #     _imputer_hyperparameter = tune.choice(_imputer_hyperparameter)
-    
+
 #     # balancing space
 #     # get all method names in hyperparameter space
 #     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
@@ -816,7 +823,7 @@ def _converted_get_hyperparameter_space(
 #         _balancing_hyperparameter.append(
 #             SkOptSearch.convert_search_space(balancings_hyperparameters[all_balancings.index(_balancing)])
 #         )
-        
+
 #     # raise error if no encoding hyperparameters are found
 #     if len(_balancing_hyperparameter) == 0:
 #         raise ValueError(
@@ -824,7 +831,7 @@ def _converted_get_hyperparameter_space(
 #         )
 
 #     _balancing_hyperparameter = tune.choice(_balancing_hyperparameter)
-    
+
 #     # scaling space
 #     # get all method names in hyperparameter space
 #     all_scalings = [item["scaling"] for item in scalings_hyperparameters]
@@ -833,7 +840,7 @@ def _converted_get_hyperparameter_space(
 #         _scaling_hyperparameter.append(
 #             SkOptSearch.convert_search_space(scalings_hyperparameters[all_scalings.index(_scaling)])
 #         )
-        
+
 #     # raise error if no encoding hyperparameters are found
 #     if len(_scaling_hyperparameter) == 0:
 #         raise ValueError(
@@ -841,7 +848,7 @@ def _converted_get_hyperparameter_space(
 #         )
 
 #     _scaling_hyperparameter = tune.choice(_scaling_hyperparameter)
-    
+
 #     # feature selection space
 #     # get all method names in hyperparameter space
 #     all_feature_selections = [item["feature_selection"] for item in feature_selection_hyperparameters]
@@ -852,7 +859,7 @@ def _converted_get_hyperparameter_space(
 #                 feature_selection_hyperparameters[all_feature_selections.index(_feature_selection)]
 #             )
 #         )
-        
+
 #     # raise error if no encoding hyperparameters are found
 #     if len(_feature_selection_hyperparameter) == 0:
 #         raise ValueError(
@@ -860,7 +867,7 @@ def _converted_get_hyperparameter_space(
 #         )
 
 #     _feature_selection_hyperparameter = tune.choice(_feature_selection_hyperparameter)
-    
+
 #     # model space
 #     # get all method names in hyperparameter space
 #     all_models = [item["model"] for item in models_hyperparameters]
@@ -869,7 +876,7 @@ def _converted_get_hyperparameter_space(
 #         _model_hyperparameter.append(
 #             SkOptSearch.convert_search_space(models_hyperparameters[all_models.index(_model)])
 #         )
-        
+
 #     # raise error if no encoding hyperparameters are found
 #     if len(_model_hyperparameter) == 0:
 #         raise ValueError(
@@ -877,7 +884,7 @@ def _converted_get_hyperparameter_space(
 #         )
 
 #     _model_hyperparameter = tune.choice(_model_hyperparameter)
-    
+
 #     # the pipeline search space
 #     # select one of the method/hyperparameter setting from each part
 #     return {
@@ -888,8 +895,8 @@ def _converted_get_hyperparameter_space(
 #         "scaling": _scaling_hyperparameter,
 #         "feature_selection": _feature_selection_hyperparameter,
 #         "model": _model_hyperparameter,
-#     }    
-        
+#     }
+
 
 def _get_hyperparameter_space(
     X: pd.DataFrame,
@@ -926,7 +933,7 @@ def _get_hyperparameter_space(
             models,
             task_mode,
         )
-    elif search_aglo in ["HyperOpt"] :
+    elif search_aglo in ["HyperOpt"]:
         return _hyerpot_get_hyperparameter_space(
             X,
             encoders_hyperparameters,
@@ -943,8 +950,8 @@ def _get_hyperparameter_space(
             models,
             task_mode,
         )
-    elif search_aglo in ["Optuna"] :
-        with DisableLogger() :
+    elif search_aglo in ["Optuna"]:
+        with DisableLogger():
             return _optuna_get_hyperparameter_space(
                 X,
                 encoders_hyperparameters,
@@ -961,8 +968,8 @@ def _get_hyperparameter_space(
                 models,
                 task_mode,
             )
-    elif search_aglo in ["Nevergrad"] :
-        with DisableLogger() :
+    elif search_aglo in ["Nevergrad"]:
+        with DisableLogger():
             return _converted_get_hyperparameter_space(
                 X,
                 encoders_hyperparameters,
@@ -978,7 +985,7 @@ def _get_hyperparameter_space(
                 models_hyperparameters,
                 models,
                 task_mode,
-                search_algo = search_aglo,
+                search_algo=search_aglo,
             )
     # elif search_aglo in ["Scikit-Optimize"] :
     #     return _skopt_get_hyperparameter_space(
@@ -1009,9 +1016,9 @@ def get_algo(search_algo: str) -> Callable:
 
         algo = BasicVariantGenerator
     # Update: Nov. 9, 2022
-    # The method BayesOptSearch requires non-discrete hyperparameter space, which is not supported 
+    # The method BayesOptSearch requires non-discrete hyperparameter space, which is not supported
     # by the our version of space.
-    # The work around is to generate a continuous range for discrete hyperparameters, and then 
+    # The work around is to generate a continuous range for discrete hyperparameters, and then
     # convert the continuous range to discrete range in the objective function.
     # e.g. for binary categorical hyperparameter, we can generate a continuous range from 0 to 1,
     # and then convert the continuous range to 0 or 1 in the objective function.
@@ -1347,7 +1354,8 @@ def get_progress_reporter(
 def get_logger(logger: List) -> List[Callable]:
 
     if not isinstance(logger, list) and logger is not None:
-        raise TypeError("Expect a list of string or None, get {}.".format(logger))
+        raise TypeError(
+            "Expect a list of string or None, get {}.".format(logger))
 
     loggers = []
 
@@ -1369,8 +1377,7 @@ def get_logger(logger: List) -> List[Callable]:
             if TensorBoardX_spec is None:
                 raise ImportError(
                     "TensorBoardX not installed. Please install it first to use TensorBoardX. \
-                Command to install: pip install tensorboardX"
-                )
+                Command to install: pip install tensorboardX")
 
             from ray.tune.logger import TBXLoggerCallback
 
@@ -1392,8 +1399,7 @@ def get_logger(logger: List) -> List[Callable]:
             if mlflow_spec is None:
                 raise ImportError(
                     "mlflow not installed. Please install it first to use mlflow. \
-                    Command to install: pip install mlflow"
-                )
+                    Command to install: pip install mlflow")
 
             from ray.tune.integration.mlflow import MLflowLoggerCallback
 
@@ -1405,8 +1411,7 @@ def get_logger(logger: List) -> List[Callable]:
             if wandb_spec is None:
                 raise ImportError(
                     "wandb not installed. Please install it first to use wandb. \
-                    Command to install: pip install wandb"
-                )
+                    Command to install: pip install wandb")
 
             from ray.tune.integration.wandb import WandbLoggerCallback
 
@@ -1423,13 +1428,13 @@ class TimePlateauStopper(Stopper):
 
     def __init__(
         self,
-        timeout: int=360,
-        metric: str="loss",
-        std_ratio: float=0.01,
-        num_results: int=4,
-        grace_period: int=4,
-        metric_threshold: float=None,
-        mode: str="min",
+        timeout: int = 360,
+        metric: str = "loss",
+        std_ratio: float = 0.01,
+        num_results: int = 4,
+        grace_period: int = 4,
+        metric_threshold: float = None,
+        mode: str = "min",
     ) -> None:
         self._start = time.time()
         self._deadline = timeout
@@ -1443,7 +1448,8 @@ class TimePlateauStopper(Stopper):
         self._metric_threshold = metric_threshold
 
         self._iter = defaultdict(lambda: 0)
-        self._trial_results = defaultdict(lambda: deque(maxlen=self._num_results))
+        self._trial_results = defaultdict(
+            lambda: deque(maxlen=self._num_results))
 
     def __call__(self, trial_id: str, result: Any) -> bool:
 
@@ -1473,8 +1479,8 @@ class TimePlateauStopper(Stopper):
             current_std = np.std(self._trial_results[trial_id])
         except Exception:
             current_std = float("inf")
-            
-        try: 
+
+        try:
             current_mean = np.mean(self._trial_results[trial_id])
         except Exception:
             current_mean = float("inf")
@@ -1544,8 +1550,9 @@ def get_metrics(metric_str: str) -> Callable:
         return neg_accuracy
     elif metric_str == "accuracy":
         from sklearn.metrics import accuracy_score
-        
-        logger.warn("accuracy_score is not for min mode, please use neg_accuracy instead.")
+
+        logger.warn(
+            "accuracy_score is not for min mode, please use neg_accuracy instead.")
         # warnings.warn(
         #     "accuracy_score is not for min mode, please use neg_accuracy instead."
         # )
@@ -1557,7 +1564,8 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "precision":
         from sklearn.metrics import precision_score
 
-        logger.warn("precision_score is not for min mode, please use neg_precision instead.")
+        logger.warn(
+            "precision_score is not for min mode, please use neg_precision instead.")
         # warnings.warn(
         #     "precision_score is not for min mode, please use neg_precision instead."
         # )
@@ -1569,7 +1577,8 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "auc":
         from sklearn.metrics import roc_auc_score
 
-        logger.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
+        logger.warn(
+            "roc_auc_score is not for min mode, please use neg_auc instead.")
         # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
     elif metric_str == "neg_hinge":
@@ -1578,8 +1587,9 @@ def get_metrics(metric_str: str) -> Callable:
         return neg_hinge
     elif metric_str == "hinge":
         from sklearn.metrics import hinge_loss
-        
-        logger.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
+
+        logger.warn(
+            "hinge_loss is not for min mode, please use neg_hinge instead.")
         # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
     elif metric_str == "neg_f1":
@@ -1610,7 +1620,7 @@ def get_metrics(metric_str: str) -> Callable:
         return neg_R2
     elif metric_str == "R2":
         from sklearn.metrics import r2_score
-        
+
         logger.warn("r2_score is not for min mode, please use neg_R2 instead.")
         # warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
         return r2_score
@@ -1646,7 +1656,7 @@ class ray_status:
                 num_gpus=self.gpu_count,
             )
         # check if ray is initialized
-        assert ray.is_initialized() == True, "Ray is not initialized."
+        assert ray.is_initialized(), "Ray is not initialized."
 
     def ray_shutdown(self) -> None:
 
@@ -1654,17 +1664,21 @@ class ray_status:
         ray.shutdown()
         # check if ray is shutdown
         assert ray.is_initialized() == False, "Ray is not shutdown."
-        
+
 # check if an object has a method
+
+
 def check_func(obj: Callable, ref: str) -> None:
-    
+
     for _func in METHOD_MAPPING[ref]:
         if not callable(getattr(obj, _func, None)):
             raise AttributeError(f"{ref} {obj} does not have {_func} method!")
-        
+
     return None
 
 # check hyperparameter space
+
+
 def check_status(
     methods: Dict,
     hyperparameter_space: List[Dict],
@@ -1672,35 +1686,35 @@ def check_status(
 ) -> None:
     # get all method names in hyperparameter space
     all_methods = []
-    for _dict in hyperparameter_space :
+    for _dict in hyperparameter_space:
         # get the method name by reference key
-        for key in _dict.keys() :
-            if ref in key :
+        for key in _dict.keys():
+            if ref in key:
                 all_methods.append(_dict[key])
                 break
     # check status of encoder hyperparameter space
     for method_name, method_object in methods.items():
         # check whether the method exists
-        if method_name not in all_methods :
+        if method_name not in all_methods:
             raise ValueError(
-                "Method {} is not in {} hyperparameter space!".format(method_name, ref)
-            )
+                "Method {} is not in {} hyperparameter space!".format(
+                    method_name, ref))
         # check whether the method has corresponding functions
         check_func(method_object, ref)
-        
+
         # check whether the hyperparameter space is valid
         # get corresponding hyperparameter space
-        for key in hyperparameter_space[all_methods.index(method_name)].keys() :
-            if ref in key :
+        for key in hyperparameter_space[all_methods.index(method_name)].keys():
+            if ref in key:
                 continue
-            else :
-                if not key in method_object.__init__.__code__.co_varnames :
+            else:
+                if key not in method_object.__init__.__code__.co_varnames:
                     raise ValueError(
-                        "Hyperparameter {} is not in {}!".format(key, method_name)
-                    )
-        
+                        "Hyperparameter {} is not in {}!".format(
+                            key, method_name))
+
     return None
-        
-if __name__ == "__main__" :
+
+
+if __name__ == "__main__":
     pass
-        

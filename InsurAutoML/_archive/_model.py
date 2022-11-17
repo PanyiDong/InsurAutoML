@@ -34,6 +34,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+from sklearn.ensemble import (
+    RandomForestClassifier,
+    RandomForestRegressor,
+    ExtraTreesClassifier,
+    ExtraTreesRegressor,
+)
+from sklearn.linear_model import (
+    LinearRegression,
+    LogisticRegression,
+    Lasso,
+    Ridge,
+    LassoCV,
+    RidgeCV,
+)
 import math
 import copy
 import numpy as np
@@ -51,6 +65,8 @@ import matplotlib.pyplot as plt
 # Linear Regression Model
 # Using Matrix form calculation for least square
 # Symbolic derivatives for gradient descent
+
+
 class My_LinearRegression(object):
 
     """
@@ -111,8 +127,9 @@ class My_LinearRegression(object):
         hat_y = np.dot(x, beta)
         err = y - hat_y
         loss = np.mean(err**2)
-        if include_gradient == True:
-            gradient = -2 * np.mean(err.T * x.T, axis=1).reshape((len(beta), 1))
+        if include_gradient:
+            gradient = -2 * np.mean(err.T * x.T,
+                                    axis=1).reshape((len(beta), 1))
             return (loss, gradient)
         else:
             return loss
@@ -170,7 +187,8 @@ class My_LinearRegression(object):
         # 95 percent Confidence Interval on regression parameters
         # Standard error matrix
         # SE = s^{2} * (X' * X)^{-1}
-        variance_matrix = (RSE**2) * np.array(np.linalg.inv(A), dtype=np.float64)
+        variance_matrix = (RSE**2) * \
+            np.array(np.linalg.inv(A), dtype=np.float64)
         SE = []
         for i in range(n + 1):
             SE.append(np.sqrt(variance_matrix[i][i]))
@@ -188,8 +206,10 @@ class My_LinearRegression(object):
             )
 
         # Sum of Squares
-        TSS = sum((y[i] - y_mean) ** 2 for i in range(m))  # Total Sum of Squares
-        RSS = sum((y[i] - regress[i]) ** 2 for i in range(m))  # Residual Sum of Squares
+        # Total Sum of Squares
+        TSS = sum((y[i] - y_mean) ** 2 for i in range(m))
+        # Residual Sum of Squares
+        RSS = sum((y[i] - regress[i]) ** 2 for i in range(m))
         ESS = sum(
             (regress[i] - y_mean) ** 2 for i in range(m)
         )  # Explained Sum of Saqures
@@ -249,7 +269,7 @@ class My_LinearRegression(object):
         x = np.array(np.insert(x, 0, 1, axis=1), dtype=np.float64)
 
         # initial states
-        if self.ini_beta == None:
+        if self.ini_beta is None:
             beta = [[0] for i in range(n + 1)]
         else:
             beta = self.ini_beta
@@ -260,14 +280,14 @@ class My_LinearRegression(object):
         loss_series = []
         metric_series = []
 
-        if (
-            self.method == "symbolic"
-        ):  # symbolic differential calculation, much slower but more compatible
+        # symbolic differential calculation, much slower but more compatible
+        if (self.method == "symbolic"):
 
             beta_vector = [[symbols("beta" + str(i))] for i in range(n + 1)]
             # loss function and differential in symbolic form
             hat_y = np.dot(x, beta_vector)
-            loss = np.mean([(y[i][0] - hat_y[i][0]) ** 2 for i in range(len(hat_y))])
+            loss = np.mean([(y[i][0] - hat_y[i][0]) **
+                            2 for i in range(len(hat_y))])
             loss = sym.simplify(loss)
             partial_loss = [[diff(loss, item[0])] for item in beta_vector]
             eval_partial_loss = lambdify(
@@ -284,7 +304,7 @@ class My_LinearRegression(object):
                 new_beta = beta - _delta * gradient
             new_loss = self.Loss_Cal(x, y, new_beta, include_gradient=False)
             # use backtracking to find optimal delta
-            if self.backtracking == False:
+            if not self.backtracking:
                 beta = new_beta
                 new_metric = self.Metric_Cal(x, y, beta)
                 delta_loss = np.abs(new_loss - loss)
@@ -294,7 +314,7 @@ class My_LinearRegression(object):
                 time_series.append(iter_time)
                 loss_series.append(new_loss)
                 metric_series.append(new_metric)
-            elif self.backtracking == True:
+            elif self.backtracking:
                 # Armijo–Goldstein Test
                 if new_loss <= loss - self.backtracking_c * _delta * np.sum(
                     gradient**2
@@ -311,7 +331,7 @@ class My_LinearRegression(object):
                 else:
                     _delta = _delta * self.backtracking_tau
 
-        if self.plot == True:
+        if self.plot:
             fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 6))
             ax1.scatter(time_series, loss_series, color="red")
             ax1.plot(time_series, loss_series, color="red", label="Loss")
@@ -328,8 +348,8 @@ class My_LinearRegression(object):
 
         if delta_loss > self.loss_limit and iter_time >= self.max_iter:
             print(
-                "Maximum Iteration reached, last change in loss function is", delta_loss
-            )
+                "Maximum Iteration reached, last change in loss function is",
+                delta_loss)
 
         self.beta = beta
         self.loss = new_loss
@@ -342,20 +362,5 @@ class My_LinearRegression(object):
         x0 = []
         for row in x:
             x0.append(np.insert(row, 0, 1).tolist())
-        return [round(np.dot(np.array(item).T, self.beta)[0], 4) for item in x0]
-
-
-from sklearn.linear_model import (
-    LinearRegression,
-    LogisticRegression,
-    Lasso,
-    Ridge,
-    LassoCV,
-    RidgeCV,
-)
-from sklearn.ensemble import (
-    RandomForestClassifier,
-    RandomForestRegressor,
-    ExtraTreesClassifier,
-    ExtraTreesRegressor,
-)
+        return [round(np.dot(np.array(item).T, self.beta)[0], 4)
+                for item in x0]

@@ -99,8 +99,10 @@ class Standardize:
     """
 
     def __init__(
-        self, with_mean: bool = True, with_std: bool = True, deep_copy: bool = True
-    ) -> None:
+            self,
+            with_mean: bool = True,
+            with_std: bool = True,
+            deep_copy: bool = True) -> None:
         self.with_mean = with_mean
         self.with_std = with_std
         self.deep_copy = deep_copy
@@ -116,9 +118,9 @@ class Standardize:
         _X = X.copy(deep=self.deep_copy)
 
         n, p = _X.shape
-        if self.with_mean == True:
+        if self.with_mean:
             self._mean = [0 for _ in range(p)]
-        if self.with_std == True:
+        if self.with_std:
             self._std = [0 for _ in range(p)]
 
         for i in range(p):
@@ -128,9 +130,9 @@ class Standardize:
             _x_2_sum = 0
             _x_sum += np.nansum(_data)
             _x_2_sum += np.nansum(_data**2)
-            if self.with_mean == True:
+            if self.with_mean:
                 self._mean[i] = _x_sum / n_notnan
-            if self.with_std == True:
+            if self.with_std:
                 self._std[i] = np.sqrt(
                     (_x_2_sum - n_notnan * ((_x_sum / n_notnan) ** 2)) / (n_notnan - 1)
                 )
@@ -313,30 +315,30 @@ class RobustScale:
     ) -> RobustScale:
 
         q_min, q_max = self.quantile
-        if q_min == None:  # in case no input
+        if q_min is None:  # in case no input
             q_min = 25.0
-        if q_max == None:
+        if q_max is None:
             q_max = 75.0
         if not 0 <= q_min <= q_max <= 100.0:
             raise ValueError(
-                "Quantile not in range, get {0:.1f} and {1:.1f}!".format(q_min, q_max)
-            )
+                "Quantile not in range, get {0:.1f} and {1:.1f}!".format(
+                    q_min, q_max))
 
         _X = X.copy(deep=self.deep_copy)
         n, p = _X.shape
-        if self.with_centering == True:
+        if self.with_centering:
             self._median = [0 for _ in range(p)]
-        if self.with_scale == True:
+        if self.with_scale:
             self._scale = [0 for _ in range(p)]
 
         for i in range(p):
             _data = _X.iloc[:, i].values
-            if self.with_centering == True:
+            if self.with_centering:
                 self._median[i] = np.nanmedian(_data)
                 quantile = np.nanquantile(_data, (q_min / 100, q_max / 100))
                 quantile = np.transpose(quantile)
                 self._scale[i] = quantile[1] - quantile[0]
-                if self.unit_variance == True:
+                if self.unit_variance:
                     self._scale[i] = self.scale[i] / (
                         scipy.stats.norm.ppf(q_max / 100.0)
                         - scipy.stats.norm.ppf(q_min / 100.0)
@@ -361,9 +363,9 @@ class RobustScale:
 
         _X = X.copy(deep=self.deep_copy)
 
-        if self.with_centering == True:
+        if self.with_centering:
             _X -= self._median
-        if self.with_scale == True:
+        if self.with_scale:
             _X /= self._scale
 
         return _X
@@ -450,7 +452,8 @@ class MinMaxScale:
 
         f_min, f_max = self.feature_range
         if not f_min < f_max:
-            raise ValueError("Minimum of feature range must be smaller than maximum!")
+            raise ValueError(
+                "Minimum of feature range must be smaller than maximum!")
 
         _X = X.copy(deep=self.deep_copy)
         _X = (_X - self._min) / (np.array(self._max) - np.array(self._min))
@@ -485,7 +488,8 @@ class MinMaxScale:
 
         f_min, f_max = self.feature_range
         if not f_min < f_max:
-            raise ValueError("Minimum of feature range must be smaller than maximum!")
+            raise ValueError(
+                "Minimum of feature range must be smaller than maximum!")
 
         _X = X.copy(deep=True)
         _X = (_X - f_min) / (f_max - f_min)
@@ -524,12 +528,12 @@ class Winsorization:
 
         self._fitted = False  # record whether the model has been fitted
 
-    def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> Winsorization:
+    def fit(self, X: Union[pd.DataFrame, np.ndarray],
+            y: Union[pd.DataFrame, np.ndarray]) -> Winsorization:
 
         if not isinstance(y, pd.DataFrame) and not isinstance(X, pd.Series):
-            warnings.warn("Method Winsorization requires response, but not getting it.")
+            warnings.warn(
+                "Method Winsorization requires response, but not getting it.")
 
         _X = X.copy(deep=self.deep_copy)
 
@@ -682,7 +686,9 @@ class PowerTransformer:
 
         self._fitted = False
 
-        return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
+        return pd.DataFrame(
+            self.mol.inverse_transform(X),
+            columns=self.features)
 
 
 class QuantileTransformer:
@@ -787,10 +793,12 @@ class QuantileTransformer:
 
         self._fitted = False
 
-        return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
+        return pd.DataFrame(
+            self.mol.inverse_transform(X),
+            columns=self.features)
 
 
-####################################################################################################
+##########################################################################
 # Special Case
 def Feature_Manipulation(
     X: pd.DataFrame,
@@ -800,7 +808,6 @@ def Feature_Manipulation(
     replace: bool = False,
     deep_copy: bool = False,
 ) -> pd.DataFrame:
-
     """
     Available methods: +, -, *, /, //, %, ln, log2, log10, exp
 
@@ -848,7 +855,7 @@ def Feature_Manipulation(
     if not isinstance(X, pd.DataFrame):
         try:
             X = pd.DataFrame(X)
-        except:
+        except BaseException:
             raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
     _X = X.copy(deep=deep_copy)
@@ -863,17 +870,14 @@ def Feature_Manipulation(
     if len(columns) != len(manipulation):
         raise ValueError(
             "Expect same length of columns and manipulation, get {} and {} respectively.".format(
-                len(columns), len(manipulation)
-            )
-        )
+                len(columns), len(manipulation)))
     manipulation = dict(zip(columns, manipulation))
 
     for _column in columns:
 
         # if observed in rename dict, change column names
         new_column_name = (
-            rename_columns[_column] if _column in rename_columns.keys() else _column
-        )
+            rename_columns[_column] if _column in rename_columns.keys() else _column)
 
         # if not replace, and new column names coincide with old column names
         # new column names = old column names + manipulation
@@ -896,7 +900,7 @@ def Feature_Manipulation(
     return _X
 
 
-####################################################################################################
+##########################################################################
 # Feature Truncation
 class Feature_Truncation:
 
@@ -941,7 +945,7 @@ class Feature_Truncation:
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
-            except:
+            except BaseException:
                 raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
         _X = X.copy(deep=self.deep_copy)
@@ -960,7 +964,8 @@ class Feature_Truncation:
         self.quantile_list = {}
 
         for _column in self.columns:
-            quantile = np.nanquantile(X[_column], self.quantile[_column], axis=0)
+            quantile = np.nanquantile(
+                X[_column], self.quantile[_column], axis=0)
             self.quantile_list[_column] = quantile
 
         return self

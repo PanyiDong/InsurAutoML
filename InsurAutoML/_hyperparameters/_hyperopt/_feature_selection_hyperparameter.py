@@ -57,7 +57,8 @@ feature_selection_hyperparameter = [
             "extra_trees_preproc_for_classification_n_estimators", [100]
         ),
         "criterion": hp.choice(
-            "extra_trees_preproc_for_classification_criterion", ["gini", "entropy"]
+            "extra_trees_preproc_for_classification_criterion", [
+                "gini", "entropy"]
         ),
         "min_samples_leaf": scope.int(
             hp.quniform(
@@ -82,10 +83,12 @@ feature_selection_hyperparameter = [
             "extra_trees_preproc_for_classification_max_depth", [None]
         ),
         "min_weight_fraction_leaf": hp.choice(
-            "extra_trees_preproc_for_classification_min_weight_fraction_leaf", [0.0]
+            "extra_trees_preproc_for_classification_min_weight_fraction_leaf", [
+                0.0]
         ),
         "min_impurity_decrease": hp.choice(
-            "extra_trees_preproc_for_classification_min_impurity_decrease", [0.0]
+            "extra_trees_preproc_for_classification_min_impurity_decrease", [
+                0.0]
         ),
     },
     {
@@ -98,7 +101,11 @@ feature_selection_hyperparameter = [
             ["mse", "friedman_mse", "mae"],
         ),
         "min_samples_leaf": scope.int(
-            hp.quniform("extra_trees_preproc_for_regression_min_samples_leaf", 1, 20, 1)
+            hp.quniform(
+                "extra_trees_preproc_for_regression_min_samples_leaf",
+                1,
+                20,
+                1)
         ),
         "min_samples_split": scope.int(
             hp.quniform(
@@ -116,7 +123,8 @@ feature_selection_hyperparameter = [
         ),
         "max_depth": hp.choice("extra_trees_preproc_for_regression_max_depth", [None]),
         "min_weight_fraction_leaf": hp.choice(
-            "extra_trees_preproc_for_regression_min_weight_fraction_leaf", [0.0]
+            "extra_trees_preproc_for_regression_min_weight_fraction_leaf", [
+                0.0]
         ),
     },
     {
@@ -134,7 +142,8 @@ feature_selection_hyperparameter = [
             hp.quniform("feature_agglomeration_n_clusters", 2, 400, 1)
         ),
         "affinity": hp.choice(
-            "feature_agglomeration_affinity", ["euclidean", "manhattan", "cosine"]
+            "feature_agglomeration_affinity", [
+                "euclidean", "manhattan", "cosine"]
         ),
         "linkage": hp.choice(
             "feature_agglomeration_linkage", ["ward", "complete", "average"]
@@ -232,7 +241,8 @@ feature_selection_hyperparameter = [
     {
         "feature_selection": "select_percentile_classification",
         "percentile": scope.int(
-            hp.quniform("select_percentile_classification_percentile", 1, 99, 1)
+            hp.quniform(
+                "select_percentile_classification_percentile", 1, 99, 1)
         ),
         "score_func": hp.choice(
             "select_percentile_classification_score_func",
@@ -245,7 +255,8 @@ feature_selection_hyperparameter = [
             hp.quniform("select_percentile_regression_percentile", 1, 99, 1)
         ),
         "score_func": hp.choice(
-            "select_percentile_regression_score_func", ["f_regression", "mutual_info"]
+            "select_percentile_regression_score_func", [
+                "f_regression", "mutual_info"]
         ),
     },
     {

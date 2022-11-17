@@ -53,8 +53,8 @@ from ._under_sampling import TomekLink, EditedNearestNeighbor
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
     Edited Nearest Neighbor,  Condensed Nearest Neighbor, One Sided Selection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
-    
-Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for 
+
+Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for
 balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(1), pp.20-29.
 """
 
@@ -92,7 +92,7 @@ class Smote_TomekLink(Smote, TomekLink):
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -170,7 +170,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty

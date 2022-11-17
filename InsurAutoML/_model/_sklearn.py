@@ -68,11 +68,11 @@ from InsurAutoML._constant import MAX_ITER
 from InsurAutoML._utils._base import is_none
 from InsurAutoML._utils._data import softmax
 
-####################################################################################################################
+##########################################################################
 # models from sklearn
 # wrap for some-degree of flexibility (initialization, _fitted, etc.)
 
-####################################################################################################################
+##########################################################################
 # classifiers
 
 
@@ -184,7 +184,8 @@ class DecisionTreeClassifier(sklearn.tree.DecisionTreeClassifier):
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.max_features = float(max_features)
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else max_leaf_nodes
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else max_leaf_nodes
         self.min_impurity_decrease = float(min_impurity_decrease)
 
         self._fitted = False  # whether the model is fitted
@@ -247,7 +248,8 @@ class ExtraTreesClassifier:
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.max_features = float(max_features)
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else max_leaf_nodes
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else max_leaf_nodes
         self.min_impurity_decrease = float(min_impurity_decrease)
 
         self.estimator = None  # the fitted estimator
@@ -430,7 +432,8 @@ class HistGradientBoostingClassifier:
                 else:
                     self.validation_fraction_ = self.validation_fraction
             else:
-                raise ValueError("early_stop should be either off, train or valid")
+                raise ValueError(
+                    "early_stop should be either off, train or valid")
 
             self.estimator = HistGradientBoostingClassifier(
                 loss=self.loss,
@@ -569,9 +572,7 @@ class LDA(sklearn.discriminant_analysis.LinearDiscriminantAnalysis):
         else:
             raise ValueError(
                 "Not a valid shrinkage parameter, should be None, auto or manual. Got {}".format(
-                    self.shrinkage
-                )
-            )
+                    self.shrinkage))
 
         super().__init__(
             shrinkage=_shrinkage,
@@ -799,9 +800,7 @@ class MLPClassifier:
             else:
                 raise ValueError(
                     "Early stopping only supports 'train' and 'valid'. Got {}".format(
-                        self.early_stopping
-                    )
-                )
+                        self.early_stopping))
 
             self.estimator = MLPClassifier(
                 hidden_layer_sizes=self.hidden_layer_sizes,
@@ -956,7 +955,8 @@ class PassiveAggressive:
             )
         else:
             self.estimator.max_iter += n_iter
-            self.estimator.max_iter = min(self.estimator.max_iter, self.max_iter)
+            self.estimator.max_iter = min(
+                self.estimator.max_iter, self.max_iter)
 
         self.estimator.fit(X, y)
 
@@ -1057,7 +1057,8 @@ class RandomForestClassifier:
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
         self.estimator = None  # the fitted estimator
@@ -1201,7 +1202,8 @@ class SGDClassifier:
             )
         else:
             self.estimator.max_iter += n_iter
-            self.estimator.max_iter = min(self.estimator.max_iter, self.max_iter)
+            self.estimator.max_iter = min(
+                self.estimator.max_iter, self.max_iter)
 
         self.estimator.fit(X, y)
 
@@ -1456,7 +1458,7 @@ class GradientBoostingClassifier(sklearn.ensemble.GradientBoostingClassifier):
         return super().predict_proba(X)
 
 
-####################################################################################################################
+##########################################################################
 # regressors
 
 
@@ -1506,7 +1508,8 @@ class AdaboostRegressor(sklearn.ensemble.AdaBoostRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class ARDRegression(sklearn.linear_model.ARDRegression):
@@ -1565,7 +1568,8 @@ class ARDRegression(sklearn.linear_model.ARDRegression):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
@@ -1586,7 +1590,8 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.max_features = float(max_features)
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
         self._fitted = False  # whether the model is fitted
@@ -1624,7 +1629,8 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class ExtraTreesRegressor:
@@ -1642,7 +1648,8 @@ class ExtraTreesRegressor:
     ) -> None:
         self.criterion = criterion
         self.max_depth = None if is_none(max_depth) else int(max_depth)
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_samples_split = int(min_samples_split)
         self.max_features = float(max_features)
@@ -1725,7 +1732,8 @@ class ExtraTreesRegressor:
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor):
@@ -1778,7 +1786,8 @@ class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class HistGradientBoostingRegressor:
@@ -1850,7 +1859,8 @@ class HistGradientBoostingRegressor:
                 else:
                     self.validation_fraction_ = self.validation_fraction
             else:
-                raise ValueError("early_stop should be either off, train or valid")
+                raise ValueError(
+                    "early_stop should be either off, train or valid")
 
             self.estimator = HistGradientBoostingRegressor(
                 loss=self.loss,
@@ -1912,7 +1922,8 @@ class HistGradientBoostingRegressor:
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
@@ -1956,7 +1967,8 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class LibLinear_SVR(sklearn.svm.LinearSVR):
@@ -2012,7 +2024,8 @@ class LibLinear_SVR(sklearn.svm.LinearSVR):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class LibSVM_SVR(sklearn.svm.SVR):
@@ -2073,7 +2086,8 @@ class LibSVM_SVR(sklearn.svm.SVR):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class MLPRegressor:
@@ -2148,9 +2162,7 @@ class MLPRegressor:
             else:
                 raise ValueError(
                     "Early stopping only supports 'train' and 'valid'. Got {}".format(
-                        self.early_stopping
-                    )
-                )
+                        self.early_stopping))
 
             self.estimator = MLPRegressor(
                 hidden_layer_sizes=self.hidden_layer_sizes,
@@ -2214,7 +2226,8 @@ class MLPRegressor:
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class RandomForestRegressor:
@@ -2237,7 +2250,8 @@ class RandomForestRegressor:
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(
+            max_leaf_nodes) else int(max_leaf_nodes)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
         self.estimator = None  # the fitted estimator
@@ -2315,7 +2329,8 @@ class RandomForestRegressor:
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class SGDRegressor:
@@ -2381,7 +2396,8 @@ class SGDRegressor:
             )
         else:
             self.estimator.max_iter += n_iter
-            self.estimator.max_iter = min(self.estimator.max_iter, self.max_iter)
+            self.estimator.max_iter = min(
+                self.estimator.max_iter, self.max_iter)
 
         self.estimator.fit(X, y)
 
@@ -2420,7 +2436,8 @@ class SGDRegressor:
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class LinearRegression(sklearn.linear_model.LinearRegression):
@@ -2453,7 +2470,8 @@ class LinearRegression(sklearn.linear_model.LinearRegression):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class Lasso(sklearn.linear_model.Lasso):
@@ -2494,7 +2512,8 @@ class Lasso(sklearn.linear_model.Lasso):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class Ridge(sklearn.linear_model.Ridge):
@@ -2538,7 +2557,8 @@ class Ridge(sklearn.linear_model.Ridge):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class ElasticNet(sklearn.linear_model.ElasticNet):
@@ -2585,7 +2605,8 @@ class ElasticNet(sklearn.linear_model.ElasticNet):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 class BayesianRidge(sklearn.linear_model.BayesianRidge):
@@ -2635,7 +2656,8 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")
 
 
 # combined with autosklearn version, thus deprecated here
@@ -2760,4 +2782,5 @@ class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")

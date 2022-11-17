@@ -53,7 +53,11 @@ def test_feature_selection():
         X = data.iloc[:, :-1]
         y = data.iloc[:, -1]
 
-        if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
+        if method_name in [
+            "FeatureFilter",
+            "ASFFS",
+            "GeneticAlgorithm",
+                "RBFSampler"]:
             pass
         elif method_name == "SFS":
             feature_selection = method(
@@ -69,7 +73,7 @@ def test_feature_selection():
         feature_selection.fit(X, y)
         _X = feature_selection.transform(X)
 
-        assert feature_selection._fitted == True, "Fitted should be True"
+        assert feature_selection._fitted, "Fitted should be True"
         if method_name != "polynomial":
             assert (
                 _X.shape[1] <= X.shape[1]
@@ -112,7 +116,7 @@ def test_feature_selection():
             feature_selection.fit(X, y)
             _X = feature_selection.transform(X)
 
-            assert feature_selection._fitted == True, "Fitted should be True"
+            assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_FeatureFilter():
@@ -130,7 +134,7 @@ def test_FeatureFilter():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
 
     feature_selection = FeatureFilter(
@@ -140,7 +144,7 @@ def test_FeatureFilter():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
 
 
@@ -159,7 +163,7 @@ def test_ASFFS():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
     feature_selection = ASFFS(
@@ -169,14 +173,14 @@ def test_ASFFS():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
     feature_selection = ASFFS(n_components=5, model="Ridge", objective="MAE")
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method ASFFS failed"
 
 
@@ -204,7 +208,7 @@ def test_GA():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
@@ -213,7 +217,7 @@ def test_GA():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
@@ -222,7 +226,7 @@ def test_GA():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = GeneticAlgorithm(
@@ -231,7 +235,7 @@ def test_GA():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
 
@@ -247,7 +251,7 @@ def test_FOCI():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
 
@@ -264,12 +268,12 @@ def test_ExhaustiveFS():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
 
     feature_selection = ExhaustiveFS(estimator=Ridge(), criteria="MSE")
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"

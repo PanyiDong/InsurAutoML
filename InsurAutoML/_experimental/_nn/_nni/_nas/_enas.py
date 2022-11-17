@@ -59,11 +59,11 @@ from ._ops import (
 )
 from ._utils import how_to_init
 
-###################################################################################################################
+##########################################################################
 # MLP base structure
 
 
-###################################################################################################################
+##########################################################################
 # CNN related components/structures
 
 
@@ -127,7 +127,7 @@ class CNNNode(nninn.MutableScope):
         return out_1 + out_2, mask_1 | mask_2
 
 
-###################################################################################################################
+##########################################################################
 # CNN base space
 
 
@@ -161,8 +161,10 @@ class CNNBaseLayer(nn.Module):
             # get latest node label
             node_labels.append("{}_node_{}".format(name_prefix, i))
             # add node to the module
-            # available previous nodes are everything but the latest one (not constructed yet)
-            self.nodes.append(CNNNode(node_labels[-1], node_labels[:-1], out_channel))
+            # available previous nodes are everything but the latest one (not
+            # constructed yet)
+            self.nodes.append(
+                CNNNode(node_labels[-1], node_labels[:-1], out_channel))
 
         self.conv_weight = nn.Parameter(
             torch.zeros(out_channel, self.num_nodes + 2, out_channel, 1, 1),
@@ -179,7 +181,8 @@ class CNNBaseLayer(nn.Module):
         # reset channels so that two previous layers can be connected
         nodeValue = [self.preprocess1(previous1), self.preprocess2(previous2)]
 
-        # make sure the devices used are the same, otherwise it will cause error
+        # make sure the devices used are the same, otherwise it will cause
+        # error
         record_mask = torch.zeros(
             self.num_nodes + 2, dtype=torch.bool, device=previous2.device
         )
@@ -194,9 +197,8 @@ class CNNBaseLayer(nn.Module):
             nodeValue.append(out)
 
         # concat all unused(unmasked) nodes
-        unused_nodes = torch.cat(
-            [out for used, out in zip(record_mask, nodeValue) if not used], dim=1
-        )
+        unused_nodes = torch.cat([out for used, out in zip(
+            record_mask, nodeValue) if not used], dim=1)
         # use ReLU activation
         unused_nodes = F.relu(unused_nodes)
 
@@ -263,7 +265,13 @@ class CNNBaseSpace(nn.Module):
                 self.net.append(ReductionLayer(c_pp, c_p, c_cur))
                 c_pp = c_p = c_cur
             # normal layers
-            self.net.append(CNNBaseLayer(num_nodes, c_pp, c_p, c_cur, reduction))
+            self.net.append(
+                CNNBaseLayer(
+                    num_nodes,
+                    c_pp,
+                    c_p,
+                    c_cur,
+                    reduction))
 
             # whether to use aux head
             if self.use_aux_head and id == pool_distance[-1] + 1:
@@ -313,7 +321,7 @@ class CNNBaseSpace(nn.Module):
                 how_to_init(m, how)
 
 
-###################################################################################################################
+##########################################################################
 # CNN full space
 
 
@@ -437,10 +445,11 @@ class CNNFullSpace(nn.Module):
             labels.append("layer_{}".format(id))
             # if in pool layers, add a FactorizedReduce layer
             if id in self.pool_layer_idx:
-                self.pool_layers.append(FactorizedReduce(out_channels, out_channels))
-            self.net.append(
-                CNNFullLayer(labels[-1], labels[:-1], out_channels, out_channels)
-            )
+                self.pool_layers.append(
+                    FactorizedReduce(
+                        out_channels, out_channels))
+            self.net.append(CNNFullLayer(
+                labels[-1], labels[:-1], out_channels, out_channels))
 
         # layers after the CNN layers
         # Average pooling layer
@@ -464,7 +473,8 @@ class CNNFullSpace(nn.Module):
             # forward through the pool layers
             if id in self.pool_layer_idx:
                 for idx, layer in enumerate(layers):
-                    layers[idx] = self.pool_layers[self.pool_layer_idx.index(id)](layer)
+                    layers[idx] = self.pool_layers[self.pool_layer_idx.index(id)](
+                        layer)
                 current = layers[-1]
 
         # forward through the postprocess layers
@@ -476,7 +486,7 @@ class CNNFullSpace(nn.Module):
         return output
 
 
-###################################################################################################################
+##########################################################################
 # RNN base space
 
 
@@ -516,7 +526,8 @@ class RNNCell(nn.Module):
         output = self.input(input, hidden)
 
         # check whether to use operation
-        # if PathSamplingInputChoice, no need for operation and no mask returned
+        # if PathSamplingInputChoice, no need for operation and no mask
+        # returned
         if isinstance(self.input, PathSamplingInputChoice):
 
             # unpack the output
@@ -561,5 +572,5 @@ class RNNNode(nninn.MutableScope):
         ), mask_1 | mask_2
 
 
-###################################################################################################################
+##########################################################################
 # RNN full space

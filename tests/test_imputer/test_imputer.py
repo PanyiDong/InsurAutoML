@@ -58,7 +58,8 @@ import pandas as pd
 #         self.method_names = list(self.method_dict.keys())
 #         self.method_objects = list(self.method_dict.values())
 
-#         for method_name, method_object in zip(self.method_names, self.method_objects):
+# for method_name, method_object in zip(self.method_names,
+# self.method_objects):
 
 #             if method_name == "KNNImputer":
 #                 mol = method_object(n_neighbors=1)
@@ -98,7 +99,7 @@ def test_imputer():
             data = imputer.fill(data)
 
             assert (
-                imputer._fitted == True
+                imputer._fitted
             ), "The method {} is not correctly fitted.".format(method_name)
             assert (
                 data.isnull().any().any() == False
@@ -128,7 +129,7 @@ def test_DummyImputer():
     )
     filled_data = imputer.fill(X, y)
 
-    assert imputer._fitted == True, "The method DummyImputer is not correctly fitted."
+    assert imputer._fitted, "The method DummyImputer is not correctly fitted."
     assert (
         filled_data.isnull().any().any() == False
     ), "The imputation method DummyImputer fail to impute all missings."
@@ -152,7 +153,7 @@ def test_kNNImputer():
     )
     filled_data = imputer.fill(data)
 
-    assert imputer._fitted == True, "The method KNNImputer is not correctly fitted."
+    assert imputer._fitted, "The method KNNImputer is not correctly fitted."
     assert (
         filled_data.isnull().any().any() == False
     ), "The imputation method KNNImputer fail to impute all missings."

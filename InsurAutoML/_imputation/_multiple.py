@@ -109,7 +109,8 @@ class ExpectationMaximization:
                 )
 
         _missing_vector = np.array(_missing_vector).T
-        self._missing_table = pd.DataFrame(_missing_vector, columns=_missing_feature)
+        self._missing_table = pd.DataFrame(
+            _missing_vector, columns=_missing_feature)
 
         for _column in list(self._missing_table.columns):
             for _index in self._missing_table[_column]:
@@ -175,7 +176,8 @@ class KNNImputer:
         features = list(X.columns)
         for _column in features:
             if len(X[_column].unique()) <= min(0.1 * len(X), self.uni_class):
-                raise ValueError("KNN Imputation not supported for categorical data!")
+                raise ValueError(
+                    "KNN Imputation not supported for categorical data!")
 
         _X = X.copy(deep=True)
         if _X.isnull().values.any():
@@ -217,20 +219,26 @@ class KNNImputer:
         random_features = random_list(
             self._missing_feature, self.seed
         )  # the order to regress on missing features
-        # _index = random_index(len(X.index))  # random index for cross validation
+        # _index = random_index(len(X.index))  # random index for cross
+        # validation
         _err = []
 
-        # if assigned n_neighbors, use it, otherwise use k-fold cross validation
+        # if assigned n_neighbors, use it, otherwise use k-fold cross
+        # validation
         if self.n_neighbors is None:
             for i in range(self.fold):
-                _test = X.iloc[
-                    i * int(len(X.index) / self.fold) : int(len(X.index) / self.fold), :
-                ]
+                _test = X.iloc[i *
+                               int(len(X.index) /
+                                   self.fold): int(len(X.index) /
+                                                   self.fold), :]
                 _train = X
                 _train.drop(labels=_test.index, axis=0, inplace=True)
-                _err.append(self._cross_validation_knn(_train, _test, random_features))
+                _err.append(
+                    self._cross_validation_knn(
+                        _train, _test, random_features))
 
-            _err = np.mean(np.array(_err), axis=0)  # mean of cross validation error
+            # mean of cross validation error
+            _err = np.mean(np.array(_err), axis=0)
             self.optimial_k = np.array(_err).argmin()[0] + 1  # optimal k
 
             X = self._knn_impute(X, random_features, self.optimial_k)
@@ -245,7 +253,7 @@ class KNNImputer:
 
         from sklearn.neighbors import KNeighborsRegressor
 
-        if self.n_neighbors == None:
+        if self.n_neighbors is None:
             n_neighbors = [i + 1 for i in range(10)]
         else:
             n_neighbors = (
@@ -264,8 +272,10 @@ class KNNImputer:
                 _subfeatures.remove(_feature)
 
                 fit_model = KNeighborsRegressor(n_neighbors=_k)
-                fit_model.fit(_train.loc[:, _subfeatures], _train.loc[:, _feature])
-                _test.loc[:, _feature] = fit_model.predict(_test.loc[:, _subfeatures])
+                fit_model.fit(_train.loc[:, _subfeatures],
+                              _train.loc[:, _feature])
+                _test.loc[:, _feature] = fit_model.predict(
+                    _test.loc[:, _subfeatures])
             _err.append(((_test - _test_mark) ** 2).sum())
 
         return _err
@@ -312,8 +322,10 @@ class MissForestImputer:
     """
 
     def __init__(
-        self, threshold: float = 0, method: str = "mean", uni_class: int = UNI_CLASS
-    ) -> None:
+            self,
+            threshold: float = 0,
+            method: str = "mean",
+            uni_class: int = UNI_CLASS) -> None:
         self.threshold = threshold
         self.method = method
         self.uni_class = uni_class
@@ -340,7 +352,8 @@ class MissForestImputer:
                 _tmp_column = RegModel.predict(
                     X.loc[X.index.astype(int).isin(_missing_index), _subfeature]
                 )
-                X.loc[X.index.astype(int).isin(_missing_index), _column] = _tmp_column
+                X.loc[X.index.astype(int).isin(
+                    _missing_index), _column] = _tmp_column
                 _delta.append(self._delta_cal(X, X_old))
                 if len(_delta) >= 2 and _delta[-1] > _delta[-2]:
                     break
@@ -352,8 +365,10 @@ class MissForestImputer:
     # calcualte the difference between data newly imputed and before imputation
     def _delta_cal(self, X_new: pd.DataFrame, X_old: pd.DataFrame) -> float:
 
-        if (X_new.shape[0] != X_old.shape[0]) or (X_new.shape[1] != X_old.shape[1]):
-            raise ValueError("New and old data must have same size, get different!")
+        if (X_new.shape[0] != X_old.shape[0]) or (
+                X_new.shape[1] != X_old.shape[1]):
+            raise ValueError(
+                "New and old data must have same size, get different!")
 
         _numerical_features = []
         _categorical_features = []
@@ -402,7 +417,8 @@ class MissForestImputer:
         features = list(X.columns)
 
         for _column in features:
-            if (X[_column].dtype == object) or (str(X[_column].dtype) == "category"):
+            if (X[_column].dtype == object) or (
+                    str(X[_column].dtype) == "category"):
                 raise ValueError(
                     "MICE can only handle numerical filling, run encoding first!"
                 )
@@ -416,7 +432,8 @@ class MissForestImputer:
         for _column in features:
             if X[_column].isnull().values.any():
                 _missing_feature.append(_column)
-                _missing_vector.append(X.loc[X[_column].isnull()].index.astype(int))
+                _missing_vector.append(
+                    X.loc[X[_column].isnull()].index.astype(int))
                 _missing_count.append(X[_column].isnull().astype(int).sum())
 
         # reorder the missing features by missing counts increasing
@@ -425,7 +442,8 @@ class MissForestImputer:
         _missing_feature = np.array(_missing_feature)[_order].tolist()
         _missing_vector = np.array(_missing_vector)[_order].T.tolist()
 
-        self._missing_table = pd.DataFrame(_missing_vector, columns=_missing_feature)
+        self._missing_table = pd.DataFrame(
+            _missing_vector, columns=_missing_feature)
 
         X = SimpleImputer(method=self.method).fill(
             X
@@ -462,7 +480,11 @@ class MICE:
     every random draw from the minority class will increase the random seed by 1
     """
 
-    def __init__(self, cycle: int = 10, method: str = "mean", seed: int = 1) -> None:
+    def __init__(
+            self,
+            cycle: int = 10,
+            method: str = "mean",
+            seed: int = 1) -> None:
         self.method = method
         self.cycle = cycle
         self.seed = seed
@@ -489,7 +511,8 @@ class MICE:
         features = list(X.columns)
 
         for _column in features:
-            if (X[_column].dtype == object) or (str(X[_column].dtype) == "category"):
+            if (X[_column].dtype == object) or (
+                    str(X[_column].dtype) == "category"):
                 raise ValueError(
                     "MICE can only handle numerical filling, run encoding first!"
                 )

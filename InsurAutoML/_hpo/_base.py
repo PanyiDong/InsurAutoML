@@ -39,43 +39,6 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-import logging
-
-formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-
-from typing import Union, List, Callable, Dict, Tuple
-import os
-import datetime
-import copy
-import shutil
-import importlib
-import warnings
-import random
-import numpy as np
-import pandas as pd
-
-# import ray
-from ray import tune
-
-from InsurAutoML._hpo._utils import (
-    TabularObjective,
-    Pipeline,
-    ClassifierEnsemble,
-    RegressorEnsemble,
-)
-from InsurAutoML._constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL
-from InsurAutoML._base import no_processing
-from InsurAutoML._utils._base import type_of_script, format_hyper_dict
-from InsurAutoML._utils._file import (
-    save_methods,
-    load_methods,
-    find_exact_path,
-)
-from InsurAutoML._utils._data import (
-    str2list,
-    str2dict,
-)
-from InsurAutoML._utils._metadata import MetaData
 from InsurAutoML._utils._optimize import (
     get_algo,
     get_scheduler,
@@ -85,9 +48,48 @@ from InsurAutoML._utils._optimize import (
     ray_status,
     check_status,
 )
+from InsurAutoML._utils._metadata import MetaData
+from InsurAutoML._utils._data import (
+    str2list,
+    str2dict,
+)
+from InsurAutoML._utils._file import (
+    save_methods,
+    load_methods,
+    find_exact_path,
+)
+from InsurAutoML._utils._base import type_of_script, format_hyper_dict
+from InsurAutoML._base import no_processing
+from InsurAutoML._constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL
+from InsurAutoML._hpo._utils import (
+    TabularObjective,
+    Pipeline,
+    ClassifierEnsemble,
+    RegressorEnsemble,
+)
+from ray import tune
+import pandas as pd
+import numpy as np
+import random
+import warnings
+import importlib
+import shutil
+import copy
+import datetime
+import os
+from typing import Union, List, Callable, Dict, Tuple
+import logging
+
+formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+
+
+# import ray
+
 
 # filter certain warnings
-warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
+warnings.filterwarnings(
+    "ignore",
+    message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
 # warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
 # warnings.filterwarnings(
@@ -98,13 +100,18 @@ warnings.filterwarnings("ignore", message="Variables are collinear")
 # I wish to use sklearn v1.0 for new features
 # but there's conflicts between autosklearn models and sklearn models
 # mae <-> absolute_error, mse <-> squared_error inconsistency
-warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
-warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
-warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
+warnings.filterwarnings(
+    "ignore",
+    message="Criterion 'mse' was deprecated in v1.0")
+warnings.filterwarnings(
+    "ignore",
+    message="Criterion 'mae' was deprecated in v1.0")
+warnings.filterwarnings(
+    "ignore",
+    message="'normalize' was deprecated in version 1.0")
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available
-import importlib
 
 torch_spec = importlib.util.find_spec("torch")
 if torch_spec is not None:
@@ -591,7 +598,8 @@ class AutoTabularBase(MetaData):
         if "no_processing" in imputer.keys():
             _all_imputers_hyperparameters = [{"imputer": "no_processing"}]
         else:
-            _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
+            _all_imputers_hyperparameters = copy.deepcopy(
+                imputer_hyperparameter)
         # include additional hyperparameters
         _all_imputers_hyperparameters += add_imputer_hyperparameter
 
@@ -599,7 +607,8 @@ class AutoTabularBase(MetaData):
         # _all_imputers_hyperparameters = copy.deepcopy(self._all_imputers_hyperparameters)
 
         # all hyperparameters for balancing methods
-        _all_balancings_hyperparameters = copy.deepcopy(balancing_hyperparameter)
+        _all_balancings_hyperparameters = copy.deepcopy(
+            balancing_hyperparameter)
         # include additional hyperparameters
         _all_balancings_hyperparameters += add_balancing_hyperparameter
 
@@ -652,11 +661,13 @@ class AutoTabularBase(MetaData):
 
         # all hyperparameters for the models by mode
         if self.task_mode == "classification":
-            _all_models_hyperparameters = copy.deepcopy(classifier_hyperparameter)
+            _all_models_hyperparameters = copy.deepcopy(
+                classifier_hyperparameter)
             # include additional hyperparameters
             _all_models_hyperparameters += add_classifier_hyperparameter
         elif self.task_mode == "regression":
-            _all_models_hyperparameters = copy.deepcopy(regressor_hyperparameter)
+            _all_models_hyperparameters = copy.deepcopy(
+                regressor_hyperparameter)
             # include additional hyperparameters
             _all_models_hyperparameters += add_regressor_hyperparameter
 
@@ -671,7 +682,8 @@ class AutoTabularBase(MetaData):
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
                         from InsurAutoML._constant import LIGHTGBM_BINARY_CLASSIFICATION
 
-                        item["objective"] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
+                        item["objective"] = tune.choice(
+                            LIGHTGBM_BINARY_CLASSIFICATION)
                     else:
                         from InsurAutoML._constant import (
                             LIGHTGBM_MULTICLASS_CLASSIFICATION,
@@ -684,7 +696,10 @@ class AutoTabularBase(MetaData):
         # check status of hyperparameter space
         check_status(encoder, _all_encoders_hyperparameters, ref="encoder")
         check_status(imputer, _all_imputers_hyperparameters, ref="imputer")
-        check_status(balancing, _all_balancings_hyperparameters, ref="balancing")
+        check_status(
+            balancing,
+            _all_balancings_hyperparameters,
+            ref="balancing")
         check_status(scaling, _all_scalings_hyperparameters, ref="scaling")
         check_status(
             feature_selection,
@@ -749,7 +764,8 @@ class AutoTabularBase(MetaData):
             self.task_mode,
             self.search_algo,
         )  # _X to choose whether include imputer
-        # others are the combinations of default hyperparameter space & methods selected
+        # others are the combinations of default hyperparameter space & methods
+        # selected
 
         return (
             encoder,
@@ -917,7 +933,8 @@ class AutoTabularBase(MetaData):
         }
 
         # optimal classifier
-        optimal_model_hyperparameters = optimal_point["model"]  # optimal model selected
+        # optimal model selected
+        optimal_model_hyperparameters = optimal_point["model"]
         # find optimal model key
         for _key in optimal_model_hyperparameters.keys():
             if "model" in _key:
@@ -936,8 +953,10 @@ class AutoTabularBase(MetaData):
         # if already exists, use append mode
         # else, write mode
         if not os.path.exists(
-            os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt")
-        ):
+            os.path.join(
+                self.temp_directory,
+                self.model_name,
+                "optimal_setting.txt")):
             write_type = "w"
         else:
             write_type = "a"
@@ -967,7 +986,10 @@ class AutoTabularBase(MetaData):
             )
             f.write("Optimal feature selection hyperparameters:")
             print(optimal_feature_selection_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal {} model is: {}\n".format(self.task_mode, optimal_model))
+            f.write(
+                "Optimal {} model is: {}\n".format(
+                    self.task_mode,
+                    optimal_model))
             f.write("Optimal {} hyperparameters:".format(self.task_mode))
             print(optimal_model_hyperparameters, file=f, end="\n\n")
 
@@ -1064,21 +1086,28 @@ class AutoTabularBase(MetaData):
         return ("pipe_" + str(idx + 1), Pipeline(**pip_setting))
 
     def _fit_ensemble(
-        self, trial_id: str, config: Dict, iter: int = None, features: List[str] = None
-    ) -> None:
+            self,
+            trial_id: str,
+            config: Dict,
+            iter: int = None,
+            features: List[str] = None) -> None:
 
         # initialize ensemble list
         try:
             # if ensemble list exists, append to it
             if len(ensemble_list) > 0 or len(feature_list) > 0:
                 pass
-        except:
+        except BaseException:
             # else, initialize the list
             ensemble_list = []
             feature_list = []
 
         # if only one optimal input, need to convert to iterable
-        if not isinstance(trial_id, pd.Series) or not isinstance(config, pd.Series):
+        if not isinstance(
+                trial_id,
+                pd.Series) or not isinstance(
+                config,
+                pd.Series):
             trial_id = [trial_id]
             config = [config]
 
@@ -1165,9 +1194,8 @@ class AutoTabularBase(MetaData):
 
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Start preparing AutoTabular...".format(
-                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
-            )
-        )
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                self.model_name))
 
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
@@ -1176,13 +1204,17 @@ class AutoTabularBase(MetaData):
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
-            except:
-                raise TypeError("Cannot convert X to dataframe, get {}".format(type(X)))
+            except BaseException:
+                raise TypeError(
+                    "Cannot convert X to dataframe, get {}".format(
+                        type(X)))
         if not isinstance(y, pd.DataFrame):
             try:
                 y = pd.DataFrame(y)
-            except:
-                raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
+            except BaseException:
+                raise TypeError(
+                    "Cannot convert y to dataframe, get {}".format(
+                        type(y)))
 
         # get data metadata
         super(AutoTabularBase, self).__init__(X)
@@ -1214,7 +1246,8 @@ class AutoTabularBase(MetaData):
             os.cpu_count() if self.cpu_threads is None else self.cpu_threads
         )
         # auto use_gpu selection if gpu is available
-        self.use_gpu = (device_count > 0) if self.use_gpu is None else self.use_gpu
+        self.use_gpu = (
+            device_count > 0) if self.use_gpu is None else self.use_gpu
         # count gpu available
         self.gpu_count = device_count if self.use_gpu else 0
 
@@ -1235,7 +1268,8 @@ class AutoTabularBase(MetaData):
 
         # make sure n_estimators is a integer smaller than max_evals
         # Oct. 11, 2022 updates:
-        # if do not limit max_evals (=-1), then set n_estimators to pre-defined one
+        # if do not limit max_evals (=-1), then set n_estimators to pre-defined
+        # one
         if self.max_evals > 0:
             self.n_estimators = int(self.n_estimators)
         else:
@@ -1243,9 +1277,7 @@ class AutoTabularBase(MetaData):
             if self.max_evals < self.n_estimators:
                 warnings.warn(
                     "n_estimators {} larger than max_evals {}, will be set to {}.".format(
-                        self.n_estimators, self.max_evals, self.max_evals
-                    )
-                )
+                        self.n_estimators, self.max_evals, self.max_evals))
             self.n_estimators = int(min(self.n_estimators, self.max_evals))
 
         # at least one constraint of time/evaluations should be provided
@@ -1279,12 +1311,11 @@ class AutoTabularBase(MetaData):
             else self.progress_reporter
         )
 
-        if self.progress_reporter not in ["CLIReporter", "JupyterNotebookReporter"]:
+        if self.progress_reporter not in [
+                "CLIReporter", "JupyterNotebookReporter"]:
             raise TypeError(
                 "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
-                    self.progress_reporter
-                )
-            )
+                    self.progress_reporter))
 
         # make sure _X is a dataframe
         if isinstance(X, pd.DataFrame):
@@ -1294,16 +1325,11 @@ class AutoTabularBase(MetaData):
                 X = pd.DataFrame(X)
                 self._logger.info(
                     "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
-                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                        self.model_name,
-                    )
-                )
-            except:
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name, ))
+            except BaseException:
                 raise TypeError(
                     "X must be a dataframe! Can't convert {} to dataframe.".format(
-                        type(X)
-                    )
-                )
+                        type(X)))
 
         _X = X.copy()
         _y = y.copy()
@@ -1325,9 +1351,8 @@ class AutoTabularBase(MetaData):
 
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
-                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
-            )
-        )
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                self.model_name))
 
         # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
@@ -1335,10 +1360,7 @@ class AutoTabularBase(MetaData):
         if os.path.exists(self.model_name):
             self._logger.info(
                 "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                    self.model_name,
-                )
-            )
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name, ))
             # print(
             #     "[INFO] {} Stored model found, load previous model.".format(
             #         datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
@@ -1384,14 +1406,16 @@ class AutoTabularBase(MetaData):
 
         # load dict settings for search_algo and search_scheduler
         self.search_algo_settings = str2dict(self.search_algo_settings)
-        self.search_scheduler_settings = str2dict(self.search_scheduler_settings)
+        self.search_scheduler_settings = str2dict(
+            self.search_scheduler_settings)
 
         # use ray for Model Selection and Hyperparameter Selection
         # get search algorithm
         algo = get_algo(self.search_algo)
 
         # special requirement for Nevergrad, need a algorithm setting
-        if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
+        if self.search_algo == "Nevergrad" and len(
+                self.search_algo_settings) == 0:
             self._logger.warn(
                 "No algorithm setting for Nevergrad find, use OnePlusOne."
             )
@@ -1437,7 +1461,8 @@ class AutoTabularBase(MetaData):
 
         # ensemble settings
         if self.n_estimators == 1:
-            self._logger.warn("Set n_estimators to 1, no ensemble will be used.")
+            self._logger.warn(
+                "Set n_estimators to 1, no ensemble will be used.")
             # warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
             # get progress reporter
@@ -1487,14 +1512,12 @@ class AutoTabularBase(MetaData):
 
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
 
             # optimization process
             # partially activated objective function
-            # special treatment for optuna, embed search space in search algorithm
+            # special treatment for optuna, embed search space in search
+            # algorithm
             if self.search_algo in ["Optuna"]:
                 fit_analysis = tune.run(
                     trainer,
@@ -1563,10 +1586,7 @@ class AutoTabularBase(MetaData):
 
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
 
             # get the best config settings
             best_trial_id = str(
@@ -1623,7 +1643,8 @@ class AutoTabularBase(MetaData):
 
             # optimization process
             # partially activated objective function
-            # special treatment for optuna, embed search space in search algorithm
+            # special treatment for optuna, embed search space in search
+            # algorithm
             if self.search_algo in ["Optuna"]:
                 fit_analysis = tune.run(
                     trainer,
@@ -1689,10 +1710,7 @@ class AutoTabularBase(MetaData):
 
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
 
             # get all configs, trial_id
             analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
@@ -1710,9 +1728,9 @@ class AutoTabularBase(MetaData):
                 axis=1,
             )
             # sort by loss and get top configs
-            analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
-                self.n_estimators
-            )
+            analysis_df = analysis_df.sort_values(
+                by=["loss"], ascending=True).head(
+                self.n_estimators)
 
             # select optimal settings and create the ensemble of pipeline
             self._fit_ensemble(analysis_df.trial_id, analysis_df.config)
@@ -1771,11 +1789,13 @@ class AutoTabularBase(MetaData):
                 rayStatus.ray_init()
 
                 # subtrial directory
-                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
+                self.sub_directory = os.path.join(
+                    self.temp_directory, self.model_name)
 
                 # optimization process
                 # partially activated objective function
-                # special treatment for optuna, embed search space in search algorithm
+                # special treatment for optuna, embed search space in search
+                # algorithm
                 if self.search_algo in ["Optuna"]:
                     fit_analysis = tune.run(
                         trainer,
@@ -1784,7 +1804,8 @@ class AutoTabularBase(MetaData):
                         + "_"
                         + self.ensemble_strategy
                         + "_"
-                        + str(_n + 1),  # name of the tuning process, use model_name
+                        + str(_n + 1),
+                        # name of the tuning process, use model_name
                         resume="AUTO",
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
@@ -1820,7 +1841,8 @@ class AutoTabularBase(MetaData):
                         + "_"
                         + self.ensemble_strategy
                         + "_"
-                        + str(_n + 1),  # name of the tuning process, use model_name
+                        + str(_n + 1),
+                        # name of the tuning process, use model_name
                         resume="AUTO",
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
@@ -1849,10 +1871,7 @@ class AutoTabularBase(MetaData):
 
                 self._logger.info(
                     "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                    )
-                )
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1884,7 +1903,7 @@ class AutoTabularBase(MetaData):
                 try:
                     # if fitted before, use pred for residuals
                     _y_resid -= _y_pred
-                except:
+                except BaseException:
                     # if not, use y as residuals
                     _y_resid = _y
 
@@ -1922,7 +1941,8 @@ class AutoTabularBase(MetaData):
                 rayStatus.ray_init()
 
                 # subtrial directory
-                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
+                self.sub_directory = os.path.join(
+                    self.temp_directory, self.model_name)
 
                 # optimization process
                 # partially activated objective function
@@ -1934,7 +1954,8 @@ class AutoTabularBase(MetaData):
                         + "_"
                         + self.ensemble_strategy
                         + "_"
-                        + str(_n + 1),  # name of the tuning process, use model_name
+                        + str(_n + 1),
+                        # name of the tuning process, use model_name
                         resume="AUTO",
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
@@ -1970,7 +1991,8 @@ class AutoTabularBase(MetaData):
                         + "_"
                         + self.ensemble_strategy
                         + "_"
-                        + str(_n + 1),  # name of the tuning process, use model_name
+                        + str(_n + 1),
+                        # name of the tuning process, use model_name
                         resume="AUTO",
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
@@ -1999,10 +2021,7 @@ class AutoTabularBase(MetaData):
 
                 self._logger.info(
                     "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                    )
-                )
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
 
                 # get the best config settings
                 best_trial_id = str(
@@ -2043,15 +2062,17 @@ class AutoTabularBase(MetaData):
 
         self._logger.info(
             "[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name
-            )
-        )
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                self.model_name))
 
         self._fitted = True
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+    def predict(self,
+                X: pd.DataFrame) -> Union[pd.DataFrame,
+                                          pd.Series,
+                                          np.ndarray]:
 
         if self.reset_index:
             # reset index to avoid indexing error

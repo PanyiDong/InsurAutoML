@@ -60,7 +60,8 @@ class TestScaling(unittest.TestCase):
         self.method_names = list(self.method_dict.keys())
         self.method_objects = list(self.method_dict.values())
 
-        for method_name, method_object in zip(self.method_names, self.method_objects):
+        for method_name, method_object in zip(
+                self.method_names, self.method_objects):
 
             if method_name != "no_processing":
 

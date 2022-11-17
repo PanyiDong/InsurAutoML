@@ -38,9 +38,55 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-####################################################################################################
+##########################################################################
 # classifiers
 
+from ._sklearn import (
+    # sklearn classifiers
+    AdaboostClassifier,
+    BernoulliNB,
+    DecisionTreeClassifier,
+    ExtraTreesClassifier,
+    GaussianNB,
+    HistGradientBoostingClassifier,
+    KNearestNeighborsClassifier,
+    LDA,
+    LibLinear_SVC,
+    LibSVM_SVC,
+    MLPClassifier,
+    MultinomialNB,
+    PassiveAggressive,
+    QDA,
+    RandomForestClassifier,
+    SGDClassifier,
+    # sklearn regressors
+    AdaboostRegressor,
+    ARDRegression,
+    DecisionTreeRegressor,
+    ExtraTreesRegressor,
+    GaussianProcess,
+    HistGradientBoostingRegressor,
+    KNearestNeighborsRegressor,
+    LibLinear_SVR,
+    LibSVM_SVR,
+    MLPRegressor,
+    RandomForestRegressor,
+    SGDRegressor,
+    # sklearn classifiers
+    LogisticRegression,
+    # ComplementNB,
+    # HistGradientBoostingClassifier,
+    GradientBoostingClassifier,
+    # sklearn regressors
+    LinearRegression,
+    Lasso,
+    Ridge,
+    ElasticNet,
+    BayesianRidge,
+    # HistGradientBoostingRegressor,
+    GradientBoostingRegressor,
+)
+import importlib
 classifiers = {
     # self-defined models
 }
@@ -52,13 +98,12 @@ regressors = {
 
 """
 autosklearn models
-LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform 
+LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform
 of StandardScaler while having 1D array
 https://github.com/automl/auto-sklearn/issues/1297
 problem solved
 """
 
-import importlib
 
 # Update: Nov 15, 2022
 # autosklearn decrypted, no need to consider it
@@ -137,51 +182,6 @@ import importlib
 #     raise ImportError("Neither auto-sklearn nor sklearn is installed.")
 # # else import the compatible models from sklearn
 # else:
-from ._sklearn import (
-    # sklearn classifiers
-    AdaboostClassifier,
-    BernoulliNB,
-    DecisionTreeClassifier,
-    ExtraTreesClassifier,
-    GaussianNB,
-    HistGradientBoostingClassifier,
-    KNearestNeighborsClassifier,
-    LDA,
-    LibLinear_SVC,
-    LibSVM_SVC,
-    MLPClassifier,
-    MultinomialNB,
-    PassiveAggressive,
-    QDA,
-    RandomForestClassifier,
-    SGDClassifier,
-    # sklearn regressors
-    AdaboostRegressor,
-    ARDRegression,
-    DecisionTreeRegressor,
-    ExtraTreesRegressor,
-    GaussianProcess,
-    HistGradientBoostingRegressor,
-    KNearestNeighborsRegressor,
-    LibLinear_SVR,
-    LibSVM_SVR,
-    MLPRegressor,
-    RandomForestRegressor,
-    SGDRegressor,
-    # sklearn classifiers
-    LogisticRegression,
-    # ComplementNB,
-    # HistGradientBoostingClassifier,
-    GradientBoostingClassifier,
-    # sklearn regressors
-    LinearRegression,
-    Lasso,
-    Ridge,
-    ElasticNet,
-    BayesianRidge,
-    # HistGradientBoostingRegressor,
-    GradientBoostingRegressor,
-)
 
 # classification models from sklearn
 classifiers["AdaboostClassifier"] = AdaboostClassifier
@@ -223,7 +223,8 @@ regressors["Lasso"] = Lasso
 regressors["RidgeRegression"] = Ridge
 regressors["ElasticNet"] = ElasticNet
 regressors["BayesianRidge"] = BayesianRidge
-# regressors["HistGradientBoostingRegressor"] = HistGradientBoostingRegressor # not well-supported by package conflicts
+# regressors["HistGradientBoostingRegressor"] =
+# HistGradientBoostingRegressor # not well-supported by package conflicts
 regressors["GradientBoostingRegressor"] = GradientBoostingRegressor
 
 # check whether lightgbm installed

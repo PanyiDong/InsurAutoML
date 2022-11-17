@@ -63,10 +63,12 @@ if pytorch_spec is not None:
 #     padding = 0,
 # )
 
-###################################################################################################################
+##########################################################################
 # Classical CNN architecture
 
 # LeNet5
+
+
 class LeNet5(nn.Module):
     def __init__(
         self,
@@ -76,12 +78,23 @@ class LeNet5(nn.Module):
         super().__init__()
 
         self.Conv_layer = nn.Sequential(
-            nn.Conv2d(in_channels=inputSize, out_channels=6, kernel_size=5, padding=2),
+            nn.Conv2d(
+                in_channels=inputSize,
+                out_channels=6,
+                kernel_size=5,
+                padding=2),
             nn.Sigmoid(),
-            nn.AvgPool2d(kernel_size=2, stride=2),
-            nn.Conv2d(in_channels=6, out_channels=16, kernel_size=5),
+            nn.AvgPool2d(
+                kernel_size=2,
+                stride=2),
+            nn.Conv2d(
+                in_channels=6,
+                out_channels=16,
+                kernel_size=5),
             nn.Sigmoid(),
-            nn.AvgPool2d(kernel_size=2, stride=2),
+            nn.AvgPool2d(
+                kernel_size=2,
+                stride=2),
         )
 
         self.Flatten = nn.Flatten()
@@ -348,7 +361,13 @@ class NiN(nn.Module):
         # set flatten layer
         self.Flatten = nn.Flatten()
 
-    def nin_block(self, in_channels, out_channels, kernel_size, stride, padding):
+    def nin_block(
+            self,
+            in_channels,
+            out_channels,
+            kernel_size,
+            stride,
+            padding):
 
         block = []
         block.append(
@@ -363,15 +382,15 @@ class NiN(nn.Module):
         block.append(nn.ReLU())
         block.append(
             nn.Conv2d(
-                in_channels=out_channels, out_channels=out_channels, kernel_size=1
-            )
-        )
+                in_channels=out_channels,
+                out_channels=out_channels,
+                kernel_size=1))
         block.append(nn.ReLU())
         block.append(
             nn.Conv2d(
-                in_channels=out_channels, out_channels=out_channels, kernel_size=1
-            )
-        )
+                in_channels=out_channels,
+                out_channels=out_channels,
+                kernel_size=1))
         block.append(nn.ReLU())
 
         return nn.Sequential(*block)
@@ -410,17 +429,31 @@ class Inception(nn.module):
 
         # path 2: 1x1 convolution + 3x3 convolution
         self.p2 = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels2[0], kernel_size=1),
+            nn.Conv2d(
+                in_channels,
+                out_channels2[0],
+                kernel_size=1),
             nn.ReLU(),
-            nn.Conv2d(out_channels2[0], out_channels2[1], kernel_size=3, padding=1),
+            nn.Conv2d(
+                out_channels2[0],
+                out_channels2[1],
+                kernel_size=3,
+                padding=1),
             nn.ReLU(),
         )
 
         # path 3: 1x1 convolution + 5x5 convolution
         self.p3 = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels3[0], kernel_size=1),
+            nn.Conv2d(
+                in_channels,
+                out_channels3[0],
+                kernel_size=1),
             nn.ReLU(),
-            nn.Conv2d(out_channels3[0], out_channels3[1], kernel_size=5, padding=2),
+            nn.Conv2d(
+                out_channels3[0],
+                out_channels3[1],
+                kernel_size=5,
+                padding=2),
             nn.ReLU(),
         )
 
@@ -527,7 +560,11 @@ class ResBlock(nn.Module):
         self.conv1 = nn.Conv2d(
             in_channels, out_channels, kernel_size=3, stride=strides, padding=1
         )
-        self.conv2 = nn.Conv2d(out_channels, out_channels, kernel_size=3, padding=1)
+        self.conv2 = nn.Conv2d(
+            out_channels,
+            out_channels,
+            kernel_size=3,
+            padding=1)
 
         if use_1x1conv:
             self.conv3 = nn.Conv2d(
@@ -566,7 +603,8 @@ class ResNet(nn.Module):
             nn.MaxPool2d(kernel_size=3, stride=2, padding=1),
         )
         # second convolutional layer
-        self.conv_block2 = nn.Sequential(*self.resblock(64, 64, 2, first_block=True))
+        self.conv_block2 = nn.Sequential(
+            *self.resblock(64, 64, 2, first_block=True))
         # third convolutional layer
         self.conv_block3 = nn.Sequential(*self.resblock(64, 128, 2))
         # fourth convolutional layer
@@ -585,14 +623,22 @@ class ResNet(nn.Module):
             nn.Linear(512, outputSize),
         )
 
-    def resblock(self, in_channels, out_channels, num_residuals, first_block=False):
+    def resblock(
+            self,
+            in_channels,
+            out_channels,
+            num_residuals,
+            first_block=False):
 
         block = []
         for i in range(num_residuals):
             if i == 0 and not first_block:
                 block.append(
-                    ResBlock(in_channels, out_channels, use_1x1conv=True, strides=2)
-                )
+                    ResBlock(
+                        in_channels,
+                        out_channels,
+                        use_1x1conv=True,
+                        strides=2))
             else:
                 block.append(ResBlock(out_channels, out_channels))
         return block

@@ -98,14 +98,15 @@ class CBFS:
         if not isinstance(data, pd.DataFrame):
             try:
                 data = pd.DataFrame(data)
-            except:
+            except BaseException:
                 raise ValueError(
                     "data must be a pandas DataFrame or convertable to one!"
                 )
 
         p = []
         for idx in data.index:
-            p.append((data <= data.iloc[idx, :]).all(axis=1).sum() / data.shape[0])
+            p.append((data <= data.iloc[idx, :]).all(
+                axis=1).sum() / data.shape[0])
 
         return p
 
@@ -334,9 +335,7 @@ class GeneticAlgorithm:
         if n > p:
             raise ValueError(
                 "Selected features can not be larger than dataset limit {}, get {}.".format(
-                    p, n
-                )
-            )
+                    p, n))
 
         _index = random_index(n, p)
 
@@ -378,7 +377,8 @@ class GeneticAlgorithm:
         elif len(np.unique(y)) > 2:
             _score = ANOVA(X, y)
         else:
-            raise ValueError("Only support for more than 2 groups, get only 1 group!")
+            raise ValueError(
+                "Only support for more than 2 groups, get only 1 group!")
 
         # select lowest scored features
         _score_sort = np.argsort(_score)
@@ -408,7 +408,8 @@ class GeneticAlgorithm:
 
             _estimator = SVR(kernel="linear")
 
-        # using sklearn RFE to recursively remove one feature using SVR, until n_components left
+        # using sklearn RFE to recursively remove one feature using SVR, until
+        # n_components left
         _selector = RFE(_estimator, n_features_to_select=n, step=1)
         _selector = _selector.fit(X.values, y.values.ravel())
 
@@ -482,16 +483,15 @@ class GeneticAlgorithm:
             else:
                 raise ValueError(
                     'Only support ["Linear", "Decision Tree", "Random Forest", "SVM"], get {}'.format(
-                        self.fitness_fit
-                    )
-                )
+                        self.fitness_fit))
 
             # if none of the features are selected, use mean as prediction
             if (np.array(selection) == 0).all():
                 y_pred = [np.mean(y) for _ in range(len(y))]
             # otherwise, use selected features to fit a model and predict
             else:
-                model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
+                model.fit(X.iloc[:, True_index(selection)
+                                 ].values, y.values.ravel())
                 y_pred = model.predict(X.iloc[:, True_index(selection)])
             _accuracy_score = metric(y, y_pred)
 
@@ -540,13 +540,11 @@ class GeneticAlgorithm:
         # Selection
         if self.ga_selection == "Roulette Wheel":
             # select two individuals from selection pool based on probability (self._fitness)
-            # insert into selection_pool (last two), will be the placeholder for offsprings
+            # insert into selection_pool (last two), will be the placeholder
+            # for offsprings
             for _ in range(2 * self.n_pair):
-                selection_pool.append(
-                    selection_pool[
-                        np.random.choice(len(self._fitness), 1, p=self._fitness)[0]
-                    ]
-                )
+                selection_pool.append(selection_pool[np.random.choice(
+                    len(self._fitness), 1, p=self._fitness)[0]])
 
         # Crossover, generate offsprings
         if (
@@ -561,19 +559,17 @@ class GeneticAlgorithm:
                     if self.crossover_n > p:
                         raise ValueError(
                             "Place of cross points must be smaller than p = {}, get {}.".format(
-                                p, self.crossover_n
-                            )
-                        )
+                                p, self.crossover_n))
                     self.crossover_n == int(self.crossover_n)
 
                 for i in range(self.n_pair):
                     _tmp1 = selection_pool[-(2 * i + 2)]
                     _tmp2 = selection_pool[-(2 * i + 1)]
                     selection_pool[-(2 * i + 2)] = (
-                        _tmp2[: self.crossover_n] + _tmp1[self.crossover_n :]
+                        _tmp2[: self.crossover_n] + _tmp1[self.crossover_n:]
                     )  # exchange first crossover_n bits from parents
                     selection_pool[-(2 * i + 1)] = (
-                        _tmp1[: self.crossover_n] + _tmp2[self.crossover_n :]
+                        _tmp1[: self.crossover_n] + _tmp2[self.crossover_n:]
                     )
 
         # Mutation
@@ -583,16 +579,13 @@ class GeneticAlgorithm:
             ):  # only certain probability of executing mutation
                 if not self.mutation_n:
                     # make sure it's at least 1
-                    self.mutation_n = max(
-                        1, int(p / 10)
-                    )  # default number of mutation point is first quarter point
+                    # default number of mutation point is first quarter point
+                    self.mutation_n = max(1, int(p / 10))
                 else:
                     if self.mutation_n > p:
                         raise ValueError(
                             "Number of mutation points must be smaller than p = {}, get {}.".format(
-                                p, self.mutation_n
-                            )
-                        )
+                                p, self.mutation_n))
                     self.mutation_n == int(self.mutation_n)
 
                 _mutation_index = random_index(
@@ -681,7 +674,8 @@ class GeneticAlgorithm:
             for i in range(
                 self.n_initial
             ):  # get n_initial random feature selection rule
-                self._feature_sel_methods["random_" + str(i + 1)] = self._random
+                self._feature_sel_methods["random_" +
+                                          str(i + 1)] = self._random
         else:
             self.fs_method = (
                 [self.fs_method]
@@ -715,14 +709,16 @@ class GeneticAlgorithm:
         _sel_pool = []  # store all selection rules
         self._fitness = None  # store the fitness of every individual
 
-        # keep diversity for the pool, selection rule can have different number of features retained
+        # keep diversity for the pool, selection rule can have different number
+        # of features retained
         _iter = max(1, int(np.log2(self.n_components)))
         for i in range(_iter):
             n = 2 ** (i + 1)
             for _method in _sel_methods:
                 _sel_pool.append(self._feature_sel_methods[_method](X, y, n))
 
-        # loop through generations to run Genetic algorithm and Induction algorithm
+        # loop through generations to run Genetic algorithm and Induction
+        # algorithm
         for _ in range(self.n_generations):
             _sel_pool = self._GeneticAlgorithm(X, y, _sel_pool)
 
@@ -758,7 +754,7 @@ class GeneticAlgorithm:
 """
 Below methods are compared in [1].
 
-[1] Speiser, J. L., Miller, M. E., Tooze, J., & Ip, E. (2019). A comparison of random forest variable selection 
+[1] Speiser, J. L., Miller, M. E., Tooze, J., & Ip, E. (2019). A comparison of random forest variable selection
 methods for classification prediction modeling. Expert systems with applications, 134, 93-101.
 """
 

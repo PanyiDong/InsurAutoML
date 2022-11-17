@@ -38,27 +38,29 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import logging
-
-logger = logging.getLogger(__name__)
-
-logger.warn(
-    "This module is deprecated and will be removed in the future. Please use updated versions instead."
+from InsurAutoML._utils._file import save_model
+from InsurAutoML._utils._base import type_of_task
+from InsurAutoML._base import no_processing
+from InsurAutoML._hyperparameters._hyperopt import (
+    encoder_hyperparameter,
+    imputer_hyperparameter,
+    scaling_hyperparameter,
+    balancing_hyperparameter,
+    feature_selection_hyperparameter,
+    classifier_hyperparameter,
+    regressor_hyperparameter,
 )
-warnings.warn(
-    "This module is deprecated and will be removed in the future. Please use updated versions instead.",
-    DeprecationWarning,
+from InsurAutoML._model._legacy import (
+    classifiers,
+    regressors,
 )
-
-import os
-import ast
-import shutil
-import warnings
-import numpy as np
-import pandas as pd
-import scipy
-import scipy.stats
-import mlflow
+from InsurAutoML._feature_selection._legacy import feature_selections
+from InsurAutoML._scaling._legacy import scalings
+from InsurAutoML._balancing._legacy import balancings
+from InsurAutoML._imputation._legacy import imputers
+from InsurAutoML._encoding._legacy import encoders
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils._testing import ignore_warnings
 from hyperopt import (
     fmin,
     hp,
@@ -71,35 +73,32 @@ from hyperopt import (
     STATUS_OK,
     pyll,
 )
+import mlflow
+import scipy.stats
+import scipy
+import pandas as pd
+import numpy as np
+import warnings
+import shutil
+import ast
+import os
+import logging
 
-from sklearn.utils._testing import ignore_warnings
-from sklearn.exceptions import ConvergenceWarning
+logger = logging.getLogger(__name__)
 
-from InsurAutoML._encoding._legacy import encoders
-from InsurAutoML._imputation._legacy import imputers
-from InsurAutoML._balancing._legacy import balancings
-from InsurAutoML._scaling._legacy import scalings
-from InsurAutoML._feature_selection._legacy import feature_selections
-from InsurAutoML._model._legacy import (
-    classifiers,
-    regressors,
+logger.warn(
+    "This module is deprecated and will be removed in the future. Please use updated versions instead."
 )
-from InsurAutoML._hyperparameters._hyperopt import (
-    encoder_hyperparameter,
-    imputer_hyperparameter,
-    scaling_hyperparameter,
-    balancing_hyperparameter,
-    feature_selection_hyperparameter,
-    classifier_hyperparameter,
-    regressor_hyperparameter,
+warnings.warn(
+    "This module is deprecated and will be removed in the future. Please use updated versions instead.",
+    DeprecationWarning,
 )
 
-from InsurAutoML._base import no_processing
-from InsurAutoML._utils._base import type_of_task
-from InsurAutoML._utils._file import save_model
 
 # filter certain warnings
-warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
+warnings.filterwarnings(
+    "ignore",
+    message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
 warnings.filterwarnings("ignore", category=UserWarning)
 
@@ -108,16 +107,16 @@ warnings.filterwarnings("ignore", category=UserWarning)
 Classifiers/Hyperparameters from autosklearn:
 1. AdaBoost: n_estimators, learning_rate, algorithm, max_depth
 2. Bernoulli naive Bayes: alpha, fit_prior
-3. Decision Tree: criterion, max_features, max_depth_factor, min_samples_split, 
+3. Decision Tree: criterion, max_features, max_depth_factor, min_samples_split,
             min_samples_leaf, min_weight_fraction_leaf, max_leaf_nodes, min_impurity_decrease
-4. Extra Trees: criterion, min_samples_leaf, min_samples_split,  max_features, 
+4. Extra Trees: criterion, min_samples_leaf, min_samples_split,  max_features,
             bootstrap, max_leaf_nodes, max_depth, min_weight_fraction_leaf, min_impurity_decrease
 5. Gaussian naive Bayes
 6. Gradient boosting: loss, learning_rate, min_samples_leaf, max_depth,
             max_leaf_nodes, max_bins, l2_regularization, early_stop, tol, scoring
 7. KNN: n_neighbors, weights, p
 8. LDA: shrinkage, tol
-9. Linear SVC (LibLinear): penalty, loss, dual, tol, C, multi_class, 
+9. Linear SVC (LibLinear): penalty, loss, dual, tol, C, multi_class,
             fit_intercept, intercept_scaling
 10. kernel SVC (LibSVM): C, kernel, gamma, shrinking, tol, max_iter
 11. MLP (Multilayer Perceptron): hidden_layer_depth, num_nodes_per_layer, activation, alpha,
@@ -126,13 +125,15 @@ Classifiers/Hyperparameters from autosklearn:
 12. Multinomial naive Bayes: alpha, fit_prior
 13. Passive aggressive: C, fit_intercept, tol, loss, average
 14. QDA: reg_param
-15. Random forest: criterion, max_features, max_depth, min_samples_split, 
+15. Random forest: criterion, max_features, max_depth, min_samples_split,
             min_samples_leaf, min_weight_fraction_leaf, bootstrap, max_leaf_nodes
 16. SGD (Stochastic Gradient Descent): loss, penalty, alpha, fit_intercept, tol,
             learning_rate
 """
 
 # Auto binary classifier
+
+
 class AutoTabularClassifier:
 
     """
@@ -348,8 +349,8 @@ class AutoTabularClassifier:
                     _feature_selection_hyperparameter.append(item)
 
         _feature_selection_hyperparameter = hp.choice(
-            "classification_feature_selection", _feature_selection_hyperparameter
-        )
+            "classification_feature_selection",
+            _feature_selection_hyperparameter)
 
         # model selection and hyperparameter optimization space
         _model_hyperparameter = []
@@ -566,7 +567,8 @@ class AutoTabularClassifier:
                 _all_models_hyperparameters,
                 models,
             )  # _X to choose whether include imputer
-            # others are the combinations of default hyperparameter space & methods selected
+            # others are the combinations of default hyperparameter space &
+            # methods selected
 
         return encoder, imputer, balancing, scaling, feature_selection, models
 
@@ -597,8 +599,7 @@ class AutoTabularClassifier:
             "feature_selection"
         ]
         self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters[
-            "feature_selection"
-        ]
+            "feature_selection"]
         del self.optimal_feature_selection_hyperparameters["feature_selection"]
         # optimal classifier
         self.optimal_classifier_hyperparameters = optimal_point[
@@ -611,16 +612,24 @@ class AutoTabularClassifier:
 
         # record optimal settings
         with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
-            f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
+            f.write(
+                "Optimal encoding method is: {}\n".format(
+                    self.optimal_encoder))
             f.write("Optimal encoding hyperparameters:")
             print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
+            f.write(
+                "Optimal imputation method is: {}\n".format(
+                    self.optimal_imputer))
             f.write("Optimal imputation hyperparameters:")
             print(self.optimal_imputer_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
+            f.write(
+                "Optimal balancing method is: {}\n".format(
+                    self.optimal_balancing))
             f.write("Optimal balancing hyperparamters:")
             print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
+            f.write(
+                "Optimal scaling method is: {}\n".format(
+                    self.optimal_scaling))
             f.write("Optimal scaling hyperparameters:")
             print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
             f.write(
@@ -629,10 +638,13 @@ class AutoTabularClassifier:
                 )
             )
             f.write("Optimal feature selection hyperparameters:")
-            print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
+            print(
+                self.optimal_feature_selection_hyperparameters,
+                file=f,
+                end="\n\n")
             f.write(
-                "Optimal classification model is: {}\n".format(self.optimal_classifier)
-            )
+                "Optimal classification model is: {}\n".format(
+                    self.optimal_classifier))
             f.write("Optimal classification hyperparameters:")
             print(self.optimal_classifier_hyperparameters, file=f, end="\n\n")
 
@@ -705,19 +717,24 @@ class AutoTabularClassifier:
             optimal_setting.remove("")
 
         self.optimal_encoder = optimal_setting[0]
-        self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
+        self.optimal_encoder_hyperparameters = ast.literal_eval(
+            optimal_setting[1])
         self.optimal_imputer = optimal_setting[2]
-        self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
+        self.optimal_imputer_hyperparameters = ast.literal_eval(
+            optimal_setting[3])
         self.optimal_balancing = optimal_setting[4]
-        self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
+        self.optimal_balancing_hyperparameters = ast.literal_eval(
+            optimal_setting[5])
         self.optimal_scaling = optimal_setting[6]
-        self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
+        self.optimal_scaling_hyperparameters = ast.literal_eval(
+            optimal_setting[7])
         self.optimal_feature_selection = optimal_setting[8]
         self.optimal_feature_selection_hyperparameters = ast.literal_eval(
             optimal_setting[9]
         )
         self.optimal_classifier = optimal_setting[10]
-        self.optimal_classifier_hyperparameters = ast.literal_eval(optimal_setting[11])
+        self.optimal_classifier_hyperparameters = ast.literal_eval(
+            optimal_setting[11])
 
         # encoding
         self._fit_encoder = self._all_encoders[self.optimal_encoder](
@@ -840,9 +857,7 @@ class AutoTabularClassifier:
             else:
                 raise ValueError(
                     'Only support ["accuracy", "precision", "auc", "hinge", "f1"], get{}'.format(
-                        self.objective
-                    )
-                )
+                        self.objective))
 
             # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
             # select encoder and set hyperparameters
@@ -877,7 +892,8 @@ class AutoTabularClassifier:
             _feature_selection_hyper = params["feature_selection"]
             _feature_selection = _feature_selection_hyper["feature_selection"]
             del _feature_selection_hyper["feature_selection"]
-            fts = feature_selection[_feature_selection](**_feature_selection_hyper)
+            fts = feature_selection[_feature_selection](
+                **_feature_selection_hyper)
 
             # select classifier model and set hyperparameters
             # must have a classifier
@@ -888,7 +904,8 @@ class AutoTabularClassifier:
                 **_classifier_hyper
             )  # call the model using passed parameters
 
-            obj_tmp_directory = self.temp_directory + "/iter_" + str(self._iter + 1)
+            obj_tmp_directory = self.temp_directory + \
+                "/iter_" + str(self._iter + 1)
             if not os.path.isdir(obj_tmp_directory):
                 os.makedirs(obj_tmp_directory)
 
@@ -905,7 +922,8 @@ class AutoTabularClassifier:
                 f.write("Scaling method: {}\n".format(_scaling))
                 f.write("Scaling Hyperparameters:")
                 print(_scaling_hyper, file=f, end="\n\n")
-                f.write("Feature Selection method: {}\n".format(_feature_selection))
+                f.write(
+                    "Feature Selection method: {}\n".format(_feature_selection))
                 f.write("Feature Selection Hyperparameters:")
                 print(_feature_selection_hyper, file=f, end="\n\n")
                 f.write("Classification model: {}\n".format(_classifier))
@@ -933,7 +951,8 @@ class AutoTabularClassifier:
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Balancing finished, in scaling process.")
 
-                # make sure the classes are integers (belongs to certain classes)
+                # make sure the classes are integers (belongs to certain
+                # classes)
                 _y_train_obj = _y_train_obj.astype(int)
                 _y_test_obj = _y_test_obj.astype(int)
                 # scaling
@@ -970,7 +989,8 @@ class AutoTabularClassifier:
                         obj_tmp_directory + "/train_preprocessed.csv", index=False
                     )
                 else:
-                    raise TypeError("Only accept numpy array or pandas dataframe!")
+                    raise TypeError(
+                        "Only accept numpy array or pandas dataframe!")
 
                 if isinstance(_X_test_obj, np.ndarray):
                     pd.concat(
@@ -983,7 +1003,8 @@ class AutoTabularClassifier:
                         obj_tmp_directory + "/test_preprocessed.csv", index=False
                     )
                 else:
-                    raise TypeError("Only accept numpy array or pandas dataframe!")
+                    raise TypeError(
+                        "Only accept numpy array or pandas dataframe!")
 
                 clf.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
@@ -992,11 +1013,15 @@ class AutoTabularClassifier:
                 _loss = -_obj(y_pred, _y_test_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
-                    f.write("Loss from objective function is: {:.6f}\n".format(_loss))
-                    f.write("Loss is calculate using {}.".format(self.objective))
+                    f.write(
+                        "Loss from objective function is: {:.6f}\n".format(_loss))
+                    f.write(
+                        "Loss is calculate using {}.".format(
+                            self.objective))
                 self._iter += 1
 
-                # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
+                # since fmin of Hyperopt tries to minimize the objective
+                # function, take negative accuracy here
                 return {"loss": _loss, "status": STATUS_OK}
             else:
                 _X_obj = _X.copy()
@@ -1035,13 +1060,17 @@ class AutoTabularClassifier:
                 _loss = -_obj(y_pred, _y_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
-                    f.write("Loss from objective function is: {.6f}\n".format(_loss))
-                    f.write("Loss is calculate using {}.".format(self.objective))
+                    f.write(
+                        "Loss from objective function is: {.6f}\n".format(_loss))
+                    f.write(
+                        "Loss is calculate using {}.".format(
+                            self.objective))
                 self._iter += 1
 
                 return {"loss": _loss, "status": STATUS_OK}
 
-        # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
+        # call hyperopt to use Bayesian Optimization for Model Selection and
+        # Hyperparameter Selection
 
         # search algorithm
         if self.algo == "rand":
@@ -1114,8 +1143,8 @@ Regressors/Hyperparameters from sklearn:
 3. Decision tree: criterion, max_features, max_depth_factor,
             min_samples_split, min_samples_leaf, min_weight_fraction_leaf,
             max_leaf_nodes, min_impurity_decrease
-4. extra trees: criterion, min_samples_leaf, min_samples_split, 
-            max_features, bootstrap, max_leaf_nodes, max_depth, 
+4. extra trees: criterion, min_samples_leaf, min_samples_split,
+            max_features, bootstrap, max_leaf_nodes, max_depth,
             min_weight_fraction_leaf, min_impurity_decrease
 5. Gaussian Process: alpha, thetaL, thetaU
 6. Gradient boosting: loss, learning_rate, min_samples_leaf, max_depth,
@@ -1124,13 +1153,13 @@ Regressors/Hyperparameters from sklearn:
 8. Linear SVR (LibLinear): loss, epsilon, dual, tol, C, fit_intercept,
             intercept_scaling
 9. Kernel SVR (LibSVM): kernel, C, epsilon, tol, shrinking
-10. Random forest: criterion, max_features, max_depth, min_samples_split, 
-            min_samples_leaf, min_weight_fraction_leaf, bootstrap, 
+10. Random forest: criterion, max_features, max_depth, min_samples_split,
+            min_samples_leaf, min_weight_fraction_leaf, bootstrap,
             max_leaf_nodes, min_impurity_decrease
 11. SGD (Stochastic Gradient Descent): loss, penalty, alpha, fit_intercept, tol,
             learning_rate
-12. MLP (Multilayer Perceptron): hidden_layer_depth, num_nodes_per_layer, 
-            activation, alpha, learning_rate_init, early_stopping, solver, 
+12. MLP (Multilayer Perceptron): hidden_layer_depth, num_nodes_per_layer,
+            activation, alpha, learning_rate_init, early_stopping, solver,
             batch_size, n_iter_no_change, tol, shuffle, beta_1, beta_2, epsilon
 """
 
@@ -1360,7 +1389,8 @@ class AutoTabularRegressor:
                 if item["model"] == _model:
                     _model_hyperparameter.append(item)
 
-        _model_hyperparameter = hp.choice("regression_models", _model_hyperparameter)
+        _model_hyperparameter = hp.choice(
+            "regression_models", _model_hyperparameter)
 
         # the pipeline search space
         return pyll.as_apply(
@@ -1409,7 +1439,8 @@ class AutoTabularRegressor:
         del self._all_feature_selection["extra_trees_preproc_for_classification"]
         del self._all_feature_selection["select_percentile_classification"]
         del self._all_feature_selection["select_rates_classification"]
-        # remove SVM feature selection since it's time-consuming for large datasets
+        # remove SVM feature selection since it's time-consuming for large
+        # datasets
         if X.shape[0] * X.shape[1] > 10000:
             del self._all_feature_selection["liblinear_svc_preprocessor"]
 
@@ -1566,7 +1597,8 @@ class AutoTabularRegressor:
                 _all_models_hyperparameters,
                 models,
             )  # _X to choose whether include imputer
-            # others are the combinations of default hyperparameter space & methods selected
+            # others are the combinations of default hyperparameter space &
+            # methods selected
 
         return encoder, imputer, balancing, scaling, feature_selection, models
 
@@ -1597,8 +1629,7 @@ class AutoTabularRegressor:
             "feature_selection"
         ]
         self.optimal_feature_selection = self.optimal_feature_selection_hyperparameters[
-            "feature_selection"
-        ]
+            "feature_selection"]
         del self.optimal_feature_selection_hyperparameters["feature_selection"]
         # optimal regressor
         self.optimal_regressor_hyperparameters = optimal_point[
@@ -1611,16 +1642,24 @@ class AutoTabularRegressor:
 
         # record optimal settings
         with open(self.temp_directory + "/optimal_setting.txt", "w") as f:
-            f.write("Optimal encoding method is: {}\n".format(self.optimal_encoder))
+            f.write(
+                "Optimal encoding method is: {}\n".format(
+                    self.optimal_encoder))
             f.write("Optimal encoding hyperparameters:")
             print(self.optimal_encoder_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal imputation method is: {}\n".format(self.optimal_imputer))
+            f.write(
+                "Optimal imputation method is: {}\n".format(
+                    self.optimal_imputer))
             f.write("Optimal imputation hyperparameters:")
             print(self.optimal_imputer_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal balancing method is: {}\n".format(self.optimal_balancing))
+            f.write(
+                "Optimal balancing method is: {}\n".format(
+                    self.optimal_balancing))
             f.write("Optimal balancing hyperparamters:")
             print(self.optimal_balancing_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal scaling method is: {}\n".format(self.optimal_scaling))
+            f.write(
+                "Optimal scaling method is: {}\n".format(
+                    self.optimal_scaling))
             f.write("Optimal scaling hyperparameters:")
             print(self.optimal_scaling_hyperparameters, file=f, end="\n\n")
             f.write(
@@ -1629,8 +1668,13 @@ class AutoTabularRegressor:
                 )
             )
             f.write("Optimal feature selection hyperparameters:")
-            print(self.optimal_feature_selection_hyperparameters, file=f, end="\n\n")
-            f.write("Optimal regression model is: {}\n".format(self.optimal_regressor))
+            print(
+                self.optimal_feature_selection_hyperparameters,
+                file=f,
+                end="\n\n")
+            f.write(
+                "Optimal regression model is: {}\n".format(
+                    self.optimal_regressor))
             f.write("Optimal regression hyperparameters:")
             print(self.optimal_regressor_hyperparameters, file=f, end="\n\n")
 
@@ -1703,19 +1747,24 @@ class AutoTabularRegressor:
             optimal_setting.remove("")
 
         self.optimal_encoder = optimal_setting[0]
-        self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
+        self.optimal_encoder_hyperparameters = ast.literal_eval(
+            optimal_setting[1])
         self.optimal_imputer = optimal_setting[2]
-        self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
+        self.optimal_imputer_hyperparameters = ast.literal_eval(
+            optimal_setting[3])
         self.optimal_balancing = optimal_setting[4]
-        self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
+        self.optimal_balancing_hyperparameters = ast.literal_eval(
+            optimal_setting[5])
         self.optimal_scaling = optimal_setting[6]
-        self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
+        self.optimal_scaling_hyperparameters = ast.literal_eval(
+            optimal_setting[7])
         self.optimal_feature_selection = optimal_setting[8]
         self.optimal_feature_selection_hyperparameters = ast.literal_eval(
             optimal_setting[9]
         )
         self.optimal_regressor = optimal_setting[10]
-        self.optimal_regressor_hyperparameters = ast.literal_eval(optimal_setting[11])
+        self.optimal_regressor_hyperparameters = ast.literal_eval(
+            optimal_setting[11])
 
         # encoding
         self._fit_encoder = self._all_encoders[self.optimal_encoder](
@@ -1839,9 +1888,7 @@ class AutoTabularRegressor:
             else:
                 raise ValueError(
                     'Only support ["MSE", "MAE", "MSLE", "R2", "MAX"], get{}'.format(
-                        self.objective
-                    )
-                )
+                        self.objective))
 
             # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
             # select encoder and set hyperparameters
@@ -1876,7 +1923,8 @@ class AutoTabularRegressor:
             _feature_selection_hyper = params["feature_selection"]
             _feature_selection = _feature_selection_hyper["feature_selection"]
             del _feature_selection_hyper["feature_selection"]
-            fts = feature_selection[_feature_selection](**_feature_selection_hyper)
+            fts = feature_selection[_feature_selection](
+                **_feature_selection_hyper)
 
             # select regressor model and set hyperparameters
             # must have a regressor
@@ -1887,7 +1935,8 @@ class AutoTabularRegressor:
                 **_regressor_hyper
             )  # call the model using passed parameters
 
-            obj_tmp_directory = self.temp_directory + "/iter_" + str(self._iter + 1)
+            obj_tmp_directory = self.temp_directory + \
+                "/iter_" + str(self._iter + 1)
             if not os.path.isdir(obj_tmp_directory):
                 os.makedirs(obj_tmp_directory)
 
@@ -1904,7 +1953,8 @@ class AutoTabularRegressor:
                 f.write("Scaling method: {}\n".format(_scaling))
                 f.write("Scaling Hyperparameters:")
                 print(_scaling_hyper, file=f, end="\n\n")
-                f.write("Feature Selection method: {}\n".format(_feature_selection))
+                f.write(
+                    "Feature Selection method: {}\n".format(_feature_selection))
                 f.write("Feature Selection Hyperparameters:")
                 print(_feature_selection_hyper, file=f, end="\n\n")
                 f.write("Regression model: {}\n".format(_regressor))
@@ -1932,7 +1982,8 @@ class AutoTabularRegressor:
                 with open(obj_tmp_directory + "/objective_process.txt", "w") as f:
                     f.write("Balancing finished, in scaling process.")
 
-                # make sure the classes are integers (belongs to certain classes)
+                # make sure the classes are integers (belongs to certain
+                # classes)
                 _y_train_obj = _y_train_obj.astype(int)
                 _y_test_obj = _y_test_obj.astype(int)
                 # scaling
@@ -1969,7 +2020,8 @@ class AutoTabularRegressor:
                         obj_tmp_directory + "/train_preprocessed.csv", index=False
                     )
                 else:
-                    raise TypeError("Only accept numpy array or pandas dataframe!")
+                    raise TypeError(
+                        "Only accept numpy array or pandas dataframe!")
 
                 if isinstance(_X_test_obj, np.ndarray):
                     pd.concat(
@@ -1982,7 +2034,8 @@ class AutoTabularRegressor:
                         obj_tmp_directory + "/test_preprocessed.csv", index=False
                     )
                 else:
-                    raise TypeError("Only accept numpy array or pandas dataframe!")
+                    raise TypeError(
+                        "Only accept numpy array or pandas dataframe!")
 
                 reg.fit(_X_train_obj, _y_train_obj.values.ravel())
                 os.remove(obj_tmp_directory + "/objective_process.txt")
@@ -1994,11 +2047,15 @@ class AutoTabularRegressor:
                     _loss = _obj(y_pred, _y_test_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
-                    f.write("Loss from objective function is: {:.6f}\n".format(_loss))
-                    f.write("Loss is calculate using {}.".format(self.objective))
+                    f.write(
+                        "Loss from objective function is: {:.6f}\n".format(_loss))
+                    f.write(
+                        "Loss is calculate using {}.".format(
+                            self.objective))
                 self._iter += 1
 
-                # since fmin of Hyperopt tries to minimize the objective function, take negative accuracy here
+                # since fmin of Hyperopt tries to minimize the objective
+                # function, take negative accuracy here
                 return {"loss": _loss, "status": STATUS_OK}
             else:
                 _X_obj = _X.copy()
@@ -2041,13 +2098,17 @@ class AutoTabularRegressor:
                     _loss = _obj(y_pred, _y_obj.values)
 
                 with open(obj_tmp_directory + "/testing_objective.txt", "w") as f:
-                    f.write("Loss from objective function is: {.6f}\n".format(_loss))
-                    f.write("Loss is calculate using {}.".format(self.objective))
+                    f.write(
+                        "Loss from objective function is: {.6f}\n".format(_loss))
+                    f.write(
+                        "Loss is calculate using {}.".format(
+                            self.objective))
                 self._iter += 1
 
                 return {"loss": _loss, "status": STATUS_OK}
 
-        # call hyperopt to use Bayesian Optimization for Model Selection and Hyperparameter Selection
+        # call hyperopt to use Bayesian Optimization for Model Selection and
+        # Hyperparameter Selection
 
         # search algorithm
         if self.algo == "rand":
@@ -2168,10 +2229,12 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         if isinstance(y, pd.DataFrame) or isinstance(y, np.ndarray):
             self._type = type_of_task(y)
-        elif y == None:
+        elif y is None:
             self._type = "Unsupervised"
 
-        if self._type in ["binary", "multiclass"]:  # assign classification tasks
+        if self._type in [
+            "binary",
+                "multiclass"]:  # assign classification tasks
             self.model = AutoTabularClassifier(
                 timeout=self.timeout,
                 max_evals=self.max_evals,
@@ -2222,9 +2285,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
-                    self._type
-                )
-            )
+                    self._type))
 
         self.model.fit(X, y)
         return self

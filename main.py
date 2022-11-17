@@ -56,7 +56,11 @@ model_dict = {
 # read arguments
 parser = argparse.ArgumentParser(description="set arguments for AutoML job")
 # data-related arguments
-parser.add_argument("--data_folder", default="", type=str, help="read-in data folder")
+parser.add_argument(
+    "--data_folder",
+    default="",
+    type=str,
+    help="read-in data folder")
 parser.add_argument(
     "--train_data", type=str, help="train data name (no file extension needed)"
 )
@@ -68,8 +72,10 @@ parser.add_argument(
 )
 parser.add_argument("--response", type=str, help="response column name")
 parser.add_argument(
-    "--test_eval", default="auto", type=str, help="evaluation metric on test data"
-)
+    "--test_eval",
+    default="auto",
+    type=str,
+    help="evaluation metric on test data")
 # model-related arguments
 parser.add_argument(
     "--task_type",
@@ -110,12 +116,13 @@ parser.add_argument(
     type=bool,
     help="whether to delete temporary information after training",
 )
+parser.add_argument("--save", default=True, type=bool,
+                    help="whether to save optimal training model")
 parser.add_argument(
-    "--save", default=True, type=bool, help="whether to save optimal training model"
-)
-parser.add_argument(
-    "--ignore_warning", default=True, type=bool, help="whether to ignore all warnings"
-)
+    "--ignore_warning",
+    default=True,
+    type=bool,
+    help="whether to ignore all warnings")
 parser.add_argument(
     "--encoder",
     default="auto",
@@ -159,11 +166,15 @@ parser.add_argument(
     help="models for the tasks, auto or a list of models",
 )
 parser.add_argument(
-    "--validation", default=True, type=bool, help="whether to split a validation set"
-)
+    "--validation",
+    default=True,
+    type=bool,
+    help="whether to split a validation set")
 parser.add_argument(
-    "--valid_size", default=0.15, type=float, help="validation set percentage to split"
-)
+    "--valid_size",
+    default=0.15,
+    type=float,
+    help="validation set percentage to split")
 parser.add_argument(
     "--objective",
     default=None,
@@ -265,7 +276,8 @@ if __name__ == "__main__":
         features = list(database[train].columns)
         features.remove(response)
 
-        train_X, train_y = database[train][features], database[train][[response]]
+        train_X, train_y = database[train][features], database[train][[
+            response]]
         test_X, test_y = database[test][features], database[test][[response]]
     # if no test_data provided, read only train_dat
     # and use train_test_split to get train/test sets

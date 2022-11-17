@@ -45,54 +45,40 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, mean_absolute_error, mean_squared_error
 import autosklearn
 from autosklearn.pipeline.components.feature_preprocessing.no_preprocessing import (
-    NoPreprocessing,
-)
+    NoPreprocessing, )
 from autosklearn.pipeline.components.feature_preprocessing.densifier import Densifier
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_classification import (
-    ExtraTreesPreprocessorClassification,
-)
+    ExtraTreesPreprocessorClassification, )
 from autosklearn.pipeline.components.feature_preprocessing.extra_trees_preproc_for_regression import (
-    ExtraTreesPreprocessorRegression,
-)
+    ExtraTreesPreprocessorRegression, )
 from autosklearn.pipeline.components.feature_preprocessing.fast_ica import FastICA
 from autosklearn.pipeline.components.feature_preprocessing.feature_agglomeration import (
-    FeatureAgglomeration,
-)
+    FeatureAgglomeration, )
 from autosklearn.pipeline.components.feature_preprocessing.kernel_pca import KernelPCA
 from autosklearn.pipeline.components.feature_preprocessing.kitchen_sinks import (
-    RandomKitchenSinks,
-)
+    RandomKitchenSinks, )
 from autosklearn.pipeline.components.feature_preprocessing.liblinear_svc_preprocessor import (
-    LibLinear_Preprocessor,
-)
+    LibLinear_Preprocessor, )
 from autosklearn.pipeline.components.feature_preprocessing.nystroem_sampler import (
-    Nystroem,
-)
+    Nystroem, )
 from autosklearn.pipeline.components.feature_preprocessing.pca import PCA
 from autosklearn.pipeline.components.feature_preprocessing.polynomial import (
     PolynomialFeatures,
 )
 from autosklearn.pipeline.components.feature_preprocessing.random_trees_embedding import (
-    RandomTreesEmbedding,
-)
+    RandomTreesEmbedding, )
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile import (
-    SelectPercentileBase,
-)
+    SelectPercentileBase, )
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile_classification import (
-    SelectPercentileClassification,
-)
+    SelectPercentileClassification, )
 from autosklearn.pipeline.components.feature_preprocessing.select_percentile_regression import (
-    SelectPercentileRegression,
-)
+    SelectPercentileRegression, )
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_classification import (
-    SelectClassificationRates,
-)
+    SelectClassificationRates, )
 from autosklearn.pipeline.components.feature_preprocessing.select_rates_regression import (
-    SelectRegressionRates,
-)
+    SelectRegressionRates, )
 from autosklearn.pipeline.components.feature_preprocessing.truncatedSVD import (
-    TruncatedSVD,
-)
+    TruncatedSVD, )
 
 from sklearn.ensemble import (
     AdaBoostClassifier,
@@ -174,7 +160,8 @@ class feature_selection:
         self.time_left_for_this_task = (
             time_left_for_this_task  # total time in seconds to find and tune the models
         )
-        self.per_run_time_limit = per_run_time_limit  # time in seconds to fit machine learning models per call
+        # time in seconds to fit machine learning models per call
+        self.per_run_time_limit = per_run_time_limit
         self.ensemble_size = ensemble_size
         self.skip = skip
 
@@ -198,10 +185,11 @@ class feature_selection:
         # get the database infomation (from json file)
         _base_info = json.load(open(self._base_info))
 
-        # Loop through database and test performance among feature selection methods
+        # Loop through database and test performance among feature selection
+        # methods
         database_names = [*database]
         for _name in database_names:
-            if self.skip == True:
+            if self.skip:
                 self._skip_data_test(database[_name], _name, _base_info)
             else:
                 self._data_test(database[_name], _name, _base_info)
@@ -210,8 +198,10 @@ class feature_selection:
 
         tmp_folder = "{0}{1}_temp".format(self.temp_loc, data_name)
 
-        # extract data information from database information and get response name
-        data_info = next(item for item in base_info if item["filename"] == data_name)
+        # extract data information from database information and get response
+        # name
+        data_info = next(
+            item for item in base_info if item["filename"] == data_name)
         response = next(
             item
             for item in data_info["property"]
@@ -224,7 +214,9 @@ class feature_selection:
         os.makedirs(tmp_folder)
 
         if response == "None":
-            warnings.warn("{0} not avaiable for {1}.".format(data_name, self.task_type))
+            warnings.warn(
+                "{0} not avaiable for {1}.".format(
+                    data_name, self.task_type))
         else:
             # feature list
             features = list(data.columns)
@@ -254,7 +246,8 @@ class feature_selection:
             new_data = preprocessor.fit(data[features])
 
             # train_test_divide
-            # need to split after feature selection, since fix seed, not impacted by randomness
+            # need to split after feature selection, since fix seed, not
+            # impacted by randomness
             X_train, X_test, y_train, y_test = train_test_split(
                 new_data,
                 data[[response]],
@@ -296,22 +289,28 @@ class feature_selection:
                 "Train MSE: {}\n".format(mean_squared_error(y_train, fitting))
             )
             result_file.write(
-                "Test accuracy: {}\n".format(accuracy_score(y_test, predictions))
-            )
+                "Test accuracy: {}\n".format(
+                    accuracy_score(
+                        y_test, predictions)))
             result_file.write(
-                "Test MAE: {}\n".format(mean_absolute_error(y_test, predictions))
-            )
+                "Test MAE: {}\n".format(
+                    mean_absolute_error(
+                        y_test, predictions)))
             result_file.write(
-                "Test MSE: {}\n".format(mean_squared_error(y_test, predictions))
-            )
+                "Test MSE: {}\n".format(
+                    mean_squared_error(
+                        y_test, predictions)))
             result_file.close()
 
     def _data_test(self, data, data_name, base_info):
 
-        tmp_folder = "{0}{1}_temp/feature_selection".format(self.temp_loc, data_name)
+        tmp_folder = "{0}{1}_temp/feature_selection".format(
+            self.temp_loc, data_name)
 
-        # extract data information from database information and get response name
-        data_info = next(item for item in base_info if item["filename"] == data_name)
+        # extract data information from database information and get response
+        # name
+        data_info = next(
+            item for item in base_info if item["filename"] == data_name)
         response = next(
             item
             for item in data_info["property"]
@@ -324,7 +323,9 @@ class feature_selection:
         os.makedirs(tmp_folder)
 
         if response == "None":
-            warnings.warn("{0} not avaiable for {1}.".format(data_name, self.task_type))
+            warnings.warn(
+                "{0} not avaiable for {1}.".format(
+                    data_name, self.task_type))
         else:
             # feature list
             features = list(data.columns)
@@ -358,11 +359,13 @@ class feature_selection:
             for _mol in self.feature_mol:
 
                 # preprocess string type
-                preprocessor = DataEncoding(dummy_coding=False, transform=False)
+                preprocessor = DataEncoding(
+                    dummy_coding=False, transform=False)
                 new_data = preprocessor.fit(data[features])
 
                 # train_test_divide
-                # need to split after feature selection, since fix seed, not impacted by randomness
+                # need to split after feature selection, since fix seed, not
+                # impacted by randomness
                 X_train, X_test, y_train, y_test = train_test_split(
                     new_data,
                     data[[response]],
@@ -378,9 +381,7 @@ class feature_selection:
                 new_info_file.write("Task type: {}\n".format(self.task_type))
                 new_info_file.write(
                     "Number of train samples: {},\nNumber of test samples: {},\nNumber of features: {}\n".format(
-                        X_train.shape[0], X_test.shape[0], X_train.shape[1]
-                    )
-                )
+                        X_train.shape[0], X_test.shape[0], X_train.shape[1]))
                 new_info_file.write("Features: {}\n".format(features))
                 new_info_file.write("Response: {}\n".format(response))
                 new_info_file.close()
@@ -414,23 +415,29 @@ class feature_selection:
                     "{}/{}_result.txt".format(new_info_folder, _mol), "a"
                 )
                 result_file.write(
-                    "Train accuracy: {}\n".format(accuracy_score(y_train, fitting))
-                )
+                    "Train accuracy: {}\n".format(
+                        accuracy_score(
+                            y_train, fitting)))
                 result_file.write(
-                    "Train MAE: {}\n".format(mean_absolute_error(y_train, fitting))
-                )
+                    "Train MAE: {}\n".format(
+                        mean_absolute_error(
+                            y_train, fitting)))
                 result_file.write(
-                    "Train MSE: {}\n".format(mean_squared_error(y_train, fitting))
-                )
+                    "Train MSE: {}\n".format(
+                        mean_squared_error(
+                            y_train, fitting)))
                 result_file.write(
-                    "Test accuracy: {}\n".format(accuracy_score(y_test, predictions))
-                )
+                    "Test accuracy: {}\n".format(
+                        accuracy_score(
+                            y_test, predictions)))
                 result_file.write(
-                    "Test MAE: {}\n".format(mean_absolute_error(y_test, predictions))
-                )
+                    "Test MAE: {}\n".format(
+                        mean_absolute_error(
+                            y_test, predictions)))
                 result_file.write(
-                    "Test MSE: {}\n".format(mean_squared_error(y_test, predictions))
-                )
+                    "Test MSE: {}\n".format(
+                        mean_squared_error(
+                            y_test, predictions)))
                 result_file.close()
 
                 # # perform feature selection on the data

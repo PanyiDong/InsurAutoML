@@ -54,6 +54,7 @@ def TxtTokenize(
     # get tokenizer
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     # tokenizer mapping function
+
     def _tokenizer(text: str) -> List[int]:
         return tokenizer(
             text,
@@ -68,7 +69,8 @@ def TxtTokenize(
     data = data.applymap(lambda x: _tokenizer(x))
 
     # convert to tensor
-    return torch.cat([torch.tensor(data[col].to_list()) for col in data.columns], dim=1)
+    return torch.cat([torch.tensor(data[col].to_list())
+                      for col in data.columns], dim=1)
 
 
 # The purpose of this function is to make sure the unique values are consecutive
@@ -100,7 +102,6 @@ def CatOffsetEncoding(
     unique_classes: List[int] = None,
     starting_offset: int = 0,
 ) -> torch.Tensor:
-
     """
     This function is used to convert categorical data into Encoding.
 
@@ -115,7 +116,9 @@ def CatOffsetEncoding(
     """
 
     # convert data to torch tensor
-    data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+    data = torch.tensor(
+        data.values if isinstance(
+            data, pd.DataFrame) else data)
 
     # check data dimension
     if len(data.size()) != 2:
@@ -133,7 +136,8 @@ def CatOffsetEncoding(
 
     # get offset encoding
     # cumsum of each column number of unique classes
-    cat_offset = F.pad(torch.tensor(unique_classes), (1, 0), value=starting_offset)
+    cat_offset = F.pad(torch.tensor(unique_classes),
+                       (1, 0), value=starting_offset)
     cat_offset = cat_offset.cumsum(dim=-1)[:-1]
 
     return data + cat_offset
@@ -144,7 +148,6 @@ def NumOffsetEncoding(
     num_classes: int = 10,
     starting_offset: int = 0,
 ) -> torch.Tensor:
-
     """
     This function is used to convert numerical data into categorical Encoding.
 
@@ -159,7 +162,9 @@ def NumOffsetEncoding(
     """
 
     # convert data to torch tensor
-    data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+    data = torch.tensor(
+        data.values if isinstance(
+            data, pd.DataFrame) else data)
 
     # check data dimension
     if len(data.size()) != 2:
@@ -173,7 +178,8 @@ def NumOffsetEncoding(
     vmax = torch.max(data, dim=0)[0]
     vmin = torch.min(data, dim=0)[0]
 
-    data = (data - vmin.unsqueeze(0)) / (vmax - vmin).unsqueeze(0) * num_classes
+    data = (data - vmin.unsqueeze(0)) / \
+        (vmax - vmin).unsqueeze(0) * num_classes
     data = data.int()
 
     return CatOffsetEncoding(
