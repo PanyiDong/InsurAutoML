@@ -426,10 +426,10 @@ def test_objective_5():
         seed=1,
     )
     result = clf.step()
-    
+
     if not os.path.exists("tmp"):
         os.mkdir("tmp")
-    
+
     clf.save_checkpoint("tmp")
     clf.load_checkpoint("tmp")
     clf.reset_config(params)

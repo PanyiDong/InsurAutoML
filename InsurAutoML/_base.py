@@ -95,7 +95,7 @@ class no_processing:
         elif isinstance(y, np.ndarray):
             _empty = np.all(np.isnan(y))
         else:
-            _empty = y == None
+            _empty = y is None
 
         if _empty:
             return X
@@ -157,7 +157,7 @@ class load_data:
             or self.data_type == "all"
         ):
             if self.data_type == ".csv" or self.data_type == "all":
-                if filename == None:
+                if filename is None:
                     _csv_files = glob.glob(path + "*.csv")
                 elif isinstance(filename, list):
                     _csv_files = []
@@ -166,7 +166,7 @@ class load_data:
                 else:
                     _csv_files = glob.glob(path + filename + ".csv")
             if self.data_type == ".data" or self.data_type == "all":
-                if filename == None:
+                if filename is None:
                     _data_files = glob.glob(path + "*.data")
                 elif isinstance(filename, list):
                     _data_files = []
@@ -175,7 +175,7 @@ class load_data:
                 else:
                     _data_files = glob.glob(path + filename + ".data")
             if self.data_type == ".asc" or self.data_type == "all":
-                if filename == None:
+                if filename is None:
                     _data_files = glob.glob(path + "*.asc")
                 elif isinstance(filename, list):
                     _data_files = []
@@ -201,7 +201,8 @@ class load_data:
                     # )
                     # use os.path.split for unify path separator
                     _filename = os.path.split(_data_path)[-1]
-                    self.database[_filename.split(".")[0]] = pd.read_csv(_data_path)
+                    self.database[_filename.split(
+                        ".")[0]] = pd.read_csv(_data_path)
 
         # load .rda/.rdata files in the path
         # will not read any files if rpy2 is not available
@@ -217,7 +218,7 @@ class load_data:
                 or self.data_type == "all"
             ):
                 if self.data_type == ".rda" or self.data_type == "all":
-                    if filename == None:
+                    if filename is None:
                         _rda_files = glob.glob(path + "*.rda")
                     elif isinstance(filename, list):
                         _rda_files = []
@@ -226,12 +227,13 @@ class load_data:
                     else:
                         _rda_files = glob.glob(path + filename + ".rda")
                 if self.data_type == ".rdata" or self.data_type == "all":
-                    if filename == None:
+                    if filename is None:
                         _rdata_files = glob.glob(path + "*.rdata")
                     elif isinstance(filename, list):
                         _rdata_files = []
                         for _filename in filename:
-                            _rdata_files += glob.glob(path + _filename + ".rdata")
+                            _rdata_files += glob.glob(path +
+                                                      _filename + ".rdata")
                     else:
                         _rdata_files = glob.glob(path + filename + ".rdata")
 

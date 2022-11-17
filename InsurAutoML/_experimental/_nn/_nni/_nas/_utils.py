@@ -39,7 +39,6 @@ SOFTWARE.
 """
 
 
-
 from collections import OrderedDict
 from typing import Callable
 import torch
@@ -50,7 +49,7 @@ import nni.retiarii.strategy as strategy
 import nni.retiarii.nn.pytorch as nninn
 
 
-####################################################################################################################
+##########################################################################
 # Constant
 
 ACTIVATIONS = OrderedDict(
@@ -69,8 +68,9 @@ RNN_TYPES = OrderedDict(
     ]
 )
 
-####################################################################################################################
-#utils
+##########################################################################
+# utils
+
 
 def how_to_init(m, how="uniform"):
 
@@ -202,5 +202,3 @@ def get_strategy(strategyStr):
         return strategyStr()
     else:
         raise ValueError("Unrecognized strategy {}".format(strategyStr))
-    
-        

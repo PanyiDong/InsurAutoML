@@ -52,28 +52,8 @@ Other methods are imported and only called here.
 [1] Chandrashekar, G., & Sahin, F. (2014). A survey on feature selection methods. Computers & Electrical Engineering, 40(1), 16-28.
 """
 
-from ._filter import (
-    FeatureFilter,
-    mRMR,
-    FOCI,
-)
-from ._wrapper import (
-    # ExhaustiveFS,
-    SFS,
-    ASFFS,
-)
-from ._embed import (
-    PCA_FeatureSelection,
-    # LDASelection,
-    RBFSampler,
-)
-from ._hybrid import (
-    CBFS,
-    GeneticAlgorithm,
-)
 
 from InsurAutoML._base import no_processing
-
 feature_selections = {
     "no_processing": no_processing,
     # "LDASelection": LDASelection,
@@ -132,17 +112,6 @@ feature_selections = {
 #         "None of autosklearn or sklearn is installed. Please install at least one of them to use feature selection."
 #     )
 # else:
-from ._sklearn import (
-    extra_trees_preproc_for_classification,
-    extra_trees_preproc_for_regression,
-    liblinear_svc_preprocessor,
-    polynomial,
-    select_percentile_classification,
-    select_percentile_regression,
-    select_rates_classification,
-    select_rates_regression,
-    truncatedSVD,
-)
 
 # from autosklearn
 feature_selections[

@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from ._utils import get_optimizer, get_criterion
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -45,8 +46,6 @@ import nni
 from nni.retiarii.evaluator import FunctionalEvaluator
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-from ._utils import get_optimizer, get_criterion
 
 
 @nni.trace

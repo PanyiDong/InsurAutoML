@@ -42,7 +42,6 @@ import torch
 
 
 def decision_mask(n_nodes, n_activations):
-
     """
     mask for decision nodes
     """

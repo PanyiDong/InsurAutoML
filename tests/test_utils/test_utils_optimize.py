@@ -181,7 +181,7 @@ def test_check_func():
     from InsurAutoML._model import LogisticRegression
 
     assert (
-        check_func(LogisticRegression, ref="model") == None
+        check_func(LogisticRegression, ref="model") is None
     ), "The check_func method is not correctly done."
 
 
@@ -192,5 +192,5 @@ def test_check_status():
     from InsurAutoML._model import regressors
 
     assert (
-        check_status(regressors, regressor_hyperparameter, ref="model") == None
+        check_status(regressors, regressor_hyperparameter, ref="model") is None
     ), "The check_status method is not correctly done."

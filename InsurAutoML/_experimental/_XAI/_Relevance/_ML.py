@@ -42,6 +42,8 @@ from sklearn.linear_model import LinearRegression
 import pandas as pd
 
 # linear regression with relevance attached
+
+
 class LinearRegressor(LinearRegression):
     def __init__(
         self,
@@ -67,7 +69,9 @@ class LinearRegressor(LinearRegression):
                 if how == "absolute":
                     print("{:40s}: {:14.6f}".format(_feature, _relevance))
                 elif how == "relative":
-                    print("{:40s}: {:10.4f}%".format(_feature, _relevance * 100))
+                    print(
+                        "{:40s}: {:10.4f}%".format(
+                            _feature, _relevance * 100))
         else:
             print(relevance)
 

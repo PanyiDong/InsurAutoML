@@ -62,12 +62,10 @@ def test_MetaData():
     metadata.force_update(["Product_Type"], [("Int", "Categorical")])
     print(metadata)
 
-    assert (
-        metadata.metadata[("Int", "Numerical")] == expected_return[("Int", "Numerical")]
-    ), "Numerical columns are not correct."
-    assert (
-        metadata.metadata[("Object", "Text")] == expected_return[("Object", "Text")]
-    ), "Text columns are not correct."
+    assert (metadata.metadata[("Int", "Numerical")] == expected_return[(
+        "Int", "Numerical")]), "Numerical columns are not correct."
+    assert (metadata.metadata[("Object", "Text")] == expected_return[(
+        "Object", "Text")]), "Text columns are not correct."
     assert (
         metadata.metadata[("Int", "Categorical")]
         == expected_return[("Int", "Categorical")]

@@ -58,7 +58,7 @@ def test_feature_selection_PCA_FeatureSelection():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
     feature_selection = PCA_FeatureSelection(
         n_components=5,
@@ -67,7 +67,7 @@ def test_feature_selection_PCA_FeatureSelection():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
     feature_selection = PCA_FeatureSelection(
         n_components=5,
@@ -76,7 +76,7 @@ def test_feature_selection_PCA_FeatureSelection():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
     feature_selection = PCA_FeatureSelection(
         n_components=5,
@@ -85,7 +85,7 @@ def test_feature_selection_PCA_FeatureSelection():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 # def test_feature_selection_LDASelection():
@@ -110,7 +110,7 @@ def test_feature_selection_RBFSampler():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 # test decrepted methods
@@ -128,7 +128,7 @@ def test_feature_selection_densifier():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_fast_ica():
@@ -143,7 +143,7 @@ def test_feature_selection_fast_ica():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_feature_agglomeration():
@@ -158,7 +158,7 @@ def test_feature_selection_feature_agglomeration():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_kernel_pca():
@@ -173,7 +173,7 @@ def test_feature_selection_kernel_pca():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_kitchen_sinks():
@@ -188,7 +188,7 @@ def test_feature_selection_kitchen_sinks():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_nystroem_sampler():
@@ -203,7 +203,7 @@ def test_feature_selection_nystroem_sampler():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_pca():
@@ -218,7 +218,7 @@ def test_feature_selection_pca():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"
 
 
 def test_feature_selection_random_trees_embedding():
@@ -233,4 +233,4 @@ def test_feature_selection_random_trees_embedding():
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)
 
-    assert feature_selection._fitted == True, "Fitted should be True"
+    assert feature_selection._fitted, "Fitted should be True"

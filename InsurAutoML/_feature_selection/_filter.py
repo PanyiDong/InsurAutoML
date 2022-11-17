@@ -100,7 +100,7 @@ class FeatureFilter:
         elif isinstance(y, np.ndarray):
             _empty = np.all(np.isnan(y))
         else:
-            _empty = y == None
+            _empty = y is None
 
         if _empty:
             raise ValueError("Must have response!")
@@ -194,7 +194,8 @@ class mRMR:
             else:
                 results.append(dependency)
 
-        return test_item[maxloc(results)][0]  # use 0 to select item instead of tuple
+        # use 0 to select item instead of tuple
+        return test_item[maxloc(results)][0]
 
     def fit(
         self,
@@ -285,7 +286,8 @@ class FOCI:
                     tmp_ACCC_list.append(ACCC(X[[feature]], y))
                 # at following steps, use conditional ACCC
                 else:
-                    tmp_ACCC_list.append(ACCC(X[[feature]], y, X[selected_features]))
+                    tmp_ACCC_list.append(
+                        ACCC(X[[feature]], y, X[selected_features]))
 
             tmp_feature = unselected_features[np.argmax(tmp_ACCC_list)]
             tmp_max_ACCC = tmp_ACCC_list[np.argmax(tmp_ACCC_list)]

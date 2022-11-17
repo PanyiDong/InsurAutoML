@@ -62,6 +62,8 @@ from InsurAutoML._utils._optimize import (
 # Exhaustive search for optimal feature combination
 # Exhaustive search is practically impossible to implement in a reasonable time,
 # so it's not included in the package, but it can be used.
+
+
 class ExhaustiveFS:
 
     """
@@ -85,9 +87,8 @@ class ExhaustiveFS:
 
         self._fitted = False
 
-    def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> ExhaustiveFS:
+    def fit(self, X: Union[pd.DataFrame, np.ndarray],
+            y: Union[pd.DataFrame, np.ndarray]) -> ExhaustiveFS:
 
         # make sure estimator is recognized
         if self.estimator == "Lasso":
@@ -135,7 +136,8 @@ class ExhaustiveFS:
 
         for comb in all_comb:
             self.estimator.fit(X.iloc[:, comb], y)
-            results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
+            results.append(self.criteria(
+                y, self.estimator.predict(X.iloc[:, comb])))
 
         self.selected_features = all_comb[np.argmin(results)]
 
@@ -206,7 +208,8 @@ class SFS:
             # fit estimator
             estimator.fit(X.iloc[:, _comb], y)
             # get test results
-            test_results = self.criteria(y, estimator.predict(X.iloc[:, _comb]))
+            test_results = self.criteria(
+                y, estimator.predict(X.iloc[:, _comb]))
             # append test results
             results.append(test_results)
 
@@ -234,7 +237,7 @@ class SFS:
         elif isinstance(y, np.ndarray):
             _empty = np.all(np.isnan(y))
         else:
-            _empty = y == None
+            _empty = y is None
 
         # if empty, raise error
         if _empty:
@@ -413,9 +416,8 @@ class ASFFS:
     ) -> Tuple[str, float]:
 
         _subset = list(itertools.combinations(selected, o))
-        _comb_subset = [
-            [_full for _full in selected if _full not in item] for item in _subset
-        ]  # remove new features from selected features
+        _comb_subset = [[_full for _full in selected if _full not in item]
+                        for item in _subset]  # remove new features from selected features
 
         _objective_list = []
         if self.model == "Linear":
@@ -454,9 +456,8 @@ class ASFFS:
             _objective_list[maxloc(_objective_list)],
         )
 
-    def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> ASFFS:
+    def fit(self, X: Union[pd.DataFrame, np.ndarray],
+            y: Union[pd.DataFrame, np.ndarray]) -> ASFFS:
 
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
@@ -467,11 +468,11 @@ class ASFFS:
         n, p = X.shape
         features = list(X.columns)
 
-        if self.n_components == None:
+        if self.n_components is None:
             _n_components = min(max(20, p), int(0.5 * p))
         else:
             _n_components = self.n_components
-        if self.b == None:
+        if self.b is None:
             _b = min(5, int(0.05 * p))
 
         _k = 0
@@ -482,7 +483,8 @@ class ASFFS:
             [] for _ in range(p + 1)
         ]  # mark the best performing subset features
         _unselected = features.copy()
-        # selected  feature stored here, not selected will be stored in features
+        # selected  feature stored here, not selected will be stored in
+        # features
         _selected = []
 
         while True:
@@ -537,7 +539,8 @@ class ASFFS:
                 _o <= _r and _o < _k
             ):  # not reasonable to remove when only _o feature selected
 
-                _new_feature, _max_obj = self._Backward_Objective(_selected, _o, X, y)
+                _new_feature, _max_obj = self._Backward_Objective(
+                    _selected, _o, X, y)
 
                 if _max_obj > self.J_max[_k - _o]:
                     self.J_max[_k - _o] = _max_obj.copy()

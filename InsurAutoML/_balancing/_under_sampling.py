@@ -53,8 +53,8 @@ from InsurAutoML._utils._data import is_imbalance, LinkTable
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
     Edited Nearest Neighbor,  Condensed Nearest Neighbor, One Sided Selection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
-    
-Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for 
+
+Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for
 balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(1), pp.20-29.
 """
 
@@ -98,7 +98,7 @@ class SimpleRandomUnderSampling:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -115,7 +115,7 @@ class SimpleRandomUnderSampling:
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
-            if self.all == True:
+            if self.all:
                 while is_imbalance(_data, self.imbalance_threshold):
                     _data = self._fit_transform(_data)
             else:
@@ -149,7 +149,10 @@ class SimpleRandomUnderSampling:
             X = X.drop(sample.index)
             _seed += 1
             _iter += 1
-        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
+        X = sklearn.utils.shuffle(
+            X.reset_index(
+                drop=True)).reset_index(
+            drop=True)
 
         return X
 
@@ -198,7 +201,7 @@ class TomekLink:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -215,7 +218,7 @@ class TomekLink:
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
-            if self.all == True:
+            if self.all:
                 while is_imbalance(_data, self.imbalance_threshold):
                     _data = self._fit_transform(_data)
             else:
@@ -308,7 +311,7 @@ class EditedNearestNeighbor:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -326,14 +329,12 @@ class EditedNearestNeighbor:
         if (self.k % 2) == 0:
             warnings.warn(
                 "Criteria of majority better select odd k nearest neighbors, get {}.".format(
-                    self.k
-                )
-            )
+                    self.k))
 
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
-            if self.all == True:
+            if self.all:
                 while is_imbalance(_data, self.imbalance_threshold):
                     _data = self._fit_transform(_data)
             else:
@@ -362,27 +363,30 @@ class EditedNearestNeighbor:
             _majority_index = _majority_class.index
             _sample = X.sample(n=1, random_state=_seed)
             _sample_type = (
-                "majority" if (_sample.index[0] in _majority_index) else "minority"
-            )
+                "majority" if (
+                    _sample.index[0] in _majority_index) else "minority")
             _link_table = LinkTable(_sample, X, self.norm)
             for _link_item in _link_table:
                 _k_nearest = [
                     _link_item.index(item)
-                    for item in sorted(_link_item)[1 : (self.k + 1)]
+                    for item in sorted(_link_item)[1: (self.k + 1)]
                 ]
                 count = 0
                 for _index in _k_nearest:
-                    _class = "majority" if (_index in _majority_index) else "minority"
+                    _class = "majority" if (
+                        _index in _majority_index) else "minority"
                     if _class == _sample_type:
                         count += 1
                 if count < (self.k + 1) / 2:
-                    # if sample belongs to majority, remove the sample; else, remove the nearest neighbor
+                    # if sample belongs to majority, remove the sample; else,
+                    # remove the nearest neighbor
                     if _sample_type == "majority":
                         X = X.drop(_sample.index).reset_index(drop=True)
                     else:
-                        X = X.drop(_link_item.index(sorted(_link_item)[1])).reset_index(
-                            drop=True
-                        )
+                        X = X.drop(
+                            _link_item.index(
+                                sorted(_link_item)[1])).reset_index(
+                            drop=True)
             _seed += 1
             _iter += 1
 
@@ -437,7 +441,7 @@ class CondensedNearestNeighbor:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -454,7 +458,7 @@ class CondensedNearestNeighbor:
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
-            if self.all == True:
+            if self.all:
                 while is_imbalance(_data, self.imbalance_threshold):
                     _data = self._fit_transform(_data)
             else:
@@ -491,18 +495,14 @@ class CondensedNearestNeighbor:
                 _subset.loc[:, _subset.columns != _imbalanced_feature],
                 _subset[_imbalanced_feature],
             )
-            y_predict = neigh.predict(
-                X.loc[
-                    ~X.index.isin(list(_subset.index)), X.columns != _imbalanced_feature
-                ]
-            )
-            y_true = X.loc[
-                ~X.index.isin(list(_subset.index)), X.columns == _imbalanced_feature
-            ].values.T[0]
-            _not_matching_index = np.where((np.array(y_predict) != np.array(y_true)))[0]
-            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]).reset_index(
-                drop=True
-            )
+            y_predict = neigh.predict(X.loc[~X.index.isin(
+                list(_subset.index)), X.columns != _imbalanced_feature])
+            y_true = X.loc[~X.index.isin(
+                list(_subset.index)), X.columns == _imbalanced_feature].values.T[0]
+            _not_matching_index = np.where(
+                (np.array(y_predict) != np.array(y_true)))[0]
+            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]
+                          ).reset_index(drop=True)
             _seed += 1
             _iter += 1
 
@@ -554,7 +554,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -641,7 +641,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty

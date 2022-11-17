@@ -60,7 +60,8 @@ class TestScaling(unittest.TestCase):
         self.method_names = list(self.method_dict.keys())
         self.method_objects = list(self.method_dict.values())
 
-        for method_name, method_object in zip(self.method_names, self.method_objects):
+        for method_name, method_object in zip(
+                self.method_names, self.method_objects):
 
             mol = method_object()
             scaled_X = mol.fit_transform(data_X, data_y)
@@ -106,9 +107,8 @@ def test_feature_manipulation():
 
     from InsurAutoML._scaling import Feature_Manipulation
 
-    data = pd.DataFrame(
-        np.arange(15).reshape(5, 3), columns=["column_" + str(i + 1) for i in range(3)]
-    )
+    data = pd.DataFrame(np.arange(15).reshape(5, 3), columns=[
+        "column_" + str(i + 1) for i in range(3)])
     transformed_data = Feature_Manipulation(
         data,
         columns=["column_1", "column_2", "column_3"],

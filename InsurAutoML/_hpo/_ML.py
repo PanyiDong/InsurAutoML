@@ -277,7 +277,10 @@ class AutoTabularRegressor(AutoTabularBase):
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+    def predict(self,
+                X: pd.DataFrame) -> Union[pd.DataFrame,
+                                          pd.Series,
+                                          np.ndarray]:
 
         return super().predict(X)
 
@@ -511,7 +514,10 @@ class AutoTabularClassifier(AutoTabularBase):
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+    def predict(self,
+                X: pd.DataFrame) -> Union[pd.DataFrame,
+                                          pd.Series,
+                                          np.ndarray]:
 
         return super().predict(X)
 
@@ -705,9 +711,11 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
-    ) -> AutoTabular:
+    def fit(self,
+            X: pd.DataFrame,
+            y: Union[pd.DataFrame,
+                     pd.Series,
+                     np.ndarray] = None) -> AutoTabular:
 
         if (
             isinstance(y, pd.DataFrame)
@@ -718,7 +726,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         elif not y:
             self._type = "Unsupervised"
 
-        if self._type in ["binary", "multiclass"]:  # assign classification tasks
+        if self._type in [
+            "binary",
+                "multiclass"]:  # assign classification tasks
             self.model = AutoTabularClassifier(
                 n_estimators=self.n_estimators,
                 ensemble_strategy=self.ensemble_strategy,
@@ -788,9 +798,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
-                    self._type
-                )
-            )
+                    self._type))
 
         self.model.fit(X, y)
 
@@ -798,7 +806,10 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         return self
 
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+    def predict(self,
+                X: pd.DataFrame) -> Union[pd.DataFrame,
+                                          pd.Series,
+                                          np.ndarray]:
 
         if self.model:
             return self.model.predict(X)

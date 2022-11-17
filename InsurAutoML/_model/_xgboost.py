@@ -46,7 +46,7 @@ import pandas as pd
 import xgboost as xgb
 from xgboost import XGBClassifier, XGBRegressor
 
-#####################################################################################################################
+##########################################################################
 # XGBoost support
 
 
@@ -292,4 +292,5 @@ class XGBoost_Regressor(XGBoost_Base):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")

@@ -103,7 +103,9 @@ class Trainer(object):
         @nni.trace
         def _prep_dataset(X, y):
             # format to tensor
-            if not isinstance(X, torch.Tensor) or not isinstance(y, torch.Tensor):
+            if not isinstance(
+                    X, torch.Tensor) or not isinstance(
+                    y, torch.Tensor):
                 # dataframe cannot be directly converted to tensor
                 if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
                     X = torch.tensor(X.values, dtype=torch.float32)
@@ -135,7 +137,10 @@ class Trainer(object):
         if os.path.isdir(os.path.join(self.temp_directory, self.task_name)):
             shutil.rmtree(os.path.join(self.temp_directory, self.task_name))
         # if folder not exist, create it
-        if not os.path.exists(os.path.join(self.temp_directory, self.task_name)):
+        if not os.path.exists(
+            os.path.join(
+                self.temp_directory,
+                self.task_name)):
             os.makedirs(os.path.join(self.temp_directory, self.task_name))
 
         # get evaluator
@@ -205,12 +210,14 @@ class Trainer(object):
                 "w",
             ) as outfile:
                 # build model
-                init_model = build_model(model_dict, inputSize, outputSize, "MLP")
+                init_model = build_model(
+                    model_dict, inputSize, outputSize, "MLP")
                 torch.save(
                     init_model,
                     os.path.join(
-                        self.temp_directory, self.task_name, "init_optimal_model.pt"
-                    ),
+                        self.temp_directory,
+                        self.task_name,
+                        "init_optimal_model.pt"),
                 )
                 # save the model dict
                 json.dump(model_dict, outfile)

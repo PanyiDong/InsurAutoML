@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 class AutoTextClassifier:
 
     """
@@ -77,12 +78,14 @@ class AutoNextWordPrediction:
 
     def fit(self, X, y):
 
-        raise NotImplementedError("AutoNextWordPrediction is not implemented yet!")
+        raise NotImplementedError(
+            "AutoNextWordPrediction is not implemented yet!")
 
         return self
 
     def predict(self, X):
 
-        raise NotImplementedError("AutoNextWordPrediction is not implemented yet!")
+        raise NotImplementedError(
+            "AutoNextWordPrediction is not implemented yet!")
 
         return self

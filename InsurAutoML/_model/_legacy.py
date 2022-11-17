@@ -41,7 +41,7 @@ SOFTWARE.
 import autosklearn.pipeline.components.classification
 import autosklearn.pipeline.components.regression
 
-####################################################################################################
+##########################################################################
 # classifiers
 
 classifiers = {
@@ -83,7 +83,7 @@ regressors = {
 
 
 """
-LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform 
+LibSVM_SVR, MLP and SGD have problems of requiring inverse_transform
 of StandardScaler while having 1D array
 https://github.com/automl/auto-sklearn/issues/1297
 problem solved

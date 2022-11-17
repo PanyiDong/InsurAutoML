@@ -113,4 +113,5 @@ class BaseRegressionWrapper:
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")

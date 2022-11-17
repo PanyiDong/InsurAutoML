@@ -47,6 +47,8 @@ import copy
 
 # return non-nan covariance matrix between X and y, (return covariance of X if y = None)
 # default calculate at columns (axis = 0), axis = 1 at rows
+
+
 def nan_cov(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
@@ -60,7 +62,7 @@ def nan_cov(
     elif isinstance(y, np.ndarray):
         _empty = np.all(np.isnan(y))
     else:
-        _empty = y == None
+        _empty = y is None
 
     if _empty:
         y = copy.deepcopy(X)
@@ -223,7 +225,8 @@ def MI(
             _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
         )  # combine probability (x, y)
         _pro_val = _pro.values  # take only values
-        _X_pro = X[[_column]].groupby(_column).size().div(len(X))  # probability (x)
+        _X_pro = X[[_column]].groupby(
+            _column).size().div(len(X))  # probability (x)
         _H_y_X = -sum(
             _pro_val[i]
             * np.log(
@@ -383,7 +386,6 @@ def ACCC(
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
     X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
 ) -> float:
-
     """
     Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1]
 
@@ -411,14 +413,12 @@ def ACCC(
     # check shape
     if not len(Z) == len(y):
         raise ValueError(
-            "Z and y must have the same length, but Z has length %d and y has length %d"
-            % (len(Z), len(y))
-        )
+            "Z and y must have the same length, but Z has length %d and y has length %d" %
+            (len(Z), len(y)))
     if not (X is None) and not len(y) == len(X):
         raise ValueError(
-            "X and y must have the same length, but X has length %d and y has length %d"
-            % (len(X), len(y))
-        )
+            "X and y must have the same length, but X has length %d and y has length %d" %
+            (len(X), len(y)))
 
     from sklearn.neighbors import KNeighborsRegressor
 
@@ -451,20 +451,24 @@ def ACCC(
         return nume / denom
     else:
         # kNN for the ranking
-        # need rank of y corresponding nearest neighbor of Z and nearest neighbor of (X, Z)
+        # need rank of y corresponding nearest neighbor of Z and nearest
+        # neighbor of (X, Z)
         knn_M = KNeighborsRegressor(
             n_neighbors=2, p=2, metric="minkowski"
         )  # standard Euclidean distance
         knn_M.fit(pd.concat([X, Z], axis=1, ignore_index=True), y_rank)
-        _, ind_M = knn_M.kneighbors(pd.concat([X, Z], axis=1, ignore_index=True))
-        ind_M = ind_M[:, -1]  # get second closest since the closest will be itself
+        _, ind_M = knn_M.kneighbors(
+            pd.concat([X, Z], axis=1, ignore_index=True))
+        # get second closest since the closest will be itself
+        ind_M = ind_M[:, -1]
 
         knn_N = KNeighborsRegressor(
             n_neighbors=2, p=2, metric="minkowski"
         )  # standard Euclidean distance
         knn_N.fit(X, y_rank)
         _, ind_N = knn_N.kneighbors(X)
-        ind_N = ind_N[:, -1]  # get second closest since the closest will be itself
+        # get second closest since the closest will be itself
+        ind_N = ind_N[:, -1]
 
         nume = np.sum(
             [

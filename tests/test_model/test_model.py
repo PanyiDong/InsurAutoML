@@ -71,7 +71,7 @@ def test_classifiers():
             y_pred = mol.predict(X)
             y_prob = mol.predict_proba(X)
 
-            assert mol._fitted == True, "Model {} has not been fitted.".format(
+            assert mol._fitted, "Model {} has not been fitted.".format(
                 method_name
             )
 
@@ -129,7 +129,7 @@ def test_classifiers():
         y_pred = mol.predict(X)
         y_prob = mol.predict_proba(X)
 
-        assert mol._fitted == True, "Model {} has not been fitted.".format(method_name)
+        assert mol._fitted, "Model {} has not been fitted.".format(method_name)
 
 
 def test_regressors():
@@ -164,7 +164,7 @@ def test_regressors():
             except NotImplementedError:
                 pass
 
-            assert mol._fitted == True, "Model {} has not been fitted.".format(
+            assert mol._fitted, "Model {} has not been fitted.".format(
                 method_name
             )
 
@@ -217,4 +217,4 @@ def test_regressors():
         except NotImplementedError:
             pass
 
-        assert mol._fitted == True, "Model {} has not been fitted.".format(method_name)
+        assert mol._fitted, "Model {} has not been fitted.".format(method_name)

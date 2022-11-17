@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+
 def test_encoder_1():
 
     from InsurAutoML._encoding import DataEncoding
@@ -50,7 +51,7 @@ def test_encoder_1():
     data = encoder.refit(database["Employee"])
 
     # check whether the method is fitted
-    assert encoder._fitted == True, "The encoder is not correctly fitted."
+    assert encoder._fitted, "The encoder is not correctly fitted."
 
 
 def test_encoder_2():
@@ -65,7 +66,7 @@ def test_encoder_2():
     data = encoder.refit(database["Employee"])
 
     # check whether the method is fitted
-    assert encoder._fitted == True, "The encoder is not correctly fitted."
+    assert encoder._fitted, "The encoder is not correctly fitted."
 
 
 def test_encoder_3():
@@ -80,7 +81,7 @@ def test_encoder_3():
     data = encoder.refit(database["Employee"])
 
     # check whether the method is fitted
-    assert encoder._fitted == True, "The encoder is not correctly fitted."
+    assert encoder._fitted, "The encoder is not correctly fitted."
 
 
 def test_encoder_4():
@@ -95,4 +96,4 @@ def test_encoder_4():
     data = encoder.refit(database["Employee"])
 
     # check whether the method is fitted
-    assert encoder._fitted == True, "The encoder is not correctly fitted."
+    assert encoder._fitted, "The encoder is not correctly fitted."

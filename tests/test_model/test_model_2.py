@@ -60,7 +60,7 @@ def test_add_classifier():
     y_pred = mol.predict(X)
     y_prob = mol.predict_proba(X)
 
-    assert mol._fitted == True, "Model ComplementNB has not been fitted."
+    assert mol._fitted, "Model ComplementNB has not been fitted."
 
 
 def test_add_regressor():
@@ -94,7 +94,7 @@ def test_add_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model LibSVM_SVR has not been fitted."
+    assert model._fitted, "Model LibSVM_SVR has not been fitted."
 
     model = MLPRegressor()
 
@@ -105,7 +105,7 @@ def test_add_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model MLPRegressor has not been fitted."
+    assert model._fitted, "Model MLPRegressor has not been fitted."
 
     model = SGDRegressor()
 
@@ -116,7 +116,7 @@ def test_add_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model SGDRegressor has not been fitted."
+    assert model._fitted, "Model SGDRegressor has not been fitted."
 
 
 def test_lightgbm_classifier():
@@ -150,7 +150,7 @@ def test_lightgbm_classifier():
     y_pred = model.predict(X)
     y_prob = model.predict_proba(X)
 
-    assert model._fitted == True, "Model has not been fitted."
+    assert model._fitted, "Model has not been fitted."
 
 
 def test_lightgbm_regressor():
@@ -187,7 +187,7 @@ def test_lightgbm_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model has not been fitted."
+    assert model._fitted, "Model has not been fitted."
 
 
 def test_xgboost_classifier():
@@ -218,7 +218,7 @@ def test_xgboost_classifier():
     y_pred = model.predict(X)
     y_prob = model.predict_proba(X)
 
-    assert model._fitted == True, "Model has not been fitted."
+    assert model._fitted, "Model has not been fitted."
 
 
 def test_xgboost_regressor():
@@ -252,7 +252,7 @@ def test_xgboost_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model has not been fitted."
+    assert model._fitted, "Model has not been fitted."
 
 
 def test_gam_classifier():
@@ -278,7 +278,7 @@ def test_gam_classifier():
     y_pred = model.predict(X)
     y_prob = model.predict_proba(X)
 
-    assert model._fitted == True, "Model has not been fitted."
+    assert model._fitted, "Model has not been fitted."
 
 
 def test_gam_regressor():
@@ -307,7 +307,7 @@ def test_gam_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model GAM_Regressor Linear has not been fitted."
+    assert model._fitted, "Model GAM_Regressor Linear has not been fitted."
 
     model = GAM_Regressor(
         type="gamma",
@@ -321,7 +321,7 @@ def test_gam_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model GAM_Regressor Gamma has not been fitted."
+    assert model._fitted, "Model GAM_Regressor Gamma has not been fitted."
 
     model = GAM_Regressor(
         type="poisson",
@@ -335,7 +335,7 @@ def test_gam_regressor():
     except NotImplementedError:
         pass
 
-    assert model._fitted == True, "Model GAM_Regressor Poisson has not been fitted."
+    assert model._fitted, "Model GAM_Regressor Poisson has not been fitted."
 
     model = GAM_Regressor(
         type="inverse_gaussian",
@@ -350,5 +350,5 @@ def test_gam_regressor():
         pass
 
     assert (
-        model._fitted == True
+        model._fitted
     ), "Model GAM_Regressor Inverse Gaussian has not been fitted."

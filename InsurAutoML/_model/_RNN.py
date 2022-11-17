@@ -59,7 +59,7 @@ if pytorch_spec is not None:
     from torch import optim
     from torch.utils.data import TensorDataset, DataLoader
 
-####################################################################################################
+##########################################################################
 # RNN models
 # Common RNN/LSTM/GRU models supported
 
@@ -106,7 +106,8 @@ class RNN_Net(nn.Module):
         super().__init__()
 
         # assign device
-        self.device = torch.device(device) if isinstance(device, str) else device
+        self.device = torch.device(device) if isinstance(
+            device, str) else device
 
         # hidden size and hidden layers
         self.hidden_size = hidden_size
@@ -176,7 +177,9 @@ class RNN_Net(nn.Module):
         self, batch_size: int
     ) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
 
-        h0 = torch.zeros((self.n_layers, batch_size, self.hidden_size)).to(self.device)
+        h0 = torch.zeros(
+            (self.n_layers, batch_size, self.hidden_size)).to(
+            self.device)
 
         # if LSTM, need (h0, c0)
         if self.RNN_unit in ["LSTM"]:
@@ -327,14 +330,18 @@ class RNN_Base:
         elif self.criteria == "NegativeLogLikelihood":
             criteria = nn.NLLLoss()
         else:
-            raise ValueError("Not recognized criteria: {}.".format(self.criteria))
+            raise ValueError(
+                "Not recognized criteria: {}.".format(
+                    self.criteria))
 
         # load data to DataLoader
         train_tensor = TensorDataset(X, y)
 
         train_loader = DataLoader(
-            train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
-        )
+            train_tensor,
+            batch_size=self.batch_size,
+            shuffle=True,
+            drop_last=True)
 
         # training process
         for _ in range(self.num_epochs):
@@ -464,9 +471,8 @@ class RNN_Classifier(RNN_Base):
 
         self._fitted = False
 
-    def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
-    ) -> RNN_Classifier:
+    def fit(self, X: Union[pd.DataFrame, np.ndarray],
+            y: Union[pd.Series, np.ndarray]) -> RNN_Classifier:
 
         # get unique classes
         self.output_size = len(pd.unique(y))
@@ -474,13 +480,17 @@ class RNN_Classifier(RNN_Base):
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
             X = torch.as_tensor(
-                X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
-            )
+                X.values if isinstance(
+                    X,
+                    pd.DataFrame) else X,
+                dtype=torch.float)
             X.unsqueeze_(-1)  # expand to 3d tensor
         if not isinstance(y, torch.Tensor):
             y = torch.as_tensor(
-                y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
-            )
+                y.values if isinstance(
+                    y,
+                    pd.DataFrame) else y,
+                dtype=torch.long)
 
         super().__init__(
             input_size=self.input_size,
@@ -595,9 +605,8 @@ class RNN_Regressor(RNN_Base):
 
         self._fitted = False
 
-    def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
-    ) -> RNN_Regressor:
+    def fit(self, X: Union[pd.DataFrame, np.ndarray],
+            y: Union[pd.Series, np.ndarray]) -> RNN_Regressor:
 
         # get unique classes
         self.output_size = 1
@@ -605,13 +614,17 @@ class RNN_Regressor(RNN_Base):
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
             X = torch.as_tensor(
-                X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
-            )
+                X.values if isinstance(
+                    X,
+                    pd.DataFrame) else X,
+                dtype=torch.float)
             X.unsqueeze_(-1)  # expand to 3d tensor
         if not isinstance(y, torch.Tensor):
             y = torch.as_tensor(
-                y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.float
-            )
+                y.values if isinstance(
+                    y,
+                    pd.DataFrame) else y,
+                dtype=torch.float)
 
         super().__init__(
             input_size=self.input_size,
@@ -641,4 +654,5 @@ class RNN_Regressor(RNN_Base):
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")

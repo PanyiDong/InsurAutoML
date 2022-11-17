@@ -45,7 +45,7 @@ from nni.retiarii import model_wrapper
 from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
 
 
-##################################################################################################
+##########################################################################
 # MLP Space
 @model_wrapper
 class MLPBaseSpace(nninn.Module):
@@ -70,7 +70,8 @@ class MLPBaseSpace(nninn.Module):
         )
 
         # add hidden layers
-        # each hidden layer has a linear layer, a activation layer and possibly a dropout layer
+        # each hidden layer has a linear layer, a activation layer and possibly
+        # a dropout layer
         self.net.append(
             nninn.Repeat(
                 lambda index: nninn.Sequential(
@@ -131,15 +132,12 @@ class MLPLintSpace(nninn.Module):
         self.net = []
 
         # add input layer
-        self.net.append(
-            nninn.Linear(
-                inputSize,
-                nninn.ValueChoice([4, 8, 16, 32, 64], label="hiddenSize_at_layer_0"),
-            )
-        )
+        self.net.append(nninn.Linear(inputSize, nninn.ValueChoice(
+            [4, 8, 16, 32, 64], label="hiddenSize_at_layer_0"), ))
 
         # add hidden layers
-        # each hidden layer has a linear layer, a activation layer and possibly a dropout layer
+        # each hidden layer has a linear layer, a activation layer and possibly
+        # a dropout layer
         self.net.append(
             nninn.Repeat(
                 lambda index: nninn.Sequential(
@@ -187,7 +185,7 @@ class MLPLintSpace(nninn.Module):
                 how_to_init(m, how)
 
 
-##################################################################################################
+##########################################################################
 # RNN Space
 
 
@@ -207,12 +205,8 @@ class RNNBaseSpace(nninn.Module):
         self.postnet = []
 
         # embedding layer
-        self.prenet.append(
-            nninn.Embedding(
-                inputSize,
-                nninn.ValueChoice([128, 256, 512, 1024], label="embedding_size"),
-            )
-        )
+        self.prenet.append(nninn.Embedding(inputSize, nninn.ValueChoice(
+            [128, 256, 512, 1024], label="embedding_size"), ))
 
         # RNN parameters
         num_RNN_layers = nninn.ValueChoice(

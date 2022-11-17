@@ -42,7 +42,7 @@ from turtle import forward
 import torch
 import torch.nn as nn
 
-################################################################################################################
+##########################################################################
 # constants and dictionaries
 
 activation_dict = {
@@ -52,7 +52,7 @@ activation_dict = {
     "tanh": nn.Tanh(),
 }
 
-################################################################################################################
+##########################################################################
 # basic components
 
 
@@ -198,7 +198,7 @@ class FactorizedReduce(nn.Module):
         return out
 
 
-################################################################################################################
+##########################################################################
 # combination components
 
 
@@ -412,8 +412,10 @@ class ReductionLayer(nn.Module):
     ):
         super().__init__()
 
-        self.reduction1 = FactorizedReduce(in_channels1, out_channels, affine=False)
-        self.reduction2 = FactorizedReduce(in_channels2, out_channels, affine=False)
+        self.reduction1 = FactorizedReduce(
+            in_channels1, out_channels, affine=False)
+        self.reduction2 = FactorizedReduce(
+            in_channels2, out_channels, affine=False)
 
     def forward(self, X):
 

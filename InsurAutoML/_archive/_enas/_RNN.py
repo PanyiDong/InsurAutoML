@@ -72,9 +72,10 @@ class CustomRNNCell(nn.Module):
         if len(cellList) != 2 * N - 1:
             print(
                 "Number of node information {} generated is not odd. Only first {} nodes and {} connections are used.".format(
-                    len(cellList), N, N - 1
-                )
-            )
+                    len(cellList),
+                    N,
+                    N -
+                    1))
 
         # activation functions at each node
         self.activations = [cellList[2 * i] for i in range(N)]
@@ -217,9 +218,7 @@ class CustomRNN(nn.Module):
         if hidden.size()[0] != self.num_layers:
             raise ValueError(
                 "First dimension of hidden must be equal to num_layers. Expect {} but got {}".format(
-                    self.num_layers, hidden.size()[0]
-                )
-            )
+                    self.num_layers, hidden.size()[0]))
         # if 2d input, hidden must be 2d
         if len(input.size()) == 2 and len(hidden.size()) != 2:
             raise ValueError(
@@ -236,7 +235,7 @@ class CustomRNN(nn.Module):
             )
 
         # if 3d input and batch_first is True: first dim of input must equal to second dim of hidden
-        #                                False: second dim of input must equal to second dim of hidden
+        # False: second dim of input must equal to second dim of hidden
         if (
             len(input.size()) == 3
             and self.batch_first
@@ -244,9 +243,7 @@ class CustomRNN(nn.Module):
         ):
             raise ValueError(
                 "Second dimension of hidden must equal to first dimension of input. Expect {} but got {}".format(
-                    input.size()[0], hidden.size()[1]
-                )
-            )
+                    input.size()[0], hidden.size()[1]))
         elif (
             len(input.size()) == 3
             and not self.batch_first
@@ -254,9 +251,7 @@ class CustomRNN(nn.Module):
         ):
             raise ValueError(
                 "Second dimension of hidden must equal to second dimension of input. Expect {} but got {}".format(
-                    input.size()[1], hidden.size()[1]
-                )
-            )
+                    input.size()[1], hidden.size()[1]))
 
         # check whether contains batch dim
         is_batch = False if len(input.size()) == 2 else True
@@ -273,9 +268,7 @@ class CustomRNN(nn.Module):
             else:
                 raise ValueError(
                     "Only input size 2d or 3d tensor supported. Input size {} not supported.".format(
-                        input.size()
-                    )
-                )
+                        input.size()))
 
             # iterate through the layers
             for idx in range(self.num_layers):

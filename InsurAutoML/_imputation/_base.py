@@ -84,7 +84,8 @@ class SimpleImputer:
 
         return _X
 
-    def _fill(self, X: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
+    def _fill(self, X: Union[pd.Series, np.ndarray]
+              ) -> Union[pd.Series, np.ndarray]:
 
         if self.method == "mean":
             X = X.fillna(np.nanmean(X))
@@ -166,7 +167,8 @@ class DummyImputer:
                     elif self.method == "zero":
                         X[_column] = X[_column].fillna(0)
                     elif self.method == "median":
-                        X[_column] = X[_column].fillna(np.nanmedian(X[_column]))
+                        X[_column] = X[_column].fillna(
+                            np.nanmedian(X[_column]))
                     elif self.method == "most frequent":
                         X[_column] = X[_column].fillna(
                             X[_column].value_counts().index[0]
@@ -215,7 +217,6 @@ class JointImputer:
     def _fill_row(
         self, row_index: Union[int, str], X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         """
         for x = (x_{mis}, x_{obs})^{T} with \mu = (\mu_{mis}, \mu_{obs}).T and \Sigma = ((Sigma_{mis, mis},
         Sigma_{mis, obs}), (Sigma_{obs, Sigma}, Sigma_{obs, obs})),
@@ -255,7 +256,6 @@ class JointImputer:
         _sigma = _sigma_11 - _sigma_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
 
         X.loc[row_index, X.loc[row_index, :].isnull()] = np.random.multivariate_normal(
-            mean=_mu, cov=_sigma, size=(X.loc[row_index, :].isnull().values.sum(), 1)
-        )
+            mean=_mu, cov=_sigma, size=(X.loc[row_index, :].isnull().values.sum(), 1))
 
         return X.loc[row_index, :]

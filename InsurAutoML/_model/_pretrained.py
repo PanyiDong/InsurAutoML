@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from InsurAutoML._utils._preprocessing import text_preprocessing_transformers
 import importlib
 import numpy as np
 import pandas as pd
@@ -63,14 +64,11 @@ if transformers_spec is not None:
         # AutoModelForImageClassification,
     )
 
-from InsurAutoML._utils._preprocessing import text_preprocessing_transformers
-
 
 def load_model(
     pretrained_model="bert-base-uncased",
     task_type="TextClassification",
 ):
-
     """
     Parameters
     ----------

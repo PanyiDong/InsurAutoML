@@ -106,18 +106,21 @@ classifier_hyperparameter = [
         ),
         "min_samples_leaf": scope.int(
             hp.loguniform(
-                "GradientBoostingClassifier_min_samples_leaf", np.log(1), np.log(200)
+                "GradientBoostingClassifier_min_samples_leaf", np.log(
+                    1), np.log(200)
             )
         ),
         "max_depth": hp.choice("GradientBoostingClassifier_max_depth", ["None"]),
         "max_leaf_nodes": scope.int(
             hp.loguniform(
-                "GradientBoostingClassifier_max_leaf_nodes", np.log(3), np.log(2047)
+                "GradientBoostingClassifier_max_leaf_nodes", np.log(
+                    3), np.log(2047)
             )
         ),
         "max_bins": hp.choice("GradientBoostingClassifier_max_bins", [255]),
         "l2_regularization": hp.loguniform(
-            "GradientBoostingClassifier_l2_regularization", np.log(1e-10), np.log(1)
+            "GradientBoostingClassifier_l2_regularization", np.log(
+                1e-10), np.log(1)
         ),
         "early_stop": hp.choice(
             "GradientBoostingClassifier_early_stop", ["off", "train", "valid"]
@@ -177,7 +180,10 @@ classifier_hyperparameter = [
             hp.quniform("MLPClassifier_hidden_layer_depth", 1, 3, 1)
         ),
         "num_nodes_per_layer": scope.int(
-            hp.loguniform("MLPClassifier_num_nodes_per_layer", np.log(16), np.log(264))
+            hp.loguniform(
+                "MLPClassifier_num_nodes_per_layer",
+                np.log(16),
+                np.log(264))
         ),
         "activation": hp.choice("MLPClassifier_activation", ["tanh", "relu"]),
         "alpha": hp.loguniform("MLPClassifier_alpha", np.log(1e-7), np.log(1e-1)),
@@ -185,7 +191,7 @@ classifier_hyperparameter = [
             "MLPClassifier_learning_rate_init", np.log(1e-4), np.log(0.5)
         ),
         "early_stopping": hp.choice("MLPClassifier_early_stopping", ["train", "valid"]),
-        #'solver' : hp.choice('MLPClassifier_solver', ['lbfgs', 'sgd', 'adam']),
+        # 'solver' : hp.choice('MLPClassifier_solver', ['lbfgs', 'sgd', 'adam']),
         # autosklearn must include _no_improvement_count, where only supported by 'sgd' and 'adam'
         "solver": hp.choice("MLPClassifier_solver", ["adam"]),
         "batch_size": hp.choice("MLPClassifier_batch_size", ["auto"]),

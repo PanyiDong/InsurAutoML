@@ -91,7 +91,9 @@ class NoProc:
             raise RuntimeError("NoProc is not fitted yet. Run fit() first.")
 
         # convert data to torch tensor
-        data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+        data = torch.tensor(
+            data.values if isinstance(
+                data, pd.DataFrame) else data)
 
         # check data dimension
         if len(data.size()) != 2:
@@ -146,18 +148,15 @@ class TxtTokenize:
     ):
         # if not fitted, raise error
         if not self._fitted:
-            raise RuntimeError("TxtTokenize is not fitted yet. Run fit() first.")
+            raise RuntimeError(
+                "TxtTokenize is not fitted yet. Run fit() first.")
 
         # tokenize the data
         data = data.applymap(lambda x: self._tokenizer(x))
 
         # convert to tensor
-        return (
-            torch.cat(
-                [torch.tensor(data[col].to_list()) for col in data.columns], dim=1
-            )
-            + self.starting_offset
-        )
+        return (torch.cat([torch.tensor(data[col].to_list())
+                           for col in data.columns], dim=1) + self.starting_offset)
 
 
 class CatOffsetEncoding:
@@ -209,7 +208,9 @@ class CatOffsetEncoding:
         data: Union[pd.DataFrame, np.ndarray, torch.Tensor],
     ) -> CatOffsetEncoding:
         # convert data to torch tensor
-        data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+        data = torch.tensor(
+            data.values if isinstance(
+                data, pd.DataFrame) else data)
 
         # check data dimension
         if len(data.size()) != 2:
@@ -225,13 +226,13 @@ class CatOffsetEncoding:
             # # make sure the unique values are consecutive
             # data = self.CatConsec(data)
 
-            self.unique_classes = [len(torch.unique(t)) for t in torch.unbind(data.T)]
+            self.unique_classes = [len(torch.unique(t))
+                                   for t in torch.unbind(data.T)]
 
         # get offset encoding
         # cumsum of each column number of unique classes
-        cat_offset = F.pad(
-            torch.tensor(self.unique_classes), (1, 0), value=self.starting_offset
-        )
+        cat_offset = F.pad(torch.tensor(self.unique_classes),
+                           (1, 0), value=self.starting_offset)
         self.cat_offset = cat_offset.cumsum(dim=-1)[:-1]
 
         # record vocab size
@@ -247,10 +248,13 @@ class CatOffsetEncoding:
     ) -> torch.Tensor:
         # if not fitted, raise error
         if not self._fitted:
-            raise RuntimeError("CatOffsetEncoding is not fitted yet. Run fit() first.")
+            raise RuntimeError(
+                "CatOffsetEncoding is not fitted yet. Run fit() first.")
 
         # convert data to torch tensor
-        data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+        data = torch.tensor(
+            data.values if isinstance(
+                data, pd.DataFrame) else data)
 
         # check data dimension
         if len(data.size()) != 2:
@@ -289,7 +293,9 @@ class NumOffsetEncoding(CatOffsetEncoding):
         data: Union[pd.DataFrame, np.ndarray, torch.Tensor],
     ) -> NumOffsetEncoding:
         # convert data to torch tensor
-        data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+        data = torch.tensor(
+            data.values if isinstance(
+                data, pd.DataFrame) else data)
 
         # check data dimension
         if len(data.size()) != 2:
@@ -321,10 +327,13 @@ class NumOffsetEncoding(CatOffsetEncoding):
     ) -> torch.Tensor:
         # if not fitted, raise error
         if not self._fitted:
-            raise RuntimeError("NumOffsetEncoding is not fitted yet. Run fit() first.")
+            raise RuntimeError(
+                "NumOffsetEncoding is not fitted yet. Run fit() first.")
 
         # convert data to torch tensor
-        data = torch.tensor(data.values if isinstance(data, pd.DataFrame) else data)
+        data = torch.tensor(
+            data.values if isinstance(
+                data, pd.DataFrame) else data)
 
         # check data dimension
         if len(data.size()) != 2:
@@ -342,12 +351,12 @@ class NumOffsetEncoding(CatOffsetEncoding):
 
 
 class PipProc:
-    def __init__(
-        self,
-        components: List[
-            Tuple[Tuple, Union[TxtTokenize, CatOffsetEncoding, NumOffsetEncoding]]
-        ],
-    ) -> None:
+    def __init__(self,
+                 components: List[Tuple[Tuple,
+                                        Union[TxtTokenize,
+                                              CatOffsetEncoding,
+                                              NumOffsetEncoding]]],
+                 ) -> None:
         self.components = components
 
         self._fitted = False
@@ -546,10 +555,14 @@ class MultiPreprocessing(MetaData, formatting):
 
         return self
 
-    def transform(self, X: Union[pd.DataFrame, np.ndarray]) -> Dict[str, torch.Tensor]:
+    def transform(self,
+                  X: Union[pd.DataFrame,
+                           np.ndarray]) -> Dict[str,
+                                                torch.Tensor]:
 
         if not self._fitted:
-            raise RuntimeError("The preprocessing is not fitted. Run fit() first.")
+            raise RuntimeError(
+                "The preprocessing is not fitted. Run fit() first.")
 
         result = self._pipe.transform(X, self.metadata)
 

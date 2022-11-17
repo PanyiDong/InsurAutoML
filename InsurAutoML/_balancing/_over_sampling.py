@@ -53,8 +53,8 @@ from InsurAutoML._utils._data import is_imbalance, LinkTable
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
     Edited Nearest Neighbor,  Condensed Nearest Neighbor, One Sided Selection, CNN_TomekLink, \
     Smote, Smote_TomekLink, Smote_ENN
-    
-Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for 
+
+Batista, G.E., Prati, R.C. and Monard, M.C., 2004. A study of the behavior of several methods for
 balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(1), pp.20-29.
 """
 
@@ -98,7 +98,7 @@ class SimpleRandomOverSampling:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -115,7 +115,7 @@ class SimpleRandomOverSampling:
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
-            if self.all == True:
+            if self.all:
                 while is_imbalance(_data, self.imbalance_threshold):
                     _data = self._fit_transform(_data)
             else:
@@ -147,7 +147,10 @@ class SimpleRandomOverSampling:
             X = pd.concat([X, _minority_class.sample(n=1, random_state=_seed)])
             _seed += 1
             _iter += 1
-        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
+        X = sklearn.utils.shuffle(
+            X.reset_index(
+                drop=True)).reset_index(
+            drop=True)
 
         return X
 
@@ -206,7 +209,7 @@ class Smote:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
-            _empty = y == None
+            _empty = y is None
 
         if (
             not _empty
@@ -223,7 +226,7 @@ class Smote:
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
-            if self.all == True:
+            if self.all:
                 while is_imbalance(_data, self.imbalance_threshold):
                     _data = self._fit_transform(_data)
             else:
@@ -254,7 +257,7 @@ class Smote:
             for _link_item in _link_table:
                 _k_nearest = [
                     _link_item.index(item)
-                    for item in sorted(_link_item)[1 : (self.k + 1)]
+                    for item in sorted(_link_item)[1: (self.k + 1)]
                 ]
                 _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
                 if self.generation == "mean":
@@ -262,9 +265,8 @@ class Smote:
                         [_sample.index[0], X.index[_link]], :
                     ].mean()
                 elif self.generation == "random":
-                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
-                        X.loc[X.index[_link], :] - X.lox[_sample.index, :]
-                    )
+                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * \
+                        (X.loc[X.index[_link], :] - X.lox[_sample.index, :])
                 else:
                     raise ValueError(
                         'Not recognizing generation method! Should be in \

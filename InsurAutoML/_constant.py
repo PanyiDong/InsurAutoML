@@ -191,7 +191,8 @@ MAX_TIME = 259200
 # binary classification
 LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross_entropy"]
 # multiclass classification
-LIGHTGBM_MULTICLASS_CLASSIFICATION = ["multiclass", "multiclassova", "num_class"]
+LIGHTGBM_MULTICLASS_CLASSIFICATION = [
+    "multiclass", "multiclassova", "num_class"]
 # regression
 LIGHTGBM_REGRESSION = [
     "regression",

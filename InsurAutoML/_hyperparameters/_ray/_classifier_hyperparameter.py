@@ -153,8 +153,9 @@ MLPCLASSIFIER = {
     "alpha": tune.loguniform(1e-7, 1e-1),
     "learning_rate_init": tune.loguniform(1e-4, 0.5),
     "early_stopping": tune.choice(["train", "valid"]),
-    #'solver' : tune.choice('solver', ['lbfgs', 'sgd', 'adam']),
-    # autosklearn must include _no_improvement_count, where only supported by 'sgd' and 'adam'
+    # 'solver' : tune.choice('solver', ['lbfgs', 'sgd', 'adam']),
+    # autosklearn must include _no_improvement_count, where only supported by
+    # 'sgd' and 'adam'
     "solver": tune.choice(["adam"]),
     "batch_size": tune.choice(["auto"]),
     "n_iter_no_change": tune.choice([32]),

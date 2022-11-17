@@ -67,8 +67,10 @@ class Controller(nn.Module):
         self.hiddenSize = hiddenSize
         self.embed = nn.Embedding(inputSize, hiddenSize)
         self.lstm = nn.LSTM(
-            hiddenSize, hiddenSize, num_layers=num_layers, batch_first=batch_first
-        )
+            hiddenSize,
+            hiddenSize,
+            num_layers=num_layers,
+            batch_first=batch_first)
         self.linear = nn.Linear(hiddenSize, outputSize)
         self.softmax = nn.Softmax(dim=1)
 
@@ -81,7 +83,9 @@ class Controller(nn.Module):
         output = output[-1, :, :]
 
         # apply mask to output
-        mask = decision_mask(n_nodes=self.n_nodes, n_activations=self.n_activations)
+        mask = decision_mask(
+            n_nodes=self.n_nodes,
+            n_activations=self.n_activations)
         output = self.softmax(output) * mask
 
         return torch.argmax(output, dim=1), (hx, cx)

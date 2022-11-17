@@ -53,7 +53,7 @@ from InsurAutoML._constant import (
     LIGHTGBM_TREE_LEARNER,
 )
 
-#####################################################################################################################
+##########################################################################
 # LightGBM support
 # https://lightgbm.readthedocs.io/en/latest/Parameters-Tuning.html
 
@@ -415,4 +415,5 @@ class LightGBM_Regressor(LightGBM_Base):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        raise NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError(
+            "predict_proba is not implemented for regression.")

@@ -117,10 +117,12 @@ def EDA(
                 summary = X[column].describe()
                 print(summary)
                 # write mode for summary
-                write_mode = "w" if not os.path.exists(path + "/summary.txt") else "a"
+                write_mode = "w" if not os.path.exists(
+                    path + "/summary.txt") else "a"
                 if save:
                     with open(path + "/summary.txt", write_mode) as f:
-                        f.write("Summary Statistics for Column: {}\n".format(column))
+                        f.write(
+                            "Summary Statistics for Column: {}\n".format(column))
                         f.write(str(summary) + "\n\n")
                 # plot the histogram
                 plt.tight_layout()
@@ -129,19 +131,25 @@ def EDA(
                 plt.ylabel("Frequency")
                 plt.title("Histogram of Column {}".format(column))
                 if save:
-                    plt.savefig(os.path.join(path, "plot_{}.png".format(column)))
+                    plt.savefig(
+                        os.path.join(
+                            path, "plot_{}.png".format(column)))
                 if plot:
                     plt.show()
-            if data_type[column] in ["string_categorical", "numerical_categorical"]:
+            if data_type[column] in [
+                "string_categorical",
+                    "numerical_categorical"]:
                 # summary statistics
                 print("Summary Statistics for Column: {}".format(column))
                 summary = X[column].value_counts()
                 print(summary)
                 # write mode for summary
-                write_mode = "w" if not os.path.exists(path + "/summary.txt") else "a"
+                write_mode = "w" if not os.path.exists(
+                    path + "/summary.txt") else "a"
                 if save:
                     with open(path + "/summary.txt", write_mode) as f:
-                        f.write("Summary Statistics for Column: {}\n".format(column))
+                        f.write(
+                            "Summary Statistics for Column: {}\n".format(column))
                         f.write(str(summary) + "\n\n")
                 # plot the histogram
                 plt.tight_layout()
@@ -150,7 +158,9 @@ def EDA(
                 plt.ylabel("Frequency")
                 plt.title("Histogram of Column {}".format(column))
                 if save:
-                    plt.savefig(os.path.join(path, "plot_{}.png".format(column)))
+                    plt.savefig(
+                        os.path.join(
+                            path, "plot_{}.png".format(column)))
                 if plot:
                     plt.show()
             elif data_type[column] == "text":
@@ -166,10 +176,12 @@ def EDA(
                 summary = X[column].describe()
                 print(summary)
                 # write mode for summary
-                write_mode = "w" if not os.path.exists(path + "/summary.txt") else "a"
+                write_mode = "w" if not os.path.exists(
+                    path + "/summary.txt") else "a"
                 if save:
                     with open(path + "/summary.txt", write_mode) as f:
-                        f.write("Summary Statistics for Column: {}\n".format(column))
+                        f.write(
+                            "Summary Statistics for Column: {}\n".format(column))
                         f.write(str(summary) + "\n\n")
                 # plot the histogram
                 fig, (ax1, ax2) = plt.subplots(1, 2)
@@ -182,13 +194,19 @@ def EDA(
                 linear_model = LinearRegression()
                 linear_model.fit(X[column].values.reshape(-1, 1), y)
                 y_pred = linear_model.predict(X[column].values.reshape(-1, 1))
-                ax2.plot(X[column], y_pred, color="red", label="linear interpolation")
+                ax2.plot(
+                    X[column],
+                    y_pred,
+                    color="red",
+                    label="linear interpolation")
                 ax2.set_xlabel("{}".format(column))
                 ax2.set_ylabel("{}".format(response))
                 ax2.set_title("{} ~ Column {}".format(response, column))
                 plt.legend()
                 if save:
-                    plt.savefig(os.path.join(path, "plot_{}.png".format(column)))
+                    plt.savefig(
+                        os.path.join(
+                            path, "plot_{}.png".format(column)))
                 if plot:
                     plt.show()
             elif data_type[column] in ["string_categorical", "numerical_categorical"]:
@@ -197,10 +215,12 @@ def EDA(
                 summary = X[column].value_counts()
                 print(summary)
                 # write mode for summary
-                write_mode = "w" if not os.path.exists(path + "/summary.txt") else "a"
+                write_mode = "w" if not os.path.exists(
+                    path + "/summary.txt") else "a"
                 if save:
                     with open(path + "/summary.txt", write_mode) as f:
-                        f.write("Summary Statistics for Column: {}\n".format(column))
+                        f.write(
+                            "Summary Statistics for Column: {}\n".format(column))
                         f.write(str(summary) + "\n\n")
                 # plot the boxplot
                 plt.tight_layout()
@@ -210,7 +230,9 @@ def EDA(
                 plt.ylabel("{}".format(response))
                 plt.title("BoxPlot of {} ~ Column {}".format(response, column))
                 if save:
-                    plt.savefig(os.path.join(path, "plot_{}.png".format(column)))
+                    plt.savefig(
+                        os.path.join(
+                            path, "plot_{}.png".format(column)))
                 if plot:
                     plt.show()
             elif data_type[column] == "text":

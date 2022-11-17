@@ -62,7 +62,7 @@ def test_save_model():
         "model_name",
     )
 
-    assert os.path.exists("model_name") == True, "The model is not saved."
+    assert os.path.exists("model_name"), "The model is not saved."
 
 
 def test_EDA():
@@ -74,14 +74,16 @@ def test_EDA():
 
     EDA(features, plot=False)
 
-    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists(
+        "tmp/EDA/data_type.csv"), "EDA data type not created."
     assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
 
     features, label = HEART()
 
     EDA(features, label, plot=False)
 
-    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists(
+        "tmp/EDA/data_type.csv"), "EDA data type not created."
     assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
 
 
@@ -95,14 +97,16 @@ def test_feature_type():
     for column in data.columns:
         data_type[column] = feature_type(data[column])
 
-    assert isinstance(data_type, dict), "The feature_type function is not correct."
+    assert isinstance(
+        data_type, dict), "The feature_type function is not correct."
 
     data, label = HEART()
     data_type = {}
     for column in data.columns:
         data_type[column] = feature_type(data[column])
 
-    assert isinstance(data_type, dict), "The feature_type function is not correct."
+    assert isinstance(
+        data_type, dict), "The feature_type function is not correct."
 
 
 def test_plotHighDimCluster():

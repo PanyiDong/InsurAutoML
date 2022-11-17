@@ -58,15 +58,17 @@ if pytorch_spec is not None:
     from torch import optim
     from torch.utils.data import TensorDataset, DataLoader
 
-####################################################################################################
+##########################################################################
 # Feed Forward Neural Network models
 
-####################################################################################################
+##########################################################################
 # Multi-Layer Perceptron Model
 # 1. MLP_Model, forward phase
 # 2. MLP_Base, base training/evaluation phase
 # 3. MLP_Classifier, MLP specified for classification tasks
 # 4. MLP_Regressor, MLP specified for regression tasks
+
+
 class MLP_Model(nn.Module):
 
     """
@@ -128,12 +130,18 @@ class MLP_Model(nn.Module):
 
         # in the middle layer, from previous hidden layer to next hidden layer
         for _ in range(self.hidden_layer):
-            self.forward_model.append(nn.Linear(self.hidden_size, self.hidden_size))
+            self.forward_model.append(
+                nn.Linear(
+                    self.hidden_size,
+                    self.hidden_size))
             self.forward_model.append(self.activation)
 
         # at last layer, from last hidden layer to output layer
         # no activation function
-        self.forward_model.append(nn.Linear(self.hidden_size, self.output_size))
+        self.forward_model.append(
+            nn.Linear(
+                self.hidden_size,
+                self.output_size))
 
         # if softmax is True, add softmax function
         if self.softmax:
@@ -261,14 +269,18 @@ class MLP_Base:
         elif self.criteria == "NegativeLogLikelihood":
             criteria = nn.NLLLoss()
         else:
-            raise ValueError("Not recognized criteria: {}.".format(self.criteria))
+            raise ValueError(
+                "Not recognized criteria: {}.".format(
+                    self.criteria))
 
         # load dataset to TensorDataset
         train_tensor = TensorDataset(X, y)
         # load dataset to DataLoader
         train_loader = DataLoader(
-            train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
-        )
+            train_tensor,
+            batch_size=self.batch_size,
+            shuffle=True,
+            drop_last=True)
 
         # train model
         for epoch in range(self.num_epochs):
@@ -290,9 +302,12 @@ class MLP_Base:
 
         # load test dataset to DataLoader
         if isinstance(X, pd.DataFrame):
-            test_tensor = TensorDataset(torch.as_tensor(X.values, dtype=torch.float32))
+            test_tensor = TensorDataset(
+                torch.as_tensor(
+                    X.values, dtype=torch.float32))
         else:
-            test_tensor = TensorDataset(torch.as_tensor(X, dtype=torch.float32))
+            test_tensor = TensorDataset(
+                torch.as_tensor(X, dtype=torch.float32))
 
         test_loader = DataLoader(test_tensor, batch_size=len(test_tensor))
 
@@ -525,4 +540,5 @@ class MLP_Regressor(MLP_Base):
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
 
-        return NotImplementedError("predict_proba is not implemented for regression.")
+        return NotImplementedError(
+            "predict_proba is not implemented for regression.")

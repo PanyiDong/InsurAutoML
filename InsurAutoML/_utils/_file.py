@@ -43,6 +43,8 @@ import os
 import pickle
 
 # save model
+
+
 def save_model(
     encoder: str,
     encoder_hyperparameters: Dict,
@@ -75,7 +77,6 @@ def save_model(
 
 # save list of methods
 def save_methods(file_name: str, methods: List) -> None:
-
     """
     Parameters
     ----------
@@ -91,7 +92,6 @@ def save_methods(file_name: str, methods: List) -> None:
 
 # load methods
 def load_methods(file_name: str) -> List:
-
     """
     Parameters
     ----------

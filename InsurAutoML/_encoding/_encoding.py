@@ -68,7 +68,8 @@ class DataEncoding(formatting):
 
     """
 
-    def __init__(self, dummy_coding: bool = False, transform: bool = False) -> None:
+    def __init__(self, dummy_coding: bool = False,
+                 transform: bool = False) -> None:
         self.dummy_coding = dummy_coding
         self.transform = transform
 
@@ -91,7 +92,7 @@ class DataEncoding(formatting):
                 # dummy coding for string categorical features
                 if str(df[column].dtype) == "category":
                     df[column] = df[column].astype(str)
-                if self.dummy_coding == True:
+                if self.dummy_coding:
                     unique_value = np.sort(df[column].dropna().unique())
                     if self.category.empty:
                         self.category = pd.DataFrame({column: unique_value})
@@ -101,7 +102,8 @@ class DataEncoding(formatting):
                             axis=1,
                         )
                     for elem in unique_value:
-                        df[column + "_" + str(elem)] = (df[column] == elem).astype(int)
+                        df[column + "_" +
+                            str(elem)] = (df[column] == elem).astype(int)
                 else:
                     unique_value = np.sort(df[column].dropna().unique())
                     if self.category.empty:
@@ -127,7 +129,8 @@ class DataEncoding(formatting):
                     )
                     # save scale map for scale back
                     self.mean_scaler.update({column: standard_scaler.mean_[0]})
-                    self.sigma_scaler.update({column: standard_scaler.scale_[0]})
+                    self.sigma_scaler.update(
+                        {column: standard_scaler.scale_[0]})
                     df[column] = standard_scaler.transform(df[[column]].values)
                 elif self.transform == "center":
                     standard_scaler = preprocessing.StandardScaler().fit(
@@ -144,7 +147,7 @@ class DataEncoding(formatting):
                     )
 
         # remove categorical variables
-        if self.dummy_coding == True:
+        if self.dummy_coding:
             df.drop(columns=list(self.category.columns), inplace=True)
 
         self._fitted = True
@@ -172,7 +175,7 @@ class DataEncoding(formatting):
                     unique_values = self.category.loc[
                         self.category[column].notnull(), column
                     ].values  # Select only non nan values
-                    if self.dummy_coding == True:
+                    if self.dummy_coding:
                         for value in unique_values:
                             df[str(column) + "_" + str(value)] = (
                                 df[column] == value
@@ -182,8 +185,10 @@ class DataEncoding(formatting):
                             # if False in (np.sort(unique_values) == np.sort(df[column].unique())) :
                             #     raise ValueError('Testdata has unkown categories!')
                     else:
-                        # update, put notin in front of refit, so after refit, there will be no mistake
-                        df.loc[~df[column].isin(unique_values), column] = np.NaN
+                        # update, put notin in front of refit, so after refit,
+                        # there will be no mistake
+                        df.loc[~df[column].isin(
+                            unique_values), column] = np.NaN
                         for i in range(len(unique_values)):
                             df.loc[df[column] == unique_values[i], column] = i
                         df.loc[~df[column].isnull(), column] = df.loc[
@@ -200,7 +205,8 @@ class DataEncoding(formatting):
                     )
                     # save scale map for scale back
                     self.mean_scaler.update({column: standard_scaler.mean_[0]})
-                    self.sigma_scaler.update({column: standard_scaler.scale_[0]})
+                    self.sigma_scaler.update(
+                        {column: standard_scaler.scale_[0]})
                     df[column] = standard_scaler.transform(df[[column]].values)
                 elif self.transform == "center":
                     standard_scaler = preprocessing.StandardScaler().fit(
@@ -217,7 +223,7 @@ class DataEncoding(formatting):
                     )
 
         # remove categorical variables
-        if self.dummy_coding == True:
+        if self.dummy_coding:
             df.drop(columns=list(self.category.columns), inplace=True)
 
         return df
