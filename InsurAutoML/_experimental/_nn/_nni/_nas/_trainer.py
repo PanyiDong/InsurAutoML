@@ -143,13 +143,22 @@ class Trainer:
             return data
         else:
             raise TypeError(
-                "Unsupported data type for tensor formatter. Expected pd.DataFrame, np.ndarray, or torch.Tensor, but got %s." % type(data))
+                "Unsupported data type for tensor formatter. Expected pd.DataFrame, np.ndarray, or torch.Tensor, but got %s." %
+                type(data))
 
-    def _data_formatter(self, data: Union[List, Dict, Any]) -> Union[List[torch.Tensor], Dict[str, torch.Tensor], torch.Tensor]:
+    def _data_formatter(self,
+                        data: Union[List,
+                                    Dict,
+                                    Any]) -> Union[List[torch.Tensor],
+                                                   Dict[str,
+                                                        torch.Tensor],
+                                                   torch.Tensor]:
         if isinstance(data, list):
             return [self._tensor_formatter(item) for item in data]
         if isinstance(data, dict):
-            return {key: self._tensor_formatter(value) for key, value in data.items()}
+            return {
+                key: self._tensor_formatter(value) for key,
+                value in data.items()}
         else:
             return self._tensor_formatter(data)
 
@@ -183,16 +192,26 @@ class Trainer:
             os.makedirs(os.path.join(self.temp_directory, self.task_name))
 
         # get dataset
-        if not os.path.exists(os.path.join(self.temp_directory, self.task_name, "train")):
+        if not os.path.exists(
+            os.path.join(
+                self.temp_directory,
+                self.task_name,
+                "train")):
             os.makedirs(os.path.join(
                 self.temp_directory, self.task_name, "train"))
-        if not os.path.exists(os.path.join(self.temp_directory, self.task_name, "test")):
+        if not os.path.exists(
+            os.path.join(
+                self.temp_directory,
+                self.task_name,
+                "test")):
             os.makedirs(os.path.join(
                 self.temp_directory, self.task_name, "test"))
         trainset = SerialTensorDataset(
-            X_train, y_train, path=os.path.join(self.temp_directory, self.task_name, "train"))
+            X_train, y_train, path=os.path.join(
+                self.temp_directory, self.task_name, "train"))
         testset = SerialTensorDataset(
-            X_test, y_test, path=os.path.join(self.temp_directory, self.task_name, "test"))
+            X_test, y_test, path=os.path.join(
+                self.temp_directory, self.task_name, "test"))
 
         # Update: Nov. 20, 2022
         # Force using pytorch_lightning evaluator
@@ -259,13 +278,19 @@ class Trainer:
 
         # save the best model architecture
         # initialize the best model
-        for model_dict in exp.export_top_models(top_k=1, optimize_mode='minimize', formatter="dict"):
+        for model_dict in exp.export_top_models(
+                top_k=1, optimize_mode='minimize', formatter="dict"):
             with open(os.path.join(self.temp_directory, self.task_name, "optimal_architecture.json"), "w",) as outfile:
                 # build model
                 init_model = self.search_space.build_model(
                     model_dict, inputSize, outputSize)
-                torch.save(init_model.state_dict(), os.path.join(
-                    self.temp_directory, self.task_name, "init_optimal_model.pth"),)
+                torch.save(
+                    init_model.state_dict(),
+                    os.path.join(
+                        self.temp_directory,
+                        self.task_name,
+                        "init_optimal_model.pth"),
+                )
                 # save the model dict
                 json.dump(model_dict, outfile)
 

@@ -55,7 +55,7 @@ except ImportError:
 
 logger = logging.getLogger(__name__)
 
-#################################################################################################
+##########################################################################
 # Pytorch trainer
 
 
@@ -91,7 +91,11 @@ class TorchTrainer:
         # put model to device
         self.model.to(self._device)
 
-    def train(self, dataloader: DataLoader, n_epochs: int = 10, progressbar: bool = True) -> None:
+    def train(
+            self,
+            dataloader: DataLoader,
+            n_epochs: int = 10,
+            progressbar: bool = True) -> None:
 
         # if show progress bar, use tqdm to wrap dataloader
         if progressbar:
@@ -125,7 +129,8 @@ class TorchTrainer:
         if self.save:
             torch.save(self.model.state_dict(), self.path)
 
-    def fit(self, dataloader: DataLoader, n_epochs: int = 10, progressbar: bool = True) -> Union[np.ndarray, torch.Tensor]:
+    def fit(self, dataloader: DataLoader, n_epochs: int = 10,
+            progressbar: bool = True) -> Union[np.ndarray, torch.Tensor]:
         self.train(dataloader, n_epochs, progressbar)
 
         return self
@@ -155,7 +160,7 @@ class TorchTrainer:
         else:
             return output.detach().cpu()
 
-#################################################################################################
+##########################################################################
 # Pytorch lightning trainer
 
 
