@@ -44,5 +44,9 @@ from ._ML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
 from ._DL import AutoTextClassifier, AutoNextWordPrediction
 
 
-__all__ = ["AutoTabular", "AutoTabularClassifier",
-           "AutoTabularRegressor", "AutoTextClassifier", "AutoNextWordPrediction"]
+__all__ = [
+    "AutoTabular",
+    "AutoTabularClassifier",
+    "AutoTabularRegressor",
+    "AutoTextClassifier",
+    "AutoNextWordPrediction"]

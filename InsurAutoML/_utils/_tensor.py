@@ -70,8 +70,9 @@ class CustomTensorDataset(Dataset):
         self.format = format
 
         if len(self.inputs) != len(self.labels):
-            raise ValueError("inputs and labels must have the same length. Get {} and {}".format(
-                len(inputs), len(labels)))
+            raise ValueError(
+                "inputs and labels must have the same length. Get {} and {}".format(
+                    len(inputs), len(labels)))
 
     def __len__(self) -> int:
         return len(self.inputs)
@@ -112,8 +113,9 @@ class SerialTensorDataset(Dataset):
         self.labels = os.path.join(self.path, "labels.pt")
 
         if len(inputs) != len(labels):
-            raise ValueError("inputs and labels must have the same length. Get {} and {}".format(
-                len(inputs), len(labels)))
+            raise ValueError(
+                "inputs and labels must have the same length. Get {} and {}".format(
+                    len(inputs), len(labels)))
 
         torch.save(inputs.to(torch.float32), self.input)
         torch.save(labels, self.labels)
@@ -123,7 +125,10 @@ class SerialTensorDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
         if self.format == "dict":
-            return {"input": torch.load(self.input)[idx], "label": torch.load(self.labels)[idx]}
+            return {
+                "input": torch.load(
+                    self.input)[idx], "label": torch.load(
+                    self.labels)[idx]}
         elif self.format == "tuple":
             return (torch.load(self.input)[idx], torch.load(self.labels)[idx])
         elif self.format == "list":

@@ -57,6 +57,7 @@ FusEmbed: Txt/Cat/Con are further embedded with a few layers of NNs and fuse tho
 FusModel: Txt/Cat/Con are almost trained separately and just fused together for unified prediction.
 """
 
+
 @model_wrapper
 class FusTokenNet(MLPBaseSpace):
 
