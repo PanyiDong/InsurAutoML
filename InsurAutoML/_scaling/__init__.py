@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:16:18 pm
+Last Modified: Sunday, 20th November 2022 1:23:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,3 +63,15 @@ scalings = {
     # "Feature_Manipulation": Feature_Manipulation,
     # "Feature_Truncation": Feature_Truncation,
 }
+
+
+__all__ = [
+    "no_processing",
+    "MinMaxScale",
+    "Standardize",
+    "Normalize",
+    "RobustScale",
+    "PowerTransformer",
+    "QuantileTransformer",
+    "Winsorization",
+]

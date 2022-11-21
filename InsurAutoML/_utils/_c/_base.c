@@ -964,7 +964,7 @@ typedef struct {
 } __Pyx_BufFmt_Context;
 
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":690
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":690
  * # in Cython to enable them only on the right systems.
  * 
  * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
@@ -973,7 +973,7 @@ typedef struct {
  */
 typedef npy_int8 __pyx_t_5numpy_int8_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":691
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":691
  * 
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
@@ -982,7 +982,7 @@ typedef npy_int8 __pyx_t_5numpy_int8_t;
  */
 typedef npy_int16 __pyx_t_5numpy_int16_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":692
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":692
  * ctypedef npy_int8       int8_t
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t             # <<<<<<<<<<<<<<
@@ -991,7 +991,7 @@ typedef npy_int16 __pyx_t_5numpy_int16_t;
  */
 typedef npy_int32 __pyx_t_5numpy_int32_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":693
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":693
  * ctypedef npy_int16      int16_t
  * ctypedef npy_int32      int32_t
  * ctypedef npy_int64      int64_t             # <<<<<<<<<<<<<<
@@ -1000,7 +1000,7 @@ typedef npy_int32 __pyx_t_5numpy_int32_t;
  */
 typedef npy_int64 __pyx_t_5numpy_int64_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":697
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":697
  * #ctypedef npy_int128     int128_t
  * 
  * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
@@ -1009,7 +1009,7 @@ typedef npy_int64 __pyx_t_5numpy_int64_t;
  */
 typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":698
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":698
  * 
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
@@ -1018,7 +1018,7 @@ typedef npy_uint8 __pyx_t_5numpy_uint8_t;
  */
 typedef npy_uint16 __pyx_t_5numpy_uint16_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":699
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":699
  * ctypedef npy_uint8      uint8_t
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t             # <<<<<<<<<<<<<<
@@ -1027,7 +1027,7 @@ typedef npy_uint16 __pyx_t_5numpy_uint16_t;
  */
 typedef npy_uint32 __pyx_t_5numpy_uint32_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":700
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":700
  * ctypedef npy_uint16     uint16_t
  * ctypedef npy_uint32     uint32_t
  * ctypedef npy_uint64     uint64_t             # <<<<<<<<<<<<<<
@@ -1036,7 +1036,7 @@ typedef npy_uint32 __pyx_t_5numpy_uint32_t;
  */
 typedef npy_uint64 __pyx_t_5numpy_uint64_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":704
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":704
  * #ctypedef npy_uint128    uint128_t
  * 
  * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
@@ -1045,7 +1045,7 @@ typedef npy_uint64 __pyx_t_5numpy_uint64_t;
  */
 typedef npy_float32 __pyx_t_5numpy_float32_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":705
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":705
  * 
  * ctypedef npy_float32    float32_t
  * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
@@ -1054,7 +1054,7 @@ typedef npy_float32 __pyx_t_5numpy_float32_t;
  */
 typedef npy_float64 __pyx_t_5numpy_float64_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":714
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":714
  * # The int types are mapped a bit surprising --
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
@@ -1063,7 +1063,7 @@ typedef npy_float64 __pyx_t_5numpy_float64_t;
  */
 typedef npy_long __pyx_t_5numpy_int_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":715
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":715
  * # numpy.int corresponds to 'l' and numpy.long to 'q'
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t             # <<<<<<<<<<<<<<
@@ -1072,7 +1072,7 @@ typedef npy_long __pyx_t_5numpy_int_t;
  */
 typedef npy_longlong __pyx_t_5numpy_long_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":716
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":716
  * ctypedef npy_long       int_t
  * ctypedef npy_longlong   long_t
  * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
@@ -1081,7 +1081,7 @@ typedef npy_longlong __pyx_t_5numpy_long_t;
  */
 typedef npy_longlong __pyx_t_5numpy_longlong_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":718
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":718
  * ctypedef npy_longlong   longlong_t
  * 
  * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
@@ -1090,7 +1090,7 @@ typedef npy_longlong __pyx_t_5numpy_longlong_t;
  */
 typedef npy_ulong __pyx_t_5numpy_uint_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":719
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":719
  * 
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t             # <<<<<<<<<<<<<<
@@ -1099,7 +1099,7 @@ typedef npy_ulong __pyx_t_5numpy_uint_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":720
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":720
  * ctypedef npy_ulong      uint_t
  * ctypedef npy_ulonglong  ulong_t
  * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
@@ -1108,7 +1108,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulong_t;
  */
 typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":722
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":722
  * ctypedef npy_ulonglong  ulonglong_t
  * 
  * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
@@ -1117,7 +1117,7 @@ typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
  */
 typedef npy_intp __pyx_t_5numpy_intp_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":723
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":723
  * 
  * ctypedef npy_intp       intp_t
  * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
@@ -1126,7 +1126,7 @@ typedef npy_intp __pyx_t_5numpy_intp_t;
  */
 typedef npy_uintp __pyx_t_5numpy_uintp_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":725
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":725
  * ctypedef npy_uintp      uintp_t
  * 
  * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
@@ -1135,7 +1135,7 @@ typedef npy_uintp __pyx_t_5numpy_uintp_t;
  */
 typedef npy_double __pyx_t_5numpy_float_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":726
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":726
  * 
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
@@ -1144,7 +1144,7 @@ typedef npy_double __pyx_t_5numpy_float_t;
  */
 typedef npy_double __pyx_t_5numpy_double_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":727
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":727
  * ctypedef npy_double     float_t
  * ctypedef npy_double     double_t
  * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
@@ -1153,7 +1153,7 @@ typedef npy_double __pyx_t_5numpy_double_t;
  */
 typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
 
-/* "InsurAutoML/_utils/_c/_base.pyx":53
+/* "InsurAutoML/_utils/_c/_base.pyx":51
  * cnp.import_array()
  * 
  * ctypedef cnp.npy_float FLOAT             # <<<<<<<<<<<<<<
@@ -1162,7 +1162,7 @@ typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
  */
 typedef npy_float __pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT;
 
-/* "InsurAutoML/_utils/_c/_base.pyx":54
+/* "InsurAutoML/_utils/_c/_base.pyx":52
  * 
  * ctypedef cnp.npy_float FLOAT
  * ctypedef cnp.npy_intp INTP             # <<<<<<<<<<<<<<
@@ -1197,7 +1197,7 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
 
 /*--- Type declarations ---*/
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":729
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":729
  * ctypedef npy_longdouble longdouble_t
  * 
  * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
@@ -1206,7 +1206,7 @@ static CYTHON_INLINE __pyx_t_double_complex __pyx_t_double_complex_from_parts(do
  */
 typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":730
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":730
  * 
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
@@ -1215,7 +1215,7 @@ typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
  */
 typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":731
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":731
  * ctypedef npy_cfloat      cfloat_t
  * ctypedef npy_cdouble     cdouble_t
  * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
@@ -1224,7 +1224,7 @@ typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
  */
 typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":733
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":733
  * ctypedef npy_clongdouble clongdouble_t
  * 
  * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
@@ -1236,22 +1236,22 @@ struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess;
 struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index;
 struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list;
 
-/* "InsurAutoML/_utils/_c/_base.pyx":63
+/* "InsurAutoML/_utils/_c/_base.pyx":61
  * 
  * # set response to [0, 1] class, random guess at 0.5
- * cdef int random_guess(             # <<<<<<<<<<<<<<
+ * cpdef int random_guess(             # <<<<<<<<<<<<<<
  *     float number,
- *     int seed= 1,
+ *     int seed=1,
  */
 struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess {
   int __pyx_n;
   int seed;
 };
 
-/* "InsurAutoML/_utils/_c/_base.pyx":78
+/* "InsurAutoML/_utils/_c/_base.pyx":76
  * # Return random index of a list (unique values only)
  * # from total draw n, default total = n
- * cdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
+ * cpdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
  *     int n,
  *     int total=0,
  */
@@ -1264,8 +1264,8 @@ struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index {
 /* "InsurAutoML/_utils/_c/_base.pyx":103
  * 
  * # Return randomly shuffle of a list (unique values only)
- * cdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  *     int seed=1
  */
 struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list {
@@ -1485,6 +1485,18 @@ static void __Pyx_WriteUnraisable(const char *name, int clineno,
                                   int lineno, const char *filename,
                                   int full_traceback, int nogil);
 
+/* RaiseDoubleKeywords.proto */
+static void __Pyx_RaiseDoubleKeywordsError(const char* func_name, PyObject* kw_name);
+
+/* ParseKeywords.proto */
+static int __Pyx_ParseOptionalKeywords(PyObject *kwds, PyObject **argnames[],\
+    PyObject *kwds2, PyObject *values[], Py_ssize_t num_pos_args,\
+    const char* function_name);
+
+/* RaiseArgTupleInvalid.proto */
+static void __Pyx_RaiseArgtupleInvalid(const char* func_name, int exact,
+    Py_ssize_t num_min, Py_ssize_t num_max, Py_ssize_t num_found);
+
 /* ExtTypeTest.proto */
 static CYTHON_INLINE int __Pyx_TypeTest(PyObject *obj, PyTypeObject *type);
 
@@ -1511,6 +1523,12 @@ static void __Pyx_ZeroBuffer(Py_buffer* buf);
 static CYTHON_INLINE void __Pyx_SafeReleaseBuffer(Py_buffer* info);
 static Py_ssize_t __Pyx_minusones[] = { -1, -1, -1, -1, -1, -1, -1, -1 };
 static Py_ssize_t __Pyx_zeros[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+
+/* ArgTypeTest.proto */
+#define __Pyx_ArgTypeTest(obj, type, none_allowed, name, exact)\
+    ((likely((Py_TYPE(obj) == type) | (none_allowed && (obj == Py_None)))) ? 1 :\
+        __Pyx__ArgTypeTest(obj, type, name, exact))
+static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *name, int exact);
 
 /* BufferFallbackError.proto */
 static void __Pyx_RaiseBufferFallbackError(void);
@@ -1713,11 +1731,11 @@ typedef struct {
     #endif
 #endif
 
-/* CIntToPy.proto */
-static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
-
 /* CIntFromPy.proto */
 static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *);
+
+/* CIntToPy.proto */
+static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value);
 
 /* CIntToPy.proto */
 static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value);
@@ -1787,6 +1805,11 @@ static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 static CYTHON_INLINE int __pyx_f_5numpy_import_array(void); /*proto*/
 
 /* Module declarations from 'InsurAutoML._utils._c._base' */
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float, int __pyx_skip_dispatch, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess *__pyx_optional_args); /*proto*/
+static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int, int __pyx_skip_dispatch, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index *__pyx_optional_args); /*proto*/
+static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(PyArrayObject *, int __pyx_skip_dispatch, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list *__pyx_optional_args); /*proto*/
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *, int __pyx_skip_dispatch); /*proto*/
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *, int __pyx_skip_dispatch); /*proto*/
 static __Pyx_TypeInfo __Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT = { "FLOAT", NULL, sizeof(__pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT), { 0 }, 0, 'R', 0, 0 };
 #define __Pyx_MODULE_NAME "InsurAutoML._utils._c._base"
 extern int __pyx_module_is_main_InsurAutoML___utils___c___base;
@@ -1795,6 +1818,7 @@ int __pyx_module_is_main_InsurAutoML___utils___c___base = 0;
 /* Implementation of 'InsurAutoML._utils._c._base' */
 static PyObject *__pyx_builtin_ValueError;
 static PyObject *__pyx_builtin_ImportError;
+static const char __pyx_k_n[] = "n";
 static const char __pyx_k_np[] = "np";
 static const char __pyx_k_pd[] = "pd";
 static const char __pyx_k_axis[] = "axis";
@@ -1807,12 +1831,15 @@ static const char __pyx_k_array[] = "array";
 static const char __pyx_k_dtype[] = "dtype";
 static const char __pyx_k_numpy[] = "numpy";
 static const char __pyx_k_shape[] = "shape";
+static const char __pyx_k_total[] = "total";
+static const char __pyx_k_vlist[] = "vlist";
 static const char __pyx_k_zeros[] = "zeros";
 static const char __pyx_k_argmax[] = "argmax";
 static const char __pyx_k_argmin[] = "argmin";
 static const char __pyx_k_choice[] = "choice";
 static const char __pyx_k_format[] = "format";
 static const char __pyx_k_import[] = "__import__";
+static const char __pyx_k_number[] = "number";
 static const char __pyx_k_pandas[] = "pandas";
 static const char __pyx_k_random[] = "random";
 static const char __pyx_k_ndarray[] = "ndarray";
@@ -1824,7 +1851,7 @@ static const char __pyx_k_ImportError[] = "ImportError";
 static const char __pyx_k_permutation[] = "permutation";
 static const char __pyx_k_Invalid_List[] = "Invalid List!";
 static const char __pyx_k_cline_in_traceback[] = "cline_in_traceback";
-static const char __pyx_k_File_Name__base_pyx_Author_Pany[] = "\nFile Name: _base.pyx\nAuthor: Panyi Dong\nGitHub: https://github.com/PanyiDong/\nMathematics Department, University of Illinois at Urbana-Champaign (UIUC)\n\nProject: InsurAutoML\nLatest Version: 0.2.3\nRelative Path: /InsurAutoML/_utils/_c/_base.pyx\nFile Created: Monday, 24th October 2022 11:56:57 pm\nAuthor: Panyi Dong (panyid2@illinois.edu)\n\n-----\nLast Modified: Monday, 14th November 2022 8:16:52 pm\nModified By: Panyi Dong (panyid2@illinois.edu)\n\n-----\nMIT License\n\nCopyright (c) 2022 - 2022, Panyi Dong\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
+static const char __pyx_k_File_Name__base_pyx_Author_Pany[] = "\nFile Name: _base.pyx\nAuthor: Panyi Dong\nGitHub: https://github.com/PanyiDong/\nMathematics Department, University of Illinois at Urbana-Champaign (UIUC)\n\nProject: InsurAutoML\nLatest Version: 0.2.3\nRelative Path: /InsurAutoML/_utils/_c/_base.pyx\nFile Created: Monday, 24th October 2022 11:56:57 pm\nAuthor: Panyi Dong (panyid2@illinois.edu)\n\n-----\nLast Modified: Saturday, 19th November 2022 8:03:51 pm\nModified By: Panyi Dong (panyid2@illinois.edu)\n\n-----\nMIT License\n\nCopyright (c) 2022 - 2022, Panyi Dong\n\nPermission is hereby granted, free of charge, to any person obtaining a copy\nof this software and associated documentation files (the \"Software\"), to deal\nin the Software without restriction, including without limitation the rights\nto use, copy, modify, merge, publish, distribute, sublicense, and/or sell\ncopies of the Software, and to permit persons to whom the Software is\nfurnished to do so, subject to the following conditions:\n\nThe above copyright notice and this permission notice shall be included in all\ncopies or substantial portions of the Software.\n\nTHE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR\nIMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,\nFITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE\nAUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\nLIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\nOUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\nSOFTWARE.\n";
 static const char __pyx_k_Total_number_of_samples_must_be[] = "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}";
 static const char __pyx_k_numpy_core_multiarray_failed_to[] = "numpy.core.multiarray failed to import";
 static const char __pyx_k_Input_is_multi_dimensional_array[] = "Input is multi-dimensional array, return min location of the first dimension.";
@@ -1848,9 +1875,11 @@ static PyObject *__pyx_n_s_dtype;
 static PyObject *__pyx_n_s_format;
 static PyObject *__pyx_n_s_import;
 static PyObject *__pyx_n_s_main;
+static PyObject *__pyx_n_s_n;
 static PyObject *__pyx_n_s_name;
 static PyObject *__pyx_n_s_ndarray;
 static PyObject *__pyx_n_s_np;
+static PyObject *__pyx_n_s_number;
 static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_kp_s_numpy_core_multiarray_failed_to;
 static PyObject *__pyx_kp_s_numpy_core_umath_failed_to_impor;
@@ -1863,9 +1892,16 @@ static PyObject *__pyx_n_s_replace;
 static PyObject *__pyx_n_s_seed;
 static PyObject *__pyx_n_s_shape;
 static PyObject *__pyx_n_s_test;
+static PyObject *__pyx_n_s_total;
+static PyObject *__pyx_n_s_vlist;
 static PyObject *__pyx_n_s_warn;
 static PyObject *__pyx_n_s_warnings;
 static PyObject *__pyx_n_s_zeros;
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_random_guess(CYTHON_UNUSED PyObject *__pyx_self, float __pyx_v_number, int __pyx_v_seed); /* proto */
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_2random_index(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_n, int __pyx_v_total, int __pyx_v_seed); /* proto */
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_4random_list(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_vlist, int __pyx_v_seed); /* proto */
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_6minloc(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_vlist); /* proto */
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_8maxloc(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_vlist); /* proto */
 static PyObject *__pyx_int_0;
 static PyObject *__pyx_int_2;
 static PyObject *__pyx_tuple_;
@@ -1874,15 +1910,16 @@ static PyObject *__pyx_tuple__3;
 static PyObject *__pyx_tuple__4;
 /* Late includes */
 
-/* "InsurAutoML/_utils/_c/_base.pyx":63
+/* "InsurAutoML/_utils/_c/_base.pyx":61
  * 
  * # set response to [0, 1] class, random guess at 0.5
- * cdef int random_guess(             # <<<<<<<<<<<<<<
+ * cpdef int random_guess(             # <<<<<<<<<<<<<<
  *     float number,
- *     int seed= 1,
+ *     int seed=1,
  */
 
-static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_number, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess *__pyx_optional_args) {
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_1random_guess(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_number, CYTHON_UNUSED int __pyx_skip_dispatch, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess *__pyx_optional_args) {
   int __pyx_v_seed = ((int)1);
   int __pyx_r;
   __Pyx_RefNannyDeclarations
@@ -1902,37 +1939,37 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
     }
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":67
- *     int seed= 1,
+  /* "InsurAutoML/_utils/_c/_base.pyx":65
+ *     int seed=1,
  * ):
  *     if seed != None:             # <<<<<<<<<<<<<<
  *         np.random.seed(seed)
  *     if number > 0.5:
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 67, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 65, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 67, __pyx_L1_error)
+  __pyx_t_2 = PyObject_RichCompare(__pyx_t_1, Py_None, Py_NE); __Pyx_XGOTREF(__pyx_t_2); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 65, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 67, __pyx_L1_error)
+  __pyx_t_3 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 65, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
   if (__pyx_t_3) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":68
+    /* "InsurAutoML/_utils/_c/_base.pyx":66
  * ):
  *     if seed != None:
  *         np.random.seed(seed)             # <<<<<<<<<<<<<<
  *     if number > 0.5:
  *         return 1
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_random); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 68, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 68, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_5 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
@@ -1947,13 +1984,13 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
     __pyx_t_2 = (__pyx_t_5) ? __Pyx_PyObject_Call2Args(__pyx_t_1, __pyx_t_5, __pyx_t_4) : __Pyx_PyObject_CallOneArg(__pyx_t_1, __pyx_t_4);
     __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 68, __pyx_L1_error)
+    if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 66, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":67
- *     int seed= 1,
+    /* "InsurAutoML/_utils/_c/_base.pyx":65
+ *     int seed=1,
  * ):
  *     if seed != None:             # <<<<<<<<<<<<<<
  *         np.random.seed(seed)
@@ -1961,7 +1998,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
  */
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":69
+  /* "InsurAutoML/_utils/_c/_base.pyx":67
  *     if seed != None:
  *         np.random.seed(seed)
  *     if number > 0.5:             # <<<<<<<<<<<<<<
@@ -1971,7 +2008,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
   __pyx_t_3 = ((__pyx_v_number > 0.5) != 0);
   if (__pyx_t_3) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":70
+    /* "InsurAutoML/_utils/_c/_base.pyx":68
  *         np.random.seed(seed)
  *     if number > 0.5:
  *         return 1             # <<<<<<<<<<<<<<
@@ -1981,7 +2018,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
     __pyx_r = 1;
     goto __pyx_L0;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":69
+    /* "InsurAutoML/_utils/_c/_base.pyx":67
  *     if seed != None:
  *         np.random.seed(seed)
  *     if number > 0.5:             # <<<<<<<<<<<<<<
@@ -1990,7 +2027,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
  */
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":71
+  /* "InsurAutoML/_utils/_c/_base.pyx":69
  *     if number > 0.5:
  *         return 1
  *     elif number < 0.5:             # <<<<<<<<<<<<<<
@@ -2000,7 +2037,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
   __pyx_t_3 = ((__pyx_v_number < 0.5) != 0);
   if (__pyx_t_3) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":72
+    /* "InsurAutoML/_utils/_c/_base.pyx":70
  *         return 1
  *     elif number < 0.5:
  *         return 0             # <<<<<<<<<<<<<<
@@ -2010,7 +2047,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
     __pyx_r = 0;
     goto __pyx_L0;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":71
+    /* "InsurAutoML/_utils/_c/_base.pyx":69
  *     if number > 0.5:
  *         return 1
  *     elif number < 0.5:             # <<<<<<<<<<<<<<
@@ -2019,7 +2056,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
  */
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":74
+  /* "InsurAutoML/_utils/_c/_base.pyx":72
  *         return 0
  *     else:
  *         return np.random.randint(0, 2)             # <<<<<<<<<<<<<<
@@ -2027,29 +2064,29 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
  * # Return random index of a list (unique values only)
  */
   /*else*/ {
-    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_2, __pyx_n_s_np); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 72, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_random); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_random); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_randint); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __pyx_t_2 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_randint); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 72, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_2);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 74, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_Call(__pyx_t_2, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 72, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-    __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 74, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyInt_As_int(__pyx_t_1); if (unlikely((__pyx_t_6 == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 72, __pyx_L1_error)
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __pyx_r = __pyx_t_6;
     goto __pyx_L0;
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":63
+  /* "InsurAutoML/_utils/_c/_base.pyx":61
  * 
  * # set response to [0, 1] class, random guess at 0.5
- * cdef int random_guess(             # <<<<<<<<<<<<<<
+ * cpdef int random_guess(             # <<<<<<<<<<<<<<
  *     float number,
- *     int seed= 1,
+ *     int seed=1,
  */
 
   /* function exit code */
@@ -2065,15 +2102,118 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(float __pyx_v_n
   return __pyx_r;
 }
 
-/* "InsurAutoML/_utils/_c/_base.pyx":78
+/* Python wrapper */
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_1random_guess(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_1random_guess(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  float __pyx_v_number;
+  int __pyx_v_seed;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("random_guess (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_number,&__pyx_n_s_seed,0};
+    PyObject* values[2] = {0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_number)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_seed);
+          if (value) { values[1] = value; kw_args--; }
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "random_guess") < 0)) __PYX_ERR(0, 61, __pyx_L3_error)
+      }
+    } else {
+      switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+    }
+    __pyx_v_number = __pyx_PyFloat_AsFloat(values[0]); if (unlikely((__pyx_v_number == (float)-1) && PyErr_Occurred())) __PYX_ERR(0, 62, __pyx_L3_error)
+    if (values[1]) {
+      __pyx_v_seed = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_seed == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 63, __pyx_L3_error)
+    } else {
+      __pyx_v_seed = ((int)1);
+    }
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("random_guess", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 61, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_guess", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_11InsurAutoML_6_utils_2_c_5_base_random_guess(__pyx_self, __pyx_v_number, __pyx_v_seed);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_random_guess(CYTHON_UNUSED PyObject *__pyx_self, float __pyx_v_number, int __pyx_v_seed) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  int __pyx_t_1;
+  struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_guess __pyx_t_2;
+  PyObject *__pyx_t_3 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("random_guess", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_2.__pyx_n = 1;
+  __pyx_t_2.seed = __pyx_v_seed;
+  __pyx_t_1 = __pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_guess(__pyx_v_number, 0, &__pyx_t_2); 
+  __pyx_t_3 = __Pyx_PyInt_From_int(__pyx_t_1); if (unlikely(!__pyx_t_3)) __PYX_ERR(0, 61, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_3);
+  __pyx_r = __pyx_t_3;
+  __pyx_t_3 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_3);
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_guess", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "InsurAutoML/_utils/_c/_base.pyx":76
  * # Return random index of a list (unique values only)
  * # from total draw n, default total = n
- * cdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
+ * cpdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
  *     int n,
  *     int total=0,
  */
 
-static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int __pyx_v_n, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index *__pyx_optional_args) {
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_3random_index(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int __pyx_v_n, CYTHON_UNUSED int __pyx_skip_dispatch, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index *__pyx_optional_args) {
   int __pyx_v_total = ((int)0);
   int __pyx_v_seed = ((int)1);
   PyArrayObject *__pyx_v_output = 0;
@@ -2101,36 +2241,36 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
     }
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":83
+  /* "InsurAutoML/_utils/_c/_base.pyx":81
  *     int seed=1
  * ):
  *     if seed is not None:             # <<<<<<<<<<<<<<
  *         np.random.seed(seed)
  *     if total == 0:
  */
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 83, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 81, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
   __pyx_t_2 = (__pyx_t_1 != Py_None);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
   __pyx_t_3 = (__pyx_t_2 != 0);
   if (__pyx_t_3) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":84
+    /* "InsurAutoML/_utils/_c/_base.pyx":82
  * ):
  *     if seed is not None:
  *         np.random.seed(seed)             # <<<<<<<<<<<<<<
  *     if total == 0:
  *         total = n
  */
-    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 84, __pyx_L1_error)
+    __Pyx_GetModuleGlobalName(__pyx_t_4, __pyx_n_s_np); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
-    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_random); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 84, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyObject_GetAttrStr(__pyx_t_4, __pyx_n_s_random); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 84, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_5, __pyx_n_s_seed); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 84, __pyx_L1_error)
+    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_seed); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
     __pyx_t_6 = NULL;
     if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_4))) {
@@ -2145,12 +2285,12 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
     __pyx_t_1 = (__pyx_t_6) ? __Pyx_PyObject_Call2Args(__pyx_t_4, __pyx_t_6, __pyx_t_5) : __Pyx_PyObject_CallOneArg(__pyx_t_4, __pyx_t_5);
     __Pyx_XDECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 84, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 82, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":83
+    /* "InsurAutoML/_utils/_c/_base.pyx":81
  *     int seed=1
  * ):
  *     if seed is not None:             # <<<<<<<<<<<<<<
@@ -2159,7 +2299,7 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
  */
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":85
+  /* "InsurAutoML/_utils/_c/_base.pyx":83
  *     if seed is not None:
  *         np.random.seed(seed)
  *     if total == 0:             # <<<<<<<<<<<<<<
@@ -2169,7 +2309,7 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
   __pyx_t_3 = ((__pyx_v_total == 0) != 0);
   if (__pyx_t_3) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":86
+    /* "InsurAutoML/_utils/_c/_base.pyx":84
  *         np.random.seed(seed)
  *     if total == 0:
  *         total = n             # <<<<<<<<<<<<<<
@@ -2178,7 +2318,7 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
  */
     __pyx_v_total = __pyx_v_n;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":85
+    /* "InsurAutoML/_utils/_c/_base.pyx":83
  *     if seed is not None:
  *         np.random.seed(seed)
  *     if total == 0:             # <<<<<<<<<<<<<<
@@ -2187,59 +2327,67 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
  */
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":87
+  /* "InsurAutoML/_utils/_c/_base.pyx":85
  *     if total == 0:
  *         total = n
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)             # <<<<<<<<<<<<<<
  * 
  *     if total < n:
  */
-  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
+  __Pyx_GetModuleGlobalName(__pyx_t_1, __pyx_n_s_np); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_t_4 = __Pyx_PyObject_GetAttrStr(__pyx_t_1, __pyx_n_s_zeros); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_4);
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_t_5 = PyTuple_New(1); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_5);
   __Pyx_GIVEREF(__pyx_t_1);
   PyTuple_SET_ITEM(__pyx_t_5, 0, __pyx_t_1);
   __pyx_t_1 = 0;
-  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 87, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_PyDict_NewPresized(1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, ((PyObject *)(&PyInt_Type))) < 0) __PYX_ERR(0, 87, __pyx_L1_error)
-  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 87, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_t_1, __pyx_n_s_dtype, ((PyObject *)(&PyInt_Type))) < 0) __PYX_ERR(0, 85, __pyx_L1_error)
+  __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_4, __pyx_t_5, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 85, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_6);
   __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
   __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 87, __pyx_L1_error)
+  if (!(likely(((__pyx_t_6) == Py_None) || likely(__Pyx_TypeTest(__pyx_t_6, __pyx_ptype_5numpy_ndarray))))) __PYX_ERR(0, 85, __pyx_L1_error)
   __pyx_v_output = ((PyArrayObject *)__pyx_t_6);
   __pyx_t_6 = 0;
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":89
+  /* "InsurAutoML/_utils/_c/_base.pyx":87
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)
  * 
  *     if total < n:             # <<<<<<<<<<<<<<
  *         raise ValueError(
- *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
+ *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
  */
   __pyx_t_3 = ((__pyx_v_total < __pyx_v_n) != 0);
   if (unlikely(__pyx_t_3)) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":91
+    /* "InsurAutoML/_utils/_c/_base.pyx":89
  *     if total < n:
  *         raise ValueError(
- *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)             # <<<<<<<<<<<<<<
+ *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(             # <<<<<<<<<<<<<<
+ *                 total, n)
  *         )
- *     elif n == 0 :
  */
-    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Total_number_of_samples_must_be, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 91, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Total_number_of_samples_must_be, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 89, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
-    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 91, __pyx_L1_error)
+
+    /* "InsurAutoML/_utils/_c/_base.pyx":90
+ *         raise ValueError(
+ *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
+ *                 total, n)             # <<<<<<<<<<<<<<
+ *         )
+ *     elif n == 0:
+ */
+    __pyx_t_5 = __Pyx_PyInt_From_int(__pyx_v_total); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 90, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_5);
-    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 91, __pyx_L1_error)
+    __pyx_t_4 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 90, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_4);
     __pyx_t_7 = NULL;
     __pyx_t_8 = 0;
@@ -2256,7 +2404,7 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
     #if CYTHON_FAST_PYCALL
     if (PyFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_4};
-      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -2266,7 +2414,7 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
     #if CYTHON_FAST_PYCCALL
     if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
       PyObject *__pyx_temp[3] = {__pyx_t_7, __pyx_t_5, __pyx_t_4};
-      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_8, 2+__pyx_t_8); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
       __Pyx_XDECREF(__pyx_t_7); __pyx_t_7 = 0;
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
@@ -2274,7 +2422,7 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
     } else
     #endif
     {
-      __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 91, __pyx_L1_error)
+      __pyx_t_9 = PyTuple_New(2+__pyx_t_8); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 89, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_9);
       if (__pyx_t_7) {
         __Pyx_GIVEREF(__pyx_t_7); PyTuple_SET_ITEM(__pyx_t_9, 0, __pyx_t_7); __pyx_t_7 = NULL;
@@ -2285,54 +2433,62 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
       PyTuple_SET_ITEM(__pyx_t_9, 1+__pyx_t_8, __pyx_t_4);
       __pyx_t_5 = 0;
       __pyx_t_4 = 0;
-      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 91, __pyx_L1_error)
+      __pyx_t_6 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_9, NULL); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 89, __pyx_L1_error)
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
     }
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":90
+    /* "InsurAutoML/_utils/_c/_base.pyx":88
  * 
  *     if total < n:
  *         raise ValueError(             # <<<<<<<<<<<<<<
- *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
- *         )
+ *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
+ *                 total, n)
  */
-    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 90, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_6); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 88, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
     __Pyx_Raise(__pyx_t_1, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-    __PYX_ERR(0, 90, __pyx_L1_error)
+    __PYX_ERR(0, 88, __pyx_L1_error)
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":89
+    /* "InsurAutoML/_utils/_c/_base.pyx":87
  *     cdef cnp.ndarray output = np.zeros(total, dtype=int)
  * 
  *     if total < n:             # <<<<<<<<<<<<<<
  *         raise ValueError(
- *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
+ *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
  */
   }
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":93
- *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
+  /* "InsurAutoML/_utils/_c/_base.pyx":92
+ *                 total, n)
  *         )
- *     elif n == 0 :             # <<<<<<<<<<<<<<
+ *     elif n == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError(
- *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
+ *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(
  */
   __pyx_t_3 = ((__pyx_v_n == 0) != 0);
   if (unlikely(__pyx_t_3)) {
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":95
- *     elif n == 0 :
+    /* "InsurAutoML/_utils/_c/_base.pyx":94
+ *     elif n == 0:
  *         raise ValueError(
- *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)             # <<<<<<<<<<<<<<
+ *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(             # <<<<<<<<<<<<<<
+ *                 n)
+ *         )
+ */
+    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Number_of_samples_to_be_drawn_mu, __pyx_n_s_format); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 94, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_6);
+
+    /* "InsurAutoML/_utils/_c/_base.pyx":95
+ *         raise ValueError(
+ *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(
+ *                 n)             # <<<<<<<<<<<<<<
  *         )
  * 
  */
-    __pyx_t_6 = __Pyx_PyObject_GetAttrStr(__pyx_kp_s_Number_of_samples_to_be_drawn_mu, __pyx_n_s_format); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 95, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_6);
     __pyx_t_9 = __Pyx_PyInt_From_int(__pyx_v_n); if (unlikely(!__pyx_t_9)) __PYX_ERR(0, 95, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_9);
     __pyx_t_4 = NULL;
@@ -2348,30 +2504,30 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
     __pyx_t_1 = (__pyx_t_4) ? __Pyx_PyObject_Call2Args(__pyx_t_6, __pyx_t_4, __pyx_t_9) : __Pyx_PyObject_CallOneArg(__pyx_t_6, __pyx_t_9);
     __Pyx_XDECREF(__pyx_t_4); __pyx_t_4 = 0;
     __Pyx_DECREF(__pyx_t_9); __pyx_t_9 = 0;
-    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 95, __pyx_L1_error)
+    if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 94, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_1);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":94
+    /* "InsurAutoML/_utils/_c/_base.pyx":93
  *         )
- *     elif n == 0 :
+ *     elif n == 0:
  *         raise ValueError(             # <<<<<<<<<<<<<<
- *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
- *         )
+ *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(
+ *                 n)
  */
-    __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 94, __pyx_L1_error)
+    __pyx_t_6 = __Pyx_PyObject_CallOneArg(__pyx_builtin_ValueError, __pyx_t_1); if (unlikely(!__pyx_t_6)) __PYX_ERR(0, 93, __pyx_L1_error)
     __Pyx_GOTREF(__pyx_t_6);
     __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
     __Pyx_Raise(__pyx_t_6, 0, 0, 0);
     __Pyx_DECREF(__pyx_t_6); __pyx_t_6 = 0;
-    __PYX_ERR(0, 94, __pyx_L1_error)
+    __PYX_ERR(0, 93, __pyx_L1_error)
 
-    /* "InsurAutoML/_utils/_c/_base.pyx":93
- *             "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
+    /* "InsurAutoML/_utils/_c/_base.pyx":92
+ *                 total, n)
  *         )
- *     elif n == 0 :             # <<<<<<<<<<<<<<
+ *     elif n == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError(
- *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
+ *             "Number of samples to be drawn must be greater than 0. Got n={}.".format(
  */
   }
 
@@ -2426,10 +2582,10 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
   __pyx_r = __pyx_v_output;
   goto __pyx_L0;
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":78
+  /* "InsurAutoML/_utils/_c/_base.pyx":76
  * # Return random index of a list (unique values only)
  * # from total draw n, default total = n
- * cdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
+ * cpdef cnp.ndarray random_index(             # <<<<<<<<<<<<<<
  *     int n,
  *     int total=0,
  */
@@ -2451,15 +2607,133 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(int 
   return __pyx_r;
 }
 
+/* Python wrapper */
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_3random_index(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_3random_index(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  int __pyx_v_n;
+  int __pyx_v_total;
+  int __pyx_v_seed;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("random_index (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_n,&__pyx_n_s_total,&__pyx_n_s_seed,0};
+    PyObject* values[3] = {0,0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_n)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_total);
+          if (value) { values[1] = value; kw_args--; }
+        }
+        CYTHON_FALLTHROUGH;
+        case  2:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_seed);
+          if (value) { values[2] = value; kw_args--; }
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "random_index") < 0)) __PYX_ERR(0, 76, __pyx_L3_error)
+      }
+    } else {
+      switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  3: values[2] = PyTuple_GET_ITEM(__pyx_args, 2);
+        CYTHON_FALLTHROUGH;
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+    }
+    __pyx_v_n = __Pyx_PyInt_As_int(values[0]); if (unlikely((__pyx_v_n == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 77, __pyx_L3_error)
+    if (values[1]) {
+      __pyx_v_total = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_total == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 78, __pyx_L3_error)
+    } else {
+      __pyx_v_total = ((int)0);
+    }
+    if (values[2]) {
+      __pyx_v_seed = __Pyx_PyInt_As_int(values[2]); if (unlikely((__pyx_v_seed == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 79, __pyx_L3_error)
+    } else {
+      __pyx_v_seed = ((int)1);
+    }
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("random_index", 0, 1, 3, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 76, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_index", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  __pyx_r = __pyx_pf_11InsurAutoML_6_utils_2_c_5_base_2random_index(__pyx_self, __pyx_v_n, __pyx_v_total, __pyx_v_seed);
+
+  /* function exit code */
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_2random_index(CYTHON_UNUSED PyObject *__pyx_self, int __pyx_v_n, int __pyx_v_total, int __pyx_v_seed) {
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_index __pyx_t_2;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("random_index", 0);
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_2.__pyx_n = 2;
+  __pyx_t_2.total = __pyx_v_total;
+  __pyx_t_2.seed = __pyx_v_seed;
+  __pyx_t_1 = ((PyObject *)__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_index(__pyx_v_n, 0, &__pyx_t_2)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 76, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_index", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
 /* "InsurAutoML/_utils/_c/_base.pyx":103
  * 
  * # Return randomly shuffle of a list (unique values only)
- * cdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  *     int seed=1
  */
 
-static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(PyArrayObject *__pyx_v_vlist, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list *__pyx_optional_args) {
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_5random_list(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(PyArrayObject *__pyx_v_vlist, CYTHON_UNUSED int __pyx_skip_dispatch, struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list *__pyx_optional_args) {
   int __pyx_v_seed = ((int)1);
   PyArrayObject *__pyx_v_output = 0;
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
@@ -2631,8 +2905,8 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(PyArr
   /* "InsurAutoML/_utils/_c/_base.pyx":103
  * 
  * # Return randomly shuffle of a list (unique values only)
- * cdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef cnp.ndarray random_list(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  *     int seed=1
  */
 
@@ -2660,15 +2934,141 @@ static PyArrayObject *__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(PyArr
   return __pyx_r;
 }
 
+/* Python wrapper */
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_5random_list(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_5random_list(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
+  PyArrayObject *__pyx_v_vlist = 0;
+  int __pyx_v_seed;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("random_list (wrapper)", 0);
+  {
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_vlist,&__pyx_n_s_seed,0};
+    PyObject* values[2] = {0,0};
+    if (unlikely(__pyx_kwds)) {
+      Py_ssize_t kw_args;
+      const Py_ssize_t pos_args = PyTuple_GET_SIZE(__pyx_args);
+      switch (pos_args) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        CYTHON_FALLTHROUGH;
+        case  0: break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+      kw_args = PyDict_Size(__pyx_kwds);
+      switch (pos_args) {
+        case  0:
+        if (likely((values[0] = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_vlist)) != 0)) kw_args--;
+        else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (kw_args > 0) {
+          PyObject* value = __Pyx_PyDict_GetItemStr(__pyx_kwds, __pyx_n_s_seed);
+          if (value) { values[1] = value; kw_args--; }
+        }
+      }
+      if (unlikely(kw_args > 0)) {
+        if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_pyargnames, 0, values, pos_args, "random_list") < 0)) __PYX_ERR(0, 103, __pyx_L3_error)
+      }
+    } else {
+      switch (PyTuple_GET_SIZE(__pyx_args)) {
+        case  2: values[1] = PyTuple_GET_ITEM(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
+        case  1: values[0] = PyTuple_GET_ITEM(__pyx_args, 0);
+        break;
+        default: goto __pyx_L5_argtuple_error;
+      }
+    }
+    __pyx_v_vlist = ((PyArrayObject *)values[0]);
+    if (values[1]) {
+      __pyx_v_seed = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_seed == (int)-1) && PyErr_Occurred())) __PYX_ERR(0, 105, __pyx_L3_error)
+    } else {
+      __pyx_v_seed = ((int)1);
+    }
+  }
+  goto __pyx_L4_argument_unpacking_done;
+  __pyx_L5_argtuple_error:;
+  __Pyx_RaiseArgtupleInvalid("random_list", 0, 1, 2, PyTuple_GET_SIZE(__pyx_args)); __PYX_ERR(0, 103, __pyx_L3_error)
+  __pyx_L3_error:;
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __Pyx_RefNannyFinishContext();
+  return NULL;
+  __pyx_L4_argument_unpacking_done:;
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_vlist), __pyx_ptype_5numpy_ndarray, 1, "vlist", 0))) __PYX_ERR(0, 104, __pyx_L1_error)
+  __pyx_r = __pyx_pf_11InsurAutoML_6_utils_2_c_5_base_4random_list(__pyx_self, __pyx_v_vlist, __pyx_v_seed);
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_4random_list(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_vlist, int __pyx_v_seed) {
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
+  __Pyx_Buffer __pyx_pybuffer_vlist;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  struct __pyx_opt_args_11InsurAutoML_6_utils_2_c_5_base_random_list __pyx_t_2;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("random_list", 0);
+  __pyx_pybuffer_vlist.pybuffer.buf = NULL;
+  __pyx_pybuffer_vlist.refcount = 0;
+  __pyx_pybuffernd_vlist.data = NULL;
+  __pyx_pybuffernd_vlist.rcbuffer = &__pyx_pybuffer_vlist;
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 103, __pyx_L1_error)
+  }
+  __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_2.__pyx_n = 1;
+  __pyx_t_2.seed = __pyx_v_seed;
+  __pyx_t_1 = ((PyObject *)__pyx_f_11InsurAutoML_6_utils_2_c_5_base_random_list(__pyx_v_vlist, 0, &__pyx_t_2)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 103, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.random_list", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
 /* "InsurAutoML/_utils/_c/_base.pyx":116
  * 
  * # Return location of minimum values
- * cdef int minloc(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef int minloc(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  * ):
  */
 
-static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_vlist) {
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_7minloc(PyObject *__pyx_self, PyObject *__pyx_v_vlist); /*proto*/
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_v_vlist, CYTHON_UNUSED int __pyx_skip_dispatch) {
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
   __Pyx_Buffer __pyx_pybuffer_vlist;
   int __pyx_r;
@@ -2781,7 +3181,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError("Invalid List!")
- *     else :
+ *     else:
  */
   __pyx_t_11 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 124, __pyx_L1_error)
   __pyx_t_4 = ((__pyx_t_11 == 0) != 0);
@@ -2791,7 +3191,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
  * 
  *     if len(vlist) == 0:
  *         raise ValueError("Invalid List!")             # <<<<<<<<<<<<<<
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
  */
     __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 125, __pyx_L1_error)
@@ -2805,14 +3205,14 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError("Invalid List!")
- *     else :
+ *     else:
  */
   }
 
   /* "InsurAutoML/_utils/_c/_base.pyx":128
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
- *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
+ *         if len((< object > vlist).shape) > 1:             # <<<<<<<<<<<<<<
  *             warnings.warn(
  *                 "Input is multi-dimensional array, return min location of the first dimension."
  */
@@ -2826,7 +3226,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
 
       /* "InsurAutoML/_utils/_c/_base.pyx":129
  *         # check whether multi-dimensional array
- *         if len((<object> vlist).shape) > 1:
+ *         if len((< object > vlist).shape) > 1:
  *             warnings.warn(             # <<<<<<<<<<<<<<
  *                 "Input is multi-dimensional array, return min location of the first dimension."
  *             )
@@ -2854,9 +3254,9 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
       /* "InsurAutoML/_utils/_c/_base.pyx":128
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
- *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
+ *         if len((< object > vlist).shape) > 1:             # <<<<<<<<<<<<<<
  *             warnings.warn(
  *                 "Input is multi-dimensional array, return min location of the first dimension."
  */
@@ -2896,8 +3296,8 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
   /* "InsurAutoML/_utils/_c/_base.pyx":116
  * 
  * # Return location of minimum values
- * cdef int minloc(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef int minloc(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  * ):
  */
 
@@ -2924,15 +3324,83 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(PyArrayObject *__pyx_
   return __pyx_r;
 }
 
+/* Python wrapper */
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_7minloc(PyObject *__pyx_self, PyObject *__pyx_v_vlist); /*proto*/
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_7minloc(PyObject *__pyx_self, PyObject *__pyx_v_vlist) {
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("minloc (wrapper)", 0);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_vlist), __pyx_ptype_5numpy_ndarray, 1, "vlist", 0))) __PYX_ERR(0, 117, __pyx_L1_error)
+  __pyx_r = __pyx_pf_11InsurAutoML_6_utils_2_c_5_base_6minloc(__pyx_self, ((PyArrayObject *)__pyx_v_vlist));
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_6minloc(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_vlist) {
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
+  __Pyx_Buffer __pyx_pybuffer_vlist;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("minloc", 0);
+  __pyx_pybuffer_vlist.pybuffer.buf = NULL;
+  __pyx_pybuffer_vlist.refcount = 0;
+  __pyx_pybuffernd_vlist.data = NULL;
+  __pyx_pybuffernd_vlist.rcbuffer = &__pyx_pybuffer_vlist;
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 116, __pyx_L1_error)
+  }
+  __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11InsurAutoML_6_utils_2_c_5_base_minloc(__pyx_v_vlist, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 116, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.minloc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
 /* "InsurAutoML/_utils/_c/_base.pyx":137
  * 
  * # Return location of maximum values
- * cdef int maxloc(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef int maxloc(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  * ):
  */
 
-static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_vlist) {
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_9maxloc(PyObject *__pyx_self, PyObject *__pyx_v_vlist); /*proto*/
+static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_v_vlist, CYTHON_UNUSED int __pyx_skip_dispatch) {
   __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
   __Pyx_Buffer __pyx_pybuffer_vlist;
   int __pyx_r;
@@ -3045,7 +3513,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError("Invalid List!")
- *     else :
+ *     else:
  */
   __pyx_t_11 = PyObject_Length(((PyObject *)__pyx_v_vlist)); if (unlikely(__pyx_t_11 == ((Py_ssize_t)-1))) __PYX_ERR(0, 145, __pyx_L1_error)
   __pyx_t_4 = ((__pyx_t_11 == 0) != 0);
@@ -3055,7 +3523,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
  * 
  *     if len(vlist) == 0:
  *         raise ValueError("Invalid List!")             # <<<<<<<<<<<<<<
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
  */
     __pyx_t_2 = __Pyx_PyObject_Call(__pyx_builtin_ValueError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 146, __pyx_L1_error)
@@ -3069,14 +3537,14 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
  * 
  *     if len(vlist) == 0:             # <<<<<<<<<<<<<<
  *         raise ValueError("Invalid List!")
- *     else :
+ *     else:
  */
   }
 
   /* "InsurAutoML/_utils/_c/_base.pyx":149
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
- *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
+ *         if len((< object > vlist).shape) > 1:             # <<<<<<<<<<<<<<
  *             warnings.warn(
  *                 "Input is multi-dimensional array, return max location of the first dimension."
  */
@@ -3090,7 +3558,7 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
 
       /* "InsurAutoML/_utils/_c/_base.pyx":150
  *         # check whether multi-dimensional array
- *         if len((<object> vlist).shape) > 1:
+ *         if len((< object > vlist).shape) > 1:
  *             warnings.warn(             # <<<<<<<<<<<<<<
  *                 "Input is multi-dimensional array, return max location of the first dimension."
  *             )
@@ -3118,9 +3586,9 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
       __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
 
       /* "InsurAutoML/_utils/_c/_base.pyx":149
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
- *         if len((<object> vlist).shape) > 1:             # <<<<<<<<<<<<<<
+ *         if len((< object > vlist).shape) > 1:             # <<<<<<<<<<<<<<
  *             warnings.warn(
  *                 "Input is multi-dimensional array, return max location of the first dimension."
  */
@@ -3158,8 +3626,8 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
   /* "InsurAutoML/_utils/_c/_base.pyx":137
  * 
  * # Return location of maximum values
- * cdef int maxloc(             # <<<<<<<<<<<<<<
- *     cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+ * cpdef int maxloc(             # <<<<<<<<<<<<<<
+ *     cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
  * ):
  */
 
@@ -3186,7 +3654,74 @@ static int __pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(PyArrayObject *__pyx_
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":735
+/* Python wrapper */
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_9maxloc(PyObject *__pyx_self, PyObject *__pyx_v_vlist); /*proto*/
+static PyObject *__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_9maxloc(PyObject *__pyx_self, PyObject *__pyx_v_vlist) {
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  PyObject *__pyx_r = 0;
+  __Pyx_RefNannyDeclarations
+  __Pyx_RefNannySetupContext("maxloc (wrapper)", 0);
+  if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_vlist), __pyx_ptype_5numpy_ndarray, 1, "vlist", 0))) __PYX_ERR(0, 138, __pyx_L1_error)
+  __pyx_r = __pyx_pf_11InsurAutoML_6_utils_2_c_5_base_8maxloc(__pyx_self, ((PyArrayObject *)__pyx_v_vlist));
+
+  /* function exit code */
+  goto __pyx_L0;
+  __pyx_L1_error:;
+  __pyx_r = NULL;
+  __pyx_L0:;
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+static PyObject *__pyx_pf_11InsurAutoML_6_utils_2_c_5_base_8maxloc(CYTHON_UNUSED PyObject *__pyx_self, PyArrayObject *__pyx_v_vlist) {
+  __Pyx_LocalBuf_ND __pyx_pybuffernd_vlist;
+  __Pyx_Buffer __pyx_pybuffer_vlist;
+  PyObject *__pyx_r = NULL;
+  __Pyx_RefNannyDeclarations
+  PyObject *__pyx_t_1 = NULL;
+  int __pyx_lineno = 0;
+  const char *__pyx_filename = NULL;
+  int __pyx_clineno = 0;
+  __Pyx_RefNannySetupContext("maxloc", 0);
+  __pyx_pybuffer_vlist.pybuffer.buf = NULL;
+  __pyx_pybuffer_vlist.refcount = 0;
+  __pyx_pybuffernd_vlist.data = NULL;
+  __pyx_pybuffernd_vlist.rcbuffer = &__pyx_pybuffer_vlist;
+  {
+    __Pyx_BufFmt_StackElem __pyx_stack[1];
+    if (unlikely(__Pyx_GetBufferAndValidate(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer, (PyObject*)__pyx_v_vlist, &__Pyx_TypeInfo_nn___pyx_t_11InsurAutoML_6_utils_2_c_5_base_FLOAT, PyBUF_FORMAT| PyBUF_C_CONTIGUOUS, 1, 0, __pyx_stack) == -1)) __PYX_ERR(0, 137, __pyx_L1_error)
+  }
+  __pyx_pybuffernd_vlist.diminfo[0].strides = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.strides[0]; __pyx_pybuffernd_vlist.diminfo[0].shape = __pyx_pybuffernd_vlist.rcbuffer->pybuffer.shape[0];
+  __Pyx_XDECREF(__pyx_r);
+  __pyx_t_1 = __Pyx_PyInt_From_int(__pyx_f_11InsurAutoML_6_utils_2_c_5_base_maxloc(__pyx_v_vlist, 0)); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 137, __pyx_L1_error)
+  __Pyx_GOTREF(__pyx_t_1);
+  __pyx_r = __pyx_t_1;
+  __pyx_t_1 = 0;
+  goto __pyx_L0;
+
+  /* function exit code */
+  __pyx_L1_error:;
+  __Pyx_XDECREF(__pyx_t_1);
+  { PyObject *__pyx_type, *__pyx_value, *__pyx_tb;
+    __Pyx_PyThreadState_declare
+    __Pyx_PyThreadState_assign
+    __Pyx_ErrFetch(&__pyx_type, &__pyx_value, &__pyx_tb);
+    __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
+  __Pyx_ErrRestore(__pyx_type, __pyx_value, __pyx_tb);}
+  __Pyx_AddTraceback("InsurAutoML._utils._c._base.maxloc", __pyx_clineno, __pyx_lineno, __pyx_filename);
+  __pyx_r = NULL;
+  goto __pyx_L2;
+  __pyx_L0:;
+  __Pyx_SafeReleaseBuffer(&__pyx_pybuffernd_vlist.rcbuffer->pybuffer);
+  __pyx_L2:;
+  __Pyx_XGIVEREF(__pyx_r);
+  __Pyx_RefNannyFinishContext();
+  return __pyx_r;
+}
+
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":735
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -3203,7 +3738,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":736
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":736
  * 
  * cdef inline object PyArray_MultiIterNew1(a):
  *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
@@ -3217,7 +3752,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":735
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":735
  * ctypedef npy_cdouble     complex_t
  * 
  * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
@@ -3236,7 +3771,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":738
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":738
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -3253,7 +3788,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":739
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":739
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
@@ -3267,7 +3802,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":738
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":738
  *     return PyArray_MultiIterNew(1, <void*>a)
  * 
  * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
@@ -3286,7 +3821,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":741
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":741
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -3303,7 +3838,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":742
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":742
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
@@ -3317,7 +3852,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":741
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":741
  *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
  * 
  * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
@@ -3336,7 +3871,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":744
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":744
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -3353,7 +3888,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":745
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":745
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
@@ -3367,7 +3902,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":744
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":744
  *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
  * 
  * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
@@ -3386,7 +3921,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":747
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":747
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -3403,7 +3938,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":748
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":748
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
@@ -3417,7 +3952,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   __pyx_t_1 = 0;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":747
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":747
  *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
  * 
  * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
@@ -3436,7 +3971,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":750
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":750
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
@@ -3450,7 +3985,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("PyDataType_SHAPE", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":751
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":751
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
@@ -3460,7 +3995,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   __pyx_t_1 = (PyDataType_HASSUBARRAY(__pyx_v_d) != 0);
   if (__pyx_t_1) {
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":752
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":752
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):
  *         return <tuple>d.subarray.shape             # <<<<<<<<<<<<<<
@@ -3472,7 +4007,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     __pyx_r = ((PyObject*)__pyx_v_d->subarray->shape);
     goto __pyx_L0;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":751
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":751
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):
  *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
@@ -3481,7 +4016,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
  */
   }
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":754
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":754
  *         return <tuple>d.subarray.shape
  *     else:
  *         return ()             # <<<<<<<<<<<<<<
@@ -3495,7 +4030,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
     goto __pyx_L0;
   }
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":750
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":750
  *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
  * 
  * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
@@ -3510,7 +4045,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyDataType_SHAPE(PyArray_Descr *__
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":929
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":929
  *     int _import_umath() except -1
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -3522,7 +4057,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("set_array_base", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":930
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":930
  * 
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!             # <<<<<<<<<<<<<<
@@ -3531,7 +4066,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   Py_INCREF(__pyx_v_base);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":931
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":931
  * cdef inline void set_array_base(ndarray arr, object base):
  *     Py_INCREF(base) # important to do this before stealing the reference below!
  *     PyArray_SetBaseObject(arr, base)             # <<<<<<<<<<<<<<
@@ -3540,7 +4075,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
  */
   (void)(PyArray_SetBaseObject(__pyx_v_arr, __pyx_v_base));
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":929
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":929
  *     int _import_umath() except -1
  * 
  * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
@@ -3552,7 +4087,7 @@ static CYTHON_INLINE void __pyx_f_5numpy_set_array_base(PyArrayObject *__pyx_v_a
   __Pyx_RefNannyFinishContext();
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":933
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":933
  *     PyArray_SetBaseObject(arr, base)
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -3567,7 +4102,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("get_array_base", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":934
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":934
  * 
  * cdef inline object get_array_base(ndarray arr):
  *     base = PyArray_BASE(arr)             # <<<<<<<<<<<<<<
@@ -3576,7 +4111,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  */
   __pyx_v_base = PyArray_BASE(__pyx_v_arr);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":935
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":935
  * cdef inline object get_array_base(ndarray arr):
  *     base = PyArray_BASE(arr)
  *     if base is NULL:             # <<<<<<<<<<<<<<
@@ -3586,7 +4121,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_t_1 = ((__pyx_v_base == NULL) != 0);
   if (__pyx_t_1) {
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":936
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":936
  *     base = PyArray_BASE(arr)
  *     if base is NULL:
  *         return None             # <<<<<<<<<<<<<<
@@ -3597,7 +4132,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
     __pyx_r = Py_None; __Pyx_INCREF(Py_None);
     goto __pyx_L0;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":935
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":935
  * cdef inline object get_array_base(ndarray arr):
  *     base = PyArray_BASE(arr)
  *     if base is NULL:             # <<<<<<<<<<<<<<
@@ -3606,7 +4141,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
  */
   }
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":937
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":937
  *     if base is NULL:
  *         return None
  *     return <object>base             # <<<<<<<<<<<<<<
@@ -3618,7 +4153,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   __pyx_r = ((PyObject *)__pyx_v_base);
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":933
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":933
  *     PyArray_SetBaseObject(arr, base)
  * 
  * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
@@ -3633,7 +4168,7 @@ static CYTHON_INLINE PyObject *__pyx_f_5numpy_get_array_base(PyArrayObject *__py
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":941
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":941
  * # Versions of the import_* functions which are more suitable for
  * # Cython code.
  * cdef inline int import_array() except -1:             # <<<<<<<<<<<<<<
@@ -3657,7 +4192,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("import_array", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":942
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":942
  * # Cython code.
  * cdef inline int import_array() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3673,7 +4208,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":943
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":943
  * cdef inline int import_array() except -1:
  *     try:
  *         __pyx_import_array()             # <<<<<<<<<<<<<<
@@ -3682,7 +4217,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
  */
       __pyx_t_4 = _import_array(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 943, __pyx_L3_error)
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":942
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":942
  * # Cython code.
  * cdef inline int import_array() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3696,7 +4231,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     goto __pyx_L8_try_end;
     __pyx_L3_error:;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":944
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":944
  *     try:
  *         __pyx_import_array()
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -3711,7 +4246,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":945
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":945
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
@@ -3727,7 +4262,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":942
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":942
  * # Cython code.
  * cdef inline int import_array() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3742,7 +4277,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
     __pyx_L8_try_end:;
   }
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":941
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":941
  * # Versions of the import_* functions which are more suitable for
  * # Cython code.
  * cdef inline int import_array() except -1:             # <<<<<<<<<<<<<<
@@ -3765,7 +4300,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_array(void) {
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":947
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":947
  *         raise ImportError("numpy.core.multiarray failed to import")
  * 
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
@@ -3789,7 +4324,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("import_umath", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":948
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":948
  * 
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3805,7 +4340,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":949
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":949
  * cdef inline int import_umath() except -1:
  *     try:
  *         _import_umath()             # <<<<<<<<<<<<<<
@@ -3814,7 +4349,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
  */
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 949, __pyx_L3_error)
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":948
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":948
  * 
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3828,7 +4363,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     goto __pyx_L8_try_end;
     __pyx_L3_error:;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":950
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":950
  *     try:
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -3843,7 +4378,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":951
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":951
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -3859,7 +4394,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":948
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":948
  * 
  * cdef inline int import_umath() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3874,7 +4409,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
     __pyx_L8_try_end:;
   }
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":947
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":947
  *         raise ImportError("numpy.core.multiarray failed to import")
  * 
  * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
@@ -3897,7 +4432,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_umath(void) {
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":953
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":953
  *         raise ImportError("numpy.core.umath failed to import")
  * 
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
@@ -3921,7 +4456,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
   int __pyx_clineno = 0;
   __Pyx_RefNannySetupContext("import_ufunc", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":954
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":954
  * 
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3937,7 +4472,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __Pyx_XGOTREF(__pyx_t_3);
     /*try:*/ {
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":955
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":955
  * cdef inline int import_ufunc() except -1:
  *     try:
  *         _import_umath()             # <<<<<<<<<<<<<<
@@ -3946,7 +4481,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
  */
       __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 955, __pyx_L3_error)
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":954
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":954
  * 
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -3960,7 +4495,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     goto __pyx_L8_try_end;
     __pyx_L3_error:;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":956
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":956
  *     try:
  *         _import_umath()
  *     except Exception:             # <<<<<<<<<<<<<<
@@ -3975,7 +4510,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
       __Pyx_GOTREF(__pyx_t_6);
       __Pyx_GOTREF(__pyx_t_7);
 
-      /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":957
+      /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":957
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -3991,7 +4526,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     goto __pyx_L5_except_error;
     __pyx_L5_except_error:;
 
-    /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":954
+    /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":954
  * 
  * cdef inline int import_ufunc() except -1:
  *     try:             # <<<<<<<<<<<<<<
@@ -4006,7 +4541,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
     __pyx_L8_try_end:;
   }
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":953
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":953
  *         raise ImportError("numpy.core.umath failed to import")
  * 
  * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
@@ -4029,7 +4564,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_import_ufunc(void) {
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":967
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":967
  * 
  * 
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
@@ -4042,7 +4577,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("is_timedelta64_object", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":979
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":979
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyTimedeltaArrType_Type)             # <<<<<<<<<<<<<<
@@ -4052,7 +4587,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyTimedeltaArrType_Type));
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":967
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":967
  * 
  * 
  * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
@@ -4066,7 +4601,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_timedelta64_object(PyObject *__pyx_v_
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":982
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":982
  * 
  * 
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
@@ -4079,7 +4614,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("is_datetime64_object", 0);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":994
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":994
  *     bool
  *     """
  *     return PyObject_TypeCheck(obj, &PyDatetimeArrType_Type)             # <<<<<<<<<<<<<<
@@ -4089,7 +4624,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
   __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyDatetimeArrType_Type));
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":982
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":982
  * 
  * 
  * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
@@ -4103,7 +4638,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":997
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":997
  * 
  * 
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -4114,7 +4649,7 @@ static CYTHON_INLINE int __pyx_f_5numpy_is_datetime64_object(PyObject *__pyx_v_o
 static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *__pyx_v_obj) {
   npy_datetime __pyx_r;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1004
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1004
  *     also needed.  That can be found using `get_datetime64_unit`.
  *     """
  *     return (<PyDatetimeScalarObject*>obj).obval             # <<<<<<<<<<<<<<
@@ -4124,7 +4659,7 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
   __pyx_r = ((PyDatetimeScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":997
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":997
  * 
  * 
  * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -4137,7 +4672,7 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1007
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1007
  * 
  * 
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -4148,7 +4683,7 @@ static CYTHON_INLINE npy_datetime __pyx_f_5numpy_get_datetime64_value(PyObject *
 static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject *__pyx_v_obj) {
   npy_timedelta __pyx_r;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1011
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1011
  *     returns the int64 value underlying scalar numpy timedelta64 object
  *     """
  *     return (<PyTimedeltaScalarObject*>obj).obval             # <<<<<<<<<<<<<<
@@ -4158,7 +4693,7 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
   __pyx_r = ((PyTimedeltaScalarObject *)__pyx_v_obj)->obval;
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1007
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1007
  * 
  * 
  * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -4171,7 +4706,7 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
   return __pyx_r;
 }
 
-/* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1014
+/* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1014
  * 
  * 
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -4182,7 +4717,7 @@ static CYTHON_INLINE npy_timedelta __pyx_f_5numpy_get_timedelta64_value(PyObject
 static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObject *__pyx_v_obj) {
   NPY_DATETIMEUNIT __pyx_r;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1018
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1018
  *     returns the unit part of the dtype for a numpy datetime64 object.
  *     """
  *     return <NPY_DATETIMEUNIT>(<PyDatetimeScalarObject*>obj).obmeta.base             # <<<<<<<<<<<<<<
@@ -4190,7 +4725,7 @@ static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObjec
   __pyx_r = ((NPY_DATETIMEUNIT)((PyDatetimeScalarObject *)__pyx_v_obj)->obmeta.base);
   goto __pyx_L0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1014
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1014
  * 
  * 
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -4204,6 +4739,11 @@ static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObjec
 }
 
 static PyMethodDef __pyx_methods[] = {
+  {"random_guess", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_1random_guess, METH_VARARGS|METH_KEYWORDS, 0},
+  {"random_index", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_3random_index, METH_VARARGS|METH_KEYWORDS, 0},
+  {"random_list", (PyCFunction)(void*)(PyCFunctionWithKeywords)__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_5random_list, METH_VARARGS|METH_KEYWORDS, 0},
+  {"minloc", (PyCFunction)__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_7minloc, METH_O, 0},
+  {"maxloc", (PyCFunction)__pyx_pw_11InsurAutoML_6_utils_2_c_5_base_9maxloc, METH_O, 0},
   {0, 0, 0, 0}
 };
 
@@ -4266,9 +4806,11 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_format, __pyx_k_format, sizeof(__pyx_k_format), 0, 0, 1, 1},
   {&__pyx_n_s_import, __pyx_k_import, sizeof(__pyx_k_import), 0, 0, 1, 1},
   {&__pyx_n_s_main, __pyx_k_main, sizeof(__pyx_k_main), 0, 0, 1, 1},
+  {&__pyx_n_s_n, __pyx_k_n, sizeof(__pyx_k_n), 0, 0, 1, 1},
   {&__pyx_n_s_name, __pyx_k_name, sizeof(__pyx_k_name), 0, 0, 1, 1},
   {&__pyx_n_s_ndarray, __pyx_k_ndarray, sizeof(__pyx_k_ndarray), 0, 0, 1, 1},
   {&__pyx_n_s_np, __pyx_k_np, sizeof(__pyx_k_np), 0, 0, 1, 1},
+  {&__pyx_n_s_number, __pyx_k_number, sizeof(__pyx_k_number), 0, 0, 1, 1},
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_kp_s_numpy_core_multiarray_failed_to, __pyx_k_numpy_core_multiarray_failed_to, sizeof(__pyx_k_numpy_core_multiarray_failed_to), 0, 0, 1, 0},
   {&__pyx_kp_s_numpy_core_umath_failed_to_impor, __pyx_k_numpy_core_umath_failed_to_impor, sizeof(__pyx_k_numpy_core_umath_failed_to_impor), 0, 0, 1, 0},
@@ -4281,13 +4823,15 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_seed, __pyx_k_seed, sizeof(__pyx_k_seed), 0, 0, 1, 1},
   {&__pyx_n_s_shape, __pyx_k_shape, sizeof(__pyx_k_shape), 0, 0, 1, 1},
   {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
+  {&__pyx_n_s_total, __pyx_k_total, sizeof(__pyx_k_total), 0, 0, 1, 1},
+  {&__pyx_n_s_vlist, __pyx_k_vlist, sizeof(__pyx_k_vlist), 0, 0, 1, 1},
   {&__pyx_n_s_warn, __pyx_k_warn, sizeof(__pyx_k_warn), 0, 0, 1, 1},
   {&__pyx_n_s_warnings, __pyx_k_warnings, sizeof(__pyx_k_warnings), 0, 0, 1, 1},
   {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
 };
 static CYTHON_SMALL_CODE int __Pyx_InitCachedBuiltins(void) {
-  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 90, __pyx_L1_error)
+  __pyx_builtin_ValueError = __Pyx_GetBuiltinName(__pyx_n_s_ValueError); if (!__pyx_builtin_ValueError) __PYX_ERR(0, 88, __pyx_L1_error)
   __pyx_builtin_ImportError = __Pyx_GetBuiltinName(__pyx_n_s_ImportError); if (!__pyx_builtin_ImportError) __PYX_ERR(1, 945, __pyx_L1_error)
   return 0;
   __pyx_L1_error:;
@@ -4298,14 +4842,14 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":74
+  /* "InsurAutoML/_utils/_c/_base.pyx":72
  *         return 0
  *     else:
  *         return np.random.randint(0, 2)             # <<<<<<<<<<<<<<
  * 
  * # Return random index of a list (unique values only)
  */
-  __pyx_tuple_ = PyTuple_Pack(2, __pyx_int_0, __pyx_int_2); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 74, __pyx_L1_error)
+  __pyx_tuple_ = PyTuple_Pack(2, __pyx_int_0, __pyx_int_2); if (unlikely(!__pyx_tuple_)) __PYX_ERR(0, 72, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple_);
   __Pyx_GIVEREF(__pyx_tuple_);
 
@@ -4313,14 +4857,14 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
  * 
  *     if len(vlist) == 0:
  *         raise ValueError("Invalid List!")             # <<<<<<<<<<<<<<
- *     else :
+ *     else:
  *         # check whether multi-dimensional array
  */
   __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_s_Invalid_List); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(0, 125, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_tuple__2);
   __Pyx_GIVEREF(__pyx_tuple__2);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":945
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":945
  *         __pyx_import_array()
  *     except Exception:
  *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
@@ -4331,7 +4875,7 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
   __Pyx_GOTREF(__pyx_tuple__3);
   __Pyx_GIVEREF(__pyx_tuple__3);
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":951
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":951
  *         _import_umath()
  *     except Exception:
  *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
@@ -4674,50 +5218,50 @@ if (!__Pyx_RefNanny) {
   if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   #endif
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":44
+  /* "InsurAutoML/_utils/_c/_base.pyx":42
  * 
  * 
  * import warnings             # <<<<<<<<<<<<<<
  * import cython
  * import numpy as np
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_warnings, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_warnings, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_warnings, __pyx_t_1) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_warnings, __pyx_t_1) < 0) __PYX_ERR(0, 42, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":46
+  /* "InsurAutoML/_utils/_c/_base.pyx":44
  * import warnings
  * import cython
  * import numpy as np             # <<<<<<<<<<<<<<
  * import pandas as pd
  * 
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 46, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 44, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 46, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_np, __pyx_t_1) < 0) __PYX_ERR(0, 44, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":47
+  /* "InsurAutoML/_utils/_c/_base.pyx":45
  * import cython
  * import numpy as np
  * import pandas as pd             # <<<<<<<<<<<<<<
  * 
  * cimport numpy as cnp
  */
-  __pyx_t_1 = __Pyx_Import(__pyx_n_s_pandas, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 47, __pyx_L1_error)
+  __pyx_t_1 = __Pyx_Import(__pyx_n_s_pandas, 0, -1); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 45, __pyx_L1_error)
   __Pyx_GOTREF(__pyx_t_1);
-  if (PyDict_SetItem(__pyx_d, __pyx_n_s_pd, __pyx_t_1) < 0) __PYX_ERR(0, 47, __pyx_L1_error)
+  if (PyDict_SetItem(__pyx_d, __pyx_n_s_pd, __pyx_t_1) < 0) __PYX_ERR(0, 45, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "InsurAutoML/_utils/_c/_base.pyx":51
+  /* "InsurAutoML/_utils/_c/_base.pyx":49
  * cimport numpy as cnp
  * 
  * cnp.import_array()             # <<<<<<<<<<<<<<
  * 
  * ctypedef cnp.npy_float FLOAT
  */
-  __pyx_t_2 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 51, __pyx_L1_error)
+  __pyx_t_2 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 49, __pyx_L1_error)
 
   /* "InsurAutoML/_utils/_c/_base.pyx":1
  * """             # <<<<<<<<<<<<<<
@@ -4729,7 +5273,7 @@ if (!__Pyx_RefNanny) {
   if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
   __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
 
-  /* "../../.local/lib/python3.8/site-packages/numpy/__init__.pxd":1014
+  /* "../../anaconda3/envs/pytorch/lib/python3.9/site-packages/numpy/__init__.pxd":1014
  * 
  * 
  * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
@@ -5183,6 +5727,148 @@ static void __Pyx_WriteUnraisable(const char *name, CYTHON_UNUSED int clineno,
     if (nogil)
         PyGILState_Release(state);
 #endif
+}
+
+/* RaiseDoubleKeywords */
+static void __Pyx_RaiseDoubleKeywordsError(
+    const char* func_name,
+    PyObject* kw_name)
+{
+    PyErr_Format(PyExc_TypeError,
+        #if PY_MAJOR_VERSION >= 3
+        "%s() got multiple values for keyword argument '%U'", func_name, kw_name);
+        #else
+        "%s() got multiple values for keyword argument '%s'", func_name,
+        PyString_AsString(kw_name));
+        #endif
+}
+
+/* ParseKeywords */
+static int __Pyx_ParseOptionalKeywords(
+    PyObject *kwds,
+    PyObject **argnames[],
+    PyObject *kwds2,
+    PyObject *values[],
+    Py_ssize_t num_pos_args,
+    const char* function_name)
+{
+    PyObject *key = 0, *value = 0;
+    Py_ssize_t pos = 0;
+    PyObject*** name;
+    PyObject*** first_kw_arg = argnames + num_pos_args;
+    while (PyDict_Next(kwds, &pos, &key, &value)) {
+        name = first_kw_arg;
+        while (*name && (**name != key)) name++;
+        if (*name) {
+            values[name-argnames] = value;
+            continue;
+        }
+        name = first_kw_arg;
+        #if PY_MAJOR_VERSION < 3
+        if (likely(PyString_Check(key))) {
+            while (*name) {
+                if ((CYTHON_COMPILING_IN_PYPY || PyString_GET_SIZE(**name) == PyString_GET_SIZE(key))
+                        && _PyString_Eq(**name, key)) {
+                    values[name-argnames] = value;
+                    break;
+                }
+                name++;
+            }
+            if (*name) continue;
+            else {
+                PyObject*** argname = argnames;
+                while (argname != first_kw_arg) {
+                    if ((**argname == key) || (
+                            (CYTHON_COMPILING_IN_PYPY || PyString_GET_SIZE(**argname) == PyString_GET_SIZE(key))
+                             && _PyString_Eq(**argname, key))) {
+                        goto arg_passed_twice;
+                    }
+                    argname++;
+                }
+            }
+        } else
+        #endif
+        if (likely(PyUnicode_Check(key))) {
+            while (*name) {
+                int cmp = (**name == key) ? 0 :
+                #if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION >= 3
+                    (__Pyx_PyUnicode_GET_LENGTH(**name) != __Pyx_PyUnicode_GET_LENGTH(key)) ? 1 :
+                #endif
+                    PyUnicode_Compare(**name, key);
+                if (cmp < 0 && unlikely(PyErr_Occurred())) goto bad;
+                if (cmp == 0) {
+                    values[name-argnames] = value;
+                    break;
+                }
+                name++;
+            }
+            if (*name) continue;
+            else {
+                PyObject*** argname = argnames;
+                while (argname != first_kw_arg) {
+                    int cmp = (**argname == key) ? 0 :
+                    #if !CYTHON_COMPILING_IN_PYPY && PY_MAJOR_VERSION >= 3
+                        (__Pyx_PyUnicode_GET_LENGTH(**argname) != __Pyx_PyUnicode_GET_LENGTH(key)) ? 1 :
+                    #endif
+                        PyUnicode_Compare(**argname, key);
+                    if (cmp < 0 && unlikely(PyErr_Occurred())) goto bad;
+                    if (cmp == 0) goto arg_passed_twice;
+                    argname++;
+                }
+            }
+        } else
+            goto invalid_keyword_type;
+        if (kwds2) {
+            if (unlikely(PyDict_SetItem(kwds2, key, value))) goto bad;
+        } else {
+            goto invalid_keyword;
+        }
+    }
+    return 0;
+arg_passed_twice:
+    __Pyx_RaiseDoubleKeywordsError(function_name, key);
+    goto bad;
+invalid_keyword_type:
+    PyErr_Format(PyExc_TypeError,
+        "%.200s() keywords must be strings", function_name);
+    goto bad;
+invalid_keyword:
+    PyErr_Format(PyExc_TypeError,
+    #if PY_MAJOR_VERSION < 3
+        "%.200s() got an unexpected keyword argument '%.200s'",
+        function_name, PyString_AsString(key));
+    #else
+        "%s() got an unexpected keyword argument '%U'",
+        function_name, key);
+    #endif
+bad:
+    return -1;
+}
+
+/* RaiseArgTupleInvalid */
+static void __Pyx_RaiseArgtupleInvalid(
+    const char* func_name,
+    int exact,
+    Py_ssize_t num_min,
+    Py_ssize_t num_max,
+    Py_ssize_t num_found)
+{
+    Py_ssize_t num_expected;
+    const char *more_or_less;
+    if (num_found < num_min) {
+        num_expected = num_min;
+        more_or_less = "at least";
+    } else {
+        num_expected = num_max;
+        more_or_less = "at most";
+    }
+    if (exact) {
+        more_or_less = "exactly";
+    }
+    PyErr_Format(PyExc_TypeError,
+                 "%.200s() takes %.8s %" CYTHON_FORMAT_SSIZE_T "d positional argument%.1s (%" CYTHON_FORMAT_SSIZE_T "d given)",
+                 func_name, more_or_less, num_expected,
+                 (num_expected == 1) ? "" : "s", num_found);
 }
 
 /* ExtTypeTest */
@@ -5915,6 +6601,27 @@ static int __Pyx__GetBufferAndValidate(
 fail:;
   __Pyx_SafeReleaseBuffer(buf);
   return -1;
+}
+
+/* ArgTypeTest */
+  static int __Pyx__ArgTypeTest(PyObject *obj, PyTypeObject *type, const char *name, int exact)
+{
+    if (unlikely(!type)) {
+        PyErr_SetString(PyExc_SystemError, "Missing type object");
+        return 0;
+    }
+    else if (exact) {
+        #if PY_MAJOR_VERSION == 2
+        if ((type == &PyBaseString_Type) && likely(__Pyx_PyBaseString_CheckExact(obj))) return 1;
+        #endif
+    }
+    else {
+        if (likely(__Pyx_TypeCheck(obj, type))) return 1;
+    }
+    PyErr_Format(PyExc_TypeError,
+        "Argument '%.200s' has incorrect type (expected %.200s, got %.200s)",
+        name, type->tp_name, Py_TYPE(obj)->tp_name);
+    return 0;
 }
 
 /* BufferFallbackError */
@@ -6767,44 +7474,6 @@ static void __Pyx_ReleaseBuffer(Py_buffer *view) {
     #endif
 #endif
 
-/* CIntToPy */
-  static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
-#ifdef __Pyx_HAS_GCC_DIAGNOSTIC
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wconversion"
-#endif
-    const int neg_one = (int) -1, const_zero = (int) 0;
-#ifdef __Pyx_HAS_GCC_DIAGNOSTIC
-#pragma GCC diagnostic pop
-#endif
-    const int is_unsigned = neg_one > const_zero;
-    if (is_unsigned) {
-        if (sizeof(int) < sizeof(long)) {
-            return PyInt_FromLong((long) value);
-        } else if (sizeof(int) <= sizeof(unsigned long)) {
-            return PyLong_FromUnsignedLong((unsigned long) value);
-#ifdef HAVE_LONG_LONG
-        } else if (sizeof(int) <= sizeof(unsigned PY_LONG_LONG)) {
-            return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG) value);
-#endif
-        }
-    } else {
-        if (sizeof(int) <= sizeof(long)) {
-            return PyInt_FromLong((long) value);
-#ifdef HAVE_LONG_LONG
-        } else if (sizeof(int) <= sizeof(PY_LONG_LONG)) {
-            return PyLong_FromLongLong((PY_LONG_LONG) value);
-#endif
-        }
-    }
-    {
-        int one = 1; int little = (int)*(unsigned char *)&one;
-        unsigned char *bytes = (unsigned char *)&value;
-        return _PyLong_FromByteArray(bytes, sizeof(int),
-                                     little, !is_unsigned);
-    }
-}
-
 /* CIntFromPy */
   static CYTHON_INLINE int __Pyx_PyInt_As_int(PyObject *x) {
 #ifdef __Pyx_HAS_GCC_DIAGNOSTIC
@@ -6999,6 +7668,44 @@ raise_neg_overflow:
     PyErr_SetString(PyExc_OverflowError,
         "can't convert negative value to int");
     return (int) -1;
+}
+
+/* CIntToPy */
+  static CYTHON_INLINE PyObject* __Pyx_PyInt_From_int(int value) {
+#ifdef __Pyx_HAS_GCC_DIAGNOSTIC
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wconversion"
+#endif
+    const int neg_one = (int) -1, const_zero = (int) 0;
+#ifdef __Pyx_HAS_GCC_DIAGNOSTIC
+#pragma GCC diagnostic pop
+#endif
+    const int is_unsigned = neg_one > const_zero;
+    if (is_unsigned) {
+        if (sizeof(int) < sizeof(long)) {
+            return PyInt_FromLong((long) value);
+        } else if (sizeof(int) <= sizeof(unsigned long)) {
+            return PyLong_FromUnsignedLong((unsigned long) value);
+#ifdef HAVE_LONG_LONG
+        } else if (sizeof(int) <= sizeof(unsigned PY_LONG_LONG)) {
+            return PyLong_FromUnsignedLongLong((unsigned PY_LONG_LONG) value);
+#endif
+        }
+    } else {
+        if (sizeof(int) <= sizeof(long)) {
+            return PyInt_FromLong((long) value);
+#ifdef HAVE_LONG_LONG
+        } else if (sizeof(int) <= sizeof(PY_LONG_LONG)) {
+            return PyLong_FromLongLong((PY_LONG_LONG) value);
+#endif
+        }
+    }
+    {
+        int one = 1; int little = (int)*(unsigned char *)&one;
+        unsigned char *bytes = (unsigned char *)&value;
+        return _PyLong_FromByteArray(bytes, sizeof(int),
+                                     little, !is_unsigned);
+    }
 }
 
 /* CIntToPy */

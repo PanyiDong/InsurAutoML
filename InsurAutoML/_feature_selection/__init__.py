@@ -11,7 +11,7 @@ File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:06:09 pm
+Last Modified: Sunday, 20th November 2022 12:52:49 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,39 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from InsurAutoML._base import no_processing
+from ._filter import (
+    FeatureFilter,
+    mRMR,
+    # FOCI,
+)
+from ._wrapper import (
+    # ExhaustiveFS,
+    SFS,
+    ASFFS,
+)
+from ._embed import (
+    # PCA_FeatureSelection,
+    # LDASelection,
+    RBFSampler,
+)
+from ._hybrid import (
+    CBFS,
+    GeneticAlgorithm,
+)
+
+from ._sklearn import (
+    extra_trees_preproc_for_classification,
+    extra_trees_preproc_for_regression,
+    liblinear_svc_preprocessor,
+    polynomial,
+    select_percentile_classification,
+    select_percentile_regression,
+    select_rates_classification,
+    select_rates_regression,
+    truncatedSVD,
+)
+
 """
 Note: Aug. 8, 2022
 The feature selection methods are arranged more systematically, which uses the categories defined
@@ -52,8 +85,6 @@ Other methods are imported and only called here.
 [1] Chandrashekar, G., & Sahin, F. (2014). A survey on feature selection methods. Computers & Electrical Engineering, 40(1), 16-28.
 """
 
-
-from InsurAutoML._base import no_processing
 feature_selections = {
     "no_processing": no_processing,
     # "LDASelection": LDASelection,
@@ -129,3 +160,24 @@ feature_selections["select_percentile_regression"] = select_percentile_regressio
 feature_selections["select_rates_classification"] = select_rates_classification
 feature_selections["select_rates_regression"] = select_rates_regression
 feature_selections["truncatedSVD"] = truncatedSVD
+
+
+__all__ = [
+    "no_processing",
+    "FeatureFilter",
+    "mRMR",
+    "SFS",
+    "ASFFS",
+    "RBFSampler",
+    "CBFS",
+    "GeneticAlgorithm",
+    "extra_trees_preproc_for_classification",
+    "extra_trees_preproc_for_regression",
+    "liblinear_svc_preprocessor",
+    "polynomial",
+    "select_percentile_classification",
+    "select_percentile_regression",
+    "select_rates_classification",
+    "select_rates_regression",
+    "truncatedSVD",
+]

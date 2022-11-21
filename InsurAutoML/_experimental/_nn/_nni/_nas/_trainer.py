@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:26:59 pm
+Last Modified: Monday, 21st November 2022 3:01:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,20 +38,26 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import annotations
+
+from typing import Union, List, Dict, Any
 import os
 import json
 import shutil
 import numpy as np
 import pandas as pd
 import torch
+from torch.utils.data import DataLoader
 import nni
 from nni.retiarii import fixed_arch
 from nni.retiarii.experiment.pytorch import RetiariiExperiment, RetiariiExeConfig
 
-from InsurAutoML._utils._tensor import CustomTensorDataset
-from ._utils import get_strategy, get_search_space
-from ._buildModel import build_model
+from InsurAutoML._utils._tensor import SerialTensorDataset
+from InsurAutoML._experimental._nn._nni._nas._utils import get_strategy, get_search_space
+from InsurAutoML._experimental._nn._nni._nas._buildModel import build_model
+from InsurAutoML._experimental._nn._nni._nas._evaulatorPL import get_evaluator
 
+DataLoader = nni.trace(DataLoader)
 
 NNI_VERBOSE = [
     # "fatal",
@@ -63,9 +69,10 @@ NNI_VERBOSE = [
 ]
 
 
-class Trainer(object):
+class Trainer:
     def __init__(
         self,
+        preprocessor=None,
         search_space="MLP",
         max_evals=10,
         timeout=3600 * 24,
@@ -81,6 +88,7 @@ class Trainer(object):
         temp_directory="tmp",
         verbose=0,
     ):
+        self.preprocessor = preprocessor
         self.search_space = get_search_space(search_space)
         self.max_evals = max_evals
         self.timeout = timeout
@@ -97,104 +105,153 @@ class Trainer(object):
         self.temp_directory = temp_directory
         self.verbose = verbose
 
-    def train(self, train, test, inputSize, outputSize):
+     # must use function to wrap the dataset for serialization
+    @staticmethod
+    def _prep_dataset(X, y):
+        # format to tensor
+        if not isinstance(
+                X, torch.Tensor) or not isinstance(
+                y, torch.Tensor):
+            # dataframe cannot be directly converted to tensor
+            if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
+                X = torch.tensor(X.values, dtype=torch.float32)
+                y = torch.tensor(y.values)
+            else:
+                X = torch.tensor(X, dtype=torch.float32)
+                y = torch.tensor(y)
 
-        # must use function to wrap the dataset for serialization
-        @nni.trace
-        def _prep_dataset(X, y):
-            # format to tensor
-            if not isinstance(
-                    X, torch.Tensor) or not isinstance(
-                    y, torch.Tensor):
-                # dataframe cannot be directly converted to tensor
-                if isinstance(X, pd.DataFrame) or isinstance(y, pd.DataFrame):
-                    X = torch.tensor(X.values, dtype=torch.float32)
-                    y = torch.tensor(y.values)
-                else:
-                    X = torch.tensor(X, dtype=torch.float32)
-                    y = torch.tensor(y)
+        return SerialTensorDataset(X, y)
 
-            return CustomTensorDataset(X, y, format="tuple")
+    @staticmethod
+    def _prep_loader(data, batch_size=32, mode="train"):
 
-        # @nni.trace
-        def _prep_loader(data, batch_size=32, mode="train"):
+        if mode == "train":
+            return DataLoader(
+                data, batch_size=batch_size, shuffle=True  # , drop_last=True
+            )
+        elif mode == "test":
+            return DataLoader(data, batch_size=batch_size)
 
-            from torch.utils.data import DataLoader
+    @staticmethod
+    def _tensor_formatter(data: Any) -> torch.Tensor:
 
-            if mode == "train":
-                return DataLoader(
-                    data, batch_size=batch_size, shuffle=True, drop_last=True
-                )
-            elif mode == "test":
-                return DataLoader(data, batch_size=batch_size)
+        if isinstance(data, pd.DataFrame) or isinstance(data, pd.Series):
+            return torch.tensor(data.values)
+        elif isinstance(data, np.ndarray):
+            return torch.tensor(data)
+        elif isinstance(data, torch.Tensor):
+            return data
+        else:
+            raise TypeError(
+                "Unsupported data type for tensor formatter. Expected pd.DataFrame, np.ndarray, or torch.Tensor, but got %s." % type(data))
+
+    def _data_formatter(self, data: Union[List, Dict, Any]) -> Union[List[torch.Tensor], Dict[str, torch.Tensor], torch.Tensor]:
+        if isinstance(data, list):
+            return [self._tensor_formatter(item) for item in data]
+        if isinstance(data, dict):
+            return {key: self._tensor_formatter(value) for key, value in data.items()}
+        else:
+            return self._tensor_formatter(data)
+
+    # def train(self, train, test, inputSize, outputSize):
+    def train(self, train, test, inputSize=None, outputSize=None, **kwargs):
 
         # unpack data
-        # (X_train, y_train), (X_test, y_test) = train, test
-        # inputSize = X_train.shape[1]
-        # outputSize = len(np.unique(y_train))
+        (X_train, y_train), (X_test, y_test) = train, test
+        # if preprocessor found, use it to preprocess data
+        if self.preprocessor is not None:
+            X_train = self.preprocessor.fit_transform(X_train)
+            X_test = self.preprocessor.transform(X_test)
+
+        # format data
+        X_train, y_train = self._data_formatter(
+            X_train), self._data_formatter(y_train)
+        X_test, y_test = self._data_formatter(
+            X_test), self._data_formatter(y_test)
+
+        # get input and output Size
+        inputSize = X_train.size(dim=-1) if inputSize is None else inputSize
+        outputSize = len(np.unique(y_train)
+                         ) if outputSize is None else outputSize
 
         # if folder existed, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.task_name)):
             shutil.rmtree(os.path.join(self.temp_directory, self.task_name))
         # if folder not exist, create it
         if not os.path.exists(
-            os.path.join(
-                self.temp_directory,
-                self.task_name)):
+                os.path.join(self.temp_directory, self.task_name)):
             os.makedirs(os.path.join(self.temp_directory, self.task_name))
 
+        # get dataset
+        if not os.path.exists(os.path.join(self.temp_directory, self.task_name, "train")):
+            os.makedirs(os.path.join(
+                self.temp_directory, self.task_name, "train"))
+        if not os.path.exists(os.path.join(self.temp_directory, self.task_name, "test")):
+            os.makedirs(os.path.join(
+                self.temp_directory, self.task_name, "test"))
+        trainset = SerialTensorDataset(
+            X_train, y_train, path=os.path.join(self.temp_directory, self.task_name, "train"))
+        testset = SerialTensorDataset(
+            X_test, y_test, path=os.path.join(self.temp_directory, self.task_name, "test"))
+
+        # Update: Nov. 20, 2022
+        # Force using pytorch_lightning evaluator
         # get evaluator
-        # base form evaluator
-        if self.evaluator == "base":
+        # # base form evaluator
+        # if self.evaluator == "base":
 
-            from ._evaluator import get_evaluator
+        #     from ._evaluator import get_evaluator
 
-            self.evaluator = get_evaluator(
-                # trainset=_prep_dataset(X_train, y_train),
-                # testset=_prep_dataset(X_test, y_test),
-                trainset=train,
-                testset=test,
-                batchSize=self.batch_size,
-                optimizer=self.optimizer,
-                criterion=self.criterion,
-                num_epoch=self.num_epoch,
-            )
-        # pytorch-lightning form evaluator
-        elif self.evaluator == "pl":
-            from ._evaulatorPL import get_evaluator
+        #     self.evaluator = get_evaluator(
+        #         trainset=trainset,
+        #         testset=testset,
+        #         # trainset=_prep_loader(train),
+        #         # testset=_prep_loader(test),
+        #         batchSize=self.batch_size,
+        #         optimizer=self.optimizer,
+        #         criterion=self.criterion,
+        #         num_epoch=self.num_epoch,
+        #     )
 
-            self.evaluator = get_evaluator(
-                model=nni.trace(self.search_space)(inputSize, outputSize),
-                # train_set=_prep_dataset(X_train, y_train),
-                # test_set=_prep_dataset(X_test, y_test),
-                train_set=train,
-                test_set=test,
-                batchSize=self.batch_size,
-                criterion=self.criterion,
-                optimizer=self.optimizer,
-                optimizer_lr=self.optimizer_lr,
-                lr_scheduler=self.lr_scheduler,
-                num_epochs=self.num_epoch,
-            )
+        # # pytorch-lightning form evaluator
+        # elif self.evaluator == "pl":
+        self.evaluator = get_evaluator(
+            model=self.search_space(inputSize, outputSize),
+            train_set=trainset,
+            test_set=testset,
+            # train_set=_prep_dataset(X_train, y_train),
+            # test_set=_prep_dataset(X_test, y_test),
+            batchSize=self.batch_size,
+            criterion=self.criterion,
+            optimizer=self.optimizer,
+            optimizer_lr=self.optimizer_lr,
+            lr_scheduler=self.lr_scheduler,
+            num_epochs=self.num_epoch,
+            log_dir=os.path.join(self.temp_directory, self.task_name),
+        )
 
+        # setup experiment settings
         exp = RetiariiExperiment(
-            nni.trace(self.search_space)(inputSize, outputSize),
+            self.search_space(inputSize, outputSize),
             self.evaluator,
             [],
             self.search_strategy,
         )
+        # setup experiment config
         exp_config = RetiariiExeConfig("local")
+        # experiment name
         exp_config.experiment_name = self.task_name
         # exp_config.execution_engine = "oneshot"
+        # number of trials
         exp_config.max_trial_number = self.max_evals
-        exp_config.max_trial_duration = self.timeout
+        # time budget
+        exp_config.max_experiment_duration = self.timeout
         exp_config.trial_concurrency = 1
         exp_config.trial_gpu_number = torch.cuda.device_count()
         exp_config.training_service.use_active_gpu = True
         # exp_config.experiment_working_directory = os.path.join(
         #     self.temp_directory, self.task_name
         # )
-        # exp_config.experiment_name = self.task_name
         exp_config.log_level = NNI_VERBOSE[self.verbose]
         exp.run(exp_config)
         exp.export_data()
@@ -202,23 +259,13 @@ class Trainer(object):
 
         # save the best model architecture
         # initialize the best model
-        for model_dict in exp.export_top_models(formatter="dict"):
-            with open(
-                os.path.join(
-                    self.temp_directory, self.task_name, "optimal_architecture.json"
-                ),
-                "w",
-            ) as outfile:
+        for model_dict in exp.export_top_models(top_k=1, optimize_mode='minimize', formatter="dict"):
+            with open(os.path.join(self.temp_directory, self.task_name, "optimal_architecture.json"), "w",) as outfile:
                 # build model
-                init_model = build_model(
-                    model_dict, inputSize, outputSize, "MLP")
-                torch.save(
-                    init_model,
-                    os.path.join(
-                        self.temp_directory,
-                        self.task_name,
-                        "init_optimal_model.pt"),
-                )
+                init_model = self.search_space.build_model(
+                    model_dict, inputSize, outputSize)
+                torch.save(init_model.state_dict(), os.path.join(
+                    self.temp_directory, self.task_name, "init_optimal_model.pth"),)
                 # save the model dict
                 json.dump(model_dict, outfile)
 

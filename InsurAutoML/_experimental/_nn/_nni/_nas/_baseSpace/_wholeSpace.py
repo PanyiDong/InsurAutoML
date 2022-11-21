@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:26:26 pm
+Last Modified: Monday, 21st November 2022 10:04:47 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,10 +43,12 @@ import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper
 
 from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
-
+from .._buildModel import build_mlp
 
 ##########################################################################
 # MLP Space
+
+
 @model_wrapper
 class MLPBaseSpace(nninn.Module):
     def __init__(
@@ -75,28 +77,12 @@ class MLPBaseSpace(nninn.Module):
         self.net.append(
             nninn.Repeat(
                 lambda index: nninn.Sequential(
-                    nninn.Linear(
-                        nninn.ValueChoice(
-                            [32, 64, 128, 256, 512],
-                            label=f"hiddenSize_at_layer_{index}",
-                        ),
-                        nninn.ValueChoice(
-                            [32, 64, 128, 256, 512],
-                            label=f"hiddenSize_at_layer_{index + 1}",
-                        ),
-                    ),
+                    nninn.Linear(nninn.ValueChoice([32, 64, 128, 256, 512], label=f"hiddenSize_at_layer_{index}",), nninn.ValueChoice(
+                        [32, 64, 128, 256, 512], label=f"hiddenSize_at_layer_{index + 1}",),),
                     nninn.LayerChoice(
-                        ACTIVATIONS, label=f"activation_at_layer_{index}"
-                    ),
-                    nninn.Dropout(
-                        nninn.ValueChoice(
-                            [0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}"
-                        )
-                    ),
-                ),
-                nninn.ValueChoice([1, 2, 3, 4, 5, 6], label="num_hidden_layers"),
-                label="hidden_layers",
-            )
+                        ACTIVATIONS, label=f"activation_at_layer_{index}"),
+                    nninn.Dropout(nninn.ValueChoice([0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}")),),
+                nninn.ValueChoice([1, 2, 3, 4, 5, 6], label="num_hidden_layers"), label="hidden_layers",)
         )
 
         # add output layer
@@ -117,6 +103,10 @@ class MLPBaseSpace(nninn.Module):
         for m in self.modules():
             if isinstance(m, nninn.Linear):
                 how_to_init(m, how)
+
+    @staticmethod
+    def build_model(config, inputSize, outputSize):
+        return build_mlp(config, inputSize, outputSize)
 
 
 @model_wrapper
@@ -141,28 +131,12 @@ class MLPLintSpace(nninn.Module):
         self.net.append(
             nninn.Repeat(
                 lambda index: nninn.Sequential(
-                    nninn.Linear(
-                        nninn.ValueChoice(
-                            [4, 8, 16, 32, 64],
-                            label=f"hiddenSize_at_layer_{index}",
-                        ),
-                        nninn.ValueChoice(
-                            [4, 8, 16, 32, 64],
-                            label=f"hiddenSize_at_layer_{index + 1}",
-                        ),
-                    ),
+                    nninn.Linear(nninn.ValueChoice([4, 8, 16, 32, 64], label=f"hiddenSize_at_layer_{index}",),
+                                 nninn.ValueChoice([4, 8, 16, 32, 64], label=f"hiddenSize_at_layer_{index + 1}",),),
                     nninn.LayerChoice(
-                        ACTIVATIONS, label=f"activation_at_layer_{index}"
-                    ),
-                    nninn.Dropout(
-                        nninn.ValueChoice(
-                            [0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}"
-                        )
-                    ),
-                ),
-                nninn.ValueChoice([1, 2], label="num_hidden_layers"),
-                label="hidden_layers",
-            )
+                        ACTIVATIONS, label=f"activation_at_layer_{index}"),
+                    nninn.Dropout(nninn.ValueChoice([0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}")),),
+                nninn.ValueChoice([1, 2, 3], label="num_hidden_layers"), label="hidden_layers",)
         )
 
         # add output layer
@@ -183,6 +157,10 @@ class MLPLintSpace(nninn.Module):
         for m in self.modules():
             if isinstance(m, nninn.Linear):
                 how_to_init(m, how)
+
+    @staticmethod
+    def build_model(config, inputSize, outputSize):
+        return build_mlp(config, inputSize, outputSize)
 
 
 ##########################################################################

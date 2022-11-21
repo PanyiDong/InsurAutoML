@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 9:46:39 pm
+Last Modified: Monday, 21st November 2022 12:35:36 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,9 +39,9 @@ SOFTWARE.
 """
 
 from typing import Union, Dict, Tuple, List
+import os
 import torch
 from torch.utils.data import Dataset
-
 # detach tensor from the computation graph
 
 
@@ -70,7 +70,8 @@ class CustomTensorDataset(Dataset):
         self.format = format
 
         if len(self.inputs) != len(self.labels):
-            raise ValueError("inputs and labels must have the same length")
+            raise ValueError("inputs and labels must have the same length. Get {} and {}".format(
+                len(inputs), len(labels)))
 
     def __len__(self) -> int:
         return len(self.inputs)
@@ -83,10 +84,47 @@ class CustomTensorDataset(Dataset):
         elif self.format == "list":
             return [self.inputs[idx], self.labels[idx]]
 
+    @property
     def inputSize(self) -> int:
 
         return self.inputs.size()[-1]
 
+    @property
     def outputSize(self) -> int:
 
         return len(self.labels.unique())
+
+
+class SerialTensorDataset(Dataset):
+
+    """Custom Tensor Dataset that can be used for serialization."""
+
+    def __init__(
+        self,
+        inputs: torch.Tensor,
+        labels: torch.Tensor,
+        path: str = "tmp",
+        format: str = "tuple",
+    ) -> None:
+        self.path = path
+        self.format = format
+        self.input = os.path.join(self.path, "input.pt")
+        self.labels = os.path.join(self.path, "labels.pt")
+
+        if len(inputs) != len(labels):
+            raise ValueError("inputs and labels must have the same length. Get {} and {}".format(
+                len(inputs), len(labels)))
+
+        torch.save(inputs.to(torch.float32), self.input)
+        torch.save(labels, self.labels)
+
+    def __len__(self) -> int:
+        return len(torch.load(self.input))
+
+    def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
+        if self.format == "dict":
+            return {"input": torch.load(self.input)[idx], "label": torch.load(self.labels)[idx]}
+        elif self.format == "tuple":
+            return (torch.load(self.input)[idx], torch.load(self.labels)[idx])
+        elif self.format == "list":
+            return [torch.load(self.input)[idx], torch.load(self.labels)[idx]]

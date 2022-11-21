@@ -11,7 +11,7 @@ File Created: Saturday, 12th November 2022 11:15:34 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:26:02 pm
+Last Modified: Saturday, 19th November 2022 10:17:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,4 +38,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._wholeSpace import MLPBaseSpace, RNNBaseSpace
+from ._wholeSpace import MLPBaseSpace, MLPLintSpace, RNNBaseSpace
+from ._head import MLPHead

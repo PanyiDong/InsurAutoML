@@ -11,7 +11,7 @@ File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:18:37 pm
+Last Modified: Sunday, 20th November 2022 12:58:30 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -267,3 +267,53 @@ if torch_spec is not None:
 
     regressors["MLP_Regressor"] = MLP_Regressor
     regressors["RNN_Regressor"] = RNN_Regressor
+
+
+__all__ = [
+    "AdaboostClassifier",
+    "BernoulliNB",
+    "DecisionTreeClassifier",
+    "ExtraTreesClassifier",
+    "GaussianNB",
+    "HistGradientBoostingClassifier",
+    "KNearestNeighborsClassifier",
+    "LDA",
+    "LibLinear_SVC",
+    "LibSVM_SVC",
+    "MLPClassifier",
+    "MultinomialNB",
+    "PassiveAggressive",
+    "QDA",
+    "RandomForestClassifier",
+    "SGDClassifier",
+    "AdaboostRegressor",
+    "ARDRegression",
+    "DecisionTreeRegressor",
+    "ExtraTreesRegressor",
+    "GaussianProcess",
+    "HistGradientBoostingRegressor",
+    "KNearestNeighborsRegressor",
+    "LibLinear_SVR",
+    "LibSVM_SVR",
+    "MLPRegressor",
+    "RandomForestRegressor",
+    "SGDRegressor",
+    "LogisticRegression",
+    "GradientBoostingClassifier",
+    "LinearRegression",
+    "Lasso",
+    "Ridge",
+    "ElasticNet",
+    "BayesianRidge",
+    "GradientBoostingRegressor",
+    "LightGBM_Classifier",
+    "LightGBM_Regressor",
+    "XGBoost_Classifier",
+    "XGBoost_Regressor",
+    "GAM_Classifier",
+    "GAM_Regressor",
+    "MLP_Classifier",
+    "MLP_Regressor",
+    "RNN_Classifier",
+    "RNN_Regressor",
+]

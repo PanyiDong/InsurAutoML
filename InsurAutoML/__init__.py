@@ -1,5 +1,5 @@
 """
-File: __init__.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/__init__.py
-File: __init__.py
+File Created: Wednesday, 16th November 2022 7:23:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 4:04:57 pm
+Last Modified: Saturday, 19th November 2022 7:34:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,12 +38,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# read version from file
+
+
 from .version import _get_version
-
-__version__ = _get_version()
-
 from ._base import no_processing, load_data
+from ._hpo import (
+    AutoTabular,
+    AutoTabularClassifier,
+    AutoTabularRegressor,
+    AutoTextClassifier,
+    AutoNextWordPrediction,
+)
 from ._utils import (
     # random_guess,
     # random_index,
@@ -71,6 +76,11 @@ from ._utils import (
     # get_missing_matrix,
     EDA,
 )
+
+__version__ = _get_version()
+
+# read version from file
+
 
 # from ._encoding import DataEncoding
 
@@ -145,13 +155,6 @@ from ._utils import (
 #     TruncatedSVD,
 # )
 
-from ._hpo import (
-    AutoTabular,
-    AutoTabularClassifier,
-    AutoTabularRegressor,
-    AutoTextClassifier,
-    AutoNextWordPrediction,
-)
 
 # from ._model import classifiers, regressors
 

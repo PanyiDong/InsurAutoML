@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:16:52 pm
+Last Modified: Saturday, 19th November 2022 8:03:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,8 +39,6 @@ SOFTWARE.
 """
 
 
-
-
 import warnings
 import cython
 import numpy as np
@@ -60,10 +58,10 @@ ctypedef cnp.npy_intp INTP
 # An object to be used in Python
 
 # set response to [0, 1] class, random guess at 0.5
-cdef int random_guess(
-    float number, 
-    int seed= 1,
-):    
+cpdef int random_guess(
+    float number,
+    int seed=1,
+):
     if seed != None:
         np.random.seed(seed)
     if number > 0.5:
@@ -72,12 +70,12 @@ cdef int random_guess(
         return 0
     else:
         return np.random.randint(0, 2)
-    
+
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-cdef cnp.ndarray random_index(
-    int n, 
-    int total=0, 
+cpdef cnp.ndarray random_index(
+    int n,
+    int total=0,
     int seed=1
 ):
     if seed is not None:
@@ -85,70 +83,72 @@ cdef cnp.ndarray random_index(
     if total == 0:
         total = n
     cdef cnp.ndarray output = np.zeros(total, dtype=int)
-    
+
     if total < n:
         raise ValueError(
-            "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(total, n)
+            "Total number of samples must be greater than or equal to the number of samples to be drawn. Got total={}, n={}".format(
+                total, n)
         )
-    elif n == 0 :
+    elif n == 0:
         raise ValueError(
-            "Number of samples to be drawn must be greater than 0. Got n={}.".format(n)
+            "Number of samples to be drawn must be greater than 0. Got n={}.".format(
+                n)
         )
-    
+
     output = np.random.choice(total, n, replace=False)
-    
+
     return output
 
 # Return randomly shuffle of a list (unique values only)
-cdef cnp.ndarray random_list(
-    cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist, 
+cpdef cnp.ndarray random_list(
+    cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
     int seed=1
 ):
     if seed != None:
         np.random.seed(seed)
-    
+
     cdef cnp.ndarray output = np.zeros(len(vlist), dtype=float)
     output = np.random.permutation(vlist)
 
     return output
 
 # Return location of minimum values
-cdef int minloc(
-    cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,
+cpdef int minloc(
+    cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
 ):
-    
+
     # make sure input is np.array
     if not isinstance(vlist, np.ndarray):
         vlist = np.array(vlist)
-        
+
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
-    else :
+    else:
         # check whether multi-dimensional array
-        if len((<object> vlist).shape) > 1:
+        if len((< object > vlist).shape) > 1:
             warnings.warn(
                 "Input is multi-dimensional array, return min location of the first dimension."
             )
-        
+
         return np.argmin(vlist, axis=0)
 
 
 # Return location of maximum values
-cdef int maxloc(
-    cnp.ndarray[FLOAT, ndim = 1, mode = "c"] vlist,                         
+cpdef int maxloc(
+    cnp.ndarray[FLOAT, ndim=1, mode="c"] vlist,
 ):
-    
+
     # make sure input is np.array
     if not isinstance(vlist, np.ndarray):
         vlist = np.array(vlist)
-        
+
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
-    else :
+    else:
         # check whether multi-dimensional array
-        if len((<object> vlist).shape) > 1:
+        if len((< object > vlist).shape) > 1:
             warnings.warn(
                 "Input is multi-dimensional array, return max location of the first dimension."
             )
-        
+
         return np.argmax(vlist, axis=0)

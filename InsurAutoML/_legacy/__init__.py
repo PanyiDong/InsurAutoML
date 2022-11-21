@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:14:15 pm
+Last Modified: Sunday, 20th November 2022 12:55:06 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,3 +43,9 @@ from InsurAutoML._hpo._legacy import (
     AutoTabularClassifier,
     AutoTabularRegressor,
 )
+
+__all__ = [
+    "AutoTabular",
+    "AutoTabularClassifier",
+    "AutoTabularRegressor",
+]

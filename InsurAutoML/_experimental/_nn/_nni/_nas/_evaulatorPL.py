@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:26:51 pm
+Last Modified: Sunday, 20th November 2022 11:40:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,10 +41,16 @@ SOFTWARE.
 # pytorch-lightning version of evaluator
 
 from ._utils import get_optimizer, get_criterion, get_scheduler
-import nni.retiarii.evaluator.pytorch.lightning as pl
 import nni
+import nni.retiarii.evaluator.pytorch.lightning as pl
+# from nni.retiarii.evaluator.pytorch import DataLoader
 import torch
+from torch.utils.data import DataLoader
+from pytorch_lightning.loggers import TensorBoardLogger
 import importlib
+
+# serialized version of dataloader
+DataLoader = nni.trace(DataLoader)
 
 pl_spec = importlib.util.find_spec("pytorch_lightning")
 # if pl not found, raise error
@@ -115,7 +121,7 @@ class plEvaluator(pl.LightningModule):
                 self.trainer.callback_metrics["val_loss"].item())
 
 
-@nni.trace
+# @nni.trace
 def get_evaluator(
     model,
     train_set,
@@ -126,9 +132,13 @@ def get_evaluator(
     optimizer_lr=1e-3,
     lr_scheduler="None",
     num_epochs=10,
+    log_dir="tmp/NAS"
 ):
+    # setup pytorch_lightning logger
+    logger = TensorBoardLogger(log_dir, name="pl_logs")
+
     return pl.Lightning(
-        lightning_module=nni.trace(plEvaluator)(
+        lightning_module=plEvaluator(
             model=model,
             criterion=criterion,
             optimizer=optimizer,
@@ -136,13 +146,14 @@ def get_evaluator(
             lr_scheduler=lr_scheduler,
         ),
         trainer=pl.Trainer(
+            logger=logger,
             max_epochs=num_epochs,
             gpus=torch.cuda.device_count()),
         train_dataloader=pl.DataLoader(
             train_set,
             batch_size=batchSize,
             shuffle=True,
-            drop_last=True,
+            # drop_last=True,
         ),
         val_dataloaders=pl.DataLoader(
             test_set,

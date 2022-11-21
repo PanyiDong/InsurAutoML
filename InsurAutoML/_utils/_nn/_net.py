@@ -1,17 +1,17 @@
 """
-File Name: _multimodal.py
+File Name: _net.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_experimental/_nn/_nni/_nas/_baseSpace/_multimodal.py
-File Created: Sunday, 13th November 2022 5:15:00 pm
+Relative Path: /InsurAutoML/_utils/_nn/_net.py
+File Created: Saturday, 19th November 2022 10:03:31 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:26:21 pm
+Last Modified: Monday, 21st November 2022 2:13:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import torch
+import torch.nn as nn
+import nni.retiarii.nn.pytorch as nninn
+from nni.retiarii import model_wrapper
+
+from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPHead
+
 """
 List of methods:
                     Txt           Cat           Con
@@ -50,9 +57,22 @@ FusEmbed: Txt/Cat/Con are further embedded with a few layers of NNs and fuse tho
 FusModel: Txt/Cat/Con are almost trained separately and just fused together for unified prediction.
 """
 
-"""
-List of classes need for multimodal neural architecture search.
-1. entire network space (whole vs lint)
-2. heads (before fuse)
-3. prediction (after fuse for FusModel)
-"""
+@model_wrapper
+class FusTokenNet(MLPBaseSpace):
+
+    def __init__(
+        self,
+        inputSize,
+        outputSize,
+    ):
+        super(FusTokenNet, self).__init__(inputSize, outputSize)
+
+
+class FusEmbedNet:
+
+    def __init__(
+        self,
+        inputSize,
+        outputSize,
+    ):
+        super(FusEmbedNet, self).__init__(inputSize, outputSize)

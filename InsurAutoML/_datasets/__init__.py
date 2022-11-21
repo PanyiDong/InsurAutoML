@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 6:58:40 pm
+Last Modified: Sunday, 20th November 2022 12:45:00 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -99,3 +99,53 @@ if datasets_spec is not None:
         MNIST,
         IMAGENET,
     )
+
+
+__all__ = [
+    "ADULT",
+    "AUTO",
+    "BREAST",
+    "CAR_EVALUATION",
+    "NURSERY",
+    "PAGE_BLOCKS",
+    "HEART",
+    "EMPLOYEE",
+    "STROKE",
+    "HEART2020",
+    "TRAVEL_INSURANCE",
+    "IMBALANCED_INSURANCE",
+    "CPU_ACT",
+    "WIND",
+    "HOUSES",
+    "INSURANCE",
+    "MEDICAL_PREMIUM",
+    "PROD",
+    "JIGSAW",
+    "JIGSAW100K",
+    "AIRBNB",
+    "IMDBGenre",
+    "FakeJob",
+    "FakeJob2",
+    "KickStarter",
+    "WINEReview",
+    "NewsChannel",
+    "WomenCloth",
+    "MERCARI",
+    "MERCARI100K",
+    "AE",
+    "JCPenney",
+    "NewsPopularity",
+    "NewsPopularity2",
+    "BookPrice",
+    "DSSalary",
+    "CAHousePrice",
+    "IMDB",
+    "GLUE",
+    "AG_NEWS",
+    "WIKITEXT",
+    "SQUAD",
+    "ADVERSARIAL_QA",
+    "CIFAR",
+    "MNIST",
+    "IMAGENET",
+]

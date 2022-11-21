@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /InsurAutoML/_utils/_nn/_multiProc.py
-File Created: Saturday, 12th November 2022 4:41:07 pm
+File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:17:13 pm
+Last Modified: Monday, 21st November 2022 12:31:47 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,6 +37,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 
 from __future__ import annotations
 
@@ -98,13 +99,17 @@ class NoProc:
         # check data dimension
         if len(data.size()) != 2:
             raise TypeError(
-                "Data must be a 2D tensor. Got {}D tensor.".format(len(data.size()))
+                "Data must be a 2D tensor. Got {}D tensor.".format(
+                    len(data.size()))
             )
 
         return data
 
 
 class TxtTokenize:
+
+    """Tokenizer for text data."""
+
     def __init__(
         self,
         model_name: str = "bert-base-uncased",
@@ -215,7 +220,8 @@ class CatOffsetEncoding:
         # check data dimension
         if len(data.size()) != 2:
             raise TypeError(
-                "Data must be a 2D tensor. Got {}D tensor.".format(len(data.size()))
+                "Data must be a 2D tensor. Got {}D tensor.".format(
+                    len(data.size()))
             )
 
         # if unique_classes not passed, get unique classes from data
@@ -259,7 +265,8 @@ class CatOffsetEncoding:
         # check data dimension
         if len(data.size()) != 2:
             raise TypeError(
-                "Data must be a 2D tensor. Got {}D tensor.".format(len(data.size()))
+                "Data must be a 2D tensor. Got {}D tensor.".format(
+                    len(data.size()))
             )
 
         return data + self.cat_offset
@@ -300,7 +307,8 @@ class NumOffsetEncoding(CatOffsetEncoding):
         # check data dimension
         if len(data.size()) != 2:
             raise TypeError(
-                "Data must be a 2D tensor. Got {}D tensor.".format(len(data.size()))
+                "Data must be a 2D tensor. Got {}D tensor.".format(
+                    len(data.size()))
             )
 
         # convert numerical data into categorical data
@@ -338,7 +346,8 @@ class NumOffsetEncoding(CatOffsetEncoding):
         # check data dimension
         if len(data.size()) != 2:
             raise TypeError(
-                "Data must be a 2D tensor. Got {}D tensor.".format(len(data.size()))
+                "Data must be a 2D tensor. Got {}D tensor.".format(
+                    len(data.size()))
             )
 
         # unpack range
@@ -351,6 +360,9 @@ class NumOffsetEncoding(CatOffsetEncoding):
 
 
 class PipProc:
+
+    """Pipeline for processing data."""
+
     def __init__(self,
                  components: List[Tuple[Tuple,
                                         Union[TxtTokenize,
@@ -414,6 +426,17 @@ class PipProc:
 
 class MultiPreprocessing(MetaData, formatting):
 
+    """
+    This class is used to preprocess data for multi-modal learning.
+
+    Can handle text, categorical, and numerical data.
+
+    Parameters
+    ----------
+    methods: methods used for preprocessing, default = "FusToken"
+    all methods: ["FusToken", "FusEmbed", "FusModel"]
+    """
+
     _support_fulltype = [
         ("Object", "Text"),
         ("Int", "Numerical"),
@@ -441,12 +464,15 @@ class MultiPreprocessing(MetaData, formatting):
         # text -> cat -> con
         # text:
         if ("Object", "Text") in self.metadata.keys():
+            # get and fit text tokenizer
             TxtProc = TxtTokenize(
                 starting_offset=0,
                 **kwargs,
             )
             TxtProc.fit(X[self.metadata[("Object", "Text")]])
+            # put into pipeline
             pip_components += [(("Object", "Text"), TxtProc)]
+            # update starting offset
             starting_offset += TxtProc._vocab_size
         # cat:
         # Object Categorical, convert to Int Categorical
@@ -474,6 +500,7 @@ class MultiPreprocessing(MetaData, formatting):
             )
             NumProc.fit(X[self.metadata[("Int", "Numerical")]])
             pip_components += [(("Int", "Numerical"), NumProc)]
+            starting_offset += TxtProc._vocab_size
         # Float
         if ("Float", "") in self.metadata.keys():
             NumProc = NumOffsetEncoding(
@@ -481,6 +508,10 @@ class MultiPreprocessing(MetaData, formatting):
             )
             NumProc.fit(X[self.metadata[("Float", "")]])
             pip_components += [(("Float", ""), NumProc)]
+            starting_offset += TxtProc._vocab_size
+
+        # for FusToken method, cat/con/txt all count for vocab_size
+        self.vocab_size = starting_offset
 
         return PipProc(pip_components)
 
@@ -500,6 +531,8 @@ class MultiPreprocessing(MetaData, formatting):
             )
             TxtProc.fit(X[self.metadata[("Object", "Text")]])
             pip_components += [(("Object", "Text"), TxtProc)]
+            # for non-FusToken methods, vocab_size only counts for text data
+            self.vocab_size = TxtProc._vocab_size
         # cat:
         # Object Categorical, convert to Int Categorical
         if ("Object", "Categorical") in self.metadata.keys():
@@ -569,11 +602,16 @@ class MultiPreprocessing(MetaData, formatting):
         # update metadata
         self.update(X)
 
-        return result
+        # if FusToken, concat all sections to one tensor
+        if self.method == "FusToken":
+            return torch.cat(list(result.values()), dim=1)
+        # else, output separately
+        else:
+            return result
 
     def fit_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Dict[str, torch.Tensor]:
+    ) -> Union[torch.Tensor, Dict[str, torch.Tensor]]:
 
         self.fit(X)
         return self.transform(X)

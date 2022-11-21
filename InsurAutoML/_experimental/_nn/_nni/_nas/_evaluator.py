@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:26:46 pm
+Last Modified: Sunday, 20th November 2022 7:50:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,9 +42,11 @@ from ._utils import get_optimizer, get_criterion
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
+# from nni.retiarii.evaluator.pytorch import DataLoader
 import nni
 from nni.retiarii.evaluator import FunctionalEvaluator
 
+DataLoader = nni.trace(DataLoader)
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
@@ -137,10 +139,10 @@ def get_evaluator(
 ):
     return FunctionalEvaluator(
         modelEvaluation,
-        trainloader=nni.trace(DataLoader)(
-            trainset, batch_size=batchSize, shuffle=True, drop_last=True
+        trainloader=DataLoader(
+            trainset, batch_size=batchSize, shuffle=True  # , drop_last=True
         ),
-        testloader=nni.trace(DataLoader)(testset, batch_size=batchSize),
+        testloader=DataLoader(testset, batch_size=batchSize),
         optimizer=get_optimizer(optimizer),
         criteria=get_criterion(criterion)(),
         num_epoch=num_epoch,
