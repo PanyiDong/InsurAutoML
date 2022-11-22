@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 20th November 2022 11:40:00 pm
+Last Modified: Tuesday, 22nd November 2022 10:32:24 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 # pytorch-lightning version of evaluator
 
+from InsurAutoML._experimental._nn._nni._nas._utils import tensor_accuracy
 from ._utils import get_optimizer, get_criterion, get_scheduler
 import nni
 import nni.retiarii.evaluator.pytorch.lightning as pl
@@ -62,9 +63,13 @@ if pl_spec is None:
 
 @nni.trace
 class plEvaluator(pl.LightningModule):
+
+    ACCURACY_TYPE = ["binary", "multiclass"]
+
     def __init__(
         self,
         model,
+        type_of_task="multiclass",
         criterion="CrossEntropyLoss",
         optimizer="Adam",
         optimizer_lr=1e-3,
@@ -74,6 +79,7 @@ class plEvaluator(pl.LightningModule):
 
         # set parameters
         self.model = model
+        self.type_of_task = type_of_task
         self.criterion = get_criterion(criterion)()
         self.optimizer = get_optimizer(optimizer)
         self.optimizer_lr = optimizer_lr
@@ -96,7 +102,14 @@ class plEvaluator(pl.LightningModule):
         output = self.model(input)  # forward phase
         # print(output, label)
         loss = self.criterion(output, label)  # compute loss
-        self.log("val_loss", loss)  # Logging to TensorBoard by default
+        # # if classification job, use accuracy
+        # if self.type_of_task in self.ACCURACY_TYPE:
+        #     # Logging to TensorBoard by default
+        #     self.log("val_loss", tensor_accuracy(output, label))
+        # # for regression job, use -criterion to satisfy maximization setting
+        # else:
+        #     self.log("val_loss", -loss)  # Logging to TensorBoard by default
+        self.log("val_loss", -loss)
 
     def configure_optimizers(self):
 
@@ -127,6 +140,7 @@ def get_evaluator(
     train_set,
     test_set,
     batchSize=32,
+    # type_of_task="multiclass",
     criterion="CrossEntropyLoss",
     optimizer="Adam",
     optimizer_lr=1e-3,
@@ -140,6 +154,7 @@ def get_evaluator(
     return pl.Lightning(
         lightning_module=plEvaluator(
             model=model,
+            # type_of_task=type_of_task,
             criterion=criterion,
             optimizer=optimizer,
             optimizer_lr=optimizer_lr,

@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 20th November 2022 11:23:52 pm
+Last Modified: Tuesday, 22nd November 2022 4:46:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,6 +44,8 @@ from typing import Callable
 import torch
 import torch.nn as nn
 import torch.optim as optim
+import numpy as np
+from sklearn.metrics import accuracy_score
 
 import nni.retiarii.strategy as strategy
 import nni.retiarii.nn.pytorch as nninn
@@ -103,9 +105,9 @@ def how_to_init(m, how="uniform"):
 def get_search_space(search_space):
 
     if search_space == "MLP":
-        from ._baseSpace import MLPBaseSpace
+        from InsurAutoML._utils._nn._net import MLPNet
 
-        return MLPBaseSpace
+        return MLPNet
     elif isinstance(search_space, Callable):
         return search_space
 
@@ -202,3 +204,18 @@ def get_strategy(strategyStr):
         return strategyStr()
     else:
         raise ValueError("Unrecognized strategy {}".format(strategyStr))
+
+# accuracy for model prediction
+
+
+def tensor_accuracy(y_pred, y_true):
+    if isinstance(y_pred, torch.Tensor):
+        y_pred = y_pred.detach().cpu().numpy()
+
+    if isinstance(y_true, torch.Tensor):
+        y_true = y_true.detach().cpu().numpy()
+
+    y_pred = [np.argmax(item) for item in y_pred]
+    # y_true = [np.argmax(item) for item in y_true]
+
+    return accuracy_score(y_pred, y_true)

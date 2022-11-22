@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 21st November 2022 10:04:47 am
+Last Modified: Tuesday, 22nd November 2022 4:47:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,21 +40,22 @@ SOFTWARE.
 
 import nni
 import nni.retiarii.nn.pytorch as nninn
-from nni.retiarii import model_wrapper
+from nni.retiarii import model_wrapper, fixed_arch
 
 from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
-from .._buildModel import build_mlp
+# from .._buildModel import build_mlp
 
 ##########################################################################
 # MLP Space
 
 
-@model_wrapper
+# @model_wrapper
 class MLPBaseSpace(nninn.Module):
     def __init__(
         self,
         inputSize,
         outputSize,
+        prefix="",
     ):
         super().__init__()
 
@@ -66,7 +67,7 @@ class MLPBaseSpace(nninn.Module):
             nninn.Linear(
                 inputSize,
                 nninn.ValueChoice(
-                    [32, 64, 128, 256, 512], label="hiddenSize_at_layer_0"
+                    [32, 64, 128, 256, 512], label=f"{prefix}hiddenSize_at_layer_0"
                 ),
             )
         )
@@ -77,12 +78,12 @@ class MLPBaseSpace(nninn.Module):
         self.net.append(
             nninn.Repeat(
                 lambda index: nninn.Sequential(
-                    nninn.Linear(nninn.ValueChoice([32, 64, 128, 256, 512], label=f"hiddenSize_at_layer_{index}",), nninn.ValueChoice(
-                        [32, 64, 128, 256, 512], label=f"hiddenSize_at_layer_{index + 1}",),),
+                    nninn.Linear(nninn.ValueChoice([32, 64, 128, 256, 512], label=f"{prefix}hiddenSize_at_layer_{index}",), nninn.ValueChoice(
+                        [32, 64, 128, 256, 512], label=f"{prefix}hiddenSize_at_layer_{index + 1}",),),
                     nninn.LayerChoice(
-                        ACTIVATIONS, label=f"activation_at_layer_{index}"),
-                    nninn.Dropout(nninn.ValueChoice([0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}")),),
-                nninn.ValueChoice([1, 2, 3, 4, 5, 6], label="num_hidden_layers"), label="hidden_layers",)
+                        ACTIVATIONS, label=f"{prefix}activation_at_layer_{index}"),
+                    nninn.Dropout(nninn.ValueChoice([0.0, 0.2, 0.5, 0.9], label=f"{prefix}p_dropout_at_layer_{index}")),),
+                nninn.ValueChoice([1, 2, 3, 4, 5, 6], label=f"{prefix}num_hidden_layers"), label=f"{prefix}hidden_layers",)
         )
 
         # add output layer
@@ -96,6 +97,12 @@ class MLPBaseSpace(nninn.Module):
 
     def forward(self, X):
 
+        if isinstance(X, list):
+            if len(X) > 1:
+                raise ValueError(
+                    "Expect one tensor, get {} tensors".format(len(X)))
+            X = X[0]
+
         return self.net(X)
 
     def init_weight(self, how="xavier_normal"):
@@ -105,11 +112,13 @@ class MLPBaseSpace(nninn.Module):
                 how_to_init(m, how)
 
     @staticmethod
-    def build_model(config, inputSize, outputSize):
-        return build_mlp(config, inputSize, outputSize)
+    def build_model(config_path, inputSize, outputSize):
+
+        with fixed_arch(config_path):
+            return MLPBaseSpace(inputSize, outputSize)
 
 
-@model_wrapper
+# @model_wrapper
 class MLPLintSpace(nninn.Module):
     def __init__(
         self,
@@ -150,6 +159,12 @@ class MLPLintSpace(nninn.Module):
 
     def forward(self, X):
 
+        if isinstance(X, list):
+            if len(X) > 1:
+                raise ValueError(
+                    "Expect one tensor, get {} tensors".format(len(X)))
+            X = X[0]
+
         return self.net(X)
 
     def init_weight(self, how="xavier_normal"):
@@ -159,16 +174,18 @@ class MLPLintSpace(nninn.Module):
                 how_to_init(m, how)
 
     @staticmethod
-    def build_model(config, inputSize, outputSize):
-        return build_mlp(config, inputSize, outputSize)
+    def build_model(config_path, inputSize, outputSize):
+
+        with fixed_arch(config_path):
+            return MLPLintSpace(inputSize, outputSize)
 
 
 ##########################################################################
 # RNN Space
 
 
-@nni.trace
-@model_wrapper
+# @nni.trace
+# @model_wrapper
 class RNNBaseSpace(nninn.Module):
     def __init__(
         self,
@@ -274,3 +291,9 @@ class RNNBaseSpace(nninn.Module):
                 or isinstance(m, nninn.GRU)
             ):
                 how_to_init(m, how)
+
+    @staticmethod
+    def build_model(config_path, inputSize, outputSize):
+
+        with fixed_arch(config_path):
+            return RNNBaseSpace(inputSize, outputSize)

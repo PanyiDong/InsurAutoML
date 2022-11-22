@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 21st November 2022 3:01:23 pm
+Last Modified: Tuesday, 22nd November 2022 4:17:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,8 +53,8 @@ from nni.retiarii import fixed_arch
 from nni.retiarii.experiment.pytorch import RetiariiExperiment, RetiariiExeConfig
 
 from InsurAutoML._utils._tensor import SerialTensorDataset
+from InsurAutoML._utils import type_of_task, train_test_split
 from InsurAutoML._experimental._nn._nni._nas._utils import get_strategy, get_search_space
-from InsurAutoML._experimental._nn._nni._nas._buildModel import build_model
 from InsurAutoML._experimental._nn._nni._nas._evaulatorPL import get_evaluator
 
 DataLoader = nni.trace(DataLoader)
@@ -70,6 +70,7 @@ NNI_VERBOSE = [
 
 
 class Trainer:
+
     def __init__(
         self,
         preprocessor=None,
@@ -79,11 +80,12 @@ class Trainer:
         optimizer="Adam",
         optimizer_lr=1e-3,
         lr_scheduler="None",
-        criterion="CrossEntropyLoss",
+        criterion=None,
         evaluator="base",
         search_strategy="Random",
         batch_size=32,
         num_epoch=10,
+        valid_perc=0.15,
         task_name="NAS",
         temp_directory="tmp",
         verbose=0,
@@ -101,6 +103,7 @@ class Trainer:
         self.search_strategy = get_strategy(search_strategy)
         self.batch_size = batch_size
         self.num_epoch = num_epoch
+        self.valid_perc = valid_perc
         self.task_name = task_name
         self.temp_directory = temp_directory
         self.verbose = verbose
@@ -163,23 +166,49 @@ class Trainer:
             return self._tensor_formatter(data)
 
     # def train(self, train, test, inputSize, outputSize):
-    def train(self, train, test, inputSize=None, outputSize=None, **kwargs):
+    def train(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
 
         # unpack data
-        (X_train, y_train), (X_test, y_test) = train, test
+        if valid is not None:
+            (X_train, y_train), (X_valid, y_valid) = train, valid
+        # if valid not provided, split from train set
+        else:
+            X_train, y_train = train
+            X_train, X_valid, y_train, y_valid = train_test_split(
+                X_train, y_train, test_perc=self.valid_perc)
+        # get task type
+        task_type = type_of_task(y_train)
+
+        # get default loss function
+        if task_type in ["binary", "multiclass"] and self.criterion is None:
+            self.criterion = "CrossEntropyLoss"
+        elif task_type in ["integer", "continuous"] and self.criterion is None:
+            self.criterion = "MSELoss"
+        else:
+            raise ValueError("Unrecognized task type %s." % task_type)
+
         # if preprocessor found, use it to preprocess data
         if self.preprocessor is not None:
             X_train = self.preprocessor.fit_transform(X_train)
-            X_test = self.preprocessor.transform(X_test)
+            X_valid = self.preprocessor.transform(X_valid)
 
         # format data
         X_train, y_train = self._data_formatter(
             X_train), self._data_formatter(y_train)
-        X_test, y_test = self._data_formatter(
-            X_test), self._data_formatter(y_test)
+        X_valid, y_valid = self._data_formatter(
+            X_valid), self._data_formatter(y_valid)
 
         # get input and output Size
-        inputSize = X_train.size(dim=-1) if inputSize is None else inputSize
+        if isinstance(X_train, torch.Tensor):
+            inputSize = X_train.size(
+                dim=-1) if inputSize is None else inputSize
+        # format list of tensor to tensor by order
+        elif isinstance(X_train, list):
+            inputSize = {idx: _X_train.size(
+                dim=-1) for idx, _X_train in enumerate(X_train)} if inputSize is None else inputSize
+        elif isinstance(X_train, dict):
+            inputSize = {key: value.size(
+                dim=-1) for key, value in X_train.items()} if inputSize is None else inputSize
         outputSize = len(np.unique(y_train)
                          ) if outputSize is None else outputSize
 
@@ -203,15 +232,15 @@ class Trainer:
             os.path.join(
                 self.temp_directory,
                 self.task_name,
-                "test")):
+                "valid")):
             os.makedirs(os.path.join(
-                self.temp_directory, self.task_name, "test"))
+                self.temp_directory, self.task_name, "valid"))
         trainset = SerialTensorDataset(
             X_train, y_train, path=os.path.join(
                 self.temp_directory, self.task_name, "train"))
-        testset = SerialTensorDataset(
-            X_test, y_test, path=os.path.join(
-                self.temp_directory, self.task_name, "test"))
+        validset = SerialTensorDataset(
+            X_valid, y_valid, path=os.path.join(
+                self.temp_directory, self.task_name, "valid"))
 
         # Update: Nov. 20, 2022
         # Force using pytorch_lightning evaluator
@@ -237,10 +266,11 @@ class Trainer:
         self.evaluator = get_evaluator(
             model=self.search_space(inputSize, outputSize),
             train_set=trainset,
-            test_set=testset,
+            test_set=validset,
             # train_set=_prep_dataset(X_train, y_train),
             # test_set=_prep_dataset(X_test, y_test),
             batchSize=self.batch_size,
+            # type_of_task=task_type,
             criterion=self.criterion,
             optimizer=self.optimizer,
             optimizer_lr=self.optimizer_lr,
@@ -259,6 +289,8 @@ class Trainer:
         # setup experiment config
         exp_config = RetiariiExeConfig("local")
         # experiment name
+        exp_config.experiment_working_directory = os.path.join(
+            self.temp_directory, self.task_name)
         exp_config.experiment_name = self.task_name
         # exp_config.execution_engine = "oneshot"
         # number of trials
@@ -279,22 +311,22 @@ class Trainer:
         # save the best model architecture
         # initialize the best model
         for model_dict in exp.export_top_models(
-                top_k=1, optimize_mode='minimize', formatter="dict"):
+                top_k=1, optimize_mode='maximize', formatter="dict"):
+            # save the model dict
             with open(os.path.join(self.temp_directory, self.task_name, "optimal_architecture.json"), "w",) as outfile:
-                # build model
-                init_model = self.search_space.build_model(
-                    model_dict, inputSize, outputSize)
-                torch.save(
-                    init_model.state_dict(),
-                    os.path.join(
-                        self.temp_directory,
-                        self.task_name,
-                        "init_optimal_model.pth"),
-                )
-                # save the model dict
                 json.dump(model_dict, outfile)
+            # build init model for HPO
+            init_model = self.build_model(inputSize, outputSize)
+            # save the model dict
+            torch.save(
+                init_model.state_dict(),
+                os.path.join(self.temp_directory,
+                             self.task_name, "init_optimal_model.pth"),
+            )
 
-    def optimal_loading(self):
+    def build_model(self, inputSize, outputSize):
 
-        with fixed_arch("optimal_architecture.json"):
-            return self.search_space
+        with fixed_arch(os.path.join(self.temp_directory, self.task_name, "optimal_architecture.json")):
+            net = self.search_space(inputSize, outputSize)
+
+        return net

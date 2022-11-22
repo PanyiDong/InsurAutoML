@@ -11,7 +11,7 @@ File Created: Saturday, 19th November 2022 10:03:31 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 21st November 2022 2:13:24 pm
+Last Modified: Tuesday, 22nd November 2022 4:45:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,24 +38,30 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import List, Dict
 import torch
-import torch.nn as nn
 import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper
 
 from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPHead
+from ._components import TxtHead, CatHead, ConHead, TxtNet, CatNet, ConNet
 
-"""
-List of methods:
-                    Txt           Cat           Con
-FusToken:      tokenize      encoding      encoding
-FusEmbed:     embedding     embedding     embedding
-FusModel:         model         model         model
+############################################################################
+# Non-Fusion Models
 
-FusToken: Txt/Cat/Con are only tokenized to numerics and fuse those heads together for whole model training.
-FusEmbed: Txt/Cat/Con are further embedded with a few layers of NNs and fuse those embeddings together for later half of model training.
-FusModel: Txt/Cat/Con are almost trained separately and just fused together for unified prediction.
-"""
+
+@model_wrapper
+class MLPNet(MLPBaseSpace):
+
+    def __init__(
+        self,
+        inputSize: int,
+        outputSize: int,
+    ) -> None:
+        super(FusTokenNet, self).__init__(inputSize, outputSize)
+
+############################################################################
+# Fusion Models
 
 
 @model_wrapper
@@ -63,17 +69,88 @@ class FusTokenNet(MLPBaseSpace):
 
     def __init__(
         self,
-        inputSize,
-        outputSize,
-    ):
+        inputSize: int,
+        outputSize: int,
+    ) -> None:
         super(FusTokenNet, self).__init__(inputSize, outputSize)
 
 
-class FusEmbedNet:
+@model_wrapper
+class FusEmbedNet(nninn.Module):
 
     def __init__(
         self,
-        inputSize,
-        outputSize,
-    ):
-        super(FusEmbedNet, self).__init__(inputSize, outputSize)
+        inputSize: Dict[str, int],
+        outputSize: int,
+    ) -> None:
+        super().__init__()
+        self.embeds = []
+        # Update: Nov.22, 2022
+        # nni can't differentiate same module initialized with different parameters
+        # so, need to wrap with different classes manually
+        if "txt" in inputSize.keys():
+            self.textnet = TxtHead(inputSize["txt"], nninn.ValueChoice(
+                [4, 8, 16, 32, 64], label="txt_embedSize"))
+            self.embeds.append(self.textnet)
+        if "cat" in inputSize.keys():
+            self.catnet = CatHead(inputSize["cat"], nninn.ValueChoice(
+                [4, 8, 16, 32, 64], label="cat_embedSize"))
+            self.embeds.append(self.catnet)
+        if "con" in inputSize.keys():
+            self.connet = CatHead(inputSize["con"], nninn.ValueChoice(
+                [4, 8, 16, 32, 64], label="con_embedSize"))
+            self.embeds.append(self.connet)
+        self.model = MLPHead(
+            sum([embed.outputSize for embed in self.embeds]), outputSize, prefix="model_")
+
+    def forward(self, input: List[torch.Tensor]) -> torch.Tensor:
+
+        # put everything through the embedding heads
+        embed = [embed(input[index])
+                 for index, embed in enumerate(self.embeds)]
+        # concatenate the embeddings
+        embed = torch.cat(embed, dim=-1)
+        # put the concatenated embeddings through the model
+        result = self.model(embed)
+
+        return result
+
+    # def build_model(self, inputSize, outputSize):
+    #     return
+
+
+@ model_wrapper
+class FusModelNet(nninn.Module):
+
+    def __init__(
+        self,
+        inputSize: Dict[str, int],
+        outputSize: int,
+    ) -> None:
+        super().__init__()
+        self.models = []
+        if "txt" in inputSize.keys():
+            self.textnet = TxtNet(inputSize["txt"], outputSize)
+            self.models.append(self.textnet)
+        if "cat" in inputSize.keys():
+            self.catnet = CatNet(inputSize["cat"], outputSize)
+            self.models.append(self.catnet)
+        if "con" in inputSize.keys():
+            self.connet = ConNet(inputSize["con"], outputSize)
+            self.models.append(self.connet)
+
+        # self.models = [MLPBaseSpace(_inputSize, outputSize, prefix="model{}_".format(index))
+        #                for index, _inputSize in enumerate(inputSize)]
+
+    def forward(self, input: List[torch.Tensor]) -> torch.Tensor:
+
+        # put everything through the embedding heads
+        self.textnet(input[0])
+        self.catnet(input[1])
+        self.connet(input[2])
+        output = [model(input[index])
+                  for index, model in enumerate(self.models)]
+        # sum the outputs
+        result = torch.sum(torch.stack(output), dim=0)
+
+        return result

@@ -11,7 +11,7 @@ File Created: Sunday, 13th November 2022 5:15:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 19th November 2022 10:06:10 pm
+Last Modified: Tuesday, 22nd November 2022 4:03:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,7 +40,7 @@ SOFTWARE.
 
 import nni
 import nni.retiarii.nn.pytorch as nninn
-from nni.retiarii import model_wrapper
+from nni.retiarii import model_wrapper, fixed_arch
 
 from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
 
@@ -64,21 +64,23 @@ List of classes need for multimodal neural architecture search.
 """
 
 
-@model_wrapper
+# @model_wrapper
 class MLPHead(nninn.Module):
     def __init__(
         self,
         inputSize,
         outputSize,
+        prefix="",
     ):
         super().__init__()
-
+        self.inputSize = inputSize
+        self.outputSize = outputSize
         # initialize the structure of the neural network
         self.net = []
 
         # add input layer
         self.net.append(nninn.Linear(inputSize, nninn.ValueChoice(
-            [4, 8, 16, 32, 64], label="hiddenSize_at_layer_0"), ))
+            [4, 8, 16, 32, 64], label=f"{prefix}hiddenSize_at_layer_0"), ))
 
         # add hidden layers
         # each hidden layer has a linear layer, a activation layer and possibly
@@ -89,24 +91,25 @@ class MLPHead(nninn.Module):
                     nninn.Linear(
                         nninn.ValueChoice(
                             [4, 8, 16, 32, 64],
-                            label=f"hiddenSize_at_layer_{index}",
+                            label=f"{prefix}hiddenSize_at_layer_{index}",
                         ),
                         nninn.ValueChoice(
                             [4, 8, 16, 32, 64],
-                            label=f"hiddenSize_at_layer_{index + 1}",
+                            label=f"{prefix}hiddenSize_at_layer_{index + 1}",
                         ),
                     ),
                     nninn.LayerChoice(
-                        ACTIVATIONS, label=f"activation_at_layer_{index}"
+                        ACTIVATIONS, label=f"{prefix}activation_at_layer_{index}"
                     ),
                     nninn.Dropout(
                         nninn.ValueChoice(
-                            [0.0, 0.2, 0.5, 0.9], label=f"p_dropout_at_layer_{index}"
+                            [0.0, 0.2, 0.5, 0.9], label=f"{prefix}p_dropout_at_layer_{index}"
                         )
                     ),
                 ),
-                nninn.ValueChoice([1, 2, 3], label="num_hidden_layers"),
-                label="hidden_layers",
+                nninn.ValueChoice(
+                    [1, 2, 3], label=f"{prefix}num_hidden_layers"),
+                label=f"{prefix}hidden_layers",
             )
         )
 
@@ -128,3 +131,9 @@ class MLPHead(nninn.Module):
         for m in self.modules():
             if isinstance(m, nninn.Linear):
                 how_to_init(m, how)
+
+    @staticmethod
+    def build_model(config_path, inputSize, outputSize):
+
+        with fixed_arch(config_path):
+            return MLPHead(inputSize, outputSize)
