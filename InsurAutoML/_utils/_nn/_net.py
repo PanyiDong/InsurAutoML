@@ -11,7 +11,7 @@ File Created: Saturday, 19th November 2022 10:03:31 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 22nd November 2022 4:45:31 pm
+Last Modified: Thursday, 24th November 2022 3:54:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,13 +38,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Dict
+from typing import List, Dict, Type, Union, Tuple
 import torch
 import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper
+from nni.nas.utils import basic_unit
 
-from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPHead
+from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPLintSpace, MLPHead, RNNBaseSpace, RNNLintSpace, RNNHead
 from ._components import TxtHead, CatHead, ConHead, TxtNet, CatNet, ConNet
+
+# MLPHead = typing.cast(Type[MLPHead], basic_unit(MLPHead))
+# MLPBaseSpace = typing.cast(Type[MLPBaseSpace], basic_unit(MLPBaseSpace))
 
 ############################################################################
 # Non-Fusion Models
@@ -58,21 +62,63 @@ class MLPNet(MLPBaseSpace):
         inputSize: int,
         outputSize: int,
     ) -> None:
-        super(FusTokenNet, self).__init__(inputSize, outputSize)
-
-############################################################################
-# Fusion Models
+        super().__init__(inputSize, outputSize)
 
 
 @model_wrapper
-class FusTokenNet(MLPBaseSpace):
+class LiteMLPNet(MLPLintSpace):
 
     def __init__(
         self,
         inputSize: int,
         outputSize: int,
     ) -> None:
-        super(FusTokenNet, self).__init__(inputSize, outputSize)
+        super().__init__(inputSize, outputSize)
+
+
+@model_wrapper
+class RNNet(RNNBaseSpace):
+
+    def __init__(
+        self,
+        inputSize: int,
+        outputSize: int,
+    ) -> None:
+        super().__init__(inputSize, outputSize)
+
+
+@model_wrapper
+class LiteRNNet(RNNLintSpace):
+
+    def __init__(
+        self,
+        inputSize: int,
+        outputSize: int,
+    ) -> None:
+        super().__init__(inputSize, outputSize)
+
+############################################################################
+# Fusion Models
+
+
+@model_wrapper
+class FusTokenNet(nninn.Module):
+
+    def __init__(
+        self,
+        inputSize: int,
+        outputSize: int,
+    ) -> None:
+        super().__init__()
+        self.net = nninn.LayerChoice(
+            [MLPBaseSpace(inputSize, outputSize, prefix="MLP_base_"), MLPLintSpace(
+                inputSize, outputSize, prefix="MLP_lint_")],
+            label="FusTokenNet"
+        )
+
+    def forward(self, input: Union[torch.Tensor, List[torch.Tensor]], hidden: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
+
+        return self.net(input)
 
 
 @model_wrapper
@@ -85,6 +131,13 @@ class FusEmbedNet(nninn.Module):
     ) -> None:
         super().__init__()
         self.embeds = []
+        # embedSize = [nninn.ValueChoice(
+        #     [4, 8, 16, 32, 64], label=f"embedSize_{idx}") for idx in range(len(inputSize))]
+
+        # for idx, _inputSize in enumerate(list(inputSize.values())):
+        #     self.embeds.append(MLPHead(_inputSize, embedSize[idx], prefix=f"head_{idx}_"))
+        # self.model = MLPHead(
+        #     sum(embedSize), outputSize, prefix="model_")
         # Update: Nov.22, 2022
         # nni can't differentiate same module initialized with different parameters
         # so, need to wrap with different classes manually
@@ -97,7 +150,7 @@ class FusEmbedNet(nninn.Module):
                 [4, 8, 16, 32, 64], label="cat_embedSize"))
             self.embeds.append(self.catnet)
         if "con" in inputSize.keys():
-            self.connet = CatHead(inputSize["con"], nninn.ValueChoice(
+            self.connet = ConHead(inputSize["con"], nninn.ValueChoice(
                 [4, 8, 16, 32, 64], label="con_embedSize"))
             self.embeds.append(self.connet)
         self.model = MLPHead(

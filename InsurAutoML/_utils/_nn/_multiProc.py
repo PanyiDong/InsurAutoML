@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 21st November 2022 12:31:47 am
+Last Modified: Thursday, 24th November 2022 1:34:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -500,7 +500,7 @@ class MultiPreprocessing(MetaData, formatting):
             )
             NumProc.fit(X[self.metadata[("Int", "Numerical")]])
             pip_components += [(("Int", "Numerical"), NumProc)]
-            starting_offset += TxtProc._vocab_size
+            starting_offset += NumProc._vocab_size
         # Float
         if ("Float", "") in self.metadata.keys():
             NumProc = NumOffsetEncoding(
@@ -508,10 +508,10 @@ class MultiPreprocessing(MetaData, formatting):
             )
             NumProc.fit(X[self.metadata[("Float", "")]])
             pip_components += [(("Float", ""), NumProc)]
-            starting_offset += TxtProc._vocab_size
+            starting_offset += NumProc._vocab_size
 
         # for FusToken method, cat/con/txt all count for vocab_size
-        self.vocab_size = starting_offset
+        self.vocab_size = starting_offset + 1  # add 1 for padding
 
         return PipProc(pip_components)
 

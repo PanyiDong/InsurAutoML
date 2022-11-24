@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 22nd November 2022 1:05:50 am
+Last Modified: Thursday, 24th November 2022 12:26:40 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -117,7 +117,7 @@ class CustomTensorDataset(Dataset):
 
 #         # get paths and save tensors for inputs
 #         self.input = os.path.join(self.path, "input.pt")
-#         torch.save(inputs.to(torch.float32), self.input)
+#         torch.save(inputs, self.input)
 
 #         # get paths and save tensors for labels
 #         self.labels = os.path.join(self.path, "labels.pt")
@@ -166,7 +166,7 @@ class ListTensorDataset(Dataset):
         self.input = [os.path.join(
             self.path, "input/{}.pt".format(i)) for i in range(len(inputs))]
         for _input, _path in zip(inputs, self.input):
-            torch.save(_input.to(torch.float32), _path)
+            torch.save(_input, _path)
 
         # get paths and save tensors for labels
         self.labels = os.path.join(self.path, "labels.pt")
@@ -215,7 +215,7 @@ class DictTensorDataset(Dataset):
         self.input = [os.path.join(
             self.path, "input/{}.pt".format(i)) for i in inputs.keys()]
         for _input, _path in zip(inputs.values(), self.input):
-            torch.save(_input.to(torch.float32), _path)
+            torch.save(_input, _path)
 
         # get paths and save tensors for labels
         self.labels = os.path.join(self.path, "labels.pt")

@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 22nd November 2022 10:32:24 am
+Last Modified: Thursday, 24th November 2022 3:51:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,15 +40,18 @@ SOFTWARE.
 
 # pytorch-lightning version of evaluator
 
-from InsurAutoML._experimental._nn._nni._nas._utils import tensor_accuracy
-from ._utils import get_optimizer, get_criterion, get_scheduler
+from collections.abc import Iterable
 import nni
 import nni.retiarii.evaluator.pytorch.lightning as pl
 # from nni.retiarii.evaluator.pytorch import DataLoader
 import torch
 from torch.utils.data import DataLoader
 from pytorch_lightning.loggers import TensorBoardLogger
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 import importlib
+
+from InsurAutoML._experimental._nn._nni._nas._utils import tensor_accuracy
+from ._utils import get_optimizer, get_criterion, get_scheduler
 
 # serialized version of dataloader
 DataLoader = nni.trace(DataLoader)
@@ -61,6 +64,13 @@ if pl_spec is None:
         Use `pip install pytorch-lightning` to install.")
 
 
+def repackage_hidden(h):
+    if isinstance(h, torch.Tensor):
+        return h.detach()
+    else:
+        return tuple(repackage_hidden(v) for v in h)
+
+
 @nni.trace
 class plEvaluator(pl.LightningModule):
 
@@ -70,6 +80,7 @@ class plEvaluator(pl.LightningModule):
         self,
         model,
         type_of_task="multiclass",
+        batch_size=32,
         criterion="CrossEntropyLoss",
         optimizer="Adam",
         optimizer_lr=1e-3,
@@ -80,27 +91,54 @@ class plEvaluator(pl.LightningModule):
         # set parameters
         self.model = model
         self.type_of_task = type_of_task
+        self.batch_size = batch_size
         self.criterion = get_criterion(criterion)()
         self.optimizer = get_optimizer(optimizer)
         self.optimizer_lr = optimizer_lr
         self.lr_scheduler = get_scheduler(lr_scheduler)
 
     def forward(self, X):
+        print(self.model)
+        if self._hidden is not None:
+            # only get the values of hidden, no need for gradient
+            self._hidden = repackage_hidden(self._hidden)
+            output, self._hidden = self.model(X, self._hidden)
+        else:
+            output = self.model(X)
 
-        return self.model(X)
+        return output
 
     def training_step(self, batch, batch_idx):
+
+        # initialize hidden state for each epoch
+        if not hasattr(self, '_train_epoch'):
+            self._train_epoch = self.current_epoch
+            self.init_hidden()
+        elif self._train_epoch != self.current_epoch:
+            self._train_epoch = self.current_epoch
+            self.init_hidden()
+
         input, label = batch  # parse the input batch
-        output = self.model(input)  # forward phase
+        # forward phase
+        output = self(input)
+
         loss = self.criterion(output, label)  # compute loss
         self.log("train_loss", loss)  # Logging to TensorBoard by default
 
         return loss
 
     def validation_step(self, batch, batch_idx):
+
+        # initialize hidden state for each epoch
+        if not hasattr(self, '_valid_epoch'):
+            self._valid_epoch = self.current_epoch
+            self.init_hidden()
+        elif self._valid_epoch != self.current_epoch:
+            self._valid_epoch = self.current_epoch
+            self.init_hidden()
+
         input, label = batch  # parse the input batch
-        output = self.model(input)  # forward phase
-        # print(output, label)
+        output = self(input)
         loss = self.criterion(output, label)  # compute loss
         # # if classification job, use accuracy
         # if self.type_of_task in self.ACCURACY_TYPE:
@@ -110,6 +148,8 @@ class plEvaluator(pl.LightningModule):
         # else:
         #     self.log("val_loss", -loss)  # Logging to TensorBoard by default
         self.log("val_loss", -loss)
+
+        return {"- val_loss": -loss}
 
     def configure_optimizers(self):
 
@@ -133,6 +173,13 @@ class plEvaluator(pl.LightningModule):
             nni.report_final_result(
                 self.trainer.callback_metrics["val_loss"].item())
 
+    def init_hidden(self):
+
+        if hasattr(self.model, 'init_hidden'):
+            self._hidden = self.model.init_hidden(self.batch_size)
+        else:
+            self._hidden = None
+
 
 # @nni.trace
 def get_evaluator(
@@ -155,6 +202,7 @@ def get_evaluator(
         lightning_module=plEvaluator(
             model=model,
             # type_of_task=type_of_task,
+            batch_size=batchSize,
             criterion=criterion,
             optimizer=optimizer,
             optimizer_lr=optimizer_lr,
@@ -162,16 +210,20 @@ def get_evaluator(
         ),
         trainer=pl.Trainer(
             logger=logger,
+            # early stopping when loss is nan
+            callbacks=[EarlyStopping(
+                monitor="val_loss", mode="min", check_finite=True)],
             max_epochs=num_epochs,
             gpus=torch.cuda.device_count()),
         train_dataloader=pl.DataLoader(
             train_set,
             batch_size=batchSize,
             shuffle=True,
-            # drop_last=True,
+            drop_last=True,
         ),
         val_dataloaders=pl.DataLoader(
             test_set,
             batch_size=batchSize,
+            drop_last=True,
         ),
     )

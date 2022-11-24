@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 22nd November 2022 4:17:39 pm
+Last Modified: Thursday, 24th November 2022 1:35:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -199,16 +199,30 @@ class Trainer:
             X_valid), self._data_formatter(y_valid)
 
         # get input and output Size
+        # if RNN net, need to use vocab size as inputSize
         if isinstance(X_train, torch.Tensor):
-            inputSize = X_train.size(
-                dim=-1) if inputSize is None else inputSize
+            if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
+                inputSize = self.preprocessor.vocab_size if inputSize is None else inputSize
+            else:
+                inputSize = X_train.size(
+                    dim=-1) if inputSize is None else inputSize
         # format list of tensor to tensor by order
         elif isinstance(X_train, list):
-            inputSize = {idx: _X_train.size(
-                dim=-1) for idx, _X_train in enumerate(X_train)} if inputSize is None else inputSize
+            if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
+                inputSize = {idx: _X_train.size(dim=-1) if idx > 0 else self.preprocessor.vocab_size for idx,
+                             _X_train in enumerate(X_train)} if inputSize is None else inputSize
+            else:
+                inputSize = {idx: _X_train.size(
+                    dim=-1) for idx, _X_train in enumerate(X_train)} if inputSize is None else inputSize
         elif isinstance(X_train, dict):
-            inputSize = {key: value.size(
-                dim=-1) for key, value in X_train.items()} if inputSize is None else inputSize
+            if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
+                inputSize = {key: value.size(dim=-1) if key != "txt" else self.preprocessor.vocab_size for key,
+                             value in X_train.items()} if inputSize is None else inputSize
+                outputSize = len(np.unique(y_train)
+                                 ) if outputSize is None else outputSize
+            else:
+                inputSize = {key: value.size(
+                    dim=-1) for key, value in X_train.items()} if inputSize is None else inputSize
         outputSize = len(np.unique(y_train)
                          ) if outputSize is None else outputSize
 

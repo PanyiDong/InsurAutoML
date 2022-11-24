@@ -11,7 +11,7 @@ File Created: Sunday, 13th November 2022 5:15:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 22nd November 2022 4:03:50 pm
+Last Modified: Thursday, 24th November 2022 4:00:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import torch
 import nni
 import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper, fixed_arch
@@ -137,3 +138,140 @@ class MLPHead(nninn.Module):
 
         with fixed_arch(config_path):
             return MLPHead(inputSize, outputSize)
+
+
+class RNNHead(nninn.Module):
+    def __init__(
+        self,
+        inputSize,
+        outputSize,
+        prefix="",
+    ):
+        super().__init__()
+
+        # initialize the structure of the neural network
+        self.prenet = []
+        self.RNNnet = []
+        self.postnet = []
+
+        # embedding layer
+        self.prenet.append(nninn.Embedding(inputSize, nninn.ValueChoice(
+            [32, 64, 128, 256], label=f"{prefix}embedding_size"), ))
+
+        # RNN parameters
+        num_RNN_layers = nninn.ValueChoice(
+            [1, 2],
+            label=f"{prefix}num_RNN_layers",
+        )
+        self._bidirectional = nninn.ValueChoice(
+            [True, False], label=f"{prefix}bidirectional")
+        p_dropout = nninn.ValueChoice(
+            [0.0, 0.2, 0.5, 0.9], label=f"{prefix}p_dropout")
+        # RNN layer
+        self.RNNnet = nninn.LayerChoice(
+            [
+                RNNstructure(
+                    input_size=nninn.ValueChoice(
+                        [32, 64, 128, 256], label=f"{prefix}embedding_size"
+                    ),
+                    hidden_size=nninn.ValueChoice(
+                        [16, 32, 64, 128], label=f"{prefix}hidden_size"
+                    ),
+                    num_layers=num_RNN_layers,
+                    dropout=p_dropout,
+                    bidirectional=self._bidirectional,
+                    batch_first=True,
+                )
+                for RNNstructure in RNN_TYPES.values()
+            ], label=f"{prefix}RNN_type"
+        )
+
+        # linear layer
+        self.postnet.append(
+            nninn.Repeat(
+                lambda index: nninn.Sequential(
+                    nninn.LazyLinear(
+                        nninn.ValueChoice(
+                            [16, 32, 64, 128],
+                            label=f"{prefix}size_at_dense_layer_{index}",
+                        )
+                    ),
+                    nninn.LayerChoice(
+                        ACTIVATIONS, label=f"{prefix}activation_at_dense_layer_{index}"
+                    ),
+                    nninn.Dropout(
+                        nninn.ValueChoice(
+                            [0.0, 0.2, 0.5, 0.9],
+                            label=f"{prefix}p_dropout_at_dense_layer_{index}",
+                        )
+                    ),
+                ),
+                nninn.ValueChoice(
+                    [0, 1, 2], label=f"{prefix}num_dense_layers"),
+                label=f"{prefix}dense_layers",
+            )
+        )
+
+        # output layer
+        self.postnet.append(nninn.LazyLinear(outputSize))
+        # softmax layer
+        self.postnet.append(nninn.Softmax())
+
+        self.prenet = nninn.Sequential(*self.prenet)
+        # self.RNNnet = nninn.Sequential(*self.RNNnet)
+        self.postnet = nninn.Sequential(*self.postnet)
+
+    def forward(self, input, hidden):
+
+        if isinstance(input, list):
+            if len(input) > 1:
+                raise ValueError(
+                    "Expect one tensor, get {} tensors".format(len(input)))
+            input = input[0]
+
+        # make sure input to embedding layer is long
+        input = input.long()
+
+        # embedding layer
+        output = self.prenet(input)
+        # RNN layer
+        output, hidden = self.RNNnet(output, hidden)
+        # post layer
+        output = self.postnet(output)[:, -1, :]
+
+        return output, hidden
+
+    def init_weight(self, how="xavier_normal"):
+
+        for m in self.modules():
+            if (
+                isinstance(m, nninn.Linear)
+                or isinstance(m, nninn.Embedding)
+                or isinstance(m, nninn.LazyLinear)
+                or isinstance(m, nninn.RNN)
+                or isinstance(m, nninn.LSTM)
+                or isinstance(m, nninn.GRU)
+            ):
+                how_to_init(m, how)
+
+    def init_hidden(self, batch_size):
+        num_directions = 2 if self._bidirectional else 1
+        if isinstance(self.RNNnet, nninn.LSTM):
+            return (
+                torch.zeros(
+                    self.RNNnet.num_layers * num_directions, batch_size, self.RNNnet.hidden_size,
+                ),
+                torch.zeros(
+                    self.RNNnet.num_layers * num_directions, batch_size, self.RNNnet.hidden_size,
+                )
+            )
+        else:
+            return torch.zeros(
+                self.RNNnet.num_layers * num_directions, batch_size, self.RNNnet.hidden_size,
+            )
+
+    @staticmethod
+    def build_model(config_path, inputSize, outputSize):
+
+        with fixed_arch(config_path):
+            return RNNHead(inputSize, outputSize)
