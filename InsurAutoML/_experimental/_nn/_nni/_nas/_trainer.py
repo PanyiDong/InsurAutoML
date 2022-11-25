@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 24th November 2022 1:35:26 pm
+Last Modified: Thursday, 24th November 2022 6:54:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -165,8 +165,7 @@ class Trainer:
         else:
             return self._tensor_formatter(data)
 
-    # def train(self, train, test, inputSize, outputSize):
-    def train(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
+    def _setup_data(self, train, valid):
 
         # unpack data
         if valid is not None:
@@ -198,33 +197,50 @@ class Trainer:
         X_valid, y_valid = self._data_formatter(
             X_valid), self._data_formatter(y_valid)
 
+        return X_train, y_train, X_valid, y_valid  # , task_type
+
+    @staticmethod
+    def _get_sizes(X_train, y_train, inputSize, outputSize):
         # get input and output Size
         # if RNN net, need to use vocab size as inputSize
         if isinstance(X_train, torch.Tensor):
-            if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
-                inputSize = self.preprocessor.vocab_size if inputSize is None else inputSize
-            else:
-                inputSize = X_train.size(
-                    dim=-1) if inputSize is None else inputSize
+            # if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
+            #     inputSize = self.preprocessor.vocab_size if inputSize is None else inputSize
+            # else:
+            inputSize = X_train.size(
+                dim=-1) if inputSize is None else inputSize
         # format list of tensor to tensor by order
         elif isinstance(X_train, list):
-            if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
-                inputSize = {idx: _X_train.size(dim=-1) if idx > 0 else self.preprocessor.vocab_size for idx,
-                             _X_train in enumerate(X_train)} if inputSize is None else inputSize
-            else:
-                inputSize = {idx: _X_train.size(
-                    dim=-1) for idx, _X_train in enumerate(X_train)} if inputSize is None else inputSize
+            # if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
+            #     inputSize = {idx: _X_train.size(dim=-1) if idx > 0 else self.preprocessor.vocab_size for idx,
+            #                  _X_train in enumerate(X_train)} if inputSize is None else inputSize
+            # else:
+            inputSize = {idx: _X_train.size(
+                dim=-1) for idx, _X_train in enumerate(X_train)} if inputSize is None else inputSize
         elif isinstance(X_train, dict):
-            if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
-                inputSize = {key: value.size(dim=-1) if key != "txt" else self.preprocessor.vocab_size for key,
-                             value in X_train.items()} if inputSize is None else inputSize
-                outputSize = len(np.unique(y_train)
-                                 ) if outputSize is None else outputSize
-            else:
-                inputSize = {key: value.size(
-                    dim=-1) for key, value in X_train.items()} if inputSize is None else inputSize
+            # if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
+            #     inputSize = {key: value.size(dim=-1) if key != "txt" else self.preprocessor.vocab_size for key,
+            #                  value in X_train.items()} if inputSize is None else inputSize
+            #     outputSize = len(np.unique(y_train)
+            #                      ) if outputSize is None else outputSize
+            # else:
+            inputSize = {key: value.size(
+                dim=-1) for key, value in X_train.items()} if inputSize is None else inputSize
         outputSize = len(np.unique(y_train)
                          ) if outputSize is None else outputSize
+
+        return inputSize, outputSize
+
+    # def train(self, train, test, inputSize, outputSize):
+    def train(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
+
+        # setup data
+        X_train, y_train, X_valid, y_valid = self._setup_data(train, valid)
+
+        # get inputSize, outputSize and vocabSize
+        inputSize, outputSize = self._get_sizes(
+            X_train, y_train, inputSize, outputSize)
+        vocabSize = self.preprocessor.vocab_size if self.preprocessor is not None else None
 
         # if folder existed, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.task_name)):
@@ -235,26 +251,16 @@ class Trainer:
             os.makedirs(os.path.join(self.temp_directory, self.task_name))
 
         # get dataset
-        if not os.path.exists(
-            os.path.join(
-                self.temp_directory,
-                self.task_name,
-                "train")):
+        if not os.path.exists(os.path.join(self.temp_directory, self.task_name, "train")):
             os.makedirs(os.path.join(
                 self.temp_directory, self.task_name, "train"))
-        if not os.path.exists(
-            os.path.join(
-                self.temp_directory,
-                self.task_name,
-                "valid")):
+        if not os.path.exists(os.path.join(self.temp_directory, self.task_name, "valid")):
             os.makedirs(os.path.join(
                 self.temp_directory, self.task_name, "valid"))
-        trainset = SerialTensorDataset(
-            X_train, y_train, path=os.path.join(
-                self.temp_directory, self.task_name, "train"))
-        validset = SerialTensorDataset(
-            X_valid, y_valid, path=os.path.join(
-                self.temp_directory, self.task_name, "valid"))
+        trainset = SerialTensorDataset(X_train, y_train, path=os.path.join(
+            self.temp_directory, self.task_name, "train"))
+        validset = SerialTensorDataset(X_valid, y_valid, path=os.path.join(
+            self.temp_directory, self.task_name, "valid"))
 
         # Update: Nov. 20, 2022
         # Force using pytorch_lightning evaluator
@@ -278,7 +284,7 @@ class Trainer:
         # # pytorch-lightning form evaluator
         # elif self.evaluator == "pl":
         self.evaluator = get_evaluator(
-            model=self.search_space(inputSize, outputSize),
+            model=self.search_space(inputSize, outputSize, vocabSize),
             train_set=trainset,
             test_set=validset,
             # train_set=_prep_dataset(X_train, y_train),
@@ -295,7 +301,7 @@ class Trainer:
 
         # setup experiment settings
         exp = RetiariiExperiment(
-            self.search_space(inputSize, outputSize),
+            self.search_space(inputSize, outputSize, vocabSize),
             self.evaluator,
             [],
             self.search_strategy,
@@ -330,7 +336,7 @@ class Trainer:
             with open(os.path.join(self.temp_directory, self.task_name, "optimal_architecture.json"), "w",) as outfile:
                 json.dump(model_dict, outfile)
             # build init model for HPO
-            init_model = self.build_model(inputSize, outputSize)
+            init_model = self.build_model(inputSize, outputSize, vocabSize)
             # save the model dict
             torch.save(
                 init_model.state_dict(),
@@ -338,9 +344,9 @@ class Trainer:
                              self.task_name, "init_optimal_model.pth"),
             )
 
-    def build_model(self, inputSize, outputSize):
+    def build_model(self, inputSize, outputSize, vocabSize):
 
         with fixed_arch(os.path.join(self.temp_directory, self.task_name, "optimal_architecture.json")):
-            net = self.search_space(inputSize, outputSize)
+            net = self.search_space(inputSize, outputSize, vocabSize)
 
         return net

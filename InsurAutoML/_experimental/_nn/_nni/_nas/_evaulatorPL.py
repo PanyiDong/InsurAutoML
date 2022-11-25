@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 24th November 2022 3:51:55 pm
+Last Modified: Thursday, 24th November 2022 4:18:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -98,7 +98,6 @@ class plEvaluator(pl.LightningModule):
         self.lr_scheduler = get_scheduler(lr_scheduler)
 
     def forward(self, X):
-        print(self.model)
         if self._hidden is not None:
             # only get the values of hidden, no need for gradient
             self._hidden = repackage_hidden(self._hidden)

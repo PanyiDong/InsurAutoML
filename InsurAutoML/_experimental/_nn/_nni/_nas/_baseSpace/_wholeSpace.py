@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 24th November 2022 3:48:45 pm
+Last Modified: Thursday, 24th November 2022 4:24:47 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -58,6 +58,7 @@ class MLPBaseSpace(nninn.Module):
         self,
         inputSize,
         outputSize,
+        vocabSize=0,
         prefix="",
     ):
         super().__init__()
@@ -130,6 +131,7 @@ class MLPLintSpace(nninn.Module):
         self,
         inputSize,
         outputSize,
+        vocabSize=0,
         prefix="",
     ):
         super().__init__()
@@ -201,6 +203,7 @@ class RNNBaseSpace(nninn.Module):
         self,
         inputSize,
         outputSize,
+        vocabSize,
         prefix="",
     ):
         super().__init__()
@@ -211,7 +214,7 @@ class RNNBaseSpace(nninn.Module):
         self.postnet = []
 
         # embedding layer
-        self.prenet.append(nninn.Embedding(inputSize, nninn.ValueChoice(
+        self.prenet.append(nninn.Embedding(vocabSize, nninn.ValueChoice(
             [128, 256, 512, 1024], label=f"{prefix}embedding_size"), ))
 
         # RNN parameters
@@ -340,6 +343,7 @@ class RNNLintSpace(nninn.Module):
         self,
         inputSize,
         outputSize,
+        vocabSize,
         prefix="",
     ):
         super().__init__()
@@ -350,7 +354,7 @@ class RNNLintSpace(nninn.Module):
         self.postnet = []
 
         # embedding layer
-        self.prenet.append(nninn.Embedding(inputSize, nninn.ValueChoice(
+        self.prenet.append(nninn.Embedding(vocabSize, nninn.ValueChoice(
             [32, 64, 128, 256], label=f"{prefix}embedding_size"), ))
 
         # RNN parameters

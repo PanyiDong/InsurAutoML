@@ -11,7 +11,7 @@ File Created: Tuesday, 22nd November 2022 4:42:24 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 22nd November 2022 4:47:45 pm
+Last Modified: Thursday, 24th November 2022 6:58:05 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,11 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union
+from typing import Union, List, Tuple
+import torch
 import nni.retiarii.nn.pytorch as nninn
 # from nni.retiarii import model_wrapper
 
-from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPHead
+from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPHead, RNNHead, RNNBaseSpace, RNNLintSpace
 
 """
 List of methods:
@@ -63,15 +64,40 @@ FusModel: Txt/Cat/Con are almost trained separately and just fused together for 
 # Fusion Heads
 
 
-class TxtHead(MLPHead):
+class TxtHead(nninn.Module):
 
     def __init__(
         self,
         inputSize: int,
         outputSize: int,
+        vocabSize: int,
         prefix="txt_",
     ) -> None:
-        super(TxtHead, self).__init__(inputSize, outputSize, prefix=prefix)
+        super().__init__()
+        self._outputSize = outputSize
+
+        self.net = nninn.LayerChoice(
+            [MLPHead(inputSize, outputSize, prefix=prefix + "mlp_"),
+             RNNHead(inputSize, outputSize, vocabSize, prefix=prefix + "rnn_")
+             ], label="txt_head",
+        )
+
+    @property
+    def outputSize(self) -> int:
+        return self._outputSize
+
+    def forward(self, input: Union[torch.Tensor, List[torch.Tensor]], hidden: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
+
+        if hidden is not None:
+            return self.net(input, hidden)
+        else:
+            return self.net(input), None
+
+    def init_hidden(self, batchSize: int) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        if hasattr(self.net, "init_hidden"):
+            return self.net.init_hidden(batchSize)
+        else:
+            return None
 
 
 class CatHead(MLPHead):
@@ -99,15 +125,41 @@ class ConHead(MLPHead):
 # Fusion nets
 
 
-class TxtNet(MLPBaseSpace):
+class TxtNet(nninn.Module):
 
     def __init__(
         self,
         inputSize: int,
         outputSize: Union[int, nninn.InputChoice],
+        vocabSize: int,
         prefix="txt_",
     ) -> None:
-        super(TxtNet, self).__init__(inputSize, outputSize, prefix=prefix)
+        super().__init__()
+        self._outputSize = outputSize
+
+        self.net = nninn.LayerChoice(
+            [MLPBaseSpace(inputSize, outputSize, prefix=prefix + "mlp_"),
+             RNNBaseSpace(inputSize, outputSize, vocabSize,
+                          prefix=prefix + "rnn_"),
+             ], label="txt_net",
+        )
+
+    @property
+    def outputSize(self) -> int:
+        return self._outputSize
+
+    def forward(self, input: Union[torch.Tensor, List[torch.Tensor]], hidden: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
+
+        if hidden is not None:
+            return self.net(input, hidden)
+        else:
+            return self.net(input), None
+
+    def init_hidden(self, batchSize: int) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        if hasattr(self.net, "init_hidden"):
+            return self.net.init_hidden(batchSize)
+        else:
+            return None
 
 
 class CatNet(MLPBaseSpace):

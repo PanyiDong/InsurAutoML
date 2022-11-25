@@ -11,7 +11,7 @@ File Created: Saturday, 19th November 2022 10:03:31 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 24th November 2022 3:54:09 pm
+Last Modified: Thursday, 24th November 2022 7:01:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import nni.retiarii.nn.pytorch as nninn
 from nni.retiarii import model_wrapper
 from nni.nas.utils import basic_unit
 
-from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPLintSpace, MLPHead, RNNBaseSpace, RNNLintSpace, RNNHead
+from ..._experimental._nn._nni._nas._baseSpace import MLPBaseSpace, MLPLintSpace, MLPHead, RNNBaseSpace, RNNLintSpace
 from ._components import TxtHead, CatHead, ConHead, TxtNet, CatNet, ConNet
 
 # MLPHead = typing.cast(Type[MLPHead], basic_unit(MLPHead))
@@ -61,8 +61,9 @@ class MLPNet(MLPBaseSpace):
         self,
         inputSize: int,
         outputSize: int,
+        vocabSize: int = 0,
     ) -> None:
-        super().__init__(inputSize, outputSize)
+        super().__init__(inputSize, outputSize, vocabSize)
 
 
 @model_wrapper
@@ -72,8 +73,9 @@ class LiteMLPNet(MLPLintSpace):
         self,
         inputSize: int,
         outputSize: int,
+        vocabSize: int = 0,
     ) -> None:
-        super().__init__(inputSize, outputSize)
+        super().__init__(inputSize, outputSize, vocabSize)
 
 
 @model_wrapper
@@ -83,8 +85,9 @@ class RNNet(RNNBaseSpace):
         self,
         inputSize: int,
         outputSize: int,
+        vocabSize: int,
     ) -> None:
-        super().__init__(inputSize, outputSize)
+        super().__init__(inputSize, outputSize, vocabSize)
 
 
 @model_wrapper
@@ -94,8 +97,9 @@ class LiteRNNet(RNNLintSpace):
         self,
         inputSize: int,
         outputSize: int,
+        vocabSize: int,
     ) -> None:
-        super().__init__(inputSize, outputSize)
+        super().__init__(inputSize, outputSize, vocabSize)
 
 ############################################################################
 # Fusion Models
@@ -108,17 +112,31 @@ class FusTokenNet(nninn.Module):
         self,
         inputSize: int,
         outputSize: int,
+        vocabSize: int,
     ) -> None:
         super().__init__()
         self.net = nninn.LayerChoice(
-            [MLPBaseSpace(inputSize, outputSize, prefix="MLP_base_"), MLPLintSpace(
-                inputSize, outputSize, prefix="MLP_lint_")],
+            [MLPBaseSpace(inputSize, outputSize, prefix="MLP_base_"),
+             MLPLintSpace(inputSize, outputSize, prefix="MLP_lint_"),
+             RNNBaseSpace(inputSize, outputSize,
+                          vocabSize, prefix="RNN_base_"),
+             RNNLintSpace(inputSize, outputSize, vocabSize, prefix="RNN_lint_")
+             ],
             label="FusTokenNet"
         )
 
     def forward(self, input: Union[torch.Tensor, List[torch.Tensor]], hidden: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
 
-        return self.net(input)
+        if hidden is not None:
+            return self.net(input, hidden)
+        else:
+            return self.net(input)
+
+    def init_hidden(self, batchSize: int) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        if hasattr(self.net, "init_hidden"):
+            return self.net.init_hidden(batchSize)
+        else:
+            return None
 
 
 @model_wrapper
@@ -128,6 +146,7 @@ class FusEmbedNet(nninn.Module):
         self,
         inputSize: Dict[str, int],
         outputSize: int,
+        vocabSize: int,
     ) -> None:
         super().__init__()
         self.embeds = []
@@ -143,7 +162,7 @@ class FusEmbedNet(nninn.Module):
         # so, need to wrap with different classes manually
         if "txt" in inputSize.keys():
             self.textnet = TxtHead(inputSize["txt"], nninn.ValueChoice(
-                [4, 8, 16, 32, 64], label="txt_embedSize"))
+                [4, 8, 16, 32, 64], label="txt_embedSize"), vocabSize)
             self.embeds.append(self.textnet)
         if "cat" in inputSize.keys():
             self.catnet = CatHead(inputSize["cat"], nninn.ValueChoice(
@@ -156,20 +175,33 @@ class FusEmbedNet(nninn.Module):
         self.model = MLPHead(
             sum([embed.outputSize for embed in self.embeds]), outputSize, prefix="model_")
 
-    def forward(self, input: List[torch.Tensor]) -> torch.Tensor:
+    def forward(self, input: List[torch.Tensor], hidden: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
 
         # put everything through the embedding heads
-        embed = [embed(input[index])
-                 for index, embed in enumerate(self.embeds)]
+        embedded = []
+        for index, embed in enumerate(self.embeds):
+            if isinstance(embed, TxtHead):
+                _embed, hidden = embed(input[index], hidden)
+            else:
+                _embed = embed(input[index])
+            embedded.append(_embed)
+
         # concatenate the embeddings
-        embed = torch.cat(embed, dim=-1)
+        embedded = torch.cat(embedded, dim=-1)
         # put the concatenated embeddings through the model
-        result = self.model(embed)
+        result = self.model(embedded)
 
-        return result
+        # for TxtHead with MLP, hidden is None, return None will create return stacking error
+        if hidden is not None:
+            return result, hidden
+        else:
+            return result
 
-    # def build_model(self, inputSize, outputSize):
-    #     return
+    def init_hidden(self, batchSize: int) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        if hasattr(self, "textnet"):
+            return self.textnet.init_hidden(batchSize)
+        else:
+            return None
 
 
 @ model_wrapper
@@ -179,11 +211,12 @@ class FusModelNet(nninn.Module):
         self,
         inputSize: Dict[str, int],
         outputSize: int,
+        vocabSize: int,
     ) -> None:
         super().__init__()
         self.models = []
         if "txt" in inputSize.keys():
-            self.textnet = TxtNet(inputSize["txt"], outputSize)
+            self.textnet = TxtNet(inputSize["txt"], outputSize, vocabSize)
             self.models.append(self.textnet)
         if "cat" in inputSize.keys():
             self.catnet = CatNet(inputSize["cat"], outputSize)
@@ -195,15 +228,28 @@ class FusModelNet(nninn.Module):
         # self.models = [MLPBaseSpace(_inputSize, outputSize, prefix="model{}_".format(index))
         #                for index, _inputSize in enumerate(inputSize)]
 
-    def forward(self, input: List[torch.Tensor]) -> torch.Tensor:
+    def forward(self, input: List[torch.Tensor], hidden: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]] = None) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
 
         # put everything through the embedding heads
-        self.textnet(input[0])
-        self.catnet(input[1])
-        self.connet(input[2])
-        output = [model(input[index])
-                  for index, model in enumerate(self.models)]
+        output = []
+        for index, model in enumerate(self.models):
+            if isinstance(model, TxtNet):
+                _output, hidden = model(input[index], hidden)
+            else:
+                _output = model(input[index])
+            output.append(_output)
+
         # sum the outputs
         result = torch.sum(torch.stack(output), dim=0)
 
-        return result
+        # for TxtNet with MLP, hidden is None, return None will create return stacking error
+        if hidden is not None:
+            return result, hidden
+        else:
+            return result
+
+    def init_hidden(self, batchSize: int) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+        if hasattr(self, "textnet"):
+            return self.textnet.init_hidden(batchSize)
+        else:
+            return None

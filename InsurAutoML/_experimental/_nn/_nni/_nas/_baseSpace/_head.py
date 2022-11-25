@@ -11,7 +11,7 @@ File Created: Sunday, 13th November 2022 5:15:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 24th November 2022 4:00:31 pm
+Last Modified: Thursday, 24th November 2022 7:06:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,6 +45,8 @@ from nni.retiarii import model_wrapper, fixed_arch
 
 from .._utils import ACTIVATIONS, RNN_TYPES, how_to_init
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 """
 List of methods:
                     Txt           Cat           Con
@@ -71,6 +73,7 @@ class MLPHead(nninn.Module):
         self,
         inputSize,
         outputSize,
+        vocabSize: int = 0,
         prefix="",
     ):
         super().__init__()
@@ -125,6 +128,9 @@ class MLPHead(nninn.Module):
 
     def forward(self, X):
 
+        # make sure input to embedding layer is float
+        X = X.to(torch.float32)
+
         return self.net(X)
 
     def init_weight(self, how="xavier_normal"):
@@ -145,6 +151,7 @@ class RNNHead(nninn.Module):
         self,
         inputSize,
         outputSize,
+        vocabSize: int,
         prefix="",
     ):
         super().__init__()
@@ -155,7 +162,7 @@ class RNNHead(nninn.Module):
         self.postnet = []
 
         # embedding layer
-        self.prenet.append(nninn.Embedding(inputSize, nninn.ValueChoice(
+        self.prenet.append(nninn.Embedding(vocabSize, nninn.ValueChoice(
             [32, 64, 128, 256], label=f"{prefix}embedding_size"), ))
 
         # RNN parameters
@@ -231,6 +238,8 @@ class RNNHead(nninn.Module):
 
         # make sure input to embedding layer is long
         input = input.long()
+        hidden = tuple([item.to(device) for item in hidden]) if isinstance(
+            hidden, (list, tuple)) else hidden.to(device)
 
         # embedding layer
         output = self.prenet(input)
