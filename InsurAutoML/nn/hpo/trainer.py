@@ -1,17 +1,17 @@
 """
-File Name: _trainer.py
+File Name: trainer.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_nn/_hpo/_trainer.py
+Relative Path: /InsurAutoML/nn/hpo/trainer.py
 File Created: Monday, 28th November 2022 9:57:58 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 9:58:00 pm
+Last Modified: Tuesday, 29th November 2022 3:34:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,3 +37,13 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
+from nni.experiment import Experiment
+
+from ..utils.hpSpace import search_space
+
+
+class HPOTrainer:
+
+    def __init__(self) -> None:
+        pass

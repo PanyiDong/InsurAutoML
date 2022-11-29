@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:32 pm
+Last Modified: Tuesday, 29th November 2022 3:51:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -341,7 +341,7 @@ class NasTrainer:
             exp_config.training_service.use_active_gpu = True
         else:
             exp_config.trial_gpu_number = 0
-            exp_config.training_service.use_active_gpu = 0
+            exp_config.training_service.use_active_gpu = False
         # exp_config.experiment_working_directory = os.path.join(
         #     self.temp_directory, self.task_name
         # )

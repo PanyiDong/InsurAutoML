@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:38:22 pm
+Last Modified: Tuesday, 29th November 2022 3:45:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1437,8 +1437,9 @@ class TimePlateauStopper(Stopper):
         metric_threshold: float = None,
         mode: str = "min",
     ) -> None:
-        self._start = time.time()
-        self._deadline = timeout
+        self._stored_start = None
+        self.timeout = timeout
+        self._budget = timeout
 
         self._metric = metric
         self._mode = mode
@@ -1491,7 +1492,17 @@ class TimePlateauStopper(Stopper):
 
     def stop_all(self) -> bool:
 
-        return time.time() - self._start > self._deadline
+        if self._stored_start:
+            self._budget -= (time.time() - self._stored_start)
+
+        self._stored_start = time.time()
+
+        if self._budget < 0:
+            logger.info(
+                "TimePlateauStopper: Time limit {} seconds reached.".format(self.timeout))
+            return True
+
+        return False
 
 
 # get estimator based on string or class

@@ -11,7 +11,7 @@ File Created: Saturday, 26th November 2022 12:26:39 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:40:04 pm
+Last Modified: Tuesday, 29th November 2022 3:17:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -107,7 +107,7 @@ class AutoMultiModalTabular(NasTrainer):
             lr_scheduler=self.lr_scheduler,
             criterion=self.criterion,
             # evaluator="base",
-            search_strategy=self.search_space,
+            search_strategy=self.search_strategy,
             batch_size=self.batch_size,
             num_epoch=self.num_epoch,
             valid_perc=self.valid_perc,

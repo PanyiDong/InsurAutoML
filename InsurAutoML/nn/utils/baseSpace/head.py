@@ -11,7 +11,7 @@ File Created: Sunday, 13th November 2022 5:15:00 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:40:37 pm
+Last Modified: Tuesday, 29th November 2022 3:55:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,7 @@ from nni.retiarii import model_wrapper, fixed_arch
 
 from ..args import ACTIVATIONS, RNN_TYPES, how_to_init
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 """
 List of methods:
@@ -238,8 +238,6 @@ class RNNHead(nninn.Module):
 
         # make sure input to embedding layer is long
         input = input.long()
-        hidden = tuple([item.to(device) for item in hidden]) if isinstance(
-            hidden, (list, tuple)) else hidden.to(device)
 
         # embedding layer
         output = self.prenet(input)

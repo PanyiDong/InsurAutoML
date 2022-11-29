@@ -11,7 +11,7 @@ File Created: Friday, 25th November 2022 11:10:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:40:13 pm
+Last Modified: Tuesday, 29th November 2022 3:57:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -84,6 +84,7 @@ class plEvaluator(pl.LightningModule):
         optimizer: Union[str, Callable] = "Adam",
         optimizer_lr: float = 1e-3,
         lr_scheduler: Union[str, Callable] = "None",
+        use_gpu: bool = True,
     ) -> None:
         super().__init__()
 
@@ -95,6 +96,8 @@ class plEvaluator(pl.LightningModule):
         self.optimizer = get_optimizer(optimizer)
         self.optimizer_lr = optimizer_lr
         self.lr_scheduler = get_scheduler(lr_scheduler)
+
+        self._device = torch.device("cuda" if use_gpu else "cpu")
 
     def forward(self, X: Union[torch.Tensor, List[torch.Tensor]]) -> Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
         if self._hidden is not None:
@@ -175,6 +178,9 @@ class plEvaluator(pl.LightningModule):
 
         if hasattr(self.model, 'init_hidden'):
             self._hidden = self.model.init_hidden(self.batch_size)
+            # put hidden state on GPU if available and use_gpu is True
+            self._hidden = tuple([item.to(self._device) for item in self._hidden]) if isinstance(
+                self._hidden, (list, tuple)) else self._hidden.to(self._device)
         else:
             self._hidden = None
 
@@ -209,6 +215,7 @@ def get_evaluator(
             optimizer=optimizer,
             optimizer_lr=optimizer_lr,
             lr_scheduler=lr_scheduler,
+            use_gpu=use_gpu,
         ),
         trainer=pl.Trainer(
             logger=logger,

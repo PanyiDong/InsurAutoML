@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:40:32 pm
+Last Modified: Tuesday, 29th November 2022 3:56:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,7 +46,7 @@ from nni.retiarii import model_wrapper, fixed_arch
 from ..args import ACTIVATIONS, RNN_TYPES, how_to_init
 # from .._buildModel import build_mlp
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 ##########################################################################
 # MLP Space
@@ -288,10 +288,8 @@ class RNNBaseSpace(nninn.Module):
                     "Expect one tensor, get {} tensors".format(len(input)))
             input = input[0]
 
-        # make sure input to embedding layer is long and put it to device
+        # make sure input to embedding layer is long
         input = input.long()
-        hidden = tuple([item.to(device) for item in hidden]) if isinstance(
-            hidden, (list, tuple)) else hidden.to(device)
 
         # embedding layer
         output = self.prenet(input)
@@ -429,10 +427,8 @@ class RNNLintSpace(nninn.Module):
                     "Expect one tensor, get {} tensors".format(len(input)))
             input = input[0]
 
-        # make sure input to embedding layer is long and put it to device
+        # make sure input to embedding layer is long
         input = input.long()
-        hidden = tuple([item.to(device) for item in hidden]) if isinstance(
-            hidden, (list, tuple)) else hidden.to(device)
 
         # embedding layer
         output = self.prenet(input)
