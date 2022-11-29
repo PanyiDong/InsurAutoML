@@ -1,17 +1,17 @@
 """
-File Name: _wrap.py
+File Name: utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_model/_wrap.py
+Relative Path: /InsurAutoML/model/utils.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:15:47 pm
+Last Modified: Tuesday, 29th November 2022 3:04:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,6 +46,9 @@ import pandas as pd
 
 
 class BaseClassificationWrapper:
+
+    """Classification model wrapper"""
+
     def __init__(self, estimator: Callable) -> None:
         self.estimator = estimator
 
@@ -83,6 +86,9 @@ class BaseClassificationWrapper:
 
 
 class BaseRegressionWrapper:
+
+    """Regression model wrapper"""
+
     def __init__(self, estimator: Callable) -> None:
         self.estimator = estimator
 

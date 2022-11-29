@@ -127,8 +127,6 @@ model.fit(train_X, train_y)
 model.predict(test_X)
 ```
 
-The legacy version of `AutoTabular`, which is built on top of `HyperOpt`, is still callable by `InsurAutoML._legacy.AutoTabular` but not maintained anymore due the decryption of `autosklearn` methods. The legacy version may be removed in the future.
-
 ~~By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs. ~~ Now, the pipeline can identify whether console terminal/Jupyter Notebook environment is used, don't need to worry about it.
 
 One important issue I find now is that, `ray.tune` does not force to stop running trials but only stop generating new trials. So, if setting `timeout` too low, it's common the fitting does not end in time (long running trials are expected not to finish in short time). However, if the pipeline is used as normal cases, which the `timeout` and `max_evals` both should be set to a rather large number, this case should not be as significant as very short time limit. I think that force trial runtime to stop can be a solution, but with few tryouts, I haven't found anything useful yet.
