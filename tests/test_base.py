@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:23:52 pm
+Last Modified: Monday, 28th November 2022 11:36:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 
 def test_load_data():
 
-    from InsurAutoML._base import load_data
+    from InsurAutoML.base import load_data
     import importlib
 
     rpy2_spec = importlib.util.find_spec("rpy2")

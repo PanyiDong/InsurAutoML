@@ -11,7 +11,7 @@ File: test_hpo_3.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 12:56:36 pm
+Last Modified: Monday, 28th November 2022 11:34:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -120,7 +120,7 @@ def test_insurance():
 
 def test_insurance_R2():
 
-    from InsurAutoML._hpo._base import AutoTabularBase
+    from InsurAutoML.hpo.base import AutoTabularBase
 
     # test load_data here
     data = load_data().load("example/example_data", "insurance")

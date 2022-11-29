@@ -11,7 +11,7 @@ File: test_model.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 11:45:11 am
+Last Modified: Monday, 28th November 2022 11:21:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,12 +39,12 @@ SOFTWARE.
 """
 
 import pandas as pd
-from InsurAutoML._utils import formatting
+from InsurAutoML.utils import formatting
 
 
 def test_classifiers():
 
-    from InsurAutoML._model import classifiers
+    from InsurAutoML.model import classifiers
 
     for method_name, method in classifiers.items():
 
@@ -75,7 +75,7 @@ def test_classifiers():
                 method_name
             )
 
-    from InsurAutoML._model import (
+    from InsurAutoML.model import (
         AdaboostClassifier,
         BernoulliNB,
         DecisionTreeClassifier,
@@ -134,7 +134,7 @@ def test_classifiers():
 
 def test_regressors():
 
-    from InsurAutoML._model import regressors
+    from InsurAutoML.model import regressors
 
     for method_name, method in regressors.items():
 
@@ -168,7 +168,7 @@ def test_regressors():
                 method_name
             )
 
-    from InsurAutoML._model import (
+    from InsurAutoML.model import (
         AdaboostRegressor,
         ARDRegression,
         DecisionTreeRegressor,

@@ -11,7 +11,7 @@ File: additional.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 8th November 2022 10:11:48 am
+Last Modified: Monday, 28th November 2022 11:32:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -80,12 +80,12 @@ if not, leave it as it is.
 # Template of self-defined models and hyperparameters
 
 # from ray import tune
-# from InsurAutoML._encoding import DataEncoding
-# from InsurAutoML._imputation import SimpleImputer
-# from InsurAutoML._balancing import SimpleRandomOverSampling
-# from InsurAutoML._scaling import Standardize
-# from InsurAutoML._feature_selection import mRMR
-# from InsurAutoML._model import LinearRegression, LogisticRegression
+# from InsurAutoML.encoding import DataEncoding
+# from InsurAutoML.imputation import SimpleImputer
+# from InsurAutoML.balancing import SimpleRandomOverSampling
+# from InsurAutoML.scaling import Standardize
+# from InsurAutoML.feature_selection import mRMR
+# from InsurAutoML.model import LinearRegression, LogisticRegression
 
 
 # # additional encoders

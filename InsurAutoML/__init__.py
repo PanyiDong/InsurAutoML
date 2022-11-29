@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:23:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 19th November 2022 7:34:27 pm
+Last Modified: Monday, 28th November 2022 11:37:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,15 +40,15 @@ SOFTWARE.
 
 
 from .version import _get_version
-from ._base import no_processing, load_data
-from ._hpo import (
+from .base import no_processing, load_data
+from .hpo import (
     AutoTabular,
     AutoTabularClassifier,
     AutoTabularRegressor,
     AutoTextClassifier,
     AutoNextWordPrediction,
 )
-from ._utils import (
+from .utils import (
     # random_guess,
     # random_index,
     # random_list,

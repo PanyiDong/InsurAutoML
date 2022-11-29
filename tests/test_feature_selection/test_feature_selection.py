@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:22:16 pm
+Last Modified: Monday, 28th November 2022 11:35:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,7 +40,7 @@ SOFTWARE.
 
 import numpy as np
 import pandas as pd
-from InsurAutoML._feature_selection import feature_selections
+from InsurAutoML.feature_selection import feature_selections
 
 
 def test_feature_selection():
@@ -84,7 +84,7 @@ def test_feature_selection():
 
     autosklearn_spec = importlib.util.find_spec("autosklearn")
     if autosklearn_spec is not None:
-        from InsurAutoML._feature_selection._sklearn import (
+        from InsurAutoML.feature_selection.sklearn import (
             extra_trees_preproc_for_classification,
             extra_trees_preproc_for_regression,
             liblinear_svc_preprocessor,
@@ -121,7 +121,7 @@ def test_feature_selection():
 
 def test_FeatureFilter():
 
-    from InsurAutoML._feature_selection import FeatureFilter
+    from InsurAutoML.feature_selection import FeatureFilter
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -150,7 +150,7 @@ def test_FeatureFilter():
 
 def test_ASFFS():
 
-    from InsurAutoML._feature_selection import ASFFS
+    from InsurAutoML.feature_selection import ASFFS
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -186,8 +186,8 @@ def test_ASFFS():
 
 def test_GA():
 
-    from InsurAutoML._encoding import DataEncoding
-    from InsurAutoML._feature_selection import GeneticAlgorithm
+    from InsurAutoML.encoding import DataEncoding
+    from InsurAutoML.feature_selection import GeneticAlgorithm
 
     data = pd.read_csv("Appendix/heart.csv")
     formatter = DataEncoding()
@@ -241,7 +241,7 @@ def test_GA():
 
 def test_FOCI():
 
-    from InsurAutoML._feature_selection import FOCI
+    from InsurAutoML.feature_selection import FOCI
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -257,7 +257,7 @@ def test_FOCI():
 
 def test_ExhaustiveFS():
 
-    from InsurAutoML._feature_selection._wrapper import ExhaustiveFS
+    from InsurAutoML.feature_selection.wrapper import ExhaustiveFS
     from sklearn.linear_model import Ridge
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")

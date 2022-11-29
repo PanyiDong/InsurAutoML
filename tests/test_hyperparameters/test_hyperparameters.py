@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:22:49 pm
+Last Modified: Monday, 28th November 2022 11:34:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 
 def test_encoder_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         encoder_hyperparameter,
     )
 
@@ -52,7 +52,7 @@ def test_encoder_hyperparameters():
 
 def test_imputer_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         imputer_hyperparameter,
     )
 
@@ -63,7 +63,7 @@ def test_imputer_hyperparameters():
 
 def test_balancing_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         balancing_hyperparameter,
     )
 
@@ -74,7 +74,7 @@ def test_balancing_hyperparameters():
 
 def test_scaling_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         scaling_hyperparameter,
     )
 
@@ -85,7 +85,7 @@ def test_scaling_hyperparameters():
 
 def test_feature_selection_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         feature_selection_hyperparameter,
     )
 
@@ -96,7 +96,7 @@ def test_feature_selection_hyperparameters():
 
 def test_regressor_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         regressor_hyperparameter,
     )
 
@@ -107,7 +107,7 @@ def test_regressor_hyperparameters():
 
 def test_classifier_hyperparameters():
 
-    from InsurAutoML._hyperparameters import (
+    from InsurAutoML.hyperparameters import (
         classifier_hyperparameter,
     )
 
