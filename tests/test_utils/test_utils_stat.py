@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:49 pm
+Last Modified: Tuesday, 6th December 2022 11:27:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,7 @@ import pandas as pd
 
 def test_nan_cov():
 
-    from InsurAutoML.utils.stat import nan_cov
+    from InsurAutoML.utils.stats import nan_cov
 
     assert (
         nan_cov(pd.DataFrame([4, 5, 6, np.nan, 1, np.nan]))[0, 0] == 2.8
@@ -53,7 +53,7 @@ def test_nan_cov():
 
 def test_class_means():
 
-    from InsurAutoML.utils.stat import class_means
+    from InsurAutoML.utils.stats import class_means
 
     X = pd.DataFrame(
         {
@@ -85,7 +85,7 @@ def test_empirical_covariance():
 
 def test_class_cov():
 
-    from InsurAutoML.utils.stat import class_cov
+    from InsurAutoML.utils.stats import class_cov
 
     X = np.arange(10)
     y = np.array([0, 0, 0, 1, 1, 1, 1, 1, 1, 1])
@@ -99,7 +99,7 @@ def test_class_cov():
 
 def test_MI():
 
-    from InsurAutoML.utils.stat import MI
+    from InsurAutoML.utils.stats import MI
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
     y = pd.DataFrame(
@@ -116,7 +116,7 @@ def test_MI():
 
 def test_ACCC():
 
-    from InsurAutoML.utils.stat import ACCC
+    from InsurAutoML.utils.stats import ACCC
 
     Z = pd.DataFrame(
         np.random.normal(
@@ -140,7 +140,7 @@ def test_ACCC():
 
 def test_t_score():
 
-    from InsurAutoML.utils.stat import t_score
+    from InsurAutoML.utils.stats import t_score
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
     y = pd.DataFrame(
@@ -159,7 +159,7 @@ def test_t_score():
 
 def test_ANOVA():
 
-    from InsurAutoML.utils.stat import ANOVA
+    from InsurAutoML.utils.stats import ANOVA
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
     y = pd.DataFrame(
@@ -178,7 +178,7 @@ def test_ANOVA():
 
 def test_neg_metrics():
 
-    from InsurAutoML.utils.stat import (
+    from InsurAutoML.utils.stats import (
         neg_R2,
         neg_accuracy,
         neg_precision,

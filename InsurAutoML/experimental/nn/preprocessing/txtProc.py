@@ -1,17 +1,17 @@
 """
-File Name: _preprocessing.py
+File Name: txtProc.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_utils/_preprocessing.py
+Relative Path: /InsurAutoML/preprocessing/txtProc.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 9:40:22 pm
+Last Modified: Tuesday, 6th December 2022 11:30:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,6 +49,7 @@ if pytorch_spec is not None:
 
 torchtext_spec = importlib.util.find_spec("torchtext")
 if torchtext_spec is not None:
+    import torchtext
     from torchtext.data.utils import get_tokenizer
     from torchtext.vocab import build_vocab_from_iterator
 

@@ -11,7 +11,7 @@ File Created: Friday, 25th November 2022 11:11:35 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:37:08 pm
+Last Modified: Monday, 5th December 2022 2:58:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,8 +52,15 @@ import nni.retiarii.nn.pytorch as nninn
 import InsurAutoML.nn
 
 
+def repackage_hidden(h):
+    if isinstance(h, torch.Tensor):
+        return h.detach()
+    else:
+        return tuple(repackage_hidden(v) for v in h)
+
 ##########################################################################
 # Constant
+
 
 ACTIVATIONS = OrderedDict(
     [

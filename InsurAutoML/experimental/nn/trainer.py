@@ -1,17 +1,17 @@
 """
-File Name: _trainer.py
+File Name: trainer.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/nn/_trainer.py
+Relative Path: /InsurAutoML/nn/trainer.py
 File Created: Saturday, 26th November 2022 12:26:39 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 29th November 2022 3:17:12 pm
+Last Modified: Monday, 5th December 2022 5:44:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -117,8 +117,8 @@ class AutoMultiModalTabular(NasTrainer):
             use_gpu=self.use_gpu,
         )
 
-    def train(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
+    def fit(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
 
         # NAS training
-        super(AutoMultiModalTabular, self).train(
+        super(AutoMultiModalTabular, self).fit(
             train, valid, inputSize, outputSize, **kwargs)

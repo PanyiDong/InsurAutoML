@@ -11,7 +11,7 @@ File Created: Friday, 25th November 2022 11:10:17 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 29th November 2022 3:57:25 pm
+Last Modified: Monday, 5th December 2022 4:54:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -50,28 +50,15 @@ from pytorch_lightning.loggers import TensorBoardLogger
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 
 from InsurAutoML.utils.tensor import SerialTensorDataset
-from ..utils.args import get_optimizer, get_criterion, get_scheduler  # , tensor_accuracy
+from ..utils.args import repackage_hidden, get_optimizer, get_criterion, get_scheduler
+# , tensor_accuracy
 
 # serialized version of dataloader
 # DataLoader = nni.trace(DataLoader)
 
-pl_spec = importlib.util.find_spec("pytorch_lightning")
-# if pl not found, raise error
-if pl_spec is None:
-    raise ImportError(
-        "Use of pytorch-lightning evaluator requires pytorch-lightning to be installed. \
-        Use `pip install pytorch-lightning` to install.")
-
-
-def repackage_hidden(h):
-    if isinstance(h, torch.Tensor):
-        return h.detach()
-    else:
-        return tuple(repackage_hidden(v) for v in h)
-
 
 @nni.trace
-class plEvaluator(pl.LightningModule):
+class NASEvaluator(pl.LightningModule):
 
     ACCURACY_TYPE = ["binary", "multiclass"]
 
@@ -111,14 +98,6 @@ class plEvaluator(pl.LightningModule):
 
     def training_step(self, batch: Tuple[Union[torch.Tensor, List[torch.Tensor]], torch.Tensor], batch_idx: int) -> torch.Tensor:
 
-        # initialize hidden state for each epoch
-        if not hasattr(self, '_train_epoch'):
-            self._train_epoch = self.current_epoch
-            self.init_hidden()
-        elif self._train_epoch != self.current_epoch:
-            self._train_epoch = self.current_epoch
-            self.init_hidden()
-
         input, label = batch  # parse the input batch
         # forward phase
         output = self(input)
@@ -129,14 +108,6 @@ class plEvaluator(pl.LightningModule):
         return loss
 
     def validation_step(self, batch: Tuple[Union[torch.Tensor, List[torch.Tensor]], torch.Tensor], batch_idx: int) -> Dict[str, torch.Tensor]:
-
-        # initialize hidden state for each epoch
-        if not hasattr(self, '_valid_epoch'):
-            self._valid_epoch = self.current_epoch
-            self.init_hidden()
-        elif self._valid_epoch != self.current_epoch:
-            self._valid_epoch = self.current_epoch
-            self.init_hidden()
 
         input, label = batch  # parse the input batch
         output = self(input)
@@ -162,8 +133,26 @@ class plEvaluator(pl.LightningModule):
         else:
             return {
                 "optimizer": self.optimizer,
-                "scheduler": self.lr_scheduler(self.optimizer),
+                "lr_scheduler": self.lr_scheduler(self.optimizer),
             }
+
+    def on_train_epoch_start(self) -> None:
+        # update train_epoch number
+        if not hasattr(self, '_train_epoch'):
+            self._train_epoch = self.current_epoch
+        else:
+            self._train_epoch += 1
+        # initialize hidden state for each epoch
+        self.init_hidden()
+
+    def on_validation_epoch_start(self) -> None:
+        # update valid_epoch number
+        if not hasattr(self, '_valid_epoch'):
+            self._valid_epoch = self.current_epoch
+        else:
+            self._valid_epoch = self.current_epoch
+        # initialize hidden state for each epoch
+        self.init_hidden()
 
     def on_validation_epoch_end(self) -> None:
         nni.report_intermediate_result(
@@ -199,7 +188,7 @@ def get_evaluator(
     num_epochs: int = 10,
     log_dir: str = "tmp/NAS",
     use_gpu: bool = True,
-) -> plEvaluator:
+) -> NASEvaluator:
     # setup pytorch_lightning logger
     logger = TensorBoardLogger(log_dir, name="pl_logs")
 
@@ -207,7 +196,7 @@ def get_evaluator(
     ), } if use_gpu else {"accelerator": "cpu"}
 
     return pl.Lightning(
-        lightning_module=plEvaluator(
+        lightning_module=NASEvaluator(
             model=model,
             # type_of_task=type_of_task,
             batch_size=batchSize,

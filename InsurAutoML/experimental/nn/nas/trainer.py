@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 29th November 2022 3:51:11 pm
+Last Modified: Monday, 5th December 2022 5:44:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -216,26 +216,13 @@ class NasTrainer:
         # get input and output Size
         # if RNN net, need to use vocab size as inputSize
         if isinstance(X_train, torch.Tensor):
-            # if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
-            #     inputSize = self.preprocessor.vocab_size if inputSize is None else inputSize
-            # else:
             inputSize = X_train.size(
                 dim=-1) if inputSize is None else inputSize
         # format list of tensor to tensor by order
         elif isinstance(X_train, list):
-            # if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
-            #     inputSize = {idx: _X_train.size(dim=-1) if idx > 0 else self.preprocessor.vocab_size for idx,
-            #                  _X_train in enumerate(X_train)} if inputSize is None else inputSize
-            # else:
             inputSize = {idx: _X_train.size(
                 dim=-1) for idx, _X_train in enumerate(X_train)} if inputSize is None else inputSize
         elif isinstance(X_train, dict):
-            # if self.search_space.__name__ in ["RNNet", "LiteRNNet"]:
-            #     inputSize = {key: value.size(dim=-1) if key != "txt" else self.preprocessor.vocab_size for key,
-            #                  value in X_train.items()} if inputSize is None else inputSize
-            #     outputSize = len(np.unique(y_train)
-            #                      ) if outputSize is None else outputSize
-            # else:
             inputSize = {key: value.size(
                 dim=-1) for key, value in X_train.items()} if inputSize is None else inputSize
 
@@ -256,7 +243,7 @@ class NasTrainer:
         return inputSize, outputSize
 
     # def train(self, train, test, inputSize, outputSize):
-    def train(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
+    def fit(self, train, valid=None, inputSize=None, outputSize=None, **kwargs):
 
         # setup data
         X_train, y_train, X_valid, y_valid, task_type = self._setup_data(

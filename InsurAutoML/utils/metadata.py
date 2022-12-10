@@ -11,7 +11,7 @@ File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:38:34 pm
+Last Modified: Tuesday, 6th December 2022 11:27:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,7 +48,7 @@ from typing import Any, Dict, Tuple, List
 from itertools import compress
 
 from InsurAutoML.constant import UNI_CLASS, UNIQUE_FULLTYPE
-from .stat import merge_mean, merge_std, merge_dict
+from .stats import merge_mean, merge_std, merge_dict
 
 # get subtype of int
 

@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 29th November 2022 3:45:02 pm
+Last Modified: Tuesday, 6th December 2022 11:27:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1557,7 +1557,7 @@ def get_estimator(estimator_str: str) -> Callable:
 def get_metrics(metric_str: str) -> Callable:
 
     if metric_str == "neg_accuracy":
-        from InsurAutoML.utils.stat import neg_accuracy
+        from InsurAutoML.utils.stats import neg_accuracy
 
         return neg_accuracy
     elif metric_str == "accuracy":
@@ -1570,7 +1570,7 @@ def get_metrics(metric_str: str) -> Callable:
         # )
         return accuracy_score
     elif metric_str == "neg_precision":
-        from InsurAutoML.utils.stat import neg_precision
+        from InsurAutoML.utils.stats import neg_precision
 
         return neg_precision
     elif metric_str == "precision":
@@ -1583,7 +1583,7 @@ def get_metrics(metric_str: str) -> Callable:
         # )
         return precision_score
     elif metric_str == "neg_auc":
-        from InsurAutoML.utils.stat import neg_auc
+        from InsurAutoML.utils.stats import neg_auc
 
         return neg_auc
     elif metric_str == "auc":
@@ -1594,7 +1594,7 @@ def get_metrics(metric_str: str) -> Callable:
         # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
     elif metric_str == "neg_hinge":
-        from InsurAutoML.utils.stat import neg_hinge
+        from InsurAutoML.utils.stats import neg_hinge
 
         return neg_hinge
     elif metric_str == "hinge":
@@ -1605,7 +1605,7 @@ def get_metrics(metric_str: str) -> Callable:
         # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
     elif metric_str == "neg_f1":
-        from InsurAutoML.utils.stat import neg_f1
+        from InsurAutoML.utils.stats import neg_f1
 
         return neg_f1
     elif metric_str == "f1":
@@ -1627,7 +1627,7 @@ def get_metrics(metric_str: str) -> Callable:
 
         return mean_squared_log_error
     elif metric_str == "neg_R2":
-        from InsurAutoML.utils.stat import neg_R2
+        from InsurAutoML.utils.stats import neg_R2
 
         return neg_R2
     elif metric_str == "R2":

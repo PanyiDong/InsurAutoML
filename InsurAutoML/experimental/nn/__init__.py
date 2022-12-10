@@ -6,12 +6,12 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/utils/__init__.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+Relative Path: /InsurAutoML/nn/__init__.py
+File Created: Friday, 25th November 2022 11:08:18 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th December 2022 11:27:14 pm
+Last Modified: Monday, 5th December 2022 5:10:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,61 +39,12 @@ SOFTWARE.
 """
 
 try:
-    from ._c import (
-        random_guess,
-        random_index,
-        random_list,
-        minloc,
-        maxloc,
-    )
-except ImportError:
-    from .base import (
-        random_guess,
-        random_index,
-        random_list,
-        minloc,
-        maxloc,
-    )
-# else:
-#     raise ImportError("Cannot import the C++ and Python extension.")
+    import pytorch_lightning
+except:
+    raise ImportError(
+        "Use of pytorch-lightning evaluator requires pytorch-lightning to be installed. \
+        Use `pip install pytorch-lightning` to install.")
 
-from .base import (
-    # random_guess,
-    # random_index,
-    # random_list,
-    # minloc,
-    # maxloc,
-    is_date,
-    feature_rounding,
-    True_index,
-    type_of_task,
-    Timer,
-)
-from .data import (
-    train_test_split,
-    as_dataframe,
-    formatting,
-    unify_nan,
-    remove_index_columns,
-    get_missing_matrix,
-)
-from .metadata import MetaData
-from .file import save_model
-from .stats import (
-    nan_cov,
-    class_means,
-    empirical_covariance,
-    class_cov,
-    Pearson_Corr,
-    MI,
-    t_score,
-    ANOVA,
-    ACCC,
-)
-
-# from ._preprocessing import (
-#     text_preprocessing_torchtext,
-#     text_preprocessing_transformers,
-# )
-
-from .eda import EDA
+from .trainer import AutoMultiModalTabular
+from .nas import NasTrainer
+from .utils import MLPNet, LiteMLPNet, RNNet, LiteRNNet, FusTokenNet, FusEmbedNet, FusModelNet

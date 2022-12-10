@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:39 pm
+Last Modified: Tuesday, 6th December 2022 11:27:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -111,7 +111,7 @@ class ExhaustiveFS:
 
         # check whether criteria is valid
         if self.criteria == "neg_accuracy":
-            from InsurAutoML.utils.stat import neg_accuracy
+            from InsurAutoML.utils.stats import neg_accuracy
 
             self.criteria = neg_accuracy
         elif self.criteria == "MSE":

@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:42 pm
+Last Modified: Tuesday, 6th December 2022 11:29:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from InsurAutoML.utils.preprocessing import text_preprocessing_transformers
+from InsurAutoML.preprocessing.txtProc import text_preprocessing_transformers
 import importlib
 import numpy as np
 import pandas as pd

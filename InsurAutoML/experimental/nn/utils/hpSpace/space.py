@@ -1,17 +1,17 @@
 """
-File Name: _space.py
+File Name: space.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_nn/_utils/hpSpace/_space.py
+Relative Path: /InsurAutoML/nn/utils/hpSpace/space.py
 File Created: Friday, 25th November 2022 11:43:31 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 25th November 2022 11:50:01 pm
+Last Modified: Monday, 5th December 2022 4:56:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,15 @@ SOFTWARE.
 """
 
 search_space = {
-    "optimizer": {"_type": "choice", "_value": ["Adagrad", "Adam", "RMSprop", "SGD"]},
+    "num_epochs": {"_type": "randint", "_value": [10, 100]},
+    "batch_size": {"_type": "choice", "_value": [8, 16, 32, 64, 128, 256, 512]},
+    "optimizer": {"_type": "choice", "_value": ["Adagrad", "Adam", "ASGD", "RMSprop", "SGD"]},
     "lr": {"_type": "loguniform", "_value": [1e-8, 0.1]},
     "weight_decay ": {"_type": "loguniform", "_value": [1e-7, 0.1]},
+    "lr_scheduler": {"_type": "choice", "_value": ["None", "StepLR", "ConstantLR", "LinearLR", "ExponentialLR", "PolynomialLR", "ReduceLROnPlateau"]},
+    "step_size": {"_type": "qloguniform", "_value": [2, 100, 1]},
+    "gamma": {"_type": "uniform", "_value": [0.1, 0.99]},
+    "factor": {"_type": "uniform", "_value": [0.1, 0.99]},
+    "total_iters": {"_type": "qloguniform", "_value": [2, 100, 1]},
+    "power": {"_type": "qrandint", "_value": [1, 5]},
 }

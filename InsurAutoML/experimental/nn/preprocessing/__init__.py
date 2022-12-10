@@ -6,12 +6,12 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/nn/__init__.py
-File Created: Friday, 25th November 2022 11:08:18 pm
+Relative Path: /InsurAutoML/preprocessing/__init__.py
+File Created: Tuesday, 6th December 2022 11:25:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:40:09 pm
+Last Modified: Tuesday, 6th December 2022 11:30:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,6 +38,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._trainer import AutoMultiModalTabular
-from .nas import NasTrainer
-from .utils import MLPNet, LiteMLPNet, RNNet, LiteRNNet, FusTokenNet, FusEmbedNet, FusModelNet
+try:
+    import transformers
+except:
+    transformers = None
+
+try:
+    import torchtext
+except:
+    torchtext = None
+
+from .multiProc import MultiPreprocessing
+if transformers is not None:
+    from .txtProc import text_preprocessing_transformers
+if torchtext is not None:
+    from .txtProc import text_preprocessing_torchtext
