@@ -1,17 +1,17 @@
 """
-File Name: _feature_selection_hyperparameter.py
+File Name: feature_selection_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/hyperparameters/_ray/_feature_selection_hyperparameter.py
+Relative Path: /InsurAutoML/hyperparameters/ray/feature_selection_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:19:52 pm
+Last Modified: Monday, 30th January 2023 12:32:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from ray import tune
-from InsurAutoML.utils._base import format_hyper_dict
+from InsurAutoML.utils.base import format_hyper_dict
 
 NOPROCESSING = {"feature_selection": "no_processing"}
 LDASELECTION = {"feature_selection": "LDASelection"}

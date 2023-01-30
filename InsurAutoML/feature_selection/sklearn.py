@@ -6,12 +6,12 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /InsurAutoML/feature_selection/_sklearn.py
+Relative Path: /InsurAutoML/feature_selection/sklearn.py
 File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:19:34 pm
+Last Modified: Monday, 30th January 2023 12:31:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,7 +52,7 @@ import sklearn.preprocessing
 import sklearn.ensemble
 import warnings
 
-from InsurAutoML.utils._base import is_none
+from InsurAutoML.utils.base import is_none
 
 ##########################################################################
 # sklearn replacement of feature selection
