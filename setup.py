@@ -103,7 +103,7 @@ INSTALL_LIST = [
     "seaborn>=0.11.0",
     "ray<2.0.0",
     "gensim",
-    # "ray[tune]",
+    "ray[tune]",
     # "ray[rllib]",
     "redis;platform_system=='Windows'",
     "tqdm",
