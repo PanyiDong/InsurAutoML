@@ -50,7 +50,7 @@ from .wrapper import (
     ASFFS,
 )
 from .embed import (
-    # PCA_FeatureSelection,
+    PCA_FeatureSelection,
     # LDASelection,
     RBFSampler,
 )
