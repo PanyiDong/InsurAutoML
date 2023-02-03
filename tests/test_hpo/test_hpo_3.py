@@ -11,7 +11,7 @@ File: test_hpo_3.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 8:45:21 pm
+Last Modified: Thursday, 2nd February 2023 10:00:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -519,7 +519,6 @@ def test_search_Nevergrad():
     features.remove("HeartDisease")
     response = ["HeartDisease"]
 
-    import nevergrad as ng
     mol = InsurAutoML.AutoTabular(
         model_name="heart_nevergrad",
         search_algo="Nevergrad",

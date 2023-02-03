@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 7:46:00 pm
+Last Modified: Thursday, 2nd February 2023 10:00:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -131,6 +131,10 @@ EXTRA_DICT = {
         "xgboost",
         "pygam",
         "flaml",
+        # UPDATE: Feb. 2, 2023
+        # https://github.com/facebookresearch/nevergrad/issues/1492
+        "bayesian_optimization==1.4.0",
+        "colorama==0.4.4",
         "nevergrad",
         "optuna",
     ],
@@ -149,6 +153,8 @@ EXTRA_DICT = {
         "xgboost",
         "pygam",
         "flaml",
+        "bayesian_optimization==1.4.0",
+        "colorama==0.4.4",
         "nevergrad",
         "optuna",
         "gensim",
