@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 21st November 2022 12:45:14 am
+Last Modified: Thursday, 2nd February 2023 7:03:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -94,7 +94,7 @@ INSTALL_LIST = [
     "setuptools==59.5.0",
     "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
-    "numpy",
+    "numpy<1.24.0",
     "pandas",
     "scipy",
     "pyarrow",
