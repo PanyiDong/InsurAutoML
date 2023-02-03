@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.4
 Relative Path: /InsurAutoML/hpo/base.py
 File: _base.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:14 pm
+Last Modified: Friday, 3rd February 2023 12:32:28 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -121,7 +121,7 @@ else:
     device_count = 0
 
 
-class AutoTabularBase(MetaData):
+class AutoTabularBase:
 
     """ "
     Base class module for AutoTabular (for classification and regression tasks)
@@ -330,7 +330,11 @@ class AutoTabularBase(MetaData):
         # Encoding: convert string types to numerical type
         # all encoders available
         from InsurAutoML.encoding import encoders
-        from additional import add_encoders
+        # if additional exists, import, otherwise set to default
+        try :
+            from additional import add_encoders
+        except:
+            add_encoders = {}
 
         # include original encoders
         self._all_encoders = copy.deepcopy(encoders)
@@ -361,7 +365,11 @@ class AutoTabularBase(MetaData):
         # Imputer: fill missing values
         # all imputers available
         from InsurAutoML.imputation import imputers
-        from additional import add_imputers
+        # if additional exists, import, otherwise set to default
+        try :
+            from additional import add_imputers
+        except :
+            add_imputers = {}
 
         # include original imputers
         self._all_imputers = copy.deepcopy(imputers)
@@ -401,7 +409,11 @@ class AutoTabularBase(MetaData):
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
         from InsurAutoML.balancing import balancings
-        from additional import add_balancings
+        # if additional exists, import, otherwise set to default
+        try :
+            from additional import add_balancings
+        except :
+            add_balancings = {}
 
         # include original balancings
         self._all_balancings = copy.deepcopy(balancings)
@@ -426,7 +438,11 @@ class AutoTabularBase(MetaData):
         # Scaling
         # all scalings available
         from InsurAutoML.scaling import scalings
-        from additional import add_scalings
+        # if additional exists, import, otherwise set to default
+        try :
+            from additional import add_scalings
+        except :
+            add_scalings = {}
 
         # include original scalings
         self._all_scalings = copy.deepcopy(scalings)
@@ -451,7 +467,11 @@ class AutoTabularBase(MetaData):
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
         from InsurAutoML.feature_selection import feature_selections
-        from additional import add_feature_selections
+        # if additional exists, import, otherwise set to default
+        try :
+            from additional import add_feature_selections
+        except :
+            add_feature_selections = {}
 
         # include original feature selections
         self._all_feature_selection = copy.deepcopy(feature_selections)
@@ -502,7 +522,11 @@ class AutoTabularBase(MetaData):
         # if mode is regression, use regression models
         if self.task_mode == "classification":
             from InsurAutoML.model import classifiers
-            from additional import add_classifiers
+            # if additional exists, import, otherwise set to default
+            try :
+                from additional import add_classifiers
+            except :
+                add_classifiers = {}
 
             # include original classifiers
             self._all_models = copy.deepcopy(classifiers)
@@ -510,7 +534,11 @@ class AutoTabularBase(MetaData):
             self._all_models.update(add_classifiers)
         elif self.task_mode == "regression":
             from InsurAutoML.model import regressors
-            from additional import add_regressors
+            # if additional exists, import, otherwise set to default
+            try :
+                from additional import add_regressors
+            except :
+                add_regressors = {}
 
             # include original regressors
             self._all_models = copy.deepcopy(regressors)
@@ -560,15 +588,25 @@ class AutoTabularBase(MetaData):
             regressor_hyperparameter,
         )
 
-        from additional import (
-            add_encoder_hyperparameter,
-            add_imputer_hyperparameter,
-            add_scaling_hyperparameter,
-            add_balancing_hyperparameter,
-            add_feature_selection_hyperparameter,
-            add_classifier_hyperparameter,
-            add_regressor_hyperparameter,
-        )
+        # if additional exists, import, otherwise set to default
+        try :
+            from additional import (
+                add_encoder_hyperparameter,
+                add_imputer_hyperparameter,
+                add_scaling_hyperparameter,
+                add_balancing_hyperparameter,
+                add_feature_selection_hyperparameter,
+                add_classifier_hyperparameter,
+                add_regressor_hyperparameter,
+            )
+        except :
+            add_encoder_hyperparameter = {}
+            add_imputer_hyperparameter = {}
+            add_scaling_hyperparameter = {}
+            add_balancing_hyperparameter = {}
+            add_feature_selection_hyperparameter = {}
+            add_classifier_hyperparameter = {}
+            add_regressor_hyperparameter = {}
 
         # if needed, modify default hyperparameter space
         # like model hyperparameter space below
@@ -1188,7 +1226,8 @@ class AutoTabularBase(MetaData):
                         type(y)))
 
         # get data metadata
-        super(AutoTabularBase, self).__init__(X)
+        if not hasattr(self, "metadata") :
+            self.metadata = MetaData(X).metadata
         # check if there's unsupported data type
         # if datetime ,recommend to remove
         if ("Datetime", "") in self.metadata.keys():

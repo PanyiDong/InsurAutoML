@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: <<projectversion>>
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 10:00:46 pm
+Last Modified: Friday, 3rd February 2023 12:09:23 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -259,10 +259,10 @@ def get_r_home() -> Optional[str]:
 # otherwise, do not install rpy2
 R_HOME = get_r_home()
 if not R_HOME:
-    raise RuntimeError("""The R home directory could not be determined.""")
+    log.info("""The R home directory could not be determined.""")
 
 # only install for Linux
-if not os.environ.get("R_HOME") and sys.platform == "linux":
+if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
     os.environ["R_HOME"] = R_HOME
     EXTRA_DICT["extended"].append("rpy2")
     EXTRA_DICT["nn"].append("rpy2")
