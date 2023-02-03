@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 7:29:43 pm
+Last Modified: Thursday, 2nd February 2023 7:46:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -126,6 +126,7 @@ EXTRA_DICT = {
     ],
     "extended": [
         # "rpy2;platform_system=='Linux'",
+        "mlflow",
         "lightgbm",
         "xgboost",
         "pygam",

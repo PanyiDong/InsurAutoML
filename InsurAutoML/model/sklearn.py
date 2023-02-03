@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 7:29:40 pm
+Last Modified: Thursday, 2nd February 2023 7:47:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -682,7 +682,7 @@ class LibSVM_SVC:
         self.coef0 = 0.0 if is_none(coef0) else float(coef0)
         self.shrinking = shrinking
         self.tol = float(tol)
-        self.max_iter = float(max_iter)
+        self.max_iter = int(max_iter)
 
         from sklearn.svm import SVC
         from sklearn.calibration import CalibratedClassifierCV
