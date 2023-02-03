@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th December 2022 11:27:14 pm
+Last Modified: Thursday, 2nd February 2023 6:36:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,31 +38,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-try:
-    from ._c import (
-        random_guess,
-        random_index,
-        random_list,
-        minloc,
-        maxloc,
-    )
-except ImportError:
-    from .base import (
-        random_guess,
-        random_index,
-        random_list,
-        minloc,
-        maxloc,
-    )
+# try:
+#     from ._c import (
+#         random_guess,
+#         random_index,
+#         random_list,
+#         minloc,
+#         maxloc,
+#     )
+# except ImportError:
+#     from .base import (
+#         random_guess,
+#         random_index,
+#         random_list,
+#         minloc,
+#         maxloc,
+#     )
 # else:
 #     raise ImportError("Cannot import the C++ and Python extension.")
 
 from .base import (
-    # random_guess,
-    # random_index,
-    # random_list,
-    # minloc,
-    # maxloc,
+    random_guess,
+    random_index,
+    random_list,
+    minloc,
+    maxloc,
     is_date,
     feature_rounding,
     True_index,

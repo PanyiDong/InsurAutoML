@@ -11,7 +11,7 @@ File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:52 pm
+Last Modified: Thursday, 2nd February 2023 6:54:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -203,7 +203,7 @@ classifiers["SGD"] = SGDClassifier
 classifiers["LogisticRegression"] = LogisticRegression
 # classifiers["ComplementNB"] = ComplementNB
 # classifiers["HistGradientBoostingClassifier"] = HistGradientBoostingClassifier
-classifiers["GradientBoostingClassifier"] = GradientBoostingClassifier
+# classifiers["GradientBoostingClassifier"] = GradientBoostingClassifier
 
 # regression models from sklearn
 regressors["AdaboostRegressor"] = AdaboostRegressor
@@ -225,7 +225,7 @@ regressors["ElasticNet"] = ElasticNet
 regressors["BayesianRidge"] = BayesianRidge
 # regressors["HistGradientBoostingRegressor"] =
 # HistGradientBoostingRegressor # not well-supported by package conflicts
-regressors["GradientBoostingRegressor"] = GradientBoostingRegressor
+# regressors["GradientBoostingRegressor"] = GradientBoostingRegressor
 
 # check whether lightgbm installed
 # if installed, add lightgbm depended classifiers/regressors
