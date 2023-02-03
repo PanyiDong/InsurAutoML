@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:38:46 pm
+Last Modified: Thursday, 2nd February 2023 7:29:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -415,7 +415,7 @@ class HistGradientBoostingClassifier:
 
             # map from autosklearn parameter space to sklearn parameter space
             if self.early_stop == "off":
-                self.n_iter_no_change = 0
+                self.n_iter_no_change = 1
                 self.validation_fraction_ = None
                 self.early_stopping_ = False
             elif self.early_stop == "train":
@@ -2336,7 +2336,7 @@ class RandomForestRegressor:
 class SGDRegressor:
     def __init__(
         self,
-        loss: str = "squared_loss",
+        loss: str = "squared_error",
         penalty: str = "l2",
         alpha: float = 0.0001,
         fit_intercept: bool = True,

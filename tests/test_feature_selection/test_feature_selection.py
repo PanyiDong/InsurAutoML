@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:35:25 pm
+Last Modified: Thursday, 2nd February 2023 7:31:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -241,7 +241,7 @@ def test_GA():
 
 def test_FOCI():
 
-    from InsurAutoML.feature_selection import FOCI
+    from InsurAutoML.feature_selection.filter import FOCI
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]

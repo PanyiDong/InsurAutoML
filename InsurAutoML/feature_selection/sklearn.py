@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 30th January 2023 12:31:54 pm
+Last Modified: Thursday, 2nd February 2023 7:32:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -156,7 +156,7 @@ class extra_trees_preproc_for_regression:
     def __init__(
         self,
         n_estimators: int = 5,
-        criterion: str = "mse",
+        criterion: str = "squared_error",
         min_samples_leaf: int = 5,
         min_samples_split: int = 5,
         max_features: float = 0.5,
