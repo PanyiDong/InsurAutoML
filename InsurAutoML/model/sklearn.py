@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 8:59:27 pm
+Last Modified: Thursday, 2nd February 2023 9:12:38 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1793,7 +1793,7 @@ class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor):
 class HistGradientBoostingRegressor:
     def __init__(
         self,
-        loss: str = "least_squares",
+        loss: str = "squared_error",
         learning_rate: float = 0.1,
         min_samples_leaf: int = 20,
         max_depth: Union[str, int] = "None",
@@ -2664,7 +2664,7 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge):
 # class HistGradientBoostingRegressor(sklearn.ensemble.HistGradientBoostingRegressor):
 #     def __init__(
 #         self,
-#         loss="least_squares",
+#         loss="squared_error",
 #         learning_rate=0.1,
 #         max_leaf_nodes=31,
 #         max_depth=None,
