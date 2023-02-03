@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 7:47:53 pm
+Last Modified: Thursday, 2nd February 2023 8:31:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1575,7 +1575,7 @@ class ARDRegression(sklearn.linear_model.ARDRegression):
 class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor):
     def __init__(
         self,
-        criterion: str = "mse",
+        criterion: str = "squared_error",
         max_features: float = 1.0,
         max_depth_factor: float = 0.5,
         min_samples_split: int = 2,
