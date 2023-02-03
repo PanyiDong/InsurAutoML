@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 9:12:38 pm
+Last Modified: Thursday, 2nd February 2023 9:29:05 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1842,7 +1842,7 @@ class HistGradientBoostingRegressor:
 
             # map from autosklearn parameter space to sklearn parameter space
             if self.early_stop == "off":
-                self.n_iter_no_change = 0
+                self.n_iter_no_change = 1
                 self.validation_fraction_ = None
                 self.early_stopping_ = False
             elif self.early_stop == "train":
