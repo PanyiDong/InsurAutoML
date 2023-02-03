@@ -11,7 +11,7 @@ File: test_nn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 5:36:33 pm
+Last Modified: Tuesday, 6th December 2022 11:27:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,8 +45,8 @@ def test_MetaData():
 
     try:
         import torch
-        from InsurAutoML._utils._nn._multiProc import MultiPreprocessing
-        from InsurAutoML._datasets import PROD
+        from InsurAutoML.preprocessing.multiProc import MultiPreprocessing
+        from InsurAutoML.datasets import PROD
 
         data = PROD(split=["train"])
 

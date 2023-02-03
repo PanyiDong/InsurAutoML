@@ -11,7 +11,7 @@ File: test_utils_optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 15th November 2022 11:30:31 pm
+Last Modified: Monday, 28th November 2022 11:35:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 
 def test_get_algo():
 
-    from InsurAutoML._utils._optimize import get_algo
+    from InsurAutoML.utils.optimize import get_algo
 
     get_algo("GridSearch")
     get_algo("HyperOpt")
@@ -80,7 +80,7 @@ def test_get_algo():
 
 def test_get_scheduler():
 
-    from InsurAutoML._utils._optimize import get_scheduler
+    from InsurAutoML.utils.optimize import get_scheduler
 
     get_scheduler("FIFOScheduler")
     get_scheduler("ASHAScheduler")
@@ -106,7 +106,7 @@ def test_get_scheduler():
 
 def test_get_progress_reporter():
 
-    from InsurAutoML._utils._optimize import get_progress_reporter
+    from InsurAutoML.utils.optimize import get_progress_reporter
 
     get_progress_reporter("CLIReporter", max_evals=64, max_error=4)
     get_progress_reporter("JupyterNotebookReporter", max_evals=64, max_error=4)
@@ -114,16 +114,16 @@ def test_get_progress_reporter():
 
 def test_get_logger():
 
-    from InsurAutoML._utils._optimize import get_logger
+    from InsurAutoML.utils.optimize import get_logger
 
     get_logger(["Logger", "TBX", "JSON", "CSV", "MLflow"])
 
 
 def test_get_estimator():
 
-    from InsurAutoML._utils._optimize import get_estimator
+    from InsurAutoML.utils.optimize import get_estimator
     from sklearn.linear_model import LinearRegression
-    from InsurAutoML._utils._base import has_method
+    from InsurAutoML.utils.base import has_method
 
     test_list = [
         "Lasso",
@@ -145,7 +145,7 @@ def test_get_estimator():
 
 def test_get_metrics():
 
-    from InsurAutoML._utils._optimize import get_metrics
+    from InsurAutoML.utils.optimize import get_metrics
     from sklearn.metrics import accuracy_score
     from typing import Callable
 
@@ -177,8 +177,8 @@ def test_get_metrics():
 
 def test_check_func():
 
-    from InsurAutoML._utils._optimize import check_func
-    from InsurAutoML._model import LogisticRegression
+    from InsurAutoML.utils.optimize import check_func
+    from InsurAutoML.model import LogisticRegression
 
     assert (
         check_func(LogisticRegression, ref="model") is None
@@ -187,9 +187,9 @@ def test_check_func():
 
 def test_check_status():
 
-    from InsurAutoML._utils._optimize import check_status
-    from InsurAutoML._hyperparameters import regressor_hyperparameter
-    from InsurAutoML._model import regressors
+    from InsurAutoML.utils.optimize import check_status
+    from InsurAutoML.hyperparameters import regressor_hyperparameter
+    from InsurAutoML.model import regressors
 
     assert (
         check_status(regressors, regressor_hyperparameter, ref="model") is None

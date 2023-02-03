@@ -11,7 +11,7 @@ File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 11:43:50 am
+Last Modified: Monday, 28th November 2022 11:39:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,12 +39,12 @@ SOFTWARE.
 """
 
 import pandas as pd
-from InsurAutoML._utils import formatting
+from InsurAutoML.utils import formatting
 
 
 def test_add_classifier():
 
-    from InsurAutoML._model._sklearn import ComplementNB
+    from InsurAutoML.model.sklearn import ComplementNB
 
     data = pd.read_csv("example/example_data/heart.csv")
     # encoding categorical features
@@ -65,7 +65,7 @@ def test_add_classifier():
 
 def test_add_regressor():
 
-    from InsurAutoML._model import LibSVM_SVR, MLPRegressor, SGDRegressor
+    from InsurAutoML.model import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -121,7 +121,7 @@ def test_add_regressor():
 
 def test_lightgbm_classifier():
 
-    from InsurAutoML._model import LightGBM_Classifier
+    from InsurAutoML.model import LightGBM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
 
@@ -155,7 +155,7 @@ def test_lightgbm_classifier():
 
 def test_lightgbm_regressor():
 
-    from InsurAutoML._model import LightGBM_Regressor
+    from InsurAutoML.model import LightGBM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -192,7 +192,7 @@ def test_lightgbm_regressor():
 
 def test_xgboost_classifier():
 
-    from InsurAutoML._model import XGBoost_Classifier
+    from InsurAutoML.model import XGBoost_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
 
@@ -223,7 +223,7 @@ def test_xgboost_classifier():
 
 def test_xgboost_regressor():
 
-    from InsurAutoML._model import XGBoost_Regressor
+    from InsurAutoML.model import XGBoost_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 
@@ -257,7 +257,7 @@ def test_xgboost_regressor():
 
 def test_gam_classifier():
 
-    from InsurAutoML._model import GAM_Classifier
+    from InsurAutoML.model import GAM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
 
@@ -283,7 +283,7 @@ def test_gam_classifier():
 
 def test_gam_regressor():
 
-    from InsurAutoML._model import GAM_Regressor
+    from InsurAutoML.model import GAM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
 

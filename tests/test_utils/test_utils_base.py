@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:23:20 pm
+Last Modified: Monday, 28th November 2022 11:45:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -61,7 +61,7 @@ def test_load_data():
 
 def test_random_guess():
 
-    from InsurAutoML._utils._base import random_guess
+    from InsurAutoML.utils.base import random_guess
 
     assert random_guess(1) == 1, "random_guess(1) should be 1, get {}".format(
         random_guess(1)
@@ -76,7 +76,7 @@ def test_random_guess():
 
 def test_random_index():
 
-    from InsurAutoML._utils._base import random_index
+    from InsurAutoML.utils.base import random_index
 
     assert (
         np.sort(random_index(5)) == np.array([0, 1, 2, 3, 4])
@@ -87,7 +87,7 @@ def test_random_index():
 
 def test_random_list():
 
-    from InsurAutoML._utils._base import random_list
+    from InsurAutoML.utils.base import random_list
 
     assert (
         np.sort(random_list([0, 1, 2, 3, 4])) == np.array([0, 1, 2, 3, 4])
@@ -98,7 +98,7 @@ def test_random_list():
 
 def test_is_date():
 
-    from InsurAutoML._utils._base import is_date
+    from InsurAutoML.utils.base import is_date
 
     test = pd.DataFrame(
         {
@@ -119,7 +119,7 @@ def test_is_date():
 
 def test_feature_rounding():
 
-    from InsurAutoML._utils._base import feature_rounding
+    from InsurAutoML.utils.base import feature_rounding
 
     test = pd.DataFrame(
         {
@@ -142,7 +142,7 @@ def test_feature_rounding():
 
 def test_timer():
 
-    from InsurAutoML._utils._base import Timer
+    from InsurAutoML.utils.base import Timer
     import time
 
     timer = Timer()
@@ -160,7 +160,7 @@ def test_timer():
 
 def test_minloc():
 
-    from InsurAutoML._utils._base import minloc
+    from InsurAutoML.utils.base import minloc
 
     assert (
         minloc([4, 2, 6, 2, 1]) == 4
@@ -169,7 +169,7 @@ def test_minloc():
 
 def test_maxloc():
 
-    from InsurAutoML._utils._base import maxloc
+    from InsurAutoML.utils.base import maxloc
 
     assert (
         maxloc([4, 2, 6, 2, 1]) == 2
@@ -178,7 +178,7 @@ def test_maxloc():
 
 def test_True_index():
 
-    from InsurAutoML._utils._base import True_index
+    from InsurAutoML.utils.base import True_index
 
     assert True_index([True, False, 1, 0, "hello", 5]) == [
         0,
@@ -190,7 +190,7 @@ def test_True_index():
 
 def test_type_of_script():
 
-    from InsurAutoML._utils._base import type_of_script
+    from InsurAutoML.utils.base import type_of_script
 
     assert (
         type_of_script() == "terminal"
@@ -199,7 +199,7 @@ def test_type_of_script():
 
 def test_has_method():
 
-    from InsurAutoML._utils._base import has_method
+    from InsurAutoML.utils.base import has_method
     from sklearn.linear_model import LogisticRegression
 
     mol = LogisticRegression()
@@ -211,7 +211,7 @@ def test_has_method():
 
 def test_is_none():
 
-    from InsurAutoML._utils._base import is_none
+    from InsurAutoML.utils.base import is_none
 
     assert is_none(None), "The is_none function is not correct."
     assert is_none("not none") == False, "The is_none function is not correct."
@@ -219,13 +219,14 @@ def test_is_none():
 
 def test_format_hyper_dict():
 
-    from InsurAutoML._utils._base import format_hyper_dict
+    from InsurAutoML.utils.base import format_hyper_dict
 
     input = {"encoder": "encoder", "n_estimators": 2}
     expected = {"encoder_1": "encoder", "encoder_n_estimators": 2}
 
     assert (
-        format_hyper_dict(input, 1, ref="encoder", search_algo="RandomSearch") == input
+        format_hyper_dict(input, 1, ref="encoder",
+                          search_algo="RandomSearch") == input
     ), "The format_hyper_dict function is not correct."
     assert (format_hyper_dict(input, 1, ref="encoder", search_algo="HyperOpt")
             == expected), "The format_hyper_dict function is not correct."

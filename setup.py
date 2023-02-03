@@ -1,5 +1,5 @@
 """
-File: setup.py
+File Name: setup.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
@@ -7,11 +7,11 @@ Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 Project: InsurAutoML
 Latest Version: 0.2.3
 Relative Path: /setup.py
-File: setup.py
+File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 8:31:31 am
+Last Modified: Thursday, 2nd February 2023 10:00:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -25,8 +25,10 @@ in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -35,6 +37,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 
 from pathlib import Path
 import os
@@ -89,8 +92,9 @@ with open("InsurAutoML/VERSION", "w", encoding="utf-8") as fh:
 # Constant variables
 INSTALL_LIST = [
     "setuptools==59.5.0",
+    "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
-    "numpy",
+    "numpy<1.24.0",
     "pandas",
     "scipy",
     "pyarrow",
@@ -99,13 +103,12 @@ INSTALL_LIST = [
     "seaborn>=0.11.0",
     "ray<2.0.0",
     "gensim",
-    # "ray[tune]",
+    "ray[tune]",
     # "ray[rllib]",
     "redis;platform_system=='Windows'",
-    "tqdm==4.62.3",
-    "mlflow==1.21.0",
+    "tqdm",
     "tensorboardX",
-    "hyperopt==0.2.5",
+    "hyperopt",
     # "auto-sklearn==0.14.6;platform_system=='Linux'",
     # "scikit-learn==0.24.2;platform_system=='Linux'",
     # "scikit-learn>1.0.0;platform_system=='Windows'",
@@ -115,12 +118,23 @@ INSTALL_LIST = [
 
 EXTRA_DICT = {
     "normal": [],
+    "legacy": [
+        "tqdm==4.62.3",
+        "mlflow==1.21.0",
+        "tensorboardX",
+        "hyperopt==0.2.5",
+    ],
     "extended": [
         # "rpy2;platform_system=='Linux'",
+        "mlflow",
         "lightgbm",
         "xgboost",
         "pygam",
         "flaml",
+        # UPDATE: Feb. 2, 2023
+        # https://github.com/facebookresearch/nevergrad/issues/1492
+        "bayesian_optimization==1.4.0",
+        "colorama==0.4.4",
         "nevergrad",
         "optuna",
     ],
@@ -128,19 +142,24 @@ EXTRA_DICT = {
         # "rpy2;platform_system=='Linux'",
         "gensim",
         "torch",
+        "pytorch_lightning",
         "nni",
         # "transformers",
         # "datasets",
     ],
     "dev": [
+        "mlflow",
         "lightgbm",
         "xgboost",
         "pygam",
         "flaml",
+        "bayesian_optimization==1.4.0",
+        "colorama==0.4.4",
         "nevergrad",
         "optuna",
         "gensim",
         "torch",
+        "pytorch_lightning",
         "nni",
     ],
 }

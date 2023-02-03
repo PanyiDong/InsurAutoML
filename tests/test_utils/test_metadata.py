@@ -11,7 +11,7 @@ File: test_metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 11:54:23 am
+Last Modified: Monday, 28th November 2022 11:35:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,8 +41,8 @@ SOFTWARE.
 
 def test_MetaData():
 
-    from InsurAutoML._utils._metadata import MetaData
-    from InsurAutoML._datasets import PROD
+    from InsurAutoML.utils.metadata import MetaData
+    from InsurAutoML.datasets import PROD
 
     data = PROD(split=["train"])
 

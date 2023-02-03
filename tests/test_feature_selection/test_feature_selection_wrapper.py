@@ -11,7 +11,7 @@ File: test_feature_selection_wrapper.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 16th November 2022 12:26:09 pm
+Last Modified: Monday, 28th November 2022 11:35:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 import pandas as pd
-from InsurAutoML._feature_selection import (
+from InsurAutoML.feature_selection import (
     PCA_FeatureSelection,
     RBFSampler,
 )
@@ -118,7 +118,7 @@ def test_feature_selection_RBFSampler():
 
 def test_feature_selection_densifier():
 
-    from InsurAutoML._feature_selection._sklearn import densifier
+    from InsurAutoML.feature_selection.sklearn import densifier
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -133,7 +133,7 @@ def test_feature_selection_densifier():
 
 def test_feature_selection_fast_ica():
 
-    from InsurAutoML._feature_selection._sklearn import fast_ica
+    from InsurAutoML.feature_selection.sklearn import fast_ica
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -148,7 +148,7 @@ def test_feature_selection_fast_ica():
 
 def test_feature_selection_feature_agglomeration():
 
-    from InsurAutoML._feature_selection._sklearn import feature_agglomeration
+    from InsurAutoML.feature_selection.sklearn import feature_agglomeration
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -163,7 +163,7 @@ def test_feature_selection_feature_agglomeration():
 
 def test_feature_selection_kernel_pca():
 
-    from InsurAutoML._feature_selection._sklearn import kernel_pca
+    from InsurAutoML.feature_selection.sklearn import kernel_pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -178,7 +178,7 @@ def test_feature_selection_kernel_pca():
 
 def test_feature_selection_kitchen_sinks():
 
-    from InsurAutoML._feature_selection._sklearn import kitchen_sinks
+    from InsurAutoML.feature_selection.sklearn import kitchen_sinks
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -193,7 +193,7 @@ def test_feature_selection_kitchen_sinks():
 
 def test_feature_selection_nystroem_sampler():
 
-    from InsurAutoML._feature_selection._sklearn import nystroem_sampler
+    from InsurAutoML.feature_selection.sklearn import nystroem_sampler
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -208,7 +208,7 @@ def test_feature_selection_nystroem_sampler():
 
 def test_feature_selection_pca():
 
-    from InsurAutoML._feature_selection._sklearn import pca
+    from InsurAutoML.feature_selection.sklearn import pca
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]
@@ -223,7 +223,7 @@ def test_feature_selection_pca():
 
 def test_feature_selection_random_trees_embedding():
 
-    from InsurAutoML._feature_selection._sklearn import random_trees_embedding
+    from InsurAutoML.feature_selection.sklearn import random_trees_embedding
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
     X = data.iloc[:, :-1]

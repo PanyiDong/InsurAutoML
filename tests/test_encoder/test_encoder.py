@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:22:03 pm
+Last Modified: Monday, 28th November 2022 11:35:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 
 def test_encoder_1():
 
-    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
     database = load_data().load("Appendix", "Employee")
@@ -56,7 +56,7 @@ def test_encoder_1():
 
 def test_encoder_2():
 
-    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
     database = load_data().load("Appendix", "Employee")
@@ -71,7 +71,7 @@ def test_encoder_2():
 
 def test_encoder_3():
 
-    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
     database = load_data().load("Appendix", "Employee")
@@ -86,7 +86,7 @@ def test_encoder_3():
 
 def test_encoder_4():
 
-    from InsurAutoML._encoding import DataEncoding
+    from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
     database = load_data().load("Appendix", "Employee")

@@ -1,17 +1,17 @@
 """
-File Name: test_utils.py
+File Name: test_hpo_utils.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.3
-Relative Path: /tests/test_hpo/test_utils.py
+Relative Path: /tests/test_hpo/test_hpo_utils.py
 File Created: Monday, 7th November 2022 11:38:53 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:22:44 pm
+Last Modified: Monday, 28th November 2022 11:35:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,12 +44,12 @@ from InsurAutoML import load_data
 
 def test_pipeline():
 
-    from InsurAutoML._hpo._utils import Pipeline
-    from InsurAutoML._encoding import DataEncoding
-    from InsurAutoML._imputation import SimpleImputer
-    from InsurAutoML._base import no_processing
-    from InsurAutoML._scaling import Standardize
-    from InsurAutoML._model import LogisticRegression
+    from InsurAutoML.hpo.utils import Pipeline
+    from InsurAutoML.encoding import DataEncoding
+    from InsurAutoML.imputation import SimpleImputer
+    from InsurAutoML.base import no_processing
+    from InsurAutoML.scaling import Standardize
+    from InsurAutoML.model import LogisticRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "heart")
@@ -83,13 +83,13 @@ def test_pipeline():
 
 def test_ClassifierEnsemble():
 
-    from InsurAutoML._hpo._utils import ClassifierEnsemble
-    from InsurAutoML._hpo._utils import Pipeline
-    from InsurAutoML._encoding import DataEncoding
-    from InsurAutoML._imputation import SimpleImputer
-    from InsurAutoML._base import no_processing
-    from InsurAutoML._scaling import Standardize
-    from InsurAutoML._model import LogisticRegression
+    from InsurAutoML.hpo.utils import ClassifierEnsemble
+    from InsurAutoML.hpo.utils import Pipeline
+    from InsurAutoML.encoding import DataEncoding
+    from InsurAutoML.imputation import SimpleImputer
+    from InsurAutoML.base import no_processing
+    from InsurAutoML.scaling import Standardize
+    from InsurAutoML.model import LogisticRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "heart")
@@ -157,13 +157,13 @@ def test_ClassifierEnsemble():
 
 def test_RegressorEnsemble():
 
-    from InsurAutoML._hpo._utils import RegressorEnsemble
-    from InsurAutoML._hpo._utils import Pipeline
-    from InsurAutoML._encoding import DataEncoding
-    from InsurAutoML._imputation import SimpleImputer
-    from InsurAutoML._base import no_processing
-    from InsurAutoML._scaling import Standardize
-    from InsurAutoML._model import LinearRegression
+    from InsurAutoML.hpo.utils import RegressorEnsemble
+    from InsurAutoML.hpo.utils import Pipeline
+    from InsurAutoML.encoding import DataEncoding
+    from InsurAutoML.imputation import SimpleImputer
+    from InsurAutoML.base import no_processing
+    from InsurAutoML.scaling import Standardize
+    from InsurAutoML.model import LinearRegression
 
     # test load_data here
     data = load_data().load("example/example_data", "insurance")

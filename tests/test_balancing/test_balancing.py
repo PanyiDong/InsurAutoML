@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:21:47 pm
+Last Modified: Monday, 28th November 2022 11:36:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ import unittest
 import numpy as np
 import pandas as pd
 
-from InsurAutoML._balancing import balancings
+from InsurAutoML.balancing import balancings
 
 data_X = pd.DataFrame(
     np.random.normal(0, 10, (100, 10)),
@@ -72,5 +72,6 @@ class TestScaling(unittest.TestCase):
                 self.assertEqual(
                     mol._fitted,
                     True,
-                    "The method {} is not correctly fitted.".format(method_name),
+                    "The method {} is not correctly fitted.".format(
+                        method_name),
                 )
