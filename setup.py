@@ -281,7 +281,7 @@ EXCLUDE_LIST = [
 ]
 
 SETUP_REQUIRES = [
-    "setuptools==59.5.0",
+    "setuptools",
     "cython",
     "numpy",
 ]
