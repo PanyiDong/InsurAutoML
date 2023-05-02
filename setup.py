@@ -91,7 +91,7 @@ with open("InsurAutoML/VERSION", "w", encoding="utf-8") as fh:
 
 # Constant variables
 INSTALL_LIST = [
-    "setuptools==59.5.0",
+    "setuptools",
     "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
     "numpy<1.24.0",
