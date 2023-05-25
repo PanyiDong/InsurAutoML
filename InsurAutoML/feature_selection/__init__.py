@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/feature_selection/__init__.py
+Project: feature_selection
+Latest Version: <<projectversion>>
+Relative Path: /__init__.py
 File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:44 pm
+Last Modified: Wednesday, 17th May 2023 10:13:40 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -94,7 +94,8 @@ feature_selections = {
     "ASFFS": ASFFS,
     "GeneticAlgorithm": GeneticAlgorithm,
     # "ExhaustiveFS": ExhaustiveFS, # exhaustive search is not practical, takes too long
-    "SFS": SFS,
+    # TODO: add SFS back when multiclass/binary identification is done in hpo/base.py
+    # "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
     # "FOCI": FOCI,

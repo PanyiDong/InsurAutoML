@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/hpo/utils.py
+Project: hpo
+Latest Version: <<projectversion>>
+Relative Path: /utils.py
 File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:02 pm
+Last Modified: Wednesday, 17th May 2023 9:58:33 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -977,6 +977,9 @@ class TabularObjective(tune.Trainable):
                 _loss = -_obj(_y_test_obj.values, y_pred)
             else:
                 _loss = _obj(_y_test_obj.values, y_pred)
+
+            # register failed losses as np.inf
+            _loss = _loss if isinstance(_loss, (int, float)) else np.inf
 
             # save the fitted model objects
             save_methods(

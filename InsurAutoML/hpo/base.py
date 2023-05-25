@@ -1,23 +1,23 @@
 """
-File: _base.py
+File Name: base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: InsurAutoML
-Latest Version: 0.2.4
-Relative Path: /InsurAutoML/hpo/base.py
-File: _base.py
+Project: hpo
+Latest Version: <<projectversion>>
+Relative Path: /base.py
+File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 3rd February 2023 12:32:28 am
+Last Modified: Wednesday, 17th May 2023 10:09:43 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2023 - 2023, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,6 +37,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
+
 
 from __future__ import annotations
 from InsurAutoML.utils.optimize import (
@@ -331,7 +332,7 @@ class AutoTabularBase:
         # all encoders available
         from InsurAutoML.encoding import encoders
         # if additional exists, import, otherwise set to default
-        try :
+        try:
             from additional import add_encoders
         except:
             add_encoders = {}
@@ -366,9 +367,9 @@ class AutoTabularBase:
         # all imputers available
         from InsurAutoML.imputation import imputers
         # if additional exists, import, otherwise set to default
-        try :
+        try:
             from additional import add_imputers
-        except :
+        except:
             add_imputers = {}
 
         # include original imputers
@@ -410,9 +411,9 @@ class AutoTabularBase:
         # all balancings available
         from InsurAutoML.balancing import balancings
         # if additional exists, import, otherwise set to default
-        try :
+        try:
             from additional import add_balancings
-        except :
+        except:
             add_balancings = {}
 
         # include original balancings
@@ -439,9 +440,9 @@ class AutoTabularBase:
         # all scalings available
         from InsurAutoML.scaling import scalings
         # if additional exists, import, otherwise set to default
-        try :
+        try:
             from additional import add_scalings
-        except :
+        except:
             add_scalings = {}
 
         # include original scalings
@@ -468,9 +469,9 @@ class AutoTabularBase:
         # all feature selections available
         from InsurAutoML.feature_selection import feature_selections
         # if additional exists, import, otherwise set to default
-        try :
+        try:
             from additional import add_feature_selections
-        except :
+        except:
             add_feature_selections = {}
 
         # include original feature selections
@@ -523,9 +524,9 @@ class AutoTabularBase:
         if self.task_mode == "classification":
             from InsurAutoML.model import classifiers
             # if additional exists, import, otherwise set to default
-            try :
+            try:
                 from additional import add_classifiers
-            except :
+            except:
                 add_classifiers = {}
 
             # include original classifiers
@@ -535,9 +536,9 @@ class AutoTabularBase:
         elif self.task_mode == "regression":
             from InsurAutoML.model import regressors
             # if additional exists, import, otherwise set to default
-            try :
+            try:
                 from additional import add_regressors
-            except :
+            except:
                 add_regressors = {}
 
             # include original regressors
@@ -589,7 +590,7 @@ class AutoTabularBase:
         )
 
         # if additional exists, import, otherwise set to default
-        try :
+        try:
             from additional import (
                 add_encoder_hyperparameter,
                 add_imputer_hyperparameter,
@@ -599,7 +600,7 @@ class AutoTabularBase:
                 add_classifier_hyperparameter,
                 add_regressor_hyperparameter,
             )
-        except :
+        except:
             add_encoder_hyperparameter = {}
             add_imputer_hyperparameter = {}
             add_scaling_hyperparameter = {}
@@ -655,6 +656,7 @@ class AutoTabularBase:
         _all_feature_selection_hyperparameters += add_feature_selection_hyperparameter
 
         # special treatment, for SFS hyperparameter space
+        # TODO: distinguish binary and multiclass classification
         if self.task_mode == "classification":
             for item in _all_feature_selection_hyperparameters:
                 if "SFS" in item.values():
@@ -1226,7 +1228,7 @@ class AutoTabularBase:
                         type(y)))
 
         # get data metadata
-        if not hasattr(self, "metadata") :
+        if not hasattr(self, "metadata"):
             self.metadata = MetaData(X).metadata
         # check if there's unsupported data type
         # if datetime ,recommend to remove

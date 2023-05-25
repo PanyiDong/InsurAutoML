@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/hyperparameters/ray/feature_selection_hyperparameter.py
+Project: ray
+Latest Version: <<projectversion>>
+Relative Path: /feature_selection_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 30th January 2023 12:32:43 pm
+Last Modified: Wednesday, 17th May 2023 3:24:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -82,7 +82,8 @@ EXTRATREESPREPROCFORREGRESSION = {
     "feature_selection": "extra_trees_preproc_for_regression",
     "n_estimators": tune.choice([100]),
     "criterion": tune.choice(
-        ["mse", "friedman_mse", "mae"],
+        # ["mse", "friedman_mse", "mae"],
+        ["squared_error", "absolute_error", "friedman_mse"],
     ),
     "min_samples_leaf": tune.qrandint(1, 20, 1),
     "min_samples_split": tune.qrandint(2, 20, 1),

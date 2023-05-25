@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: <<projectversion>>
+Latest Version: 0.2.5
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 3rd February 2023 12:09:23 am
+Last Modified: Wednesday, 24th May 2023 11:01:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -142,8 +142,6 @@ EXTRA_DICT = {
         # "rpy2;platform_system=='Linux'",
         "gensim",
         "torch",
-        "pytorch_lightning",
-        "nni",
         # "transformers",
         # "datasets",
     ],
@@ -159,8 +157,6 @@ EXTRA_DICT = {
         "optuna",
         "gensim",
         "torch",
-        "pytorch_lightning",
-        "nni",
     ],
 }
 

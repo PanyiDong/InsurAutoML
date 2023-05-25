@@ -1,17 +1,17 @@
 """
-File Name: _base.py
+File Name: base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_base.py
+Latest Version: <<projectversion>>
+Relative Path: /base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:20:52 pm
+Last Modified: Wednesday, 17th May 2023 9:32:56 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -116,7 +116,7 @@ class load_data:
 
     Parameters
     ----------
-    path: path of the files to search for, can be list of paths
+    path: path of the files to search for, can be list of paths, default = ""
 
     data_type: matching data file types, default = 'all'
     supported types ('all', '.csv', '.asc', '.data', '.rda', '.rdata')
@@ -127,7 +127,7 @@ class load_data:
         self.data_type = data_type
         self.database = {}
 
-    def load(self, path, filename=None):
+    def load(self, path="", filename=None):
 
         if isinstance(path, list):  # add / at the end of path
             path = [
