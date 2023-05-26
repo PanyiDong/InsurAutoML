@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: hpo
-Latest Version: <<projectversion>>
-Relative Path: /utils.py
+Project: InsurAutoML
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/hpo/utils.py
 File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 17th May 2023 9:58:33 am
+Last Modified: Thursday, 25th May 2023 9:26:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,14 +39,15 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from InsurAutoML.utils.data import train_test_split
+from InsurAutoML.utils import train_test_split, formatting
 from InsurAutoML.utils.file import save_methods
-from InsurAutoML.utils.data import formatting
+from InsurAutoML import set_seed
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._testing import ignore_warnings
 from ray import tune
 import json
 import os
+import time
 import pandas as pd
 import numpy as np
 import scipy
@@ -791,6 +792,9 @@ class TabularObjective(tune.Trainable):
         self,
     ) -> Dict[str, Any]:
 
+        # set random seed
+        set_seed(self.seed)
+
         # different evaluation metrics for classification and regression
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
@@ -876,45 +880,64 @@ class TabularObjective(tune.Trainable):
             _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
 
             # encoding
+            start_time = time.time()
             _X_train_obj = self.enc.fit(_X_train_obj)
             _X_test_obj = self.enc.refit(_X_test_obj)
+            end_time = time.time()
             # with open(obj_tmp_directory + "/objective_process.txt", "w") as
             # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Encoding finished, in imputation process.")
+            with open("time.txt", "a") as f:
+                f.write("Encoding time: {}\n".format(end_time - start_time))
 
             # imputer
+            start_time = time.time()
             _X_train_obj = self.imp.fill(_X_train_obj)
             _X_test_obj = self.imp.fill(_X_test_obj)
+            end_time = time.time()
             # with open(obj_tmp_directory + "/objective_process.txt", "w") as
             # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Imputation finished, in scaling process.")
+            with open("time.txt", "a") as f:
+                f.write("Imputation time: {}\n".format(end_time - start_time))
 
             # balancing
+            start_time = time.time()
             _X_train_obj, _y_train_obj = self.blc.fit_transform(
                 _X_train_obj, _y_train_obj
             )
+            end_time = time.time()
             # with open(obj_tmp_directory + "/objective_process.txt", "w") as
             # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Balancing finished, in scaling process.")
+            with open("time.txt", "a") as f:
+                f.write("Balancing time: {}\n".format(end_time - start_time))
+
             # make sure the classes are integers (belongs to certain classes)
             if self.task_mode == "classification":
                 _y_train_obj = _y_train_obj.astype(int)
                 _y_test_obj = _y_test_obj.astype(int)
 
             # scaling
+            start_time = time.time()
             self.scl.fit(_X_train_obj, _y_train_obj)
+            end_time = time.time()
             _X_train_obj = self.scl.transform(_X_train_obj)
             _X_test_obj = self.scl.transform(_X_test_obj)
             # with open(obj_tmp_directory + "/objective_process.txt", "w") as
             # f:
             with open("objective_process.txt", "w") as f:
                 f.write("Scaling finished, in feature selection process.")
+            with open("time.txt", "a") as f:
+                f.write("Scaling time: {}\n".format(end_time - start_time))
 
             # feature selection
+            start_time = time.time()
             self.fts.fit(_X_train_obj, _y_train_obj)
+            end_time = time.time()
             _X_train_obj = self.fts.transform(_X_train_obj)
             _X_test_obj = self.fts.transform(_X_test_obj)
             # with open(obj_tmp_directory + "/objective_process.txt", "w") as
@@ -923,6 +946,9 @@ class TabularObjective(tune.Trainable):
                 f.write(
                     "Feature selection finished, in {} model.".format(
                         self.task_mode))
+            with open("time.txt", "a") as f:
+                f.write("Feature selection time: {}\n".format(
+                    end_time - start_time))
 
             # fit model
             if scipy.sparse.issparse(

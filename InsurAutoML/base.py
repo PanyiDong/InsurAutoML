@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: <<projectversion>>
-Relative Path: /base.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 17th May 2023 9:32:56 am
+Last Modified: Thursday, 25th May 2023 11:04:04 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 import os
 import glob
+import random
 import numpy as np
 import pandas as pd
 import warnings
@@ -56,6 +57,20 @@ if rpy2_spec is not None:
     from rpy2.robjects import Formula, pandas2ri
     from rpy2.robjects.conversion import localconverter
     from rpy2.robjects.packages import importr
+
+torch_spec = importlib.util.find_spec("torch")
+
+
+def set_seed(seed: int = 1):
+    """
+    Set random seed for all packages
+    """
+    random.seed(seed)
+    np.random.seed(seed)
+    if torch_spec is not None:
+        import torch
+        torch.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
 
 
 class no_processing:

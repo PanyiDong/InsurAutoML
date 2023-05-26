@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_constant.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/constant.py
 File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 26th November 2022 12:40:39 am
+Last Modified: Thursday, 25th May 2023 9:40:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -184,6 +184,9 @@ REGRESSORS = [
     "MLP_Regressor",
     "RNN_Regressor",
 ]
+
+# proportion of unique values in a column to be considered as regression problem
+PROP_UNIQUE = 0.1
 
 # maximum unique classes determined as categorical variable
 # 31 is capped by days in a month

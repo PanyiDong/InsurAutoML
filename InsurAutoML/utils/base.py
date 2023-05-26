@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/utils/base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:37:55 pm
+Last Modified: Thursday, 25th May 2023 9:50:28 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,7 +46,7 @@ import time
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
-from InsurAutoML.constant import UNI_CLASS
+from InsurAutoML.constant import UNI_CLASS, PROP_UNIQUE
 
 # set response to [0, 1] class, random guess at 0.5
 
@@ -232,7 +232,13 @@ def type_of_task(y: Union[pd.DataFrame, np.ndarray]) -> str:
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         return "continuous"  # assign for regression tasks
 
-    if y.dtype.kind in ["i", "u"] and len(np.unique(y)) >= 0.5 * len(y):
+    # two conditions to be considered as integer:
+    # 1. proportion of unique values is larger than PROP_UNIQUE
+    # 2. number of unique values is larger than UNI_CLASS
+    if y.dtype.kind in ["i", "u"] and (
+        len(np.unique(y)) >= PROP_UNIQUE *
+            len(y) or len(np.unique(y)) > UNI_CLASS
+    ):
         return "integer"  # assign for regression tasks
 
     if (len(np.unique(y)) > 2) or (y.ndim >= 2 and len(y[0]) > 1):

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: hpo
-Latest Version: <<projectversion>>
-Relative Path: /base.py
+Project: InsurAutoML
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/hpo/base.py
 File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 17th May 2023 10:09:43 am
+Last Modified: Thursday, 25th May 2023 10:05:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,8 +40,10 @@ SOFTWARE.
 
 
 from __future__ import annotations
+from InsurAutoML import set_seed
 from InsurAutoML.utils.optimize import (
     get_algo,
+    set_algo_seed,
     get_scheduler,
     get_logger,
     get_progress_reporter,
@@ -87,9 +89,7 @@ import logging
 
 
 # filter certain warnings
-warnings.filterwarnings(
-    "ignore",
-    message="The dataset is balanced, no change.")
+warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
 warnings.filterwarnings("ignore", message="Variables are collinear")
 # warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
 # warnings.filterwarnings(
@@ -100,15 +100,9 @@ warnings.filterwarnings("ignore", message="Variables are collinear")
 # I wish to use sklearn v1.0 for new features
 # but there's conflicts between autosklearn models and sklearn models
 # mae <-> absolute_error, mse <-> squared_error inconsistency
-warnings.filterwarnings(
-    "ignore",
-    message="Criterion 'mse' was deprecated in v1.0")
-warnings.filterwarnings(
-    "ignore",
-    message="Criterion 'mae' was deprecated in v1.0")
-warnings.filterwarnings(
-    "ignore",
-    message="'normalize' was deprecated in version 1.0")
+warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
+warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
+warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available
@@ -320,10 +314,12 @@ class AutoTabularBase:
         self._iter = 0  # record iteration number
         self._fitted = False  # record whether the model has been fitted
 
+        # set random seed
+        set_seed(self.seed)
+
     def get_hyperparameter_space(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, np.ndarray]
     ) -> Tuple[Dict]:
-
         # initialize default search options
         # and select the search options based on the input restrictions
         # use copy to allows multiple manipulation
@@ -331,6 +327,7 @@ class AutoTabularBase:
         # Encoding: convert string types to numerical type
         # all encoders available
         from InsurAutoML.encoding import encoders
+
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_encoders
@@ -366,6 +363,7 @@ class AutoTabularBase:
         # Imputer: fill missing values
         # all imputers available
         from InsurAutoML.imputation import imputers
+
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_imputers
@@ -410,6 +408,7 @@ class AutoTabularBase:
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
         from InsurAutoML.balancing import balancings
+
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_balancings
@@ -439,6 +438,7 @@ class AutoTabularBase:
         # Scaling
         # all scalings available
         from InsurAutoML.scaling import scalings
+
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_scalings
@@ -468,6 +468,7 @@ class AutoTabularBase:
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
         from InsurAutoML.feature_selection import feature_selections
+
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_feature_selections
@@ -523,6 +524,7 @@ class AutoTabularBase:
         # if mode is regression, use regression models
         if self.task_mode == "classification":
             from InsurAutoML.model import classifiers
+
             # if additional exists, import, otherwise set to default
             try:
                 from additional import add_classifiers
@@ -535,6 +537,7 @@ class AutoTabularBase:
             self._all_models.update(add_classifiers)
         elif self.task_mode == "regression":
             from InsurAutoML.model import regressors
+
             # if additional exists, import, otherwise set to default
             try:
                 from additional import add_regressors
@@ -623,8 +626,7 @@ class AutoTabularBase:
         if "no_processing" in imputer.keys():
             _all_imputers_hyperparameters = [{"imputer": "no_processing"}]
         else:
-            _all_imputers_hyperparameters = copy.deepcopy(
-                imputer_hyperparameter)
+            _all_imputers_hyperparameters = copy.deepcopy(imputer_hyperparameter)
         # include additional hyperparameters
         _all_imputers_hyperparameters += add_imputer_hyperparameter
 
@@ -632,8 +634,7 @@ class AutoTabularBase:
         # _all_imputers_hyperparameters = copy.deepcopy(self._all_imputers_hyperparameters)
 
         # all hyperparameters for balancing methods
-        _all_balancings_hyperparameters = copy.deepcopy(
-            balancing_hyperparameter)
+        _all_balancings_hyperparameters = copy.deepcopy(balancing_hyperparameter)
         # include additional hyperparameters
         _all_balancings_hyperparameters += add_balancing_hyperparameter
 
@@ -687,13 +688,11 @@ class AutoTabularBase:
 
         # all hyperparameters for the models by mode
         if self.task_mode == "classification":
-            _all_models_hyperparameters = copy.deepcopy(
-                classifier_hyperparameter)
+            _all_models_hyperparameters = copy.deepcopy(classifier_hyperparameter)
             # include additional hyperparameters
             _all_models_hyperparameters += add_classifier_hyperparameter
         elif self.task_mode == "regression":
-            _all_models_hyperparameters = copy.deepcopy(
-                regressor_hyperparameter)
+            _all_models_hyperparameters = copy.deepcopy(regressor_hyperparameter)
             # include additional hyperparameters
             _all_models_hyperparameters += add_regressor_hyperparameter
 
@@ -708,8 +707,7 @@ class AutoTabularBase:
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
                         from InsurAutoML.constant import LIGHTGBM_BINARY_CLASSIFICATION
 
-                        item["objective"] = tune.choice(
-                            LIGHTGBM_BINARY_CLASSIFICATION)
+                        item["objective"] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
                     else:
                         from InsurAutoML.constant import (
                             LIGHTGBM_MULTICLASS_CLASSIFICATION,
@@ -722,10 +720,7 @@ class AutoTabularBase:
         # check status of hyperparameter space
         check_status(encoder, _all_encoders_hyperparameters, ref="encoder")
         check_status(imputer, _all_imputers_hyperparameters, ref="imputer")
-        check_status(
-            balancing,
-            _all_balancings_hyperparameters,
-            ref="balancing")
+        check_status(balancing, _all_balancings_hyperparameters, ref="balancing")
         check_status(scaling, _all_scalings_hyperparameters, ref="scaling")
         check_status(
             feature_selection,
@@ -803,82 +798,10 @@ class AutoTabularBase:
             hyperparameter_space,
         )
 
-    # method is deprecated as pickle save/load methods are now supported
-    # load hyperparameter settings and train on the data
-    # def load_model(self, _X, _y):
-
-    #     # load hyperparameter settings
-    #     with open(self.model_name) as f:
-    #         optimal_setting = f.readlines()
-
-    #     # remove change line signs
-    #     optimal_setting = [item.replace("\n", "") for item in optimal_setting]
-    #     # remove blank spaces
-    #     while "" in optimal_setting:
-    #         optimal_setting.remove("")
-
-    #     # convert strings to readable dictionaries
-    #     self.optimal_encoder = optimal_setting[0]
-    #     self.optimal_encoder_hyperparameters = ast.literal_eval(optimal_setting[1])
-    #     self.optimal_imputer = optimal_setting[2]
-    #     self.optimal_imputer_hyperparameters = ast.literal_eval(optimal_setting[3])
-    #     self.optimal_balancing = optimal_setting[4]
-    #     self.optimal_balancing_hyperparameters = ast.literal_eval(optimal_setting[5])
-    #     self.optimal_scaling = optimal_setting[6]
-    #     self.optimal_scaling_hyperparameters = ast.literal_eval(optimal_setting[7])
-    #     self.optimal_feature_selection = optimal_setting[8]
-    #     self.optimal_feature_selection_hyperparameters = ast.literal_eval(
-    #         optimal_setting[9]
-    #     )
-    #     self.optimal_model = optimal_setting[10]
-    #     self.optimal_model_hyperparameters = ast.literal_eval(optimal_setting[11])
-
-    #     # map the methods and hyperparameters
-    #     # fit the methods
-    #     # encoding
-    #     self._fit_encoder = self._all_encoders[self.optimal_encoder](
-    #         **self.optimal_encoder_hyperparameters
-    #     )
-    #     _X = self._fit_encoder.fit(_X)
-    #     # imputer
-    #     self._fit_imputer = self._all_imputers[self.optimal_imputer](
-    #         **self.optimal_imputer_hyperparameters
-    #     )
-    #     _X = self._fit_imputer.fill(_X)
-    #     # balancing
-    #     self._fit_balancing = self._all_balancings[self.optimal_balancing](
-    #         **self.optimal_balancing_hyperparameters
-    #     )
-    #     _X, _y = self._fit_balancing.fit_transform(_X, _y)
-
-    #     # make sure the classes are integers (belongs to certain classes)
-    #     if self.task_mode == "classification":
-    #         _y = _y.astype(int)
-    #     # scaling
-    #     self._fit_scaling = self._all_scalings[self.optimal_scaling](
-    #         **self.optimal_scaling_hyperparameters
-    #     )
-    #     self._fit_scaling.fit(_X, _y)
-    #     _X = self._fit_scaling.transform(_X)
-    #     # feature selection
-    #     self._fit_feature_selection = self._all_feature_selection[
-    #         self.optimal_feature_selection
-    #     ](**self.optimal_feature_selection_hyperparameters)
-    #     self._fit_feature_selection.fit(_X, _y)
-    #     _X = self._fit_feature_selection.transform(_X)
-    #     # model
-    #     self._fit_model = self._all_models[self.optimal_model](
-    #         **self.optimal_model_hyperparameters
-    #     )
-    #     self._fit_model.fit(_X, _y.values.ravel())
-
-    #     return self
-
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(
         self, idx: int, optimal_point: Dict, best_path: str
     ) -> Tuple(str, Pipeline):
-
         # optimal encoder
         optimal_encoder_hyperparameters = optimal_point["encoder"]
         # find optimal encoder key
@@ -979,18 +902,15 @@ class AutoTabularBase:
         # if already exists, use append mode
         # else, write mode
         if not os.path.exists(
-            os.path.join(
-                self.temp_directory,
-                self.model_name,
-                "optimal_setting.txt")):
+            os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt")
+        ):
             write_type = "w"
         else:
             write_type = "a"
 
         # record optimal settings
         with open(
-            os.path.join(self.temp_directory, self.model_name,
-                         "optimal_setting.txt"),
+            os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt"),
             write_type,
         ) as f:
             f.write("For pipeline {}:\n".format(idx + 1))
@@ -1013,54 +933,9 @@ class AutoTabularBase:
             )
             f.write("Optimal feature selection hyperparameters:")
             print(optimal_feature_selection_hyperparameters, file=f, end="\n\n")
-            f.write(
-                "Optimal {} model is: {}\n".format(
-                    self.task_mode,
-                    optimal_model))
+            f.write("Optimal {} model is: {}\n".format(self.task_mode, optimal_model))
             f.write("Optimal {} hyperparameters:".format(self.task_mode))
             print(optimal_model_hyperparameters, file=f, end="\n\n")
-
-        # method is deprecated as pickle save/load methods are now supported
-        # # encoding
-        # self._fit_encoder = self._all_encoders[self.optimal_encoder](
-        #     **self.optimal_encoder_hyperparameters
-        # )
-        # _X = self._fit_encoder.fit(_X)
-
-        # # imputer
-        # self._fit_imputer = self._all_imputers[self.optimal_imputer](
-        #     **self.optimal_imputer_hyperparameters
-        # )
-        # _X = self._fit_imputer.fill(_X)
-
-        # # balancing
-        # self._fit_balancing = self._all_balancings[self.optimal_balancing](
-        #     **self.optimal_balancing_hyperparameters
-        # )
-        # _X, _y = self._fit_balancing.fit_transform(_X, _y)
-        # # make sure the classes are integers (belongs to certain classes)
-        # _y = _y.astype(int)
-        # _y = _y.astype(int)
-
-        # # scaling
-        # self._fit_scaling = self._all_scalings[self.optimal_scaling](
-        #     **self.optimal_scaling_hyperparameters
-        # )
-        # self._fit_scaling.fit(_X, _y)
-        # _X = self._fit_scaling.transform(_X)
-
-        # # feature selection
-        # self._fit_feature_selection = self._all_feature_selection[
-        #     self.optimal_feature_selection
-        # ](**self.optimal_feature_selection_hyperparameters)
-        # self._fit_feature_selection.fit(_X, _y)
-        # _X = self._fit_feature_selection.transform(_X)
-
-        # # model fitting
-        # self._fit_model = self._all_models[self.optimal_model](
-        #     **self.optimal_model_hyperparameters
-        # )
-        # self._fit_model.fit(_X, _y.values.ravel())
 
         (
             _fit_encoder,
@@ -1070,35 +945,6 @@ class AutoTabularBase:
             _fit_feature_selection,
             _fit_model,
         ) = load_methods(best_path)
-
-        # # save the model
-        # if self.save:
-        #     # save_model(
-        #     #     self.optimal_encoder,
-        #     #     self.optimal_encoder_hyperparameters,
-        #     #     self.optimal_imputer,
-        #     #     self.optimal_imputer_hyperparameters,
-        #     #     self.optimal_balancing,
-        #     #     self.optimal_balancing_hyperparameters,
-        #     #     self.optimal_scaling,
-        #     #     self.optimal_scaling_hyperparameters,
-        #     #     self.optimal_feature_selection,
-        #     #     self.optimal_feature_selection_hyperparameters,
-        #     #     self.optimal_model,
-        #     #     self.optimal_model_hyperparameters,
-        #     #     self.model_name,
-        #     # )
-        #     save_methods(
-        #         self.model_name,
-        #         [
-        #             self._fit_encoder,
-        #             self._fit_imputer,
-        #             self._fit_balancing,
-        #             self._fit_scaling,
-        #             self._fit_feature_selection,
-        #             self._fit_model,
-        #         ],
-        #     )
 
         # create a pipeline using loaded methods
         pip_setting = {
@@ -1113,12 +959,8 @@ class AutoTabularBase:
         return ("pipe_" + str(idx + 1), Pipeline(**pip_setting))
 
     def _fit_ensemble(
-            self,
-            trial_id: str,
-            config: Dict,
-            iter: int = None,
-            features: List[str] = None) -> None:
-
+        self, trial_id: str, config: Dict, iter: int = None, features: List[str] = None
+    ) -> None:
         # initialize ensemble list
         try:
             # if ensemble list exists, append to it
@@ -1130,11 +972,7 @@ class AutoTabularBase:
             feature_list = []
 
         # if only one optimal input, need to convert to iterable
-        if not isinstance(
-                trial_id,
-                pd.Series) or not isinstance(
-                config,
-                pd.Series):
+        if not isinstance(trial_id, pd.Series) or not isinstance(config, pd.Series):
             trial_id = [trial_id]
             config = [config]
 
@@ -1189,8 +1027,7 @@ class AutoTabularBase:
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> AutoTabularBase:
-
-       # initialize temp directory
+        # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
             shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
@@ -1200,13 +1037,17 @@ class AutoTabularBase:
 
         # setup up logger
         if not hasattr(self, "_logger"):
-            self._logger = setup_logger(__name__, os.path.join(
-                self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
+            self._logger = setup_logger(
+                __name__,
+                os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+                level=logging.INFO,
+            )
 
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Start preparing AutoTabular...".format(
-                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                self.model_name))
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+            )
+        )
 
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
@@ -1216,16 +1057,12 @@ class AutoTabularBase:
             try:
                 X = pd.DataFrame(X)
             except BaseException:
-                raise TypeError(
-                    "Cannot convert X to dataframe, get {}".format(
-                        type(X)))
+                raise TypeError("Cannot convert X to dataframe, get {}".format(type(X)))
         if not isinstance(y, pd.DataFrame):
             try:
                 y = pd.DataFrame(y)
             except BaseException:
-                raise TypeError(
-                    "Cannot convert y to dataframe, get {}".format(
-                        type(y)))
+                raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
 
         # get data metadata
         if not hasattr(self, "metadata"):
@@ -1258,8 +1095,7 @@ class AutoTabularBase:
             os.cpu_count() if self.cpu_threads is None else self.cpu_threads
         )
         # auto use_gpu selection if gpu is available
-        self.use_gpu = (
-            device_count > 0) if self.use_gpu is None else self.use_gpu
+        self.use_gpu = (device_count > 0) if self.use_gpu is None else self.use_gpu
         # count gpu available
         self.gpu_count = device_count if self.use_gpu else 0
 
@@ -1289,7 +1125,9 @@ class AutoTabularBase:
             if self.max_evals < self.n_estimators:
                 warnings.warn(
                     "n_estimators {} larger than max_evals {}, will be set to {}.".format(
-                        self.n_estimators, self.max_evals, self.max_evals))
+                        self.n_estimators, self.max_evals, self.max_evals
+                    )
+                )
             self.n_estimators = int(min(self.n_estimators, self.max_evals))
 
         # at least one constraint of time/evaluations should be provided
@@ -1323,11 +1161,12 @@ class AutoTabularBase:
             else self.progress_reporter
         )
 
-        if self.progress_reporter not in [
-                "CLIReporter", "JupyterNotebookReporter"]:
+        if self.progress_reporter not in ["CLIReporter", "JupyterNotebookReporter"]:
             raise TypeError(
                 "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
-                    self.progress_reporter))
+                    self.progress_reporter
+                )
+            )
 
         # make sure _X is a dataframe
         if isinstance(X, pd.DataFrame):
@@ -1337,11 +1176,16 @@ class AutoTabularBase:
                 X = pd.DataFrame(X)
                 self._logger.info(
                     "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
-                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name, ))
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
+                    )
+                )
             except BaseException:
                 raise TypeError(
                     "X must be a dataframe! Can't convert {} to dataframe.".format(
-                        type(X)))
+                        type(X)
+                    )
+                )
 
         _X = X.copy()
         _y = y.copy()
@@ -1363,8 +1207,9 @@ class AutoTabularBase:
 
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
-                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                self.model_name))
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
+            )
+        )
 
         # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
@@ -1372,21 +1217,10 @@ class AutoTabularBase:
         if os.path.exists(self.model_name):
             self._logger.info(
                 "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name, ))
-            # print(
-            #     "[INFO] {} Stored model found, load previous model.".format(
-            #         datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
-            #     )
-            # )
-            # self.load_model(_X, _y)
-            # (
-            #     self._fit_encoder,
-            #     self._fit_imputer,
-            #     self._fit_balancing,
-            #     self._fit_scaling,
-            #     self._fit_feature_selection,
-            #     self._fit_model,
-            # ) = load_methods(self.model_name)
+                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                    self.model_name,
+                )
+            )
             [self._ensemble] = load_methods(self.model_name)
 
             self._fitted = True  # successfully fitted the model
@@ -1399,8 +1233,7 @@ class AutoTabularBase:
         ) as f:
             f.write("Features of the dataset: {}\n".format(list(_X.columns)))
             f.write(
-                "Shape of the design matrix: {} * {}\n".format(
-                    _X.shape[0], _X.shape[1])
+                "Shape of the design matrix: {} * {}\n".format(_X.shape[0], _X.shape[1])
             )
             f.write("Response of the dataset: {}\n".format(list(_y.columns)))
             f.write(
@@ -1410,25 +1243,15 @@ class AutoTabularBase:
             )
             f.write("Type of the task: {}.\n".format(self.task_mode))
 
-        # set random seed
-        np.random.seed(self.seed)
-        random.seed(self.seed)
-
         # get maximum allowed errors
         self.max_error = int(self.max_evals * self.allow_error_prop)
 
         # load dict settings for search_algo and search_scheduler
         self.search_algo_settings = str2dict(self.search_algo_settings)
-        self.search_scheduler_settings = str2dict(
-            self.search_scheduler_settings)
-
-        # use ray for Model Selection and Hyperparameter Selection
-        # get search algorithm
-        algo = get_algo(self.search_algo)
+        self.search_scheduler_settings = str2dict(self.search_scheduler_settings)
 
         # special requirement for Nevergrad, need a algorithm setting
-        if self.search_algo == "Nevergrad" and len(
-                self.search_algo_settings) == 0:
+        if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
             self._logger.warn(
                 "No algorithm setting for Nevergrad find, use OnePlusOne."
             )
@@ -1436,6 +1259,12 @@ class AutoTabularBase:
             import nevergrad as ng
 
             self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
+
+        # use ray for Model Selection and Hyperparameter Selection
+        # get search algorithm
+        algo = get_algo(self.search_algo)
+        # set random seed of search algorithm
+        self.search_algo_settings.update(set_algo_seed(self.search_algo, self.seed))
 
         # get search scheduler
         scheduler = get_scheduler(self.search_scheduler)
@@ -1474,8 +1303,7 @@ class AutoTabularBase:
 
         # ensemble settings
         if self.n_estimators == 1:
-            self._logger.warn(
-                "Set n_estimators to 1, no ensemble will be used.")
+            self._logger.warn("Set n_estimators to 1, no ensemble will be used.")
             # warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
             # get progress reporter
@@ -1509,15 +1337,6 @@ class AutoTabularBase:
             )
 
             # initialize ray
-            # # if already initialized, do nothing
-            # if not ray.is_initialized():
-            #     ray.init(
-            #         # local_mode=True,
-            #         num_cpus=self.cpu_threads,
-            #         num_gpus=self.gpu_count,
-            #     )
-            # # check if ray is initialized
-            # assert ray.is_initialized() == True, "Ray is not initialized."
             rayStatus.ray_init()
 
             # subtrial directory
@@ -1525,7 +1344,10 @@ class AutoTabularBase:
 
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # optimization process
             # partially activated objective function
@@ -1592,14 +1414,14 @@ class AutoTabularBase:
                 )
 
             # shut down ray
-            # ray.shutdown()
-            # # check if ray is shutdown
-            # assert ray.is_initialized() == False, "Ray is not shutdown."
             rayStatus.ray_shutdown()
 
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # get the best config settings
             best_trial_id = str(
@@ -1607,17 +1429,11 @@ class AutoTabularBase:
                     metric="loss", mode="min", scope="all"
                 ).trial_id
             )
-            # # find the exact path
-            # best_path = find_exact_path(
-            #     os.path.join(self.temp_directory, self.model_name), "id_" + best_trial_id
-            # )
-            # best_path = os.path.join(best_path, self.model_name)
 
             # select optimal settings and fit optimal pipeline
             self._fit_ensemble(best_trial_id, fit_analysis.best_config)
         # Stacking ensemble
         elif self.ensemble_strategy == "stacking":
-
             # get progress reporter
             progress_reporter = get_progress_reporter(
                 self.progress_reporter,
@@ -1723,7 +1539,10 @@ class AutoTabularBase:
 
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
+                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                    self.model_name,
+                )
+            )
 
             # get all configs, trial_id
             analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
@@ -1741,9 +1560,9 @@ class AutoTabularBase:
                 axis=1,
             )
             # sort by loss and get top configs
-            analysis_df = analysis_df.sort_values(
-                by=["loss"], ascending=True).head(
-                self.n_estimators)
+            analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
+                self.n_estimators
+            )
 
             # select optimal settings and create the ensemble of pipeline
             self._fit_ensemble(analysis_df.trial_id, analysis_df.config)
@@ -1802,8 +1621,7 @@ class AutoTabularBase:
                 rayStatus.ray_init()
 
                 # subtrial directory
-                self.sub_directory = os.path.join(
-                    self.temp_directory, self.model_name)
+                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
 
                 # optimization process
                 # partially activated objective function
@@ -1884,7 +1702,10 @@ class AutoTabularBase:
 
                 self._logger.info(
                     "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                    )
+                )
 
                 # get the best config settings
                 best_trial_id = str(
@@ -1954,8 +1775,7 @@ class AutoTabularBase:
                 rayStatus.ray_init()
 
                 # subtrial directory
-                self.sub_directory = os.path.join(
-                    self.temp_directory, self.model_name)
+                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
 
                 # optimization process
                 # partially activated objective function
@@ -2034,7 +1854,10 @@ class AutoTabularBase:
 
                 self._logger.info(
                     "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name, ))
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                    )
+                )
 
                 # get the best config settings
                 best_trial_id = str(
@@ -2075,18 +1898,15 @@ class AutoTabularBase:
 
         self._logger.info(
             "[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(
-                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                self.model_name))
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"), self.model_name
+            )
+        )
 
         self._fitted = True
 
         return self
 
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         if self.reset_index:
             # reset index to avoid indexing error
             X.reset_index(drop=True, inplace=True)
