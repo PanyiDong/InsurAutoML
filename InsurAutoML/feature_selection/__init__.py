@@ -11,7 +11,7 @@ File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 12:42:35 pm
+Last Modified: Friday, 26th May 2023 7:06:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -92,7 +92,7 @@ feature_selections = {
     "RBFSampler": RBFSampler,
     "FeatureFilter": FeatureFilter,
     # "ASFFS": ASFFS,
-    "GeneticAlgorithm": GeneticAlgorithm,
+    # "GeneticAlgorithm": GeneticAlgorithm,
     # "ExhaustiveFS": ExhaustiveFS, # exhaustive search is not practical, takes too long
     # TODO: add SFS back when multiclass/binary identification is done in hpo/base.py
     # "SFS": SFS,

@@ -4,14 +4,14 @@ Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: ray
-Latest Version: <<projectversion>>
-Relative Path: /feature_selection_hyperparameter.py
+Project: InsurAutoML
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/hyperparameters/ray/feature_selection_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 17th May 2023 3:24:48 pm
+Last Modified: Friday, 26th May 2023 7:07:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -155,7 +155,10 @@ PCA = {
 }
 POLYNOMIAL = {
     "feature_selection": "polynomial",
-    "degree": tune.qrandint(2, 4, 1),
+    # Note: May 26, 2023
+    # degree too high can cause too long training time
+    # "degree": tune.qrandint(2, 4, 1),
+    "degree": tune.choice([2]),
     "interaction_only": tune.choice([True, False]),
     "include_bias": tune.choice([True, False]),
 }

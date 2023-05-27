@@ -11,7 +11,7 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 9:40:51 am
+Last Modified: Friday, 26th May 2023 8:13:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,8 @@ SOFTWARE.
 """
 
 import logging
+
+MAX_ERROR_TRIALOUT = 32
 
 LOGGINGLEVEL = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
@@ -203,8 +205,7 @@ MAX_TIME = 259200
 # binary classification
 LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross_entropy"]
 # multiclass classification
-LIGHTGBM_MULTICLASS_CLASSIFICATION = [
-    "multiclass", "multiclassova", "num_class"]
+LIGHTGBM_MULTICLASS_CLASSIFICATION = ["multiclass", "multiclassova", "num_class"]
 # regression
 LIGHTGBM_REGRESSION = [
     "regression",

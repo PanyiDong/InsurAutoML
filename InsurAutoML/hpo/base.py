@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 10:05:36 pm
+Last Modified: Friday, 26th May 2023 10:26:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -63,7 +63,7 @@ from InsurAutoML.utils.file import (
 )
 from InsurAutoML.utils.base import type_of_script, format_hyper_dict
 from InsurAutoML.base import no_processing
-from InsurAutoML.constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL
+from InsurAutoML.constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
 from InsurAutoML.hpo.utils import (
     setup_logger,
     TabularObjective,
@@ -1244,7 +1244,9 @@ class AutoTabularBase:
             f.write("Type of the task: {}.\n".format(self.task_mode))
 
         # get maximum allowed errors
-        self.max_error = int(self.max_evals * self.allow_error_prop)
+        self.max_error = min(
+            MAX_ERROR_TRIALOUT, int(self.max_evals * self.allow_error_prop)
+        )
 
         # load dict settings for search_algo and search_scheduler
         self.search_algo_settings = str2dict(self.search_algo_settings)

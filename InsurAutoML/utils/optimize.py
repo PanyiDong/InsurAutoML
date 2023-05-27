@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 10:02:48 pm
+Last Modified: Friday, 26th May 2023 8:45:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1486,6 +1486,7 @@ class TimePlateauStopper(Stopper):
     ) -> None:
         self._stored_start = None
         self._trial_start = None
+        self._trial_taken = timeout
         self.timeout = timeout
         self._budget = timeout
 
@@ -1499,37 +1500,34 @@ class TimePlateauStopper(Stopper):
 
         self._iter = defaultdict(lambda: 0)
         self._trial_results = defaultdict(lambda: deque(maxlen=self._num_results))
-        self._trial_taken = timeout
 
     def __call__(self, trial_id: str, result: Any) -> bool:
-        # Trial time stop
-        # Stop if global budget depleted
-        if self._budget <= 0:
-            logger.info(
-                "TimePlateauStopper: Time limit {} seconds reached.".format(
-                    self.timeout
-                )
-            )
-            return True
+        # # Trial time stop
+        # # Stop if global budget depleted
+        # if self._budget <= 0:
+        #     logger.info(
+        #         "TimePlateauStopper: Time limit {} seconds reached.".format(
+        #             self.timeout
+        #         )
+        #     )
+        #     return True
 
-        # Stop if trail has not enough time
-        if self._trial_start:
-            self._trial_taken = time.time() - self._trial_start
-        self._trial_start = time.time()
+        # # Stop if trail has not enough time
+        # if self._trial_start:
+        #     self._trial_taken = time.time() - self._trial_start
+        # self._trial_start = time.time()
 
-        if self._budget - (time.time() - self._stored_start) <= self._trial_taken:
-            return True
+        # if self._budget - (time.time() - self._stored_start) <= self._trial_taken:
+        #     return True
 
+        # Result plateau stop
         metric_result = result.get(self._metric)  # get metric from result
         self._trial_results[trial_id].append(metric_result)
         self._iter[trial_id] += 1  # record trial results and iteration
 
         # If still in grace period, do not stop yet
-        if self._iter[trial_id] < self._grace_period:
-            return False
-
         # If not enough results yet, do not stop yet
-        if len(self._trial_results[trial_id]) < self._num_results:
+        if self._iter[trial_id] < min(self._grace_period, self._num_results):
             return False
 
         # if threshold specified, use threshold to stop

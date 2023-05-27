@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/utils/data.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 29th November 2022 3:14:14 pm
+Last Modified: Friday, 26th May 2023 10:38:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,7 +53,6 @@ from InsurAutoML.constant import UNI_CLASS
 
 
 def str2list(item: str) -> list:
-
     try:
         return ast.literal_eval(item)
     except BaseException:
@@ -62,7 +61,6 @@ def str2list(item: str) -> list:
 
 # string dict to dict
 def str2dict(item: str) -> dict:
-
     try:
         return json.loads(item)
     except BaseException:
@@ -99,7 +97,6 @@ class as_dataframe:
         self.columns = None  # record column heads for the dataframe
 
     def to_array(self, X: pd.DataFrame) -> np.ndarray:
-
         if not isinstance(X, pd.DataFrame):
             raise TypeError("Input should be dataframe!")
 
@@ -109,7 +106,6 @@ class as_dataframe:
         return self.design_matrix
 
     def to_df(self, X: Any = None, columns: List = None) -> pd.DataFrame:
-
         if not isinstance(X, np.ndarray):
             if not X:
                 X = self.design_matrix  # using original values from dataframe
@@ -127,7 +123,9 @@ class as_dataframe:
         if len(columns) != X.shape[1]:
             raise ValueError(
                 "Columns of array {} does not match length of columns {}!".format(
-                    X.shape[1], len(columns)))
+                    X.shape[1], len(columns)
+                )
+            )
 
         return pd.DataFrame(X, columns=columns)
 
@@ -157,6 +155,7 @@ class as_dataframe:
 
 #         for i in range(len(self.dtype_table)):
 #             X.iloc[:, i] = X.iloc[:, i].astype(self.dtype_table[i])
+
 
 #         return X
 # new version of formatting
@@ -205,25 +204,17 @@ class formatting:
     """
 
     def __init__(
-            self,
-            columns: List = [],
-            numerics: List[str] = [
-                "int16",
-                "int32",
-                "int64",
-                "float16",
-                "float32",
-                "float64",
-            ],
-            nas: List = [
-                np.nan,
-                None,
-                "nan",
-                "NaN",
-                "NA",
-                "novalue",
-                "None",
-                "none"],
+        self,
+        columns: List = [],
+        numerics: List[str] = [
+            "int16",
+            "int32",
+            "int64",
+            "float16",
+            "float32",
+            "float64",
+        ],
+        nas: List = [np.nan, None, "nan", "NaN", "NA", "novalue", "None", "none"],
         allow_string: bool = False,
         inplace: bool = True,
     ) -> None:
@@ -239,13 +230,11 @@ class formatting:
     # factorize data without changing values in nas
     # pd.factorize will automatically convert missing values
     def factorize(self, data: pd.Series) -> pd.Series:
-
         # get all unique values, including missing types
         raw_unique = pd.unique(data)
         # remove missing types
         # since nan != nan, convert it to string for comparison
-        unique_values = [
-            item for item in raw_unique if str(item) not in self.nas]
+        unique_values = [item for item in raw_unique if str(item) not in self.nas]
 
         # add unique values to unique_table
         self.unique_table[data.name] = unique_values
@@ -262,14 +251,12 @@ class formatting:
 
     # make sure the category seen in observed data
     def unify_cate(self, x: Any, list: List) -> Any:
-
         if x not in list and str(x) not in self.nas:
             x = np.argmin(np.abs([item - x for item in list]))
 
         return x
 
     def fit(self, X: pd.DataFrame) -> None:
-
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
             try:
@@ -290,7 +277,6 @@ class formatting:
                     self.factorize(X[_column])
 
     def refit(self, X: pd.DataFrame) -> Union[None, pd.DataFrame]:
-
         for _column in self.columns:
             # if numerical, refit the dtype
             if self.type_table[_column] in self.numerics:
@@ -307,8 +293,7 @@ class formatting:
                     )
 
                     # get unique category mapping, from numerical-> categorical
-                    unique_map = dict(
-                        zip(unique_num, self.unique_table[_column]))
+                    unique_map = dict(zip(unique_num, self.unique_table[_column]))
                     X[_column] = X[_column].map(
                         unique_map
                     )  # convert numerical-> categorical
@@ -451,7 +436,9 @@ def remove_index_columns(
             if len(columns) != len(threshold):
                 raise ValueError(
                     "Columns and threshold should be same size, get {} and {}.".format(
-                        len(columns), len(threshold)))
+                        len(columns), len(threshold)
+                    )
+                )
             for _column, _threshold in zip(columns, threshold):
                 # only delete column when missing percentage larger than
                 # threshold
@@ -461,7 +448,9 @@ def remove_index_columns(
             if len(index) != len(threshold):
                 raise ValueError(
                     "Indexes and threshold should be same size, get {} and {}.".format(
-                        len(index), len(threshold)))
+                        len(index), len(threshold)
+                    )
+                )
             for _index, _threshold in zip(index, threshold):
                 if data.loc[_index, :].isnull().values.sum() / p >= _threshold:
                     remove_index.append(_index)
@@ -564,7 +553,6 @@ def get_missing_matrix(
 def is_imbalance(
     data: pd.DataFrame, threshold: float, value: bool = False
 ) -> Union[bool, Tuple[str, float]]:
-
     features = list(data.columns)
 
     for _column in features:
@@ -577,8 +565,10 @@ def is_imbalance(
                 return False
 
         for _value in unique_values:
-            if (len(data.loc[data[_column] == _value, _column]
-                    ) / len(data[_column]) > threshold):
+            if (
+                len(data.loc[data[_column] == _value, _column]) / len(data[_column])
+                > threshold
+            ):
                 if value:
                     return _column, _value
                 else:
@@ -592,11 +582,7 @@ def is_imbalance(
 # return the distance between sample and the table sample points
 # notice: the distance betwen sample and sample itself will be included, be aware to deal with it
 # supported norm ['l1', 'l2']
-def LinkTable(
-        sample: pd.DataFrame,
-        table: pd.DataFrame,
-        norm: str = "l2") -> List:
-
+def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> List:
     if sample.shape[1] != table.shape[1]:
         raise ValueError("Not same size of columns!")
 
@@ -632,7 +618,6 @@ class ExtremeClass:
         self.extreme_threshold = extreme_threshold
 
     def cut(self, X: pd.DataFrame) -> pd.DataFrame:
-
         _X = X.copy(deep=True)
 
         features = list(_X.columns)
@@ -653,13 +638,11 @@ class ExtremeClass:
 # common use of this function is to convert the prediction of the class
 # from neural network to actual predictions
 def assign_classes(list: List) -> List:
-
     return np.array([np.argmax(item) for item in list])
 
 
 # softmax function that can handle 1d data
 def softmax(df: pd.DataFrame) -> pd.DataFrame:
-
     if len(df.shape) == 1:
         ppositive = 1 / (1 + np.exp(-df))
         ppositive[ppositive > 0.999999] = 1
@@ -681,7 +664,6 @@ def plotHighDimCluster(
     save: bool = False,
     path: str = "tmp",
 ) -> None:
-
     import matplotlib.pyplot as plt
 
     # check input shape:
@@ -690,7 +672,9 @@ def plotHighDimCluster(
     if X.shape[1] <= 3:
         raise ValueError(
             "X must be high dimensional data, dimension = {} have no need for this plotting".format(
-                X.shape[1]))
+                X.shape[1]
+            )
+        )
 
     if len(X) != len(y):
         raise ValueError("X and y must have the same length")
@@ -732,13 +716,7 @@ def plotHighDimCluster(
     if dim == 3:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
-        ax.scatter(
-            df["PCA_0"],
-            df["PCA_1"],
-            df["PCA_2"],
-            c=y,
-            cmap="RdYlBu",
-            alpha=0.4)
+        ax.scatter(df["PCA_0"], df["PCA_1"], df["PCA_2"], c=y, cmap="RdYlBu", alpha=0.4)
         ax.set_xlabel("PCA_1")
         ax.set_ylabel("PCA_2")
         ax.set_zlabel("PCA_3")
@@ -755,7 +733,6 @@ def plotHighDimCluster(
 
 # distinguish from numerical categorical and numerical continuous
 def numerical_categorical_continuous(df: pd.DataFrame) -> str:
-
     if len(pd.unique(df)) <= min(UNI_CLASS, 0.1 * len(df)):
         return "numerical_categorical"
     else:
@@ -764,7 +741,6 @@ def numerical_categorical_continuous(df: pd.DataFrame) -> str:
 
 # distinguish the data type of each column between string categorical and text
 def string_categorical_text(df: pd.DataFrame) -> str:
-
     # # check if the input is a dataframe
     # if not isinstance(df, pd.DataFrame):
     #     try:
@@ -781,7 +757,6 @@ def string_categorical_text(df: pd.DataFrame) -> str:
 # distinguish numerical and categorical features
 # one column at a time
 def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
-
     if not df.dtype == "object":
         return numerical_categorical_continuous(df)
     else:
@@ -790,7 +765,6 @@ def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
 
 # text preprocessing
 def text_preprocessing(text: str) -> list:
-
     # remove anything inside brackets
     extract_txt = re.sub(r"[\(\[].*?[\)\]]", "", text)
     # get only alphabets and numerics info
@@ -850,11 +824,8 @@ def text2vec(
             from gensim.models import Word2Vec
 
             model = Word2Vec(
-                preprocessed_df,
-                vector_size=dim,
-                window=5,
-                min_count=1,
-                workers=4)
+                preprocessed_df, vector_size=dim, window=5, min_count=1, workers=4
+            )
             KeyVectors = model.wv
             print(KeyVectors)
         else:
