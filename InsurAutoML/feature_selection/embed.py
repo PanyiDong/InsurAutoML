@@ -1,17 +1,17 @@
 """
-File Name: _embed.py
+File Name: embed.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_feature_selection/_embed.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/feature_selection/embed.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 7:01:17 pm
+Last Modified: Saturday, 27th May 2023 3:50:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -88,7 +88,7 @@ class PCA_FeatureSelection:
         solver: str = "auto",
         tol: float = 0.0,
         n_iter: str = "auto",
-        seed: str = 1,
+        seed: int = None,
     ) -> None:
         self.n_components = n_components
         self.solver = solver
@@ -103,7 +103,6 @@ class PCA_FeatureSelection:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> PCA_FeatureSelection:
-
         n, p = X.shape
 
         # Deal with default n_componets = None
@@ -137,9 +136,7 @@ class PCA_FeatureSelection:
                 X, n_components, self.fit_solver
             )
         else:
-            raise ValueError(
-                "Not recognizing solver = {}!".format(
-                    self.fit_solver))
+            raise ValueError("Not recognizing solver = {}!".format(self.fit_solver))
 
         self._fitted = True
 
@@ -148,7 +145,6 @@ class PCA_FeatureSelection:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _features = list(X.columns)
 
         U = self.U_[:, : self.n_components]
@@ -163,7 +159,6 @@ class PCA_FeatureSelection:
     def _fit_full(
         self, X: Union[pd.DataFrame, np.ndarray], n_components: int
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
         n, p = X.shape
         if n_components < 0 or n_components > min(n, p):
             raise ValueError(
@@ -173,7 +168,8 @@ class PCA_FeatureSelection:
             )
         elif not isinstance(n_components, numbers.Integral):
             raise ValueError(
-                "Expect integer n_components, but get {:.6f}".format(n_components))
+                "Expect integer n_components, but get {:.6f}".format(n_components)
+            )
 
         # center the data
         self._x_mean = np.mean(X, axis=0)
@@ -202,8 +198,7 @@ class PCA_FeatureSelection:
             # their variance is always greater than n_components float
             # passed.
             ratio_cumsum = stable_cumsum(_var_ratio)
-            n_components = np.searchsorted(
-                ratio_cumsum, n_components, side="right") + 1
+            n_components = np.searchsorted(ratio_cumsum, n_components, side="right") + 1
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
         if n_components < min(n, p):
@@ -223,14 +218,12 @@ class PCA_FeatureSelection:
     def _fit_truncated(
         self, X: Union[pd.DataFrame, np.ndarray], n_components: int, solver: str
     ) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-
         n, p = X.shape
 
         self._x_mean = np.mean(X, axis=0)
         X -= self._x_mean
 
         if solver == "truncated":
-
             from scipy.sparse.linalg import svds
 
             np.random.seed(self.seed)
@@ -239,7 +232,6 @@ class PCA_FeatureSelection:
             S = S[::-1]
             U, V = svd_flip(U[:, ::-1], V[::-1])
         elif solver == "randomized":
-
             from sklearn.utils.extmath import randomized_svd
 
             U, S, V = randomized_svd(
@@ -366,7 +358,7 @@ class RBFSampler:
     """
 
     def __init__(
-        self, gamma: float = 1.0, n_components: int = 100, seed: int = 1
+        self, gamma: float = 1.0, n_components: int = 100, seed: int = None
     ) -> None:
         self.gamma = gamma
         self.n_components = n_components
@@ -379,7 +371,6 @@ class RBFSampler:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> RBFSampler:
-
         if isinstance(X, list):
             n_features = len(X[0])
         else:
@@ -388,17 +379,15 @@ class RBFSampler:
         if self.n_components > n_features:
             warnings.warn(
                 "N_components {} is larger than n_features {}, will set to n_features.".format(
-                    self.n_components, n_features))
+                    self.n_components, n_features
+                )
+            )
             self.n_components = n_features
         else:
             self.n_components = self.n_components
 
         if not self.seed:
-            self.seed = np.random.seed(int(time.time()))
-        elif not isinstance(self.seed, int):
-            raise ValueError(
-                "Seed must be integer, receive {}".format(
-                    self.seed))
+            np.random.seed(self.seed)
 
         self._random_weights = np.random.normal(
             0, np.sqrt(2 * self.gamma), size=(n_features, self.n_components)
@@ -414,7 +403,6 @@ class RBFSampler:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         projection = np.dot(X, self._random_weights)
         projection += self._random_offset
         np.cos(projection, projection)

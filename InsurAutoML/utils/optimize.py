@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th May 2023 8:45:01 pm
+Last Modified: Saturday, 27th May 2023 3:53:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1286,7 +1286,7 @@ def get_algo(search_algo: str) -> Callable:
     return algo
 
 
-def set_algo_seed(algo: str, seed: int = 1):
+def set_algo_seed(algo: str, seed: int = None):
     MAPPING = {
         "RandomSearch": "random_state",
         "GridSearch": "random_state",

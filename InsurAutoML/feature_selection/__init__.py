@@ -11,7 +11,7 @@ File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th May 2023 7:06:50 pm
+Last Modified: Saturday, 27th May 2023 9:41:23 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -153,7 +153,7 @@ feature_selections[
     "extra_trees_preproc_for_regression"
 ] = extra_trees_preproc_for_regression
 feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
-feature_selections["polynomial"] = polynomial
+# feature_selections["polynomial"] = polynomial
 feature_selections[
     "select_percentile_classification"
 ] = select_percentile_classification

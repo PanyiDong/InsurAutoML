@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/under_sampling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:09 pm
+Last Modified: Saturday, 27th May 2023 3:48:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -82,7 +82,7 @@ class SimpleRandomUnderSampling:
         imbalance_threshold: float = 0.9,
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
@@ -94,7 +94,6 @@ class SimpleRandomUnderSampling:
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -131,8 +130,9 @@ class SimpleRandomUnderSampling:
     def _fit_transform(
         self,
         X: pd.DataFrame,
-    ) -> pd.DataFrame:  # using random over-sampling to balance the first imbalanced feature
-
+    ) -> (
+        pd.DataFrame
+    ):  # using random over-sampling to balance the first imbalanced feature
         features = list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
@@ -149,10 +149,7 @@ class SimpleRandomUnderSampling:
             X = X.drop(sample.index)
             _seed += 1
             _iter += 1
-        X = sklearn.utils.shuffle(
-            X.reset_index(
-                drop=True)).reset_index(
-            drop=True)
+        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
 
@@ -184,7 +181,7 @@ class TomekLink:
         norm: str = "l2",
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -197,7 +194,6 @@ class TomekLink:
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -292,7 +288,7 @@ class EditedNearestNeighbor:
         norm: str = "l2",
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
         k: int = 3,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
@@ -307,7 +303,6 @@ class EditedNearestNeighbor:
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -329,7 +324,9 @@ class EditedNearestNeighbor:
         if (self.k % 2) == 0:
             warnings.warn(
                 "Criteria of majority better select odd k nearest neighbors, get {}.".format(
-                    self.k))
+                    self.k
+                )
+            )
 
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
@@ -348,7 +345,6 @@ class EditedNearestNeighbor:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
@@ -363,18 +359,17 @@ class EditedNearestNeighbor:
             _majority_index = _majority_class.index
             _sample = X.sample(n=1, random_state=_seed)
             _sample_type = (
-                "majority" if (
-                    _sample.index[0] in _majority_index) else "minority")
+                "majority" if (_sample.index[0] in _majority_index) else "minority"
+            )
             _link_table = LinkTable(_sample, X, self.norm)
             for _link_item in _link_table:
                 _k_nearest = [
                     _link_item.index(item)
-                    for item in sorted(_link_item)[1: (self.k + 1)]
+                    for item in sorted(_link_item)[1 : (self.k + 1)]
                 ]
                 count = 0
                 for _index in _k_nearest:
-                    _class = "majority" if (
-                        _index in _majority_index) else "minority"
+                    _class = "majority" if (_index in _majority_index) else "minority"
                     if _class == _sample_type:
                         count += 1
                 if count < (self.k + 1) / 2:
@@ -383,10 +378,9 @@ class EditedNearestNeighbor:
                     if _sample_type == "majority":
                         X = X.drop(_sample.index).reset_index(drop=True)
                     else:
-                        X = X.drop(
-                            _link_item.index(
-                                sorted(_link_item)[1])).reset_index(
-                            drop=True)
+                        X = X.drop(_link_item.index(sorted(_link_item)[1])).reset_index(
+                            drop=True
+                        )
             _seed += 1
             _iter += 1
 
@@ -425,7 +419,7 @@ class CondensedNearestNeighbor:
         imbalance_threshold: float = 0.9,
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
@@ -437,7 +431,6 @@ class CondensedNearestNeighbor:
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -472,7 +465,6 @@ class CondensedNearestNeighbor:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
         from sklearn.neighbors import KNeighborsClassifier
 
         _imbalanced_feature, _majority = is_imbalance(
@@ -488,22 +480,25 @@ class CondensedNearestNeighbor:
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
             _subset = pd.concat(
-                [_minority_class, _majority_class.sample(
-                    n=1, random_state=_seed)]
+                [_minority_class, _majority_class.sample(n=1, random_state=_seed)]
             ).reset_index(drop=True)
             neigh = KNeighborsClassifier(n_neighbors=1)
             neigh.fit(
                 _subset.loc[:, _subset.columns != _imbalanced_feature],
                 _subset[_imbalanced_feature],
             )
-            y_predict = neigh.predict(X.loc[~X.index.isin(
-                list(_subset.index)), X.columns != _imbalanced_feature])
-            y_true = X.loc[~X.index.isin(
-                list(_subset.index)), X.columns == _imbalanced_feature].values.T[0]
-            _not_matching_index = np.where(
-                (np.array(y_predict) != np.array(y_true)))[0]
-            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]
-                          ).reset_index(drop=True)
+            y_predict = neigh.predict(
+                X.loc[
+                    ~X.index.isin(list(_subset.index)), X.columns != _imbalanced_feature
+                ]
+            )
+            y_true = X.loc[
+                ~X.index.isin(list(_subset.index)), X.columns == _imbalanced_feature
+            ].values.T[0]
+            _not_matching_index = np.where((np.array(y_predict) != np.array(y_true)))[0]
+            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]).reset_index(
+                drop=True
+            )
             _seed += 1
             _iter += 1
 
@@ -538,7 +533,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         norm: str = "l2",
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -551,7 +546,6 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -625,7 +619,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         norm: str = "l2",
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -638,7 +632,6 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:

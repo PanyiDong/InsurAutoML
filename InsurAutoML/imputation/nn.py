@@ -1,17 +1,17 @@
 """
-File Name: _nn.py
+File Name: nn.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/imputation/_nn.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/imputation/nn.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:20:59 pm
+Last Modified: Saturday, 27th May 2023 3:52:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -120,7 +120,7 @@ class GAIN_tf(formatting, MinMaxScale):
         scaling=True,
         progressbar=False,
         deep_copy=False,
-        seed=1,
+        seed: int = None,
     ):
         self.batch_size = batch_size
         self.hint_rate = hint_rate
@@ -140,13 +140,11 @@ class GAIN_tf(formatting, MinMaxScale):
 
     # initialize normal tensor by size
     def normal_initial(self, size):
-
         _dim = size[0]
         return tf.random.normal(shape=size, stddev=1 / tf.sqrt(_dim / 2))
 
     # return random binary array by size
     def binary_sampler(self, p=0.5, size=(1, 1)):
-
         # allows only change row size with (n, )
         # cannot handle (, n)
         try:
@@ -162,7 +160,6 @@ class GAIN_tf(formatting, MinMaxScale):
 
     # return random uniform array by size
     def uniform_sampler(self, low=0, high=1, size=(1, 1)):
-
         # allows only change row size with (n, )
         # cannot handle (, n)
         try:
@@ -177,38 +174,27 @@ class GAIN_tf(formatting, MinMaxScale):
 
     # Generator
     def Generator(self, data, mask):
-
         G_W1, G_W2, G_W3, G_b1, G_b2, G_b3 = self.theta_G
         # concate data with mask
         _input = tf.concat(values=[data, mask], axis=1)
         G_h1 = tf.nn.relu(tf.matmul(_input, G_W1) + G_b1)
         G_h2 = tf.nn.relu(tf.matmul(G_h1, G_W2) + G_b2)
-        G_pro = tf.nn.sigmoid(
-            tf.matmul(
-                G_h2,
-                G_W3) +
-            G_b3)  # MinMax normalization
+        G_pro = tf.nn.sigmoid(tf.matmul(G_h2, G_W3) + G_b3)  # MinMax normalization
 
         return G_pro
 
     # Discriminator
     def Discriminator(self, data, hint):
-
         D_W1, D_W2, D_W3, D_b1, D_b2, D_b3 = self.theta_D
         # concate data with mask
         _input = tf.concat(values=[data, hint], axis=1)
         D_h1 = tf.nn.relu(tf.matmul(_input, D_W1) + D_b1)
         D_h2 = tf.nn.relu(tf.matmul(D_h1, D_W2) + D_b2)
-        D_pro = tf.nn.sigmoid(
-            tf.matmul(
-                D_h2,
-                D_W3) +
-            D_b3)  # MinMax normalization
+        D_pro = tf.nn.sigmoid(tf.matmul(D_h2, D_W3) + D_b3)  # MinMax normalization
 
         return D_pro
 
     def fill(self, X):
-
         _X = X.copy(deep=True)
 
         if _X.isnull().values.any():
@@ -219,7 +205,6 @@ class GAIN_tf(formatting, MinMaxScale):
         return _X
 
     def _fill(self, data):
-
         _data = data.copy(deep=self.deep_copy)
 
         n, p = _data.shape
@@ -244,12 +229,8 @@ class GAIN_tf(formatting, MinMaxScale):
 
         # GAIN architecture
         _X = tf.compat.v1.placeholder(tf.float32, shape=[None, p])  # data
-        _M = tf.compat.v1.placeholder(
-            tf.float32, shape=[
-                None, p])  # mask vector
-        _H = tf.compat.v1.placeholder(
-            tf.float32, shape=[
-                None, p])  # hint vector
+        _M = tf.compat.v1.placeholder(tf.float32, shape=[None, p])  # mask vector
+        _H = tf.compat.v1.placeholder(tf.float32, shape=[None, p])  # hint vector
 
         # Generator Variables
         G_W1 = tf.Variable(self.normal_initial([p * 2, _h_dim]))
@@ -283,8 +264,7 @@ class GAIN_tf(formatting, MinMaxScale):
         _G_loss_tmp = -tf.reduce_mean(
             (1 - _M) * tf.compat.v1.log(_D + 1e-8)
         )  # Generator loss
-        _MSE_loss = tf.reduce_mean(
-            (_M * _X - _M * _G) ** 2) / tf.reduce_mean(_M)
+        _MSE_loss = tf.reduce_mean((_M * _X - _M * _G) ** 2) / tf.reduce_mean(_M)
         _D_loss = _D_loss_tmp
         _G_loss = _G_loss_tmp + self.alpha * _MSE_loss
 
@@ -303,12 +283,9 @@ class GAIN_tf(formatting, MinMaxScale):
 
         # training step
         iterator = (
-            tqdm(
-                range(
-                    self.max_iter)) if self.progressbar else range(
-                self.max_iter))
+            tqdm(range(self.max_iter)) if self.progressbar else range(self.max_iter)
+        )
         for _run in iterator:
-
             batch_index = random_index(
                 self.batch_size, n, seed=_seed
             )  # random sample batch
@@ -317,15 +294,14 @@ class GAIN_tf(formatting, MinMaxScale):
             _Z_mb = self.uniform_sampler(
                 low=0, high=0.01, size=(self.batch_size, p)
             )  # random sample vector
-            _H_mb_1 = self.binary_sampler(
-                p=self.hint_rate, size=(
-                    self.batch_size, p))
+            _H_mb_1 = self.binary_sampler(p=self.hint_rate, size=(self.batch_size, p))
             _H_mb = _M_mb * _H_mb_1  # sample hint vectors
 
             # combine random sample vector with observed data
             _X_mb = _M_mb * _X_mb + (1 - _M_mb) * _Z_mb
-            _, _D_loss_now = sess.run([_D_solver, _D_loss_tmp], feed_dict={
-                _M: _M_mb, _X: _X_mb, _H: _H_mb})
+            _, _D_loss_now = sess.run(
+                [_D_solver, _D_loss_tmp], feed_dict={_M: _M_mb, _X: _X_mb, _H: _H_mb}
+            )
             _, _G_loss_now, _MSE_loss_now = sess.run(
                 [_G_solver, _G_loss_tmp, _MSE_loss],
                 feed_dict={_M: _M_mb, _X: _X_mb, _H: _H_mb},
@@ -409,7 +385,7 @@ class GAIN_torch(formatting, MinMaxScale):
         scaling: bool = True,
         progressbar: bool = False,
         deep_copy: bool = False,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.batch_size = batch_size
         self.hint_rate = hint_rate
@@ -439,12 +415,10 @@ class GAIN_torch(formatting, MinMaxScale):
 
     # get random m integer number in range [0, n - 1]
     def random_index(self, n: int, m: int) -> np.ndarray:
-
         return np.random.permutation(n)[:m]
 
     # initialize Generator/Discriminator variables
     def _initialization(self, p: int, h_dim: int) -> None:
-
         # W with random normal initialization and b with zero initialization
         # initialize Generator variables
         G_W1 = nn.init.normal_(
@@ -483,11 +457,7 @@ class GAIN_torch(formatting, MinMaxScale):
         self.theta_D = [D_W1, D_W2, D_W3, D_b1, D_b2, D_b3]
 
     # Generator network structure
-    def Generator(
-            self,
-            data: torch.Tensor,
-            mask: torch.Tensor) -> torch.Tensor:
-
+    def Generator(self, data: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
         G_W1, G_W2, G_W3, G_b1, G_b2, G_b3 = self.theta_G
         # concate data with mask
         _input = torch.cat(tensors=[data, mask], dim=1)
@@ -500,11 +470,7 @@ class GAIN_torch(formatting, MinMaxScale):
         return G_pro
 
     # Discriminator network structure
-    def Discriminator(
-            self,
-            data: torch.Tensor,
-            hint: torch.Tensor) -> torch.Tensor:
-
+    def Discriminator(self, data: torch.Tensor, hint: torch.Tensor) -> torch.Tensor:
         D_W1, D_W2, D_W3, D_b1, D_b2, D_b3 = self.theta_D
         # concate data with hint matrix
         _input = torch.cat(tensors=[data, hint], dim=1)
@@ -520,7 +486,6 @@ class GAIN_torch(formatting, MinMaxScale):
     def network_loss(
         self, X: torch.Tensor, M: torch.Tensor, H: torch.Tensor
     ) -> torch.Tensor:
-
         _G = self.Generator(X, M)
         _hat_X = X * M + _G * (1 - M)
         _D = self.Discriminator(_hat_X, H)
@@ -536,9 +501,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
         return _G_loss, _D_loss
 
-    def fill(self, X: Union[pd.DataFrame, np.ndarray,
-                            torch.Tensor]) -> pd.DataFrame:
-
+    def fill(self, X: Union[pd.DataFrame, np.ndarray, torch.Tensor]) -> pd.DataFrame:
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
             try:
@@ -556,7 +519,6 @@ class GAIN_torch(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-
         _X = X.copy(deep=self.deep_copy)
 
         n, p = _X.shape  # get shape of dataset
@@ -615,7 +577,9 @@ class GAIN_torch(formatting, MinMaxScale):
                 raise KeyError(
                     'Get unknown optimizer {}, should be one of ["Adam", "SGD", \
                     "Adagrad", "LBFGS", "RMSprop"].'.format(
-                        self.optim))
+                        self.optim
+                    )
+                )
 
             # initialize parameters to device
             self.theta_D = [item.to(device) for item in self.theta_D]
@@ -626,22 +590,18 @@ class GAIN_torch(formatting, MinMaxScale):
 
             # training step
             iterator = (
-                tqdm(
-                    range(
-                        self.max_iter)) if self.progressbar else range(
-                    self.max_iter))
+                tqdm(range(self.max_iter)) if self.progressbar else range(self.max_iter)
+            )
             for _ in iterator:
-
                 # get mini-batch data
                 batch_index = self.random_index(n, self.batch_size)
                 _X_mb = _X[batch_index, :]
                 _M_mb = _M[batch_index, :]  # mini-batch mask matrix
                 # mini-batch random imputation
-                _Z_mb = np.random.uniform(
-                    low=0, high=0.01, size=(
-                        self.batch_size, p))
-                _H_mb_1 = 1 * \
-                    (np.random.uniform(0, 1, size=(self.batch_size, p)) < self.hint_rate)
+                _Z_mb = np.random.uniform(low=0, high=0.01, size=(self.batch_size, p))
+                _H_mb_1 = 1 * (
+                    np.random.uniform(0, 1, size=(self.batch_size, p)) < self.hint_rate
+                )
                 _H_mb = _M_mb * _H_mb_1  # mini-batch hint matrix
 
                 # combine random imputation with data
@@ -668,8 +628,7 @@ class GAIN_torch(formatting, MinMaxScale):
                     # if losses changing not significant,
                     # early stop
                     if (
-                        np.abs(self.losses[-1] -
-                               self.losses[-2]) / self.losses[-2]
+                        np.abs(self.losses[-1] - self.losses[-2]) / self.losses[-2]
                         < self.delta
                     ):
                         # for tqdm, to break, need manual close
@@ -766,9 +725,8 @@ class GAIN(GAIN_tf, GAIN_torch):
         scaling: bool = True,
         progressbar: bool = False,
         deep_copy: bool = False,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
-
         self.batch_size = batch_size
         self.hint_rate = hint_rate
         self.alpha = alpha
@@ -818,9 +776,7 @@ class GAIN(GAIN_tf, GAIN_torch):
                 "No tensorflow or torch installed. This method is not supported."
             )
 
-    def fill(self, X: Union[pd.DataFrame, np.ndarray,
-                            torch.Tensor]) -> pd.DataFrame:
-
+    def fill(self, X: Union[pd.DataFrame, np.ndarray, torch.Tensor]) -> pd.DataFrame:
         self._fitted = True
 
         return self.model.fill(X)

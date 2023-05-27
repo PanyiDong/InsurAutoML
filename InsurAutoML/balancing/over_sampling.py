@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/over_sampling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:15 pm
+Last Modified: Saturday, 27th May 2023 3:47:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -82,7 +82,7 @@ class SimpleRandomOverSampling:
         imbalance_threshold: float = 0.9,
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
@@ -94,7 +94,6 @@ class SimpleRandomOverSampling:
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -130,8 +129,9 @@ class SimpleRandomOverSampling:
 
     def _fit_transform(
         self, X: Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]
-    ) -> pd.DataFrame:  # using random over-sampling to balance the first imbalanced feature
-
+    ) -> (
+        pd.DataFrame
+    ):  # using random over-sampling to balance the first imbalanced feature
         features = list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
@@ -147,10 +147,7 @@ class SimpleRandomOverSampling:
             X = pd.concat([X, _minority_class.sample(n=1, random_state=_seed)])
             _seed += 1
             _iter += 1
-        X = sklearn.utils.shuffle(
-            X.reset_index(
-                drop=True)).reset_index(
-            drop=True)
+        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
 
@@ -188,7 +185,7 @@ class Smote:
         norm: str = "l2",
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
         k: int = 5,
         generation: str = "mean",
     ) -> None:
@@ -205,7 +202,6 @@ class Smote:
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -240,7 +236,6 @@ class Smote:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
@@ -257,7 +252,7 @@ class Smote:
             for _link_item in _link_table:
                 _k_nearest = [
                     _link_item.index(item)
-                    for item in sorted(_link_item)[1: (self.k + 1)]
+                    for item in sorted(_link_item)[1 : (self.k + 1)]
                 ]
                 _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
                 if self.generation == "mean":
@@ -265,8 +260,9 @@ class Smote:
                         [_sample.index[0], X.index[_link]], :
                     ].mean()
                 elif self.generation == "random":
-                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * \
-                        (X.loc[X.index[_link], :] - X.lox[_sample.index, :])
+                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
+                        X.loc[X.index[_link], :] - X.lox[_sample.index, :]
+                    )
                 else:
                     raise ValueError(
                         'Not recognizing generation method! Should be in \

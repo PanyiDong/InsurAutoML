@@ -1,17 +1,17 @@
 """
-File Name: _DL.py
+File Name: DL.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_hpo/_DL.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/hpo/DL.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 7:51:27 pm
+Last Modified: Saturday, 27th May 2023 3:51:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,18 +47,16 @@ class AutoTextClassifier:
 
     def __init__(
         self,
-        seed=1,
+        seed: int = None,
     ):
         self.seed = seed
 
     def fit(self, X, y):
-
         raise NotImplementedError("AutoTextClassifier is not implemented yet!")
 
         return self
 
     def predict(self, X):
-
         raise NotImplementedError("AutoTextClassifier is not implemented yet!")
 
         return self
@@ -72,20 +70,16 @@ class AutoNextWordPrediction:
 
     def __init__(
         self,
-        seed=1,
+        seed: int = None,
     ):
         self.seed = seed
 
     def fit(self, X, y):
-
-        raise NotImplementedError(
-            "AutoNextWordPrediction is not implemented yet!")
+        raise NotImplementedError("AutoNextWordPrediction is not implemented yet!")
 
         return self
 
     def predict(self, X):
-
-        raise NotImplementedError(
-            "AutoNextWordPrediction is not implemented yet!")
+        raise NotImplementedError("AutoNextWordPrediction is not implemented yet!")
 
         return self

@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 9:26:08 pm
+Last Modified: Saturday, 27th May 2023 3:51:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -60,6 +60,7 @@ logger = logging.getLogger(__name__)
 
 # from logging import warning
 
+
 def setup_logger(name, log_file, level=logging.INFO):
     """To setup as many loggers as you want"""
 
@@ -102,7 +103,6 @@ class Pipeline:
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series] = None
     ) -> Pipeline:
-
         # loop all components, make sure they are fitted
         # if they are not fitted, fit them
         if self.encoder is not None:
@@ -147,11 +147,7 @@ class Pipeline:
 
         return self
 
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         if not self._fitted:
             raise ValueError("Pipeline is not fitted!")
 
@@ -170,7 +166,6 @@ class Pipeline:
     def predict_proba(
         self, X: pd.DataFrame
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         if not self._fitted:
             raise ValueError("Pipeline is not fitted!")
 
@@ -223,7 +218,6 @@ class ClassifierEnsemble(formatting):
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> ClassifierEnsemble:
-
         # check for voting type
         if self.voting not in ["hard", "soft"]:
             raise ValueError("voting must be either 'hard' or 'soft'")
@@ -276,7 +270,6 @@ class ClassifierEnsemble(formatting):
         return self
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
-
         if not self._fitted:
             raise ValueError("Ensemble is not fitted!")
 
@@ -375,7 +368,6 @@ class RegressorEnsemble(formatting):
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> RegressorEnsemble:
-
         # check for voting type
         if self.voting in ["mean", "median", "max", "min"]:
             self.voting = self._voting_methods[self.voting]
@@ -434,7 +426,6 @@ class RegressorEnsemble(formatting):
         return self
 
     def predict(self, X: pd.DataFrame) -> pd.DataFrame:
-
         if not self._fitted:
             raise ValueError("Ensemble is not fitted!")
 
@@ -499,7 +490,7 @@ class TabularObjective(tune.Trainable):
         reset_index: bool = True,
         timeout: int = 36,
         _iter: int = 1,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         # assign hyperparameter arguments
         self.encoder = encoder
@@ -527,7 +518,6 @@ class TabularObjective(tune.Trainable):
             self.dict2config(config)
 
     def step(self) -> Dict[str, Any]:
-
         # try:
         #     self.status_dict = self._objective()
         # except:
@@ -559,14 +549,12 @@ class TabularObjective(tune.Trainable):
         return self.status_dict
 
     def reset_config(self, new_config: Dict) -> bool:
-
         self.dict2config(new_config)
 
         return True
 
     # convert dict hyperparameter to actual classes
     def dict2config(self, params: Dict) -> None:
-
         # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
         # select encoder and set hyperparameters
         # make sure only those keys are used
@@ -753,9 +741,7 @@ class TabularObjective(tune.Trainable):
             f.write("Scaling method: {}\n".format(self._scaling))
             f.write("Scaling Hyperparameters:")
             print(self._scaling_hyper, file=f, end="\n\n")
-            f.write(
-                "Feature Selection method: {}\n".format(
-                    self._feature_selection))
+            f.write("Feature Selection method: {}\n".format(self._feature_selection))
             f.write("Feature Selection Hyperparameters:")
             print(self._feature_selection_hyper, file=f, end="\n\n")
             f.write("Model: {}\n".format(self._model))
@@ -791,7 +777,6 @@ class TabularObjective(tune.Trainable):
     def _objective(
         self,
     ) -> Dict[str, Any]:
-
         # set random seed
         set_seed(self.seed)
 
@@ -823,13 +808,14 @@ class TabularObjective(tune.Trainable):
 
                 _obj = max_error
             elif isinstance(self.objective, Callable):
-
                 # if callable, use the callable
                 _obj = self.objective
             else:
                 raise ValueError(
                     'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
-                        self.task_mode, self.objective))
+                        self.task_mode, self.objective
+                    )
+                )
         elif self.task_mode == "classification":
             # evaluation for predictions
             if self.objective == "accuracy":
@@ -853,13 +839,14 @@ class TabularObjective(tune.Trainable):
 
                 _obj = f1_score
             elif isinstance(self.objective, Callable):
-
                 # if callable, use the callable
                 _obj = self.objective
             else:
                 raise ValueError(
                     'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
-                        self.task_mode, self.objective))
+                        self.task_mode, self.objective
+                    )
+                )
 
         if self.validation:
             # only perform train_test_split when validation
@@ -944,23 +931,19 @@ class TabularObjective(tune.Trainable):
             # f:
             with open("objective_process.txt", "w") as f:
                 f.write(
-                    "Feature selection finished, in {} model.".format(
-                        self.task_mode))
+                    "Feature selection finished, in {} model.".format(self.task_mode)
+                )
             with open("time.txt", "a") as f:
-                f.write("Feature selection time: {}\n".format(
-                    end_time - start_time))
+                f.write("Feature selection time: {}\n".format(end_time - start_time))
 
             # fit model
-            if scipy.sparse.issparse(
-                    _X_train_obj):  # check if returns sparse matrix
+            if scipy.sparse.issparse(_X_train_obj):  # check if returns sparse matrix
                 _X_train_obj = _X_train_obj.toarray()
             if scipy.sparse.issparse(_X_test_obj):
                 _X_test_obj = _X_test_obj.toarray()
 
             # store the preprocessed train/test datasets
-            if isinstance(
-                    _X_train_obj,
-                    np.ndarray):  # in case numpy array is returned
+            if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
                 pd.concat(
                     [pd.DataFrame(_X_train_obj), _y_train_obj],
                     axis=1,
@@ -1014,8 +997,7 @@ class TabularObjective(tune.Trainable):
             )
 
             with open("testing_objective.txt", "w") as f:
-                f.write(
-                    "Loss from objective function is: {:.6f}\n".format(_loss))
+                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
                 f.write("Loss is calculate using {}.".format(self.objective))
             self._iter += 1
 
@@ -1109,16 +1091,15 @@ class TabularObjective(tune.Trainable):
             # f:
             with open("objective_process.txt", "w") as f:
                 f.write(
-                    "Feature selection finished, in {} model.".format(
-                        self.task_mode))
+                    "Feature selection finished, in {} model.".format(self.task_mode)
+                )
 
             # fit model
             if scipy.sparse.issparse(_X_obj):  # check if returns sparse matrix
                 _X_obj = _X_obj.toarray()
 
             # store the preprocessed train/test datasets
-            if isinstance(
-                    _X_obj, np.ndarray):  # in case numpy array is returned
+            if isinstance(_X_obj, np.ndarray):  # in case numpy array is returned
                 pd.concat(
                     [pd.DataFrame(_X_obj), _y_obj],
                     axis=1,
@@ -1159,8 +1140,7 @@ class TabularObjective(tune.Trainable):
             # with open(obj_tmp_directory + "/testing_objective.txt", "w") as
             # f:
             with open("testing_objective.txt", "w") as f:
-                f.write(
-                    "Loss from objective function is: {:.6f}\n".format(_loss))
+                f.write("Loss from objective function is: {:.6f}\n".format(_loss))
                 f.write("Loss is calculate using {}.".format(self.objective))
             self._iter += 1
 

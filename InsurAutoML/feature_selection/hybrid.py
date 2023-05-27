@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/feature_selection/hybrid.py
 File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:27 pm
+Last Modified: Saturday, 27th May 2023 3:50:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -93,7 +93,6 @@ class CBFS:
         self._fitted = False
 
     def Empirical_Copula(self, data: pd.DataFrame) -> List[float]:
-
         # make sure it's a dataframe
         if not isinstance(data, pd.DataFrame):
             try:
@@ -105,8 +104,7 @@ class CBFS:
 
         p = []
         for idx in data.index:
-            p.append((data <= data.iloc[idx, :]).all(
-                axis=1).sum() / data.shape[0])
+            p.append((data <= data.iloc[idx, :]).all(axis=1).sum() / data.shape[0])
 
         return p
 
@@ -117,7 +115,6 @@ class CBFS:
         selected_features: List[str],
         unselected_features: List[str],
     ) -> Tuple[float, str]:
-
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
         # concat new test_comb with selected_features
@@ -134,8 +131,7 @@ class CBFS:
                     )
                 # calculate dependency based on empirical copula
                 entropy_dependent = np.sum(
-                    [-item * np.log2(item)
-                     for item in Counter(p_dependent).values()]
+                    [-item * np.log2(item) for item in Counter(p_dependent).values()]
                 )
                 # append test results
                 results.append(entropy_dependent)
@@ -148,13 +144,11 @@ class CBFS:
 
                 # calculate dependency based on empirical copula
                 entropy_dependent = np.sum(
-                    [-item * np.log2(item)
-                     for item in Counter(p_dependent).values()]
+                    [-item * np.log2(item) for item in Counter(p_dependent).values()]
                 )
                 # calculate redundancy based on empirical copula
                 entropy_redundant = np.sum(
-                    [-item * np.log2(item)
-                     for item in Counter(p_redundant).values()]
+                    [-item * np.log2(item) for item in Counter(p_redundant).values()]
                 )
                 # append test results
                 results.append(entropy_dependent - entropy_redundant)
@@ -169,7 +163,6 @@ class CBFS:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> CBFS:
-
         # check if X is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -212,7 +205,6 @@ class CBFS:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         # check if X is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -298,7 +290,7 @@ class GeneticAlgorithm:
         crossover_n: int = None,
         p_mutation: float = 0.001,
         mutation_n: int = None,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_components = n_components
         self.n_prop = n_prop
@@ -331,14 +323,15 @@ class GeneticAlgorithm:
         y: Union[pd.DataFrame, np.ndarray],
         n: int,
     ) -> List[int]:
-
         # randomly select n features from X
         _, p = X.shape
 
         if n > p:
             raise ValueError(
                 "Selected features can not be larger than dataset limit {}, get {}.".format(
-                    p, n))
+                    p, n
+                )
+            )
 
         _index = random_index(n, p)
 
@@ -354,7 +347,6 @@ class GeneticAlgorithm:
         y: Union[pd.DataFrame, np.ndarray],
         n: int,
     ) -> List[int]:
-
         # call Mutual Information from FeatureFilter
         _score = MI(X, y)
 
@@ -373,15 +365,13 @@ class GeneticAlgorithm:
         y: Union[pd.DataFrame, np.ndarray],
         n: int,
     ) -> List[int]:
-
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
         if len(np.unique(y)) == 2:
             _score = t_score(X, y)
         elif len(np.unique(y)) > 2:
             _score = ANOVA(X, y)
         else:
-            raise ValueError(
-                "Only support for more than 2 groups, get only 1 group!")
+            raise ValueError("Only support for more than 2 groups, get only 1 group!")
 
         # select lowest scored features
         _score_sort = np.argsort(_score)
@@ -398,7 +388,6 @@ class GeneticAlgorithm:
         y: Union[pd.DataFrame, np.ndarray],
         n: int,
     ) -> List[int]:
-
         from sklearn.feature_selection import RFE
 
         # make a difference when fitting regression/classification models
@@ -429,7 +418,6 @@ class GeneticAlgorithm:
         y: Union[pd.DataFrame, np.ndarray],
         selection: List[int],
     ) -> float:
-
         if not self.fitness_func:  # fit selected features and calcualte accuracy score
             if self.fitness_fit == "Linear":
                 if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
@@ -486,15 +474,16 @@ class GeneticAlgorithm:
             else:
                 raise ValueError(
                     'Only support ["Linear", "Decision Tree", "Random Forest", "SVM"], get {}'.format(
-                        self.fitness_fit))
+                        self.fitness_fit
+                    )
+                )
 
             # if none of the features are selected, use mean as prediction
             if (np.array(selection) == 0).all():
                 y_pred = [np.mean(y) for _ in range(len(y))]
             # otherwise, use selected features to fit a model and predict
             else:
-                model.fit(X.iloc[:, True_index(selection)
-                                 ].values, y.values.ravel())
+                model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())
                 y_pred = model.predict(X.iloc[:, True_index(selection)])
             _accuracy_score = metric(y, y_pred)
 
@@ -510,7 +499,6 @@ class GeneticAlgorithm:
         y: Union[pd.DataFrame, np.ndarray],
         selection_pool: List[List[int]],
     ) -> List[int]:
-
         n, p = X.shape
 
         # calculate the fitness of all feature selection in the pool
@@ -534,8 +522,7 @@ class GeneticAlgorithm:
             self._fitness *= self._sum_fitness
             for i in range(2 * self.n_pair):
                 self._fitness = np.append(
-                    self._fitness, self._cal_fitness(
-                        X, y, selection_pool[-(i + 1)])
+                    self._fitness, self._cal_fitness(X, y, selection_pool[-(i + 1)])
                 )  # only need to calculate the newly added ones
                 self._sum_fitness += self._fitness[-1]
             # normalize the fitness
@@ -547,8 +534,11 @@ class GeneticAlgorithm:
             # insert into selection_pool (last two), will be the placeholder
             # for offsprings
             for _ in range(2 * self.n_pair):
-                selection_pool.append(selection_pool[np.random.choice(
-                    len(self._fitness), 1, p=self._fitness)[0]])
+                selection_pool.append(
+                    selection_pool[
+                        np.random.choice(len(self._fitness), 1, p=self._fitness)[0]
+                    ]
+                )
 
         # Crossover, generate offsprings
         if (
@@ -563,17 +553,19 @@ class GeneticAlgorithm:
                     if self.crossover_n > p:
                         raise ValueError(
                             "Place of cross points must be smaller than p = {}, get {}.".format(
-                                p, self.crossover_n))
+                                p, self.crossover_n
+                            )
+                        )
                     self.crossover_n == int(self.crossover_n)
 
                 for i in range(self.n_pair):
                     _tmp1 = selection_pool[-(2 * i + 2)]
                     _tmp2 = selection_pool[-(2 * i + 1)]
                     selection_pool[-(2 * i + 2)] = (
-                        _tmp2[: self.crossover_n] + _tmp1[self.crossover_n:]
+                        _tmp2[: self.crossover_n] + _tmp1[self.crossover_n :]
                     )  # exchange first crossover_n bits from parents
                     selection_pool[-(2 * i + 1)] = (
-                        _tmp1[: self.crossover_n] + _tmp2[self.crossover_n:]
+                        _tmp1[: self.crossover_n] + _tmp2[self.crossover_n :]
                     )
 
         # Mutation
@@ -589,7 +581,9 @@ class GeneticAlgorithm:
                     if self.mutation_n > p:
                         raise ValueError(
                             "Number of mutation points must be smaller than p = {}, get {}.".format(
-                                p, self.mutation_n))
+                                p, self.mutation_n
+                            )
+                        )
                     self.mutation_n == int(self.mutation_n)
 
                 _mutation_index = random_index(
@@ -606,8 +600,9 @@ class GeneticAlgorithm:
 
     def _early_stopping(
         self,
-    ) -> bool:  # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
-
+    ) -> (
+        bool
+    ):  # only the difference between the best 10 selection rules are smaller than 0.001 will early stop
         if len(self._fitness) < 10:
             return False
         else:
@@ -626,7 +621,6 @@ class GeneticAlgorithm:
     def fit(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> GeneticAlgorithm:
-
         np.random.seed(self.seed)  # set random seed
 
         # check if X is dataframe
@@ -678,8 +672,7 @@ class GeneticAlgorithm:
             for i in range(
                 self.n_initial
             ):  # get n_initial random feature selection rule
-                self._feature_sel_methods["random_" +
-                                          str(i + 1)] = self._random
+                self._feature_sel_methods["random_" + str(i + 1)] = self._random
         else:
             self.fs_method = (
                 [self.fs_method]
@@ -707,7 +700,6 @@ class GeneticAlgorithm:
     def _fit(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> GeneticAlgorithm:
-
         # generate the feature selection pool using
         _sel_methods = [*self._feature_sel_methods]
         _sel_pool = []  # store all selection rules
@@ -738,7 +730,6 @@ class GeneticAlgorithm:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         # check if X is dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -782,7 +773,7 @@ methods for classification prediction modeling. Expert systems with applications
 #         self,
 #         cv: int = 5,
 #         repeat: int = 20,
-#         seed: int = 1,
+#         seed: int = None,
 #     ) -> None:
 #         self.cv = cv
 #         self.repeat = repeat

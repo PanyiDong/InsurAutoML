@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/mixed_sampling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:18 pm
+Last Modified: Saturday, 27th May 2023 3:47:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -73,7 +73,7 @@ class Smote_TomekLink(Smote, TomekLink):
         max_iter: int = 1000,
         k: int = 5,
         generation: str = "mean",
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -88,7 +88,6 @@ class Smote_TomekLink(Smote, TomekLink):
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -149,7 +148,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         norm: str = "l2",
         all: bool = False,
         max_iter: int = 1000,
-        seed: int = 1,
+        seed: int = None,
         k: int = 5,
         generation: str = "mean",
     ) -> None:
@@ -166,7 +165,6 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hpo/ML.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:34:55 pm
+Last Modified: Saturday, 27th May 2023 3:51:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -200,7 +200,7 @@ class AutoTabularRegressor(AutoTabularBase):
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -274,7 +274,6 @@ class AutoTabularRegressor(AutoTabularBase):
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> AutoTabularRegressor:
-
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
@@ -285,8 +284,11 @@ class AutoTabularRegressor(AutoTabularBase):
 
         # setup up logger
         if not hasattr(self, "_logger"):
-            self._logger = setup_logger(__name__, os.path.join(
-                self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
+            self._logger = setup_logger(
+                __name__,
+                os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+                level=logging.INFO,
+            )
 
         super().fit(X, y)
 
@@ -294,11 +296,7 @@ class AutoTabularRegressor(AutoTabularBase):
 
         return self
 
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         return super().predict(X)
 
 
@@ -450,7 +448,7 @@ class AutoTabularClassifier(AutoTabularBase):
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -524,7 +522,6 @@ class AutoTabularClassifier(AutoTabularBase):
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> AutoTabularClassifier:
-
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
@@ -535,8 +532,11 @@ class AutoTabularClassifier(AutoTabularBase):
 
         # setup up logger
         if not hasattr(self, "_logger"):
-            self._logger = setup_logger(__name__, os.path.join(
-                self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
+            self._logger = setup_logger(
+                __name__,
+                os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+                level=logging.INFO,
+            )
 
         super().fit(X, y)
 
@@ -544,11 +544,7 @@ class AutoTabularClassifier(AutoTabularBase):
 
         return self
 
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         return super().predict(X)
 
 
@@ -705,7 +701,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -741,12 +737,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit(self,
-            X: pd.DataFrame,
-            y: Union[pd.DataFrame,
-                     pd.Series,
-                     np.ndarray] = None) -> AutoTabular:
-
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
+    ) -> AutoTabular:
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
@@ -756,8 +749,11 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
         # setup up logger
-        self._logger = setup_logger(__name__, os.path.join(
-            self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
+        self._logger = setup_logger(
+            __name__,
+            os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+            level=logging.INFO,
+        )
 
         if (
             isinstance(y, pd.DataFrame)
@@ -768,9 +764,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         elif not y:
             self._type = "Unsupervised"
 
-        if self._type in [
-            "binary",
-                "multiclass"]:  # assign classification tasks
+        if self._type in ["binary", "multiclass"]:  # assign classification tasks
             self.model = AutoTabularClassifier(
                 n_estimators=self.n_estimators,
                 ensemble_strategy=self.ensemble_strategy,
@@ -840,7 +834,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
-                    self._type))
+                    self._type
+                )
+            )
 
         self.model.fit(X, y)
 
@@ -848,11 +844,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         return self
 
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         if self.model:
             return self.model.predict(X)
         else:

@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th May 2023 10:26:45 pm
+Last Modified: Saturday, 27th May 2023 3:50:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -276,7 +276,7 @@ class AutoTabularBase:
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.task_mode = task_mode
         self.n_estimators = n_estimators

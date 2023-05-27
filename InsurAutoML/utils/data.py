@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th May 2023 10:38:01 pm
+Last Modified: Saturday, 27th May 2023 3:45:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,7 +69,7 @@ def str2dict(item: str) -> dict:
 
 # Train test split using test set percentage
 def train_test_split(
-    X: Any, y: Any, test_perc: float = 0.15, seed: int = 1
+    X: Any, y: Any, test_perc: float = 0.15, seed: int = None
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     return order: X_train, X_test, y_train, y_test
