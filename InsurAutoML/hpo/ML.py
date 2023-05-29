@@ -186,6 +186,7 @@ class AutoTabularRegressor(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
+        exclude: Dict = {},
         validation: bool = True,
         valid_size: float = 0.15,
         objective: Union[str, Callable] = "MSE",
@@ -218,6 +219,7 @@ class AutoTabularRegressor(AutoTabularBase):
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -254,6 +256,7 @@ class AutoTabularRegressor(AutoTabularBase):
             scaling=self.scaling,
             feature_selection=self.feature_selection,
             models=self.models,
+            exclude=self.exclude,
             validation=self.validation,
             valid_size=self.valid_size,
             objective=self.objective,
@@ -434,6 +437,7 @@ class AutoTabularClassifier(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
+        exclude: Dict = {},
         validation: bool = True,
         valid_size: float = 0.15,
         objective: Union[str, Callable] = "accuracy",
@@ -466,6 +470,7 @@ class AutoTabularClassifier(AutoTabularBase):
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -502,6 +507,7 @@ class AutoTabularClassifier(AutoTabularBase):
             scaling=self.scaling,
             feature_selection=self.feature_selection,
             models=self.models,
+            exclude=self.exclude,
             validation=self.validation,
             valid_size=self.valid_size,
             objective=self.objective,
@@ -687,6 +693,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
+        exclude: Dict = {},
         validation: bool = True,
         valid_size: float = 0.15,
         objective: Union[str, Callable] = None,
@@ -719,6 +726,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -782,6 +790,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 scaling=self.scaling,
                 feature_selection=self.feature_selection,
                 models=self.models,
+                exclude=self.exclude,
                 validation=self.validation,
                 valid_size=self.valid_size,
                 objective="accuracy" if not self.objective else self.objective,
@@ -816,6 +825,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 scaling=self.scaling,
                 feature_selection=self.feature_selection,
                 models=self.models,
+                exclude=self.exclude,             
                 validation=self.validation,
                 valid_size=self.valid_size,
                 objective="MSE" if not self.objective else self.objective,

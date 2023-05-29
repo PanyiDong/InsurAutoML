@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:47:52 pm
+Last Modified: Sunday, 28th May 2023 3:48:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -87,7 +87,7 @@ class SimpleRandomOverSampling:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
@@ -132,21 +132,21 @@ class SimpleRandomOverSampling:
     ) -> (
         pd.DataFrame
     ):  # using random over-sampling to balance the first imbalanced feature
-        features = list(X.columns)
+        n, features = len(X), list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
-        _seed = self.seed
-        _iter = 0
+        _minority_class = X.loc[X[_imbalanced_feature] != _majority]
+        
+        # calculate the number of samples needed to be added
+        n_majority = n - len(_minority_class)
+        n_minor_needed = max(1, int(n_majority / self.imbalance_threshold - n))
 
-        while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
-            and _iter <= self.max_iter
-        ):
-            _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-            X = pd.concat([X, _minority_class.sample(n=1, random_state=_seed)])
-            _seed += 1
-            _iter += 1
+        # randomly draw samples from minority class and replicate the sample
+        X = pd.concat([
+            X, _minority_class.sample(n=n_minor_needed, random_state=self.seed, replace=True)
+        ])
+        # shuffle the data
         X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
@@ -193,7 +193,7 @@ class Smote:
         self.norm = norm
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
         self.k = k
         self.generation = generation
 
@@ -236,41 +236,38 @@ class Smote:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        n, features = len(X), list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
-        _seed = self.seed
-        _iter = 0
+        _minority_class = X.loc[X[_imbalanced_feature] != _majority]
+        
+        # calculate the number of samples needed to be added
+        n_majority = n - len(_minority_class)
+        n_minor_needed = max(1, int(n_majority / self.imbalance_threshold - n))
 
-        while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
-            and _iter <= self.max_iter
-        ):
-            _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-            _sample = _minority_class.sample(n=1, random_state=_seed)
-            _link_table = LinkTable(_sample, X, self.norm)
-            for _link_item in _link_table:
-                _k_nearest = [
-                    _link_item.index(item)
-                    for item in sorted(_link_item)[1 : (self.k + 1)]
-                ]
-                _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
-                if self.generation == "mean":
-                    X.loc[len(X), :] = X.loc[
-                        [_sample.index[0], X.index[_link]], :
-                    ].mean()
-                elif self.generation == "random":
-                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
-                        X.loc[X.index[_link], :] - X.lox[_sample.index, :]
+        _sample = _minority_class.sample(n=n_minor_needed, random_state=self.seed, replace=True)
+        _link_table = LinkTable(_sample, X, self.norm)
+        for _link_item in _link_table:
+            _k_nearest = [
+                _link_item.index(item)
+                for item in sorted(_link_item)[1 : (self.k + 1)]
+            ]
+            _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
+            if self.generation == "mean":
+                X.loc[len(X), :] = X.loc[
+                    [_sample.index[0], X.index[_link]], :
+                ].mean()
+            elif self.generation == "random":
+                X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
+                    X.loc[X.index[_link], :] - X.lox[_sample.index, :]
+                )
+            else:
+                raise ValueError(
+                    'Not recognizing generation method! Should be in \
+                    ["mean", "random"], get {}'.format(
+                        self.generation
                     )
-                else:
-                    raise ValueError(
-                        'Not recognizing generation method! Should be in \
-                        ["mean", "random"], get {}'.format(
-                            self.generation
-                        )
-                    )
-            _seed += 1
-            _iter += 1
+                )
 
         return X

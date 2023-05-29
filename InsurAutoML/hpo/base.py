@@ -262,6 +262,7 @@ class AutoTabularBase:
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
+        exclude: Dict = {},
         validation: bool = True,
         valid_size: float = 0.15,
         objective: Union[str, Callable] = "accuracy",
@@ -295,6 +296,7 @@ class AutoTabularBase:
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -359,6 +361,11 @@ class AutoTabularBase:
                     #     )
                     # )
                 encoder[_encoder] = self._all_encoders[_encoder]
+                
+        # exclude unwanted encoders if specified
+        if "encoder" in self.exclude.keys():
+            for _encoder in self.exclude["encoder"]:
+                encoder.pop(_encoder, None)
 
         # Imputer: fill missing values
         # all imputers available
@@ -404,6 +411,11 @@ class AutoTabularBase:
                             )
                         )
                     imputer[_imputer] = self._all_imputers[_imputer]
+                    
+        # exclude unwanted imputers if specified
+        if "imputer" in self.exclude.keys():
+            for _imputer in self.exclude["imputer"]:
+                imputer.pop(_imputer, None)
 
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
@@ -434,6 +446,11 @@ class AutoTabularBase:
                         )
                     )
                 balancing[_balancing] = self._all_balancings[_balancing]
+                
+        # exclude unwanted balancings if specified
+        if "balancing" in self.exclude.keys():
+            for _balancing in self.exclude["balancing"]:
+                balancing.pop(_balancing, None)
 
         # Scaling
         # all scalings available
@@ -464,6 +481,11 @@ class AutoTabularBase:
                         )
                     )
                 scaling[_scaling] = self._all_scalings[_scaling]
+                
+        # exclude unwanted scalings if specified
+        if "scaling" in self.exclude.keys():
+            for _scaling in self.exclude["scaling"]:
+                scaling.pop(_scaling, None)
 
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
@@ -516,6 +538,11 @@ class AutoTabularBase:
                 feature_selection[_feature_selection] = self._all_feature_selection[
                     _feature_selection
                 ]
+                
+        # exclude unwanted feature selections if specified
+        if "feature_selection" in self.exclude.keys():
+            for _feature_selection in self.exclude["feature_selection"]:
+                feature_selection.pop(_feature_selection, None)
 
         # Model selection/Hyperparameter optimization
         # using Bayesian Optimization
@@ -575,6 +602,11 @@ class AutoTabularBase:
                         )
                     )
                 models[_model] = self._all_models[_model]
+                
+        # exclude unwanted models if specified
+        if "model" in self.exclude.keys():
+            for _model in self.exclude["model"]:
+                models.pop(_model, None)
 
         # # initialize model hyperparameter space
         # _all_models_hyperparameters = copy.deepcopy(self._all_models_hyperparameters)

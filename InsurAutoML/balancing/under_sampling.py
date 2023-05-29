@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:48:04 pm
+Last Modified: Saturday, 27th May 2023 3:57:55 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -87,7 +87,7 @@ class SimpleRandomUnderSampling:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
@@ -133,22 +133,22 @@ class SimpleRandomUnderSampling:
     ) -> (
         pd.DataFrame
     ):  # using random over-sampling to balance the first imbalanced feature
-        features = list(X.columns)
+        n, features = len(X), list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
-        _seed = self.seed
-        _iter = 0
-
-        while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
-            and _iter <= self.max_iter
-        ):
-            _majority_class = X.loc[X[_imbalanced_feature] == _majority]
-            sample = _majority_class.sample(n=1, random_state=_seed)
-            X = X.drop(sample.index)
-            _seed += 1
-            _iter += 1
+        _majority_class = X.loc[X[_imbalanced_feature] == _majority]
+        
+        # calculate the number of samples needed to be removed
+        n_minority = n - len(_majority_class)
+        n_majority_removed = max(1, int(n - n_minority / self.imbalance_threshold))
+            
+        # randomly remove samples from majority class
+        sample = _majority_class.sample(
+            n=n_majority_removed, random_state=self.seed, replace=True
+        )
+        X = X.drop(sample.index)
+        # shuffle the data
         X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
@@ -187,7 +187,7 @@ class TomekLink:
         self.norm = norm
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
@@ -240,7 +240,7 @@ class TomekLink:
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _minority_sample = _minority_class.sample(
-                n=max(int(len(_minority_class) / 100), 1), random_state=_seed
+                n=max(int(len(_minority_class) / 100), 1), random_state=_seed, replace=True
             )
             _link_table = LinkTable(_minority_sample, X, self.norm)
             drop_index = []
@@ -295,7 +295,7 @@ class EditedNearestNeighbor:
         self.norm = norm
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
         self.k = k
 
         self._fitted = False  # whether the model has been fitted
@@ -424,7 +424,7 @@ class CondensedNearestNeighbor:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
@@ -539,7 +539,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         self.norm = norm
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
@@ -625,7 +625,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         self.norm = norm
         self.all = all
         self.max_iter = max_iter
-        self.seed = seed
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 

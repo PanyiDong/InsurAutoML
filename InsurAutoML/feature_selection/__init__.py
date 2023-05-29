@@ -91,8 +91,8 @@ feature_selections = {
     # "PCA_FeatureSelection": PCA_FeatureSelection,
     "RBFSampler": RBFSampler,
     "FeatureFilter": FeatureFilter,
-    # "ASFFS": ASFFS,
-    # "GeneticAlgorithm": GeneticAlgorithm,
+    "ASFFS": ASFFS,
+    "GeneticAlgorithm": GeneticAlgorithm,
     # "ExhaustiveFS": ExhaustiveFS, # exhaustive search is not practical, takes too long
     # TODO: add SFS back when multiclass/binary identification is done in hpo/base.py
     # "SFS": SFS,
