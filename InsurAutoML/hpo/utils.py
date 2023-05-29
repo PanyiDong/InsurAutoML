@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:51:23 pm
+Last Modified: Sunday, 28th May 2023 10:52:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -66,7 +66,7 @@ def setup_logger(name, log_file, level=logging.INFO):
 
     formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
 
-    handler = logging.FileHandler(log_file)
+    handler = logging.FileHandler(log_file, mode="a")
     handler.setFormatter(formatter)
 
     logger = logging.getLogger(name)

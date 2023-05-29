@@ -240,7 +240,7 @@ class TomekLink:
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _minority_sample = _minority_class.sample(
-                n=max(int(len(_minority_class) / 100), 1), random_state=_seed, replace=True
+                n=max(int(len(_minority_class) / 20), 1), random_state=_seed, replace=True
             )
             _link_table = LinkTable(_minority_sample, X, self.norm)
             drop_index = []

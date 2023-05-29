@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:50:40 pm
+Last Modified: Sunday, 28th May 2023 11:08:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -361,7 +361,7 @@ class AutoTabularBase:
                     #     )
                     # )
                 encoder[_encoder] = self._all_encoders[_encoder]
-                
+
         # exclude unwanted encoders if specified
         if "encoder" in self.exclude.keys():
             for _encoder in self.exclude["encoder"]:
@@ -411,7 +411,7 @@ class AutoTabularBase:
                             )
                         )
                     imputer[_imputer] = self._all_imputers[_imputer]
-                    
+
         # exclude unwanted imputers if specified
         if "imputer" in self.exclude.keys():
             for _imputer in self.exclude["imputer"]:
@@ -446,7 +446,7 @@ class AutoTabularBase:
                         )
                     )
                 balancing[_balancing] = self._all_balancings[_balancing]
-                
+
         # exclude unwanted balancings if specified
         if "balancing" in self.exclude.keys():
             for _balancing in self.exclude["balancing"]:
@@ -481,7 +481,7 @@ class AutoTabularBase:
                         )
                     )
                 scaling[_scaling] = self._all_scalings[_scaling]
-                
+
         # exclude unwanted scalings if specified
         if "scaling" in self.exclude.keys():
             for _scaling in self.exclude["scaling"]:
@@ -538,7 +538,7 @@ class AutoTabularBase:
                 feature_selection[_feature_selection] = self._all_feature_selection[
                     _feature_selection
                 ]
-                
+
         # exclude unwanted feature selections if specified
         if "feature_selection" in self.exclude.keys():
             for _feature_selection in self.exclude["feature_selection"]:
@@ -602,7 +602,7 @@ class AutoTabularBase:
                         )
                     )
                 models[_model] = self._all_models[_model]
-                
+
         # exclude unwanted models if specified
         if "model" in self.exclude.keys():
             for _model in self.exclude["model"]:
@@ -1059,19 +1059,22 @@ class AutoTabularBase:
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> AutoTabularBase:
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
+        # temp directory already initialized at higher level
+        # # initialize temp directory
+        # # check if temp directory exists, if exists, empty it
+        # if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
+        #     shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+        # if not os.path.isdir(self.temp_directory):
+        #     os.makedirs(self.temp_directory)
+        # os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
         # setup up logger
-        if not hasattr(self, "_logger"):
+        if not hasattr(self, "self._logger"):
             self._logger = setup_logger(
                 __name__,
-                os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+                os.path.join(
+                    os.getcwd(), self.temp_directory, self.model_name, "logging.conf"
+                ),
                 level=logging.INFO,
             )
 
@@ -1102,7 +1105,7 @@ class AutoTabularBase:
         # check if there's unsupported data type
         # if datetime ,recommend to remove
         if ("Datetime", "") in self.metadata.keys():
-            warnings.warn(
+            self._logger.warn(
                 "Found datatime data type columns {}, it's better to remove those columns".format(
                     *self.metadata[("Datetime", "")]
                 )
@@ -1133,7 +1136,7 @@ class AutoTabularBase:
 
         # print warning if gpu available but not used
         if device_count > 0 and not self.use_gpu:
-            warnings.warn(
+            self._logger.warn(
                 "You have {} GPU(s) available, but you have not set use_gpu to True, \
                 which may drastically increase time to train neural networks.".format(
                     device_count
@@ -1155,7 +1158,7 @@ class AutoTabularBase:
         else:
             # raise warnings if n_estimators set larger than max_evals
             if self.max_evals < self.n_estimators:
-                warnings.warn(
+                self._logger.warn(
                     "n_estimators {} larger than max_evals {}, will be set to {}.".format(
                         self.n_estimators, self.max_evals, self.max_evals
                     )
@@ -1164,7 +1167,7 @@ class AutoTabularBase:
 
         # at least one constraint of time/evaluations should be provided
         if self.timeout == -1 and self.max_evals == -1:
-            warnings.warn(
+            self._logger.warn(
                 "None of time or evaluation constraint is provided, will set time limit to 1 hour."
             )
             self.timeout = 3600
@@ -1174,7 +1177,7 @@ class AutoTabularBase:
             self.timeout = MAX_TIME
         else:
             if self.timeout > MAX_TIME:
-                warnings.warn(
+                self._logger.warn(
                     "Time budget is too long, will set time limit to {} seconds.".format(
                         MAX_TIME
                     )
@@ -1329,6 +1332,14 @@ class AutoTabularBase:
             self._iter += 1
             return trialname
 
+        # log starting of the experiment
+        self._logger.info(
+            "[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                self.model_name,
+            )
+        )
+
         # set ray status
         rayStatus = ray_status(
             cpu_threads=self.cpu_threads,
@@ -1376,13 +1387,6 @@ class AutoTabularBase:
             # subtrial directory
             self.sub_directory = self.temp_directory
 
-            self._logger.info(
-                "[INFO] {}  Experiment: {}. Status: Start AutoTabular training.".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
-
             # optimization process
             # partially activated objective function
             # special treatment for optuna, embed search space in search
@@ -1417,7 +1421,7 @@ class AutoTabularBase:
                     verbose=self.verbose,
                     trial_dirname_creator=trial_str_creator,
                     local_dir=self.sub_directory,
-                    log_to_file=True,
+                    log_to_file=("stdout.log", "stderr.log"),
                 )
             else:
                 fit_analysis = tune.run(
@@ -1444,7 +1448,7 @@ class AutoTabularBase:
                     verbose=self.verbose,
                     trial_dirname_creator=trial_str_creator,
                     local_dir=self.sub_directory,
-                    log_to_file=True,
+                    log_to_file=("stdout.log", "stderr.log"),
                 )
 
             # shut down ray
@@ -1538,7 +1542,7 @@ class AutoTabularBase:
                     verbose=self.verbose,
                     trial_dirname_creator=trial_str_creator,
                     local_dir=self.sub_directory,
-                    log_to_file=True,
+                    log_to_file=("stdout.log", "stderr.log"),
                 )
             else:
                 fit_analysis = tune.run(
@@ -1565,7 +1569,7 @@ class AutoTabularBase:
                     verbose=self.verbose,
                     trial_dirname_creator=trial_str_creator,
                     local_dir=self.sub_directory,
-                    log_to_file=True,
+                    log_to_file=("stdout.log", "stderr.log"),
                 )
 
             # shut down ray
@@ -1696,7 +1700,7 @@ class AutoTabularBase:
                         verbose=self.verbose,
                         trial_dirname_creator=trial_str_creator,
                         local_dir=self.sub_directory,
-                        log_to_file=True,
+                        log_to_file=("stdout.log", "stderr.log"),
                     )
                 else:
                     fit_analysis = tune.run(
@@ -1728,7 +1732,7 @@ class AutoTabularBase:
                         verbose=self.verbose,
                         trial_dirname_creator=trial_str_creator,
                         local_dir=self.sub_directory,
-                        log_to_file=True,
+                        log_to_file=("stdout.log", "stderr.log"),
                     )
 
                 # shut down ray
@@ -1848,7 +1852,7 @@ class AutoTabularBase:
                         verbose=self.verbose,
                         trial_dirname_creator=trial_str_creator,
                         local_dir=self.sub_directory,
-                        log_to_file=True,
+                        log_to_file=("stdout.log", "stderr.log"),
                     )
                 else:
                     fit_analysis = tune.run(
@@ -1880,7 +1884,7 @@ class AutoTabularBase:
                         verbose=self.verbose,
                         trial_dirname_creator=trial_str_creator,
                         local_dir=self.sub_directory,
-                        log_to_file=True,
+                        log_to_file=("stdout.log", "stderr.log"),
                     )
 
                 # shut down ray

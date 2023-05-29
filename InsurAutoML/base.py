@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 11:04:04 am
+Last Modified: Sunday, 28th May 2023 10:17:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -69,6 +69,7 @@ def set_seed(seed: int = 1):
     np.random.seed(seed)
     if torch_spec is not None:
         import torch
+
         torch.manual_seed(seed)
         torch.cuda.manual_seed_all(seed)
 
@@ -80,27 +81,22 @@ class no_processing:
     """
 
     def __init__(self):
-
         self._fitted = False  # record whether the method has been fitted
 
     def fit(self, X, y=None):
-
         self._fitted = True
 
         return self
 
     def fill(self, X):
-
         self._fitted = True
 
         return X
 
     def transform(self, X):
-
         return X
 
     def fit_transform(self, X, y=None):
-
         self._fitted = True
 
         if isinstance(y, pd.DataFrame):
@@ -118,7 +114,6 @@ class no_processing:
             return X, y
 
     def inverse_transform(self, X):
-
         self._fitted = False
 
         return X
@@ -143,7 +138,6 @@ class load_data:
         self.database = {}
 
     def load(self, path="", filename=None):
-
         if isinstance(path, list):  # add / at the end of path
             path = [
                 (_path if (_path == "" or _path[-1] == "/") else _path + "/")
@@ -157,7 +151,6 @@ class load_data:
         return self.database
 
     def _main(self, path, filename):
-
         # initialize path sets
         _csv_files = []
         _data_files = []
@@ -216,8 +209,7 @@ class load_data:
                     # )
                     # use os.path.split for unify path separator
                     _filename = os.path.split(_data_path)[-1]
-                    self.database[_filename.split(
-                        ".")[0]] = pd.read_csv(_data_path)
+                    self.database[_filename.split(".")[0]] = pd.read_csv(_data_path)
 
         # load .rda/.rdata files in the path
         # will not read any files if rpy2 is not available
@@ -247,8 +239,7 @@ class load_data:
                     elif isinstance(filename, list):
                         _rdata_files = []
                         for _filename in filename:
-                            _rdata_files += glob.glob(path +
-                                                      _filename + ".rdata")
+                            _rdata_files += glob.glob(path + _filename + ".rdata")
                     else:
                         _rdata_files = glob.glob(path + filename + ".rdata")
 

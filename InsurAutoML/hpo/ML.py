@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:51:16 pm
+Last Modified: Sunday, 28th May 2023 11:06:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -289,7 +289,9 @@ class AutoTabularRegressor(AutoTabularBase):
         if not hasattr(self, "_logger"):
             self._logger = setup_logger(
                 __name__,
-                os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+                os.path.join(
+                    os.getcwd(), self.temp_directory, self.model_name, "logging.conf"
+                ),
                 level=logging.INFO,
             )
 
@@ -540,7 +542,9 @@ class AutoTabularClassifier(AutoTabularBase):
         if not hasattr(self, "_logger"):
             self._logger = setup_logger(
                 __name__,
-                os.path.join(self.temp_directory, self.model_name, "logging.conf"),
+                os.path.join(
+                    os.getcwd(), self.temp_directory, self.model_name, "logging.conf"
+                ),
                 level=logging.INFO,
             )
 
@@ -756,13 +760,6 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             os.makedirs(self.temp_directory)
         os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
-        # setup up logger
-        self._logger = setup_logger(
-            __name__,
-            os.path.join(self.temp_directory, self.model_name, "logging.conf"),
-            level=logging.INFO,
-        )
-
         if (
             isinstance(y, pd.DataFrame)
             or isinstance(y, pd.Series)
@@ -825,7 +822,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 scaling=self.scaling,
                 feature_selection=self.feature_selection,
                 models=self.models,
-                exclude=self.exclude,             
+                exclude=self.exclude,
                 validation=self.validation,
                 valid_size=self.valid_size,
                 objective="MSE" if not self.objective else self.objective,
