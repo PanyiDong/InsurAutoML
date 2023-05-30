@@ -46,6 +46,8 @@ import pandas as pd
 import xgboost as xgb
 from xgboost import XGBClassifier, XGBRegressor
 
+from .base import BaseModel
+
 ##########################################################################
 # XGBoost support
 
@@ -141,7 +143,7 @@ class XGBoost_Base:
         return self.model.predict_proba(X)
 
 
-class XGBoost_Classifier(XGBoost_Base):
+class XGBoost_Classifier(XGBoost_Base, BaseModel):
 
     """
     XGBoost Classification model
@@ -199,7 +201,7 @@ class XGBoost_Classifier(XGBoost_Base):
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> XGBoost_Classifier:
 
-        super().fit(X, y)
+        super(XGBoost_Classifier, self).fit(X, y)
 
         self._fitted = True
 
@@ -209,16 +211,16 @@ class XGBoost_Classifier(XGBoost_Base):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        return super().predict(X)
+        return super(XGBoost_Classifier, self).predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        return super().predict_proba(X)
+        return super(XGBoost_Classifier, self).predict_proba(X)
 
 
-class XGBoost_Regressor(XGBoost_Base):
+class XGBoost_Regressor(XGBoost_Base, BaseModel):
 
     """
     XGBoost Regression model
@@ -276,7 +278,7 @@ class XGBoost_Regressor(XGBoost_Base):
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
     ) -> XGBoost_Regressor:
 
-        super().fit(X, y)
+        super(XGBoost_Regressor, self).fit(X, y)
 
         self._fitted = True
 
@@ -286,7 +288,7 @@ class XGBoost_Regressor(XGBoost_Base):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
 
-        return super().predict(X)
+        return super(XGBoost_Regressor, self).predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]

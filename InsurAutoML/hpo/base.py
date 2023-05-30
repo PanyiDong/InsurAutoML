@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th May 2023 11:08:54 pm
+Last Modified: Monday, 29th May 2023 12:57:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -190,6 +190,10 @@ class AutoTabularBase:
             "KNearestNeighborsRegressor", "LibLinear_SVR", "LibSVM_SVR",
             "MLPRegressor", "RandomForest", "SGD")
     'auto' will select all default models, or use a list to select
+
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
 
@@ -1013,10 +1017,7 @@ class AutoTabularBase:
             # find the exact path
             if iter is None:
                 _path = find_exact_path(
-                    os.path.join(
-                        self.sub_directory,
-                        self.model_name,
-                    ),
+                    os.path.join(self.sub_directory, self.model_name),
                     "id_" + trial_id,
                 )
                 _path = os.path.join(_path, self.model_name)
@@ -1056,9 +1057,7 @@ class AutoTabularBase:
                 strategy=self.ensemble_strategy,
             )
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> AutoTabularBase:
+    def _init_fit(self) -> None:
         # temp directory already initialized at higher level
         # # initialize temp directory
         # # check if temp directory exists, if exists, empty it
@@ -1087,44 +1086,6 @@ class AutoTabularBase:
         if self.ignore_warning:  # ignore all warnings to generate clearer outputs
             warnings.filterwarnings("ignore")
 
-        # convert to dataframe
-        if not isinstance(X, pd.DataFrame):
-            try:
-                X = pd.DataFrame(X)
-            except BaseException:
-                raise TypeError("Cannot convert X to dataframe, get {}".format(type(X)))
-        if not isinstance(y, pd.DataFrame):
-            try:
-                y = pd.DataFrame(y)
-            except BaseException:
-                raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
-
-        # get data metadata
-        if not hasattr(self, "metadata"):
-            self.metadata = MetaData(X).metadata
-        # check if there's unsupported data type
-        # if datetime ,recommend to remove
-        if ("Datetime", "") in self.metadata.keys():
-            self._logger.warn(
-                "Found datatime data type columns {}, it's better to remove those columns".format(
-                    *self.metadata[("Datetime", "")]
-                )
-            )
-        # TODO: when NLP and Image supported, redirect to corresponding model
-        if ("Object", "Text") in self.metadata.keys():
-            raise NotImplementedError("Text data type is not supported yet.")
-        if ("Path", "") in self.metadata.keys():
-            raise NotImplementedError("Image data type is not supported yet.")
-
-        # get features and response names
-        if isinstance(X, pd.DataFrame):  # expect multiple features
-            self.features = list(X.columns)
-
-        if isinstance(y, pd.DataFrame):  # for the case of dataframe
-            self.response = list(y.columns)
-        elif isinstance(y, pd.Series):  # for the case of series
-            self.response = list(y.name)
-
         # get device info
         self.cpu_threads = (
             os.cpu_count() if self.cpu_threads is None else self.cpu_threads
@@ -1136,7 +1097,7 @@ class AutoTabularBase:
 
         # print warning if gpu available but not used
         if device_count > 0 and not self.use_gpu:
-            self._logger.warn(
+            self._logger.warning(
                 "You have {} GPU(s) available, but you have not set use_gpu to True, \
                 which may drastically increase time to train neural networks.".format(
                     device_count
@@ -1158,7 +1119,7 @@ class AutoTabularBase:
         else:
             # raise warnings if n_estimators set larger than max_evals
             if self.max_evals < self.n_estimators:
-                self._logger.warn(
+                self._logger.warning(
                     "n_estimators {} larger than max_evals {}, will be set to {}.".format(
                         self.n_estimators, self.max_evals, self.max_evals
                     )
@@ -1167,7 +1128,7 @@ class AutoTabularBase:
 
         # at least one constraint of time/evaluations should be provided
         if self.timeout == -1 and self.max_evals == -1:
-            self._logger.warn(
+            self._logger.warning(
                 "None of time or evaluation constraint is provided, will set time limit to 1 hour."
             )
             self.timeout = 3600
@@ -1177,7 +1138,7 @@ class AutoTabularBase:
             self.timeout = MAX_TIME
         else:
             if self.timeout > MAX_TIME:
-                self._logger.warn(
+                self._logger.warning(
                     "Time budget is too long, will set time limit to {} seconds.".format(
                         MAX_TIME
                     )
@@ -1202,6 +1163,69 @@ class AutoTabularBase:
                     self.progress_reporter
                 )
             )
+
+        # get maximum allowed errors
+        self.max_error = min(
+            MAX_ERROR_TRIALOUT, int(self.max_evals * self.allow_error_prop)
+        )
+
+        # load dict settings for search_algo and search_scheduler
+        self.search_algo_settings = str2dict(self.search_algo_settings)
+        self.search_scheduler_settings = str2dict(self.search_scheduler_settings)
+
+        # special requirement for Nevergrad, need a algorithm setting
+        if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
+            self._logger.warning(
+                "No algorithm setting for Nevergrad find, use OnePlusOne."
+            )
+            # warnings.warn("No algorithm setting for Nevergrad find, use OnePlusOne.")
+            import nevergrad as ng
+
+            self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
+
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> AutoTabularBase:
+        # initialize settings
+        self._init_fit()
+
+        # convert to dataframe
+        if not isinstance(X, pd.DataFrame):
+            try:
+                X = pd.DataFrame(X)
+            except BaseException:
+                raise TypeError("Cannot convert X to dataframe, get {}".format(type(X)))
+        if not isinstance(y, pd.DataFrame):
+            try:
+                y = pd.DataFrame(y)
+            except BaseException:
+                raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
+
+        # get data metadata
+        if not hasattr(self, "metadata"):
+            self.metadata = MetaData(X).metadata
+        # check if there's unsupported data type
+        # if datetime ,recommend to remove
+        if ("Datetime", "") in self.metadata.keys():
+            self._logger.warning(
+                "Found datatime data type columns {}, it's better to remove those columns".format(
+                    *self.metadata[("Datetime", "")]
+                )
+            )
+        # TODO: when NLP and Image supported, redirect to corresponding model
+        if ("Object", "Text") in self.metadata.keys():
+            raise NotImplementedError("Text data type is not supported yet.")
+        if ("Path", "") in self.metadata.keys():
+            raise NotImplementedError("Image data type is not supported yet.")
+
+        # get features and response names
+        if isinstance(X, pd.DataFrame):  # expect multiple features
+            self.features = list(X.columns)
+
+        if isinstance(y, pd.DataFrame):  # for the case of dataframe
+            self.response = list(y.columns)
+        elif isinstance(y, pd.Series):  # for the case of series
+            self.response = list(y.name)
 
         # make sure _X is a dataframe
         if isinstance(X, pd.DataFrame):
@@ -1278,25 +1302,6 @@ class AutoTabularBase:
             )
             f.write("Type of the task: {}.\n".format(self.task_mode))
 
-        # get maximum allowed errors
-        self.max_error = min(
-            MAX_ERROR_TRIALOUT, int(self.max_evals * self.allow_error_prop)
-        )
-
-        # load dict settings for search_algo and search_scheduler
-        self.search_algo_settings = str2dict(self.search_algo_settings)
-        self.search_scheduler_settings = str2dict(self.search_scheduler_settings)
-
-        # special requirement for Nevergrad, need a algorithm setting
-        if self.search_algo == "Nevergrad" and len(self.search_algo_settings) == 0:
-            self._logger.warn(
-                "No algorithm setting for Nevergrad find, use OnePlusOne."
-            )
-            # warnings.warn("No algorithm setting for Nevergrad find, use OnePlusOne.")
-            import nevergrad as ng
-
-            self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
-
         # use ray for Model Selection and Hyperparameter Selection
         # get search algorithm
         algo = get_algo(self.search_algo)
@@ -1348,7 +1353,7 @@ class AutoTabularBase:
 
         # ensemble settings
         if self.n_estimators == 1:
-            self._logger.warn("Set n_estimators to 1, no ensemble will be used.")
+            self._logger.warning("Set n_estimators to 1, no ensemble will be used.")
             # warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
             # get progress reporter
@@ -1980,3 +1985,18 @@ class AutoTabularBase:
         # return self._fit_model.predict(_X)
 
         return self._ensemble.predict(_X)
+
+    def predict_proba(
+        self, X: pd.DataFrame
+    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+        # reset index to avoid indexing error
+        if self.reset_index:
+            X.reset_index(drop=True, inplace=True)
+
+        # check if fitted
+        if not self._fitted:
+            raise ValueError("Pipeline not fitted yet! Call fit() first.")
+
+        _X = X.copy()
+
+        return self._ensemble.predict_proba(_X)

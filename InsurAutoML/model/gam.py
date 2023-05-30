@@ -43,9 +43,9 @@ from __future__ import annotations
 from typing import Union
 import numpy as np
 import pandas as pd
+from .base import BaseModel
 
-
-class GAM_Classifier:
+class GAM_Classifier(BaseModel):
     def __init__(
         self,
         type: str = "logistic",
@@ -54,6 +54,7 @@ class GAM_Classifier:
         self.type = type
         self.tol = tol
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -86,7 +87,7 @@ class GAM_Classifier:
         return self.model.predict_proba(X)
 
 
-class GAM_Regressor:
+class GAM_Regressor(BaseModel):
     def __init__(
         self,
         type: str = "linear",
@@ -95,6 +96,7 @@ class GAM_Regressor:
         self.type = type
         self.tol = tol
 
+        super().__init__()
         self._fitted = False
 
     def fit(

@@ -1,23 +1,23 @@
 """
-File Name: utils.py
+File Name: base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/model/utils.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/model/base.py
+File Created: Monday, 29th May 2023 3:23:42 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 29th November 2022 3:04:17 pm
+Last Modified: Monday, 29th May 2023 3:52:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2023 - 2023, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,10 +39,36 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-
 from typing import Union, Callable
 import numpy as np
 import pandas as pd
+
+
+class BaseModel:
+
+    """
+    Base model class
+    """
+
+    def __init__(self) -> None:
+        pass
+
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    ) -> BaseModel:
+        raise NotImplementedError
+
+    def predict(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+        raise NotImplementedError
+
+    def predict_proba(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+        raise NotImplementedError
 
 
 class BaseClassificationWrapper:
@@ -59,7 +85,6 @@ class BaseClassificationWrapper:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> BaseClassificationWrapper:
-
         self.estimator.fit(X, y)
 
         self._fitted = True
@@ -69,7 +94,6 @@ class BaseClassificationWrapper:
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise Exception("Model has not been fitted yet.")
 
@@ -78,7 +102,6 @@ class BaseClassificationWrapper:
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise Exception("Model has not been fitted yet.")
 
@@ -99,7 +122,6 @@ class BaseRegressionWrapper:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> BaseRegressionWrapper:
-
         self.estimator.fit(X, y)
 
         self._fitted = True
@@ -109,7 +131,6 @@ class BaseRegressionWrapper:
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise Exception("Model has not been fitted yet.")
 
@@ -118,6 +139,4 @@ class BaseRegressionWrapper:
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")

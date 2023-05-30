@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hyperparameters/ray/classifier_hyperparameter.py
 File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:16 pm
+Last Modified: Monday, 29th May 2023 1:17:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -214,7 +214,7 @@ SGD = {
 }
 LOGISTICREGRESSION = {
     "model": "LogisticRegression",
-    "penalty": tune.choice(["l2", "none"]),
+    "penalty": tune.choice(["l2", None]),
     "tol": tune.loguniform(1e-5, 1e-1),
     "C": tune.loguniform(1e-5, 10),
 }

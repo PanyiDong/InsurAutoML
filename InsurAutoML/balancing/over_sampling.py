@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th May 2023 3:48:33 pm
+Last Modified: Monday, 29th May 2023 2:07:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,6 +47,7 @@ import warnings
 import sklearn
 import sklearn.utils
 
+from .base import BaseBalancing
 from InsurAutoML.utils.data import is_imbalance, LinkTable
 
 """
@@ -59,7 +60,7 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 """
 
 
-class SimpleRandomOverSampling:
+class SimpleRandomOverSampling(BaseBalancing):
 
     """
     Simple Random Over-Sampling
@@ -89,6 +90,7 @@ class SimpleRandomOverSampling:
         self.max_iter = max_iter
         self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
@@ -137,22 +139,27 @@ class SimpleRandomOverSampling:
             X, self.imbalance_threshold, value=True
         )
         _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-        
+
         # calculate the number of samples needed to be added
         n_majority = n - len(_minority_class)
         n_minor_needed = max(1, int(n_majority / self.imbalance_threshold - n))
 
         # randomly draw samples from minority class and replicate the sample
-        X = pd.concat([
-            X, _minority_class.sample(n=n_minor_needed, random_state=self.seed, replace=True)
-        ])
+        X = pd.concat(
+            [
+                X,
+                _minority_class.sample(
+                    n=n_minor_needed, random_state=self.seed, replace=True
+                ),
+            ]
+        )
         # shuffle the data
         X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
 
 
-class Smote:
+class Smote(BaseBalancing):
 
     """
     Synthetic Minority Over-sampling Technique (Smote)
@@ -197,6 +204,7 @@ class Smote:
         self.k = k
         self.generation = generation
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
@@ -241,23 +249,22 @@ class Smote:
             X, self.imbalance_threshold, value=True
         )
         _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-        
+
         # calculate the number of samples needed to be added
         n_majority = n - len(_minority_class)
         n_minor_needed = max(1, int(n_majority / self.imbalance_threshold - n))
 
-        _sample = _minority_class.sample(n=n_minor_needed, random_state=self.seed, replace=True)
+        _sample = _minority_class.sample(
+            n=n_minor_needed, random_state=self.seed, replace=True
+        )
         _link_table = LinkTable(_sample, X, self.norm)
         for _link_item in _link_table:
             _k_nearest = [
-                _link_item.index(item)
-                for item in sorted(_link_item)[1 : (self.k + 1)]
+                _link_item.index(item) for item in sorted(_link_item)[1 : (self.k + 1)]
             ]
             _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
             if self.generation == "mean":
-                X.loc[len(X), :] = X.loc[
-                    [_sample.index[0], X.index[_link]], :
-                ].mean()
+                X.loc[len(X), :] = X.loc[[_sample.index[0], X.index[_link]], :].mean()
             elif self.generation == "random":
                 X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
                     X.loc[X.index[_link], :] - X.lox[_sample.index, :]

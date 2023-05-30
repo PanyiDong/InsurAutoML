@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th May 2023 8:31:56 pm
+Last Modified: Monday, 29th May 2023 12:57:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1624,7 +1624,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "accuracy":
         from sklearn.metrics import accuracy_score
 
-        logger.warn(
+        logger.warning(
             "accuracy_score is not for min mode, please use neg_accuracy instead."
         )
         # warnings.warn(
@@ -1638,7 +1638,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "precision":
         from sklearn.metrics import precision_score
 
-        logger.warn(
+        logger.warning(
             "precision_score is not for min mode, please use neg_precision instead."
         )
         # warnings.warn(
@@ -1652,7 +1652,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "auc":
         from sklearn.metrics import roc_auc_score
 
-        logger.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
+        logger.warning("roc_auc_score is not for min mode, please use neg_auc instead.")
         # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
     elif metric_str == "neg_hinge":
@@ -1662,7 +1662,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "hinge":
         from sklearn.metrics import hinge_loss
 
-        logger.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
+        logger.warning("hinge_loss is not for min mode, please use neg_hinge instead.")
         # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
     elif metric_str == "neg_f1":
@@ -1672,7 +1672,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "f1":
         from sklearn.metrics import f1_score
 
-        logger.warn("f1_score is not for min mode, please use neg_f1 instead.")
+        logger.warning("f1_score is not for min mode, please use neg_f1 instead.")
         # warnings.warn("f1_score is not for min mode, please use neg_f1 instead.")
         return f1_score
     elif metric_str == "MSE":
@@ -1694,7 +1694,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "R2":
         from sklearn.metrics import r2_score
 
-        logger.warn("r2_score is not for min mode, please use neg_R2 instead.")
+        logger.warning("r2_score is not for min mode, please use neg_R2 instead.")
         # warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
         return r2_score
     elif metric_str == "MAX":

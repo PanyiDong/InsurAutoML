@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:51:42 pm
+Last Modified: Monday, 29th May 2023 7:28:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,10 +47,10 @@ import warnings
 
 from InsurAutoML.constant import UNI_CLASS
 from InsurAutoML.utils import random_index, random_list
-from .base import SimpleImputer
+from .base import SimpleImputer, BaseImputer
 
 
-class ExpectationMaximization:
+class ExpectationMaximization(BaseImputer):
 
     """
     Use Expectation Maximization (EM) to impute missing data[1]
@@ -74,6 +74,7 @@ class ExpectationMaximization:
         self.threshold = threshold
         self.seed = seed
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def fill(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -129,7 +130,7 @@ class ExpectationMaximization:
         return _tmp
 
 
-class KNNImputer:
+class KNNImputer(BaseImputer):
 
     """
     Use KNN to impute the missing values, further update: use cross validation to select best k [1]
@@ -165,6 +166,7 @@ class KNNImputer:
         self.uni_class = uni_class
         self.seed = seed
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def fill(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -289,7 +291,7 @@ class KNNImputer:
         return X
 
 
-class MissForestImputer:
+class MissForestImputer(BaseImputer):
 
     """
     Run Random Forest to impute the missing values [1]
@@ -314,6 +316,7 @@ class MissForestImputer:
         self.method = method
         self.uni_class = uni_class
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def _RFImputer(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -427,7 +430,7 @@ class MissForestImputer:
         return X
 
 
-class MICE:
+class MICE(BaseImputer):
 
     """
     Multiple Imputation by chained equations (MICE)
@@ -459,6 +462,7 @@ class MICE:
         self.cycle = cycle
         self.seed = seed
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def fill(self, X: pd.DataFrame) -> pd.DataFrame:

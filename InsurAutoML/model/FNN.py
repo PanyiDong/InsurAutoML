@@ -46,7 +46,7 @@ import numpy as np
 import pandas as pd
 
 from InsurAutoML.utils.data import assign_classes
-
+from .base import BaseModel
 # check if pytorch exists
 # if exists, import pytorch
 import importlib
@@ -303,7 +303,7 @@ class MLP_Base:
 
 
 # Multi-Layer Perceptron classifier
-class MLP_Classifier(MLP_Base):
+class MLP_Classifier(MLP_Base, BaseModel):
 
     """
     Multi-Layer Perceptron classification model
@@ -360,6 +360,7 @@ class MLP_Classifier(MLP_Base):
         self.is_cuda = is_cuda
         self.seed = seed
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -374,7 +375,7 @@ class MLP_Classifier(MLP_Base):
         if self.criteria not in ["CrossEntropy", "NegativeLogLikelihood"]:
             raise ValueError("Loss must be CrossEntropy!")
 
-        super().__init__(
+        super(MLP_Classifier, self).__init__(
             input_size=self.input_size,
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
@@ -400,20 +401,20 @@ class MLP_Classifier(MLP_Base):
 
         self._fitted = True
 
-        return super().fit(X, y)
+        return super(MLP_Classifier, self).fit(X, y)
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # need to wrap predict function to convert output format
-        return assign_classes(super().predict(X))
+        return assign_classes(super(MLP_Classifier, self).predict(X))
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # not need to use argmax to select the one class
         # but to return full probability
-        return super().predict(X)
+        return super(MLP_Classifier, self).predict(X)
 
 
 # Multi-Layer Perceptron regressor
-class MLP_Regressor(MLP_Base):
+class MLP_Regressor(MLP_Base, BaseModel):
 
     """
     Multi-Layer Perceptron regression model
@@ -470,6 +471,7 @@ class MLP_Regressor(MLP_Base):
         self.is_cuda = is_cuda
         self.seed = seed
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -484,7 +486,7 @@ class MLP_Regressor(MLP_Base):
         if self.criteria not in ["MSE", "MAE"]:
             raise ValueError("Loss must be MSE or MAE!")
 
-        super().__init__(
+        super(MLP_Regressor, self).__init__(
             input_size=self.input_size,
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
@@ -510,10 +512,10 @@ class MLP_Regressor(MLP_Base):
 
         self._fitted = True
 
-        return super().fit(X, y)
+        return super(MLP_Regressor, self).fit(X, y)
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-        return super().predict(X)
+        return super(MLP_Regressor, self).predict(X)
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         return NotImplementedError("predict_proba is not implemented for regression.")

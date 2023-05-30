@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:48:22 pm
+Last Modified: Monday, 29th May 2023 2:25:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,8 +46,10 @@ from sklearn import preprocessing
 from InsurAutoML.utils.base import is_date
 from InsurAutoML.utils.data import formatting
 
+from .base import BaseEncoder
 
-class DataEncoding(formatting):
+
+class DataEncoding(BaseEncoder, formatting):
 
     """
     Data preprocessing
@@ -72,6 +74,7 @@ class DataEncoding(formatting):
         self.dummy_coding = dummy_coding
         self.transform = transform
 
+        super().__init__()
         self._fitted = False  # record whether the method is fitted
 
     def fit(self, _df: pd.DataFrame) -> pd.DataFrame:
@@ -224,22 +227,26 @@ class DataEncoding(formatting):
         return df
 
 
-class CategoryShift:
+class CategoryShift(BaseEncoder):
 
     """
     Add 3 to every cateogry
 
     Parameters
     ----------
+    shift: shift value, default = 3
+
     seed: random seed
     """
 
-    def __init__(self, seed: int = None) -> None:
+    def __init__(self, shift: int = 3, seed: int = None) -> None:
+        self.shift = shift
         self.seed = seed
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
-    def fit(self, X: pd.DataFrame) -> None:
+    def fit(self, X: pd.DataFrame) -> pd.DataFrame:
         # Check data type
         columns = list(X.columns)
         for _column in columns:
@@ -248,9 +255,25 @@ class CategoryShift:
             elif str(X[_column].dtype) == "category":
                 raise ValueError("Cannot handle categorical type!")
 
+        # shift
+        _X = X.copy(deep=True)
+        _X += self.shift
+
         self._fitted = True
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        return _X
+
+    def refit(self, X: pd.DataFrame) -> pd.DataFrame:
+        # Check data type
+        columns = list(X.columns)
+        for _column in columns:
+            if X[_column].dtype == object:
+                raise ValueError("Cannot handle object type!")
+            elif str(X[_column].dtype) == "category":
+                raise ValueError("Cannot handle categorical type!")
+
+        # shift
         _X = X.copy(deep=True)
-        _X += 3
+        _X += self.shift
+
         return _X

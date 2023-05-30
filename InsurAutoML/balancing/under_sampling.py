@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:57:55 pm
+Last Modified: Monday, 29th May 2023 2:09:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,6 +47,7 @@ import warnings
 import sklearn
 import sklearn.utils
 
+from .base import BaseBalancing
 from InsurAutoML.utils.data import is_imbalance, LinkTable
 
 """
@@ -59,7 +60,7 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 """
 
 
-class SimpleRandomUnderSampling:
+class SimpleRandomUnderSampling(BaseBalancing):
 
     """
     Simple Random Under-Sampling
@@ -89,6 +90,7 @@ class SimpleRandomUnderSampling:
         self.max_iter = max_iter
         self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
@@ -138,11 +140,11 @@ class SimpleRandomUnderSampling:
             X, self.imbalance_threshold, value=True
         )
         _majority_class = X.loc[X[_imbalanced_feature] == _majority]
-        
+
         # calculate the number of samples needed to be removed
         n_minority = n - len(_majority_class)
         n_majority_removed = max(1, int(n - n_minority / self.imbalance_threshold))
-            
+
         # randomly remove samples from majority class
         sample = _majority_class.sample(
             n=n_majority_removed, random_state=self.seed, replace=True
@@ -154,7 +156,7 @@ class SimpleRandomUnderSampling:
         return X
 
 
-class TomekLink:
+class TomekLink(BaseBalancing):
 
     """
     Use Tomek Links to remove noisy or border significant majority class sample
@@ -189,6 +191,7 @@ class TomekLink:
         self.max_iter = max_iter
         self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
@@ -240,7 +243,9 @@ class TomekLink:
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _minority_sample = _minority_class.sample(
-                n=max(int(len(_minority_class) / 20), 1), random_state=_seed, replace=True
+                n=max(int(len(_minority_class) / 20), 1),
+                random_state=_seed,
+                replace=True,
             )
             _link_table = LinkTable(_minority_sample, X, self.norm)
             drop_index = []
@@ -259,7 +264,7 @@ class TomekLink:
         return X
 
 
-class EditedNearestNeighbor:
+class EditedNearestNeighbor(BaseBalancing):
 
     """
     Edited Nearest Neighbor (ENN)
@@ -298,6 +303,7 @@ class EditedNearestNeighbor:
         self.seed = seed if seed is not None else 1
         self.k = k
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
@@ -394,7 +400,7 @@ class EditedNearestNeighbor:
         return X
 
 
-class CondensedNearestNeighbor:
+class CondensedNearestNeighbor(BaseBalancing):
 
     """
     Condensed Nearest Neighbor Rule (CNN)
@@ -426,6 +432,7 @@ class CondensedNearestNeighbor:
         self.max_iter = max_iter
         self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(

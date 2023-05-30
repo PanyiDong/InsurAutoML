@@ -47,6 +47,7 @@ import pandas as pd
 
 from InsurAutoML.utils.data import assign_classes
 from InsurAutoML.utils.tensor import repackage_hidden
+from .base import BaseModel
 
 # check if pytorch exists
 # if exists, import pytorch
@@ -378,7 +379,7 @@ class RNN_Base:
         return results[:, -1, :].cpu().numpy()  # return prediction to cpu
 
 
-class RNN_Classifier(RNN_Base):
+class RNN_Classifier(RNN_Base, BaseModel):
 
     """
     RNN Classifier
@@ -454,7 +455,8 @@ class RNN_Classifier(RNN_Base):
 
         self.is_cuda = is_cuda
         self.seed = seed
-
+        
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -474,7 +476,7 @@ class RNN_Classifier(RNN_Base):
                 y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
             )
 
-        super().__init__(
+        super(RNN_Classifier, self).__init__(
             input_size=self.input_size,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
@@ -494,19 +496,19 @@ class RNN_Classifier(RNN_Base):
 
         self._fitted = True
 
-        return super().fit(X, y)
+        return super(RNN_Classifier, self).fit(X, y)
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # need to assign prediction to classes
-        return assign_classes(super().predict(X))
+        return assign_classes(super(RNN_Classifier, self).predict(X))
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # not need to use argmax to select the one class
         # but to return full probability
-        return super().predict(X)
+        return super(RNN_Classifier, self).predict(X)
 
 
-class RNN_Regressor(RNN_Base):
+class RNN_Regressor(RNN_Base, BaseModel):
 
     """
     RNN Classifier
@@ -582,7 +584,8 @@ class RNN_Regressor(RNN_Base):
 
         self.is_cuda = is_cuda
         self.seed = seed
-
+        
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -602,7 +605,7 @@ class RNN_Regressor(RNN_Base):
                 y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.float
             )
 
-        super().__init__(
+        super(RNN_Regressor, self).__init__(
             input_size=self.input_size,
             hidden_size=self.hidden_size,
             output_size=self.output_size,
@@ -622,10 +625,10 @@ class RNN_Regressor(RNN_Base):
 
         self._fitted = True
 
-        return super().fit(X, y)
+        return super(RNN_Regressor, self).fit(X, y)
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-        return super().predict(X)
+        return super(RNN_Regressor, self).predict(X)
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         raise NotImplementedError("predict_proba is not implemented for regression.")

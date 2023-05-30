@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th May 2023 10:52:10 pm
+Last Modified: Monday, 29th May 2023 12:58:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -317,8 +317,8 @@ class ClassifierEnsemble(formatting):
                     np.average(prob_list, axis=0, weights=self.weights), axis=1
                 )
             elif self.strategy == "boosting":
-                pred = np.sum(
-                    np.average(prob_list, axis=0, weights=self.weights), axis=1
+                pred = np.argmax(
+                    np.sum(prob_list, axis=0, weights=self.weights), axis=1
                 )
 
         # make sure all predictions are seen
@@ -328,6 +328,39 @@ class ClassifierEnsemble(formatting):
         else:
             return super(ClassifierEnsemble, self).refit(
                 pd.DataFrame(pred, columns=self._response)
+            )
+
+    def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
+        if not self._fitted:
+            raise ValueError("Ensemble is not fitted!")
+
+        # certain hyperparameters are not supported for predict_proba
+        # ignore those pipelines
+        prob_list = []
+        for (name, pipeline), feature_subset in zip(self.estimators, self.features):
+            try:
+                prob_list.append(pipeline.predict_proba(X[feature_subset]))
+            except:
+                logger.warning(
+                    "Pipeline {} does not support predict_proba. Ignoring.".format(name)
+                )
+
+        # if no pipeline supports predict_proba, raise error
+        if len(prob_list) == 0:
+            raise ValueError("No pipeline supports predict_proba. Aborting.")
+
+        # calculate probabilities for all pipelines
+        prob_list = np.asarray(prob_list)
+
+        pred = np.average(prob_list, axis=0, weights=self.weights)
+
+        # ignore formatting for probabilities
+        if isinstance(pred, pd.DataFrame):
+            return pred
+        # if not dataframe, convert to dataframe
+        else:
+            return pd.DataFrame(
+                pred, columns=["class_{}".format(i) for i in range(pred.shape[1])]
             )
 
 
@@ -453,7 +486,7 @@ class RegressorEnsemble(formatting):
                 # if weights included, but not available in voting function,
                 # warn users
                 if self.weights is not None:
-                    logger.warn("weights are not used in voting method")
+                    logger.warning("weights are not used in voting method")
                     # warnings.warn("weights are not used in voting method")
                 pred = self.voting(pred_list, axis=1)
         elif self.strategy == "boosting":
@@ -467,6 +500,11 @@ class RegressorEnsemble(formatting):
             return super(RegressorEnsemble, self).refit(
                 pd.DataFrame(pred, columns=self._response)
             )
+
+    def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
+        raise NotImplementedError(
+            "predict_proba is not implemented for RegressorEnsemble"
+        )
 
 
 class TabularObjective(tune.Trainable):

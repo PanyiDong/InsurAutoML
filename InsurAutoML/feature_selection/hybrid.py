@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:50:25 pm
+Last Modified: Monday, 29th May 2023 2:45:23 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -56,9 +56,10 @@ from InsurAutoML.utils import (
     random_index,
 )
 from InsurAutoML.constant import UNI_CLASS
+from .base import BaseFeatureSelection
 
 
-class CBFS:
+class CBFS(BaseFeatureSelection):
 
     """
     CBFS Copula-based Feature Selection [1]
@@ -90,6 +91,7 @@ class CBFS:
         self.n_components = n_components
         self.n_prop = n_prop
 
+        super().__init__()
         self._fitted = False
 
     def Empirical_Copula(self, data: pd.DataFrame) -> List[float]:
@@ -213,7 +215,7 @@ class CBFS:
 
 
 # Genetic Algorithm (GA)
-class GeneticAlgorithm:
+class GeneticAlgorithm(BaseFeatureSelection):
 
     """
     Use Genetic Algorithm (GA) to select best subset features [1]
@@ -315,6 +317,7 @@ class GeneticAlgorithm:
             "SVM_RFE": self._SVM_RFE,
         }
 
+        super().__init__()
         self._fitted = False
 
     def _random(

@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 24th May 2023 11:01:46 pm
+Last Modified: Monday, 29th May 2023 1:15:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -113,7 +113,7 @@ INSTALL_LIST = [
     # "scikit-learn==0.24.2;platform_system=='Linux'",
     # "scikit-learn>1.0.0;platform_system=='Windows'",
     # "scikit-learn>1.0.0;platform_system=='MacOS'",
-    "scikit-learn>=1.1.0",
+    "scikit-learn>=1.2.0",
 ]
 
 EXTRA_DICT = {
@@ -196,7 +196,6 @@ def r_home_from_registry() -> Optional[str]:
     for w_hkey in [winreg.HKEY_CURRENT_USER, winreg.HKEY_LOCAL_MACHINE]:
         try:
             with winreg.OpenKeyEx(w_hkey, "Software\\R-core\\R") as hkey:
-
                 # >v4.x.x: grab the highest version installed
                 def get_version(i):
                     try:
@@ -205,9 +204,14 @@ def r_home_from_registry() -> Optional[str]:
                         return None
 
                 latest = max(
-                    (v for v in (
-                        get_version(i) for i in range(
-                            winreg.QueryInfoKey(hkey)[0])) if v is not None))
+                    (
+                        v
+                        for v in (
+                            get_version(i) for i in range(winreg.QueryInfoKey(hkey)[0])
+                        )
+                        if v is not None
+                    )
+                )
 
                 with winreg.OpenKeyEx(hkey, f"{latest}") as subkey:
                     r_home = winreg.QueryValueEx(subkey, "InstallPath")[0]
@@ -302,7 +306,6 @@ long_description = (this_directory / "README.md").read_text()
 
 
 def setup_package():
-
     # global dep_list
 
     setup(
@@ -328,7 +331,6 @@ def setup_package():
 
 # torch extensions build (not used at this moment)
 def build_torch_extensions():
-
     torch_extensions = []
 
     if torch_spec is not None:
@@ -387,7 +389,6 @@ class CythonExt(Extension):
 
 # cython extension build
 def build_cython_extensions():
-
     # import numpy
 
     c_ext = "pyx"  # if USING_CYTHON else "c"
@@ -411,7 +412,6 @@ def build_cython_extensions():
 
 # prepare for package.json file
 def get_package():
-
     result = {}
     result["name"] = SETUP_ARGS["name"]
     result["author"] = {
@@ -437,14 +437,13 @@ def get_package():
 
 
 def get_requirements():
-
     if os.path.exists("requirements.txt"):
         os.remove("requirements.txt")
 
     with open(r"requirements.txt", "w") as fp:
         dep_list = [
-            item.split(";")[0] for item in INSTALL_LIST +
-            EXTRA_DICT["extended"]]
+            item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["extended"]
+        ]
         dep_list = list(set(dep_list))
         for item in dep_list:
             # write each item on a new line
@@ -454,8 +453,7 @@ def get_requirements():
         os.remove("requirements_nn.txt")
 
     with open(r"requirements_nn.txt", "w") as fp:
-        dep_list = [item.split(";")[0]
-                    for item in INSTALL_LIST + EXTRA_DICT["nn"]]
+        dep_list = [item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["nn"]]
         dep_list = list(set(dep_list))
         for item in dep_list:
             # write each item on a new line
@@ -463,7 +461,6 @@ def get_requirements():
 
 
 def main():
-
     # # check whether need to build pytorch extensions
     # SETUP_ARGS["ext_modules"] += build_torch_extensions()
 
@@ -480,7 +477,6 @@ def main():
 
 
 if __name__ == "__main__":
-
     get_requirements()
     main()
     get_package()

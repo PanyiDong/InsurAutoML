@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_model/test_model_2.py
 File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:57 pm
+Last Modified: Monday, 29th May 2023 7:25:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,8 +43,7 @@ from InsurAutoML.utils import formatting
 
 
 def test_add_classifier():
-
-    from InsurAutoML.model.sklearn import ComplementNB
+    from InsurAutoML.model.sklearn_classifiers import ComplementNB
 
     data = pd.read_csv("example/example_data/heart.csv")
     # encoding categorical features
@@ -64,7 +63,6 @@ def test_add_classifier():
 
 
 def test_add_regressor():
-
     from InsurAutoML.model import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -120,7 +118,6 @@ def test_add_regressor():
 
 
 def test_lightgbm_classifier():
-
     from InsurAutoML.model import LightGBM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
@@ -154,7 +151,6 @@ def test_lightgbm_classifier():
 
 
 def test_lightgbm_regressor():
-
     from InsurAutoML.model import LightGBM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -191,7 +187,6 @@ def test_lightgbm_regressor():
 
 
 def test_xgboost_classifier():
-
     from InsurAutoML.model import XGBoost_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
@@ -222,7 +217,6 @@ def test_xgboost_classifier():
 
 
 def test_xgboost_regressor():
-
     from InsurAutoML.model import XGBoost_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -256,7 +250,6 @@ def test_xgboost_regressor():
 
 
 def test_gam_classifier():
-
     from InsurAutoML.model import GAM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
@@ -282,7 +275,6 @@ def test_gam_classifier():
 
 
 def test_gam_regressor():
-
     from InsurAutoML.model import GAM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -349,6 +341,4 @@ def test_gam_regressor():
     except NotImplementedError:
         pass
 
-    assert (
-        model._fitted
-    ), "Model GAM_Regressor Inverse Gaussian has not been fitted."
+    assert model._fitted, "Model GAM_Regressor Inverse Gaussian has not been fitted."

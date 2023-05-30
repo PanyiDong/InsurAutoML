@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th May 2023 11:06:36 pm
+Last Modified: Monday, 29th May 2023 1:08:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -117,6 +117,10 @@ class AutoTabularRegressor(AutoTabularBase):
             "KNearestNeighborsRegressor", "LibLinear_SVR", "LibSVM_SVR",
             "MLPRegressor", "RandomForest", "SGD")
     'auto' will select all default models, or use a list to select
+
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
 
@@ -280,7 +284,9 @@ class AutoTabularRegressor(AutoTabularBase):
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+            shutil.rmtree(
+                os.path.join(self.temp_directory, self.model_name), ignore_errors=True
+            )
         if not os.path.isdir(self.temp_directory):
             os.makedirs(self.temp_directory)
         os.makedirs(os.path.join(self.temp_directory, self.model_name))
@@ -303,6 +309,13 @@ class AutoTabularRegressor(AutoTabularBase):
 
     def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         return super().predict(X)
+
+    def predict_proba(
+        self, X: pd.DataFrame
+    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+        raise NotImplementedError(
+            "predict_proba is not implemented for AutoTabularRegressor"
+        )
 
 
 class AutoTabularClassifier(AutoTabularBase):
@@ -370,6 +383,10 @@ class AutoTabularClassifier(AutoTabularBase):
             'MLPClassifier', 'MultinomialNB','PassiveAggressive', 'QDA',
             'RandomForest',  'SGD')
     'auto' will select all default models, or use a list to select
+
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
 
@@ -533,7 +550,9 @@ class AutoTabularClassifier(AutoTabularBase):
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+            shutil.rmtree(
+                os.path.join(self.temp_directory, self.model_name), ignore_errors=True
+            )
         if not os.path.isdir(self.temp_directory):
             os.makedirs(self.temp_directory)
         os.makedirs(os.path.join(self.temp_directory, self.model_name))
@@ -556,6 +575,11 @@ class AutoTabularClassifier(AutoTabularBase):
 
     def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         return super().predict(X)
+
+    def predict_proba(
+        self, X: pd.DataFrame
+    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+        return super().predict_proba(X)
 
 
 class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
@@ -627,6 +651,10 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             "KNearestNeighborsRegressor", "LibLinear_SVR", "LibSVM_SVR",
             "MLPRegressor", "RandomForest", "SGD")
     'auto' will select all default models, or use a list to select
+
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
 
@@ -755,7 +783,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         # initialize temp directory
         # check if temp directory exists, if exists, empty it
         if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+            shutil.rmtree(
+                os.path.join(self.temp_directory, self.model_name), ignore_errors=True
+            )
         if not os.path.isdir(self.temp_directory):
             os.makedirs(self.temp_directory)
         os.makedirs(os.path.join(self.temp_directory, self.model_name))
@@ -854,5 +884,13 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         if self.model:
             return self.model.predict(X)
+        else:
+            raise ValueError("No tasks found! Need to fit first.")
+
+    def predict_proba(
+        self, X: pd.DataFrame
+    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+        if self.model:
+            return self.model.predict_proba(X)
         else:
             raise ValueError("No tasks found! Need to fit first.")

@@ -1,17 +1,17 @@
 """
-File Name: _filter.py
+File Name: filter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/feature_selection/_filter.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/feature_selection/filter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:19:28 pm
+Last Modified: Monday, 29th May 2023 2:44:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,9 +52,10 @@ from InsurAutoML.utils import (
     MI,
     ACCC,
 )
+from .base import BaseFeatureSelection
 
 
-class FeatureFilter:
+class FeatureFilter(BaseFeatureSelection):
 
     """
     Use certain criteria to score each feature and select most relevent ones
@@ -84,6 +85,7 @@ class FeatureFilter:
         self.n_components = n_components
         self.n_prop = n_prop
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -91,7 +93,6 @@ class FeatureFilter:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> FeatureFilter:
-
         # check whether y is empty
         if isinstance(y, pd.DataFrame):
             _empty = y.isnull().all().all()
@@ -117,7 +118,6 @@ class FeatureFilter:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         # check if input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -136,7 +136,7 @@ class FeatureFilter:
         return X.iloc[:, _columns]
 
 
-class mRMR:
+class mRMR(BaseFeatureSelection):
 
     """
     mRMR [1] minimal-redundancy-maximal-relevance as criteria for filter-based
@@ -164,6 +164,7 @@ class mRMR:
         self.n_components = n_components
         self.n_prop = n_prop
 
+        super().__init__()
         self._fitted = False
 
     def select_feature(
@@ -173,7 +174,6 @@ class mRMR:
         selected_features: List,
         unselected_features: List,
     ) -> str:
-
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
 
@@ -202,7 +202,6 @@ class mRMR:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> mRMR:
-
         # check if inputs are dataframes
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -240,11 +239,10 @@ class mRMR:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return X.iloc[:, self.select_features]
 
 
-class FOCI:
+class FOCI(BaseFeatureSelection):
 
     """
     Implementation of Feature Ordering by Conditional Independence (FOCI) introduced in [1].
@@ -257,6 +255,7 @@ class FOCI:
     def __init__(
         self,
     ):
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -264,7 +263,6 @@ class FOCI:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> FOCI:
-
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.DataFrame):
@@ -286,8 +284,7 @@ class FOCI:
                     tmp_ACCC_list.append(ACCC(X[[feature]], y))
                 # at following steps, use conditional ACCC
                 else:
-                    tmp_ACCC_list.append(
-                        ACCC(X[[feature]], y, X[selected_features]))
+                    tmp_ACCC_list.append(ACCC(X[[feature]], y, X[selected_features]))
 
             tmp_feature = unselected_features[np.argmax(tmp_ACCC_list)]
             tmp_max_ACCC = tmp_ACCC_list[np.argmax(tmp_ACCC_list)]
@@ -308,5 +305,4 @@ class FOCI:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return X[self.select_features]

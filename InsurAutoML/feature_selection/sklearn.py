@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/feature_selection/sklearn.py
 File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 7:32:59 pm
+Last Modified: Monday, 29th May 2023 3:07:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -53,15 +53,17 @@ import sklearn.ensemble
 import warnings
 
 from InsurAutoML.utils.base import is_none
+from .base import BaseFeatureSelection
 
 ##########################################################################
 # sklearn replacement of feature selection
 
 
-class densifier:
+class densifier(BaseFeatureSelection):
     def __init__(
         self,
     ) -> None:
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -83,7 +85,7 @@ class densifier:
             return X
 
 
-class extra_trees_preproc_for_classification:
+class extra_trees_preproc_for_classification(BaseFeatureSelection):
     def __init__(
         self,
         n_estimators: int = 5,
@@ -103,12 +105,12 @@ class extra_trees_preproc_for_classification:
         self.min_samples_split = int(min_samples_split)
         self.max_features = max_features
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(
-            max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
         self.max_depth = None if is_none(max_depth) else int(max_depth)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -116,7 +118,6 @@ class extra_trees_preproc_for_classification:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> extra_trees_preproc_for_classification:
-
         from sklearn.ensemble import ExtraTreesClassifier
         from sklearn.feature_selection import SelectFromModel
 
@@ -146,13 +147,12 @@ class extra_trees_preproc_for_classification:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
         return self.selector.transform(X)
 
 
-class extra_trees_preproc_for_regression:
+class extra_trees_preproc_for_regression(BaseFeatureSelection):
     def __init__(
         self,
         n_estimators: int = 5,
@@ -171,11 +171,11 @@ class extra_trees_preproc_for_regression:
         self.min_samples_split = int(min_samples_split)
         self.max_features = max_features
         self.bootstrap = bootstrap
-        self.max_leaf_nodes = None if is_none(
-            max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
         self.max_depth = None if is_none(max_depth) else int(max_depth)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -183,7 +183,6 @@ class extra_trees_preproc_for_regression:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> extra_trees_preproc_for_regression:
-
         from sklearn.ensemble import ExtraTreesRegressor
         from sklearn.feature_selection import SelectFromModel
 
@@ -214,13 +213,12 @@ class extra_trees_preproc_for_regression:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
         return self.selector.transform(X)
 
 
-class fast_ica(sklearn.decomposition.FastICA):
+class fast_ica(sklearn.decomposition.FastICA, BaseFeatureSelection):
     def __init__(
         self,
         algorithm: str = "parallel",
@@ -231,10 +229,9 @@ class fast_ica(sklearn.decomposition.FastICA):
         self.algorithm = algorithm
         self.whiten = whiten
         self.fun = fun
-        self.n_components = None if is_none(
-            n_components) else int(n_components)
+        self.n_components = None if is_none(n_components) else int(n_components)
 
-        super().__init__(
+        super(fast_ica, self).__init__(
             algorithm=self.algorithm,
             whiten=self.whiten,
             fun=self.fun,
@@ -248,8 +245,7 @@ class fast_ica(sklearn.decomposition.FastICA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> fast_ica:
-
-        super().fit(X)
+        super(fast_ica, self).fit(X)
 
         self._fitted = True
 
@@ -258,13 +254,12 @@ class fast_ica(sklearn.decomposition.FastICA):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
-        return super().transform(X)
+        return super(fast_ica, self).transform(X)
 
 
-class feature_agglomeration(sklearn.cluster.FeatureAgglomeration):
+class feature_agglomeration(sklearn.cluster.FeatureAgglomeration, BaseFeatureSelection):
     def __init__(
         self,
         n_clusters: int = 5,
@@ -282,7 +277,7 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration):
             "median": np.median,
             "max": np.max,
         }
-
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -290,17 +285,16 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> feature_agglomeration:
-
         if not callable(self.pooling_func):
             self.pooling_func = self.pooling_func_dict[self.pooling_func]
 
-        super().__init__(
+        super(feature_agglomeration, self).__init__(
             n_clusters=min(self.n_clusters, X.shape[1]),
             affinity=self.affinity,
             linkage=self.linkage,
             pooling_func=self.pooling_func,
         )
-        super().fit(X)
+        super(feature_agglomeration, self).fit(X)
 
         self._fitted = True
 
@@ -309,13 +303,12 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
-        return super().transform(X)
+        return super(feature_agglomeration, self).transform(X)
 
 
-class kernel_pca(sklearn.decomposition.KernelPCA):
+class kernel_pca(sklearn.decomposition.KernelPCA, BaseFeatureSelection):
     def __init__(
         self,
         n_components: int = 5,
@@ -324,14 +317,13 @@ class kernel_pca(sklearn.decomposition.KernelPCA):
         degree: int = 3,
         coef0: float = 0.5,
     ) -> None:
-        self.n_components = None if is_none(
-            n_components) else int(n_components)
+        self.n_components = None if is_none(n_components) else int(n_components)
         self.kernel = kernel
         self.gamma = None if is_none(gamma) else float(gamma)
         self.degree = int(degree)
         self.coef0 = float(coef0)
 
-        super().__init__(
+        super(kernel_pca, self).__init__(
             n_components=self.n_components,
             kernel=self.kernel,
             gamma=self.gamma,
@@ -346,13 +338,12 @@ class kernel_pca(sklearn.decomposition.KernelPCA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> kernel_pca:
-
         if scipy.sparse.issparse(X):
             X = X.stype(np.float64)
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
-            super().fit(X)
+            super(kernel_pca, self).fit(X)
 
         self._fitted = True
 
@@ -361,16 +352,15 @@ class kernel_pca(sklearn.decomposition.KernelPCA):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")
-            return super().transform(X)
+            return super(kernel_pca, self).transform(X)
 
 
-class kitchen_sinks(sklearn.kernel_approximation.RBFSampler):
+class kitchen_sinks(sklearn.kernel_approximation.RBFSampler, BaseFeatureSelection):
     def __init__(
         self,
         gamma: float = 0.1,
@@ -379,7 +369,7 @@ class kitchen_sinks(sklearn.kernel_approximation.RBFSampler):
         self.gamma = float(gamma)
         self.n_components = int(n_components)
 
-        super().__init__(
+        super(kitchen_sinks, self).__init__(
             gamma=self.gamma,
             n_components=self.n_components,
         )
@@ -391,8 +381,7 @@ class kitchen_sinks(sklearn.kernel_approximation.RBFSampler):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> kitchen_sinks:
-
-        super().fit(X)
+        super(kitchen_sinks, self).fit(X)
 
         self._fitted = True
 
@@ -401,14 +390,13 @@ class kitchen_sinks(sklearn.kernel_approximation.RBFSampler):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
-        return super().transform(X)
+        return super(kitchen_sinks, self).transform(X)
 
 
-class liblinear_svc_preprocessor:
+class liblinear_svc_preprocessor(BaseFeatureSelection):
     def __init__(
         self,
         penalty: str = "l1",
@@ -429,6 +417,7 @@ class liblinear_svc_preprocessor:
         self.fit_intercept = fit_intercept
         self.intercept_scaling = float(intercept_scaling)
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -436,7 +425,6 @@ class liblinear_svc_preprocessor:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> liblinear_svc_preprocessor:
-
         from sklearn.svm import LinearSVC
         from sklearn.feature_selection import SelectFromModel
 
@@ -452,8 +440,7 @@ class liblinear_svc_preprocessor:
         )
         estimator.fit(X, y)
 
-        self.selector = SelectFromModel(
-            estimator, threshold="mean", prefit=True)
+        self.selector = SelectFromModel(estimator, threshold="mean", prefit=True)
 
         self._fitted = True
 
@@ -462,14 +449,13 @@ class liblinear_svc_preprocessor:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
         return self.selector.transform(X)
 
 
-class nystroem_sampler(sklearn.kernel_approximation.Nystroem):
+class nystroem_sampler(sklearn.kernel_approximation.Nystroem, BaseFeatureSelection):
     def __init__(
         self,
         kernel: str = "rbf",
@@ -484,7 +470,7 @@ class nystroem_sampler(sklearn.kernel_approximation.Nystroem):
         self.degree = int(degree)
         self.coef0 = float(coef0)
 
-        super().__init__(
+        super(nystroem_sampler, self).__init__(
             kernel=self.kernel,
             n_components=self.n_components,
             gamma=self.gamma,
@@ -499,7 +485,6 @@ class nystroem_sampler(sklearn.kernel_approximation.Nystroem):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> nystroem_sampler:
-
         # for kernel = "chi2", make sure non-negative values are passed
         if self.kernel == "chi2":
             if scipy.sparse.issparse(X):
@@ -507,7 +492,7 @@ class nystroem_sampler(sklearn.kernel_approximation.Nystroem):
             else:
                 X[X < 0] = 0
 
-        super().fit(X)
+        super(nystroem_sampler, self).fit(X)
 
         self._fitted = True
 
@@ -516,7 +501,6 @@ class nystroem_sampler(sklearn.kernel_approximation.Nystroem):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
@@ -527,10 +511,10 @@ class nystroem_sampler(sklearn.kernel_approximation.Nystroem):
             else:
                 X[X < 0] = 0
 
-        return super().transform(X)
+        return super(nystroem_sampler, self).transform(X)
 
 
-class pca(sklearn.decomposition.PCA):
+class pca(sklearn.decomposition.PCA, BaseFeatureSelection):
     def __init__(
         self,
         keep_variance: float = 0.5,
@@ -539,7 +523,7 @@ class pca(sklearn.decomposition.PCA):
         self.keep_variance = float(keep_variance)
         self.with_whiten = whiten
 
-        super().__init__(
+        super(pca, self).__init__(
             n_components=self.keep_variance,
             whiten=self.with_whiten,
         )
@@ -551,8 +535,7 @@ class pca(sklearn.decomposition.PCA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> pca:
-
-        super().fit(X)
+        super(pca, self).fit(X)
 
         self._fitted = True
 
@@ -561,14 +544,13 @@ class pca(sklearn.decomposition.PCA):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
-        return super().transform(X)
+        return super(pca, self).transform(X)
 
 
-class polynomial(sklearn.preprocessing.PolynomialFeatures):
+class polynomial(sklearn.preprocessing.PolynomialFeatures, BaseFeatureSelection):
     def __init__(
         self,
         degree: int = 3,
@@ -579,7 +561,7 @@ class polynomial(sklearn.preprocessing.PolynomialFeatures):
         self.interaction_only = interaction_only
         self.include_bias = include_bias
 
-        super().__init__(
+        super(polynomial, self).__init__(
             degree=self.degree,
             interaction_only=self.interaction_only,
             include_bias=self.include_bias,
@@ -592,8 +574,7 @@ class polynomial(sklearn.preprocessing.PolynomialFeatures):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> polynomial:
-
-        super().fit(X, y)
+        super(polynomial, self).fit(X, y)
 
         self._fitted = True
 
@@ -602,14 +583,15 @@ class polynomial(sklearn.preprocessing.PolynomialFeatures):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
-        return super().transform(X)
+        return super(polynomial, self).transform(X)
 
 
-class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
+class random_trees_embedding(
+    sklearn.ensemble.RandomTreesEmbedding, BaseFeatureSelection
+):
     def __init__(
         self,
         n_estimators: int = 5,
@@ -625,11 +607,10 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
         self.min_samples_split = int(min_samples_split)
         self.min_samples_leaf = int(min_samples_leaf)
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
-        self.max_leaf_nodes = None if is_none(
-            max_leaf_nodes) else int(max_leaf_nodes)
+        self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
         self.bootstrap = bootstrap
 
-        super().__init__(
+        super(random_trees_embedding, self).__init__(
             n_estimators=self.n_estimators,
             max_depth=self.max_depth,
             min_samples_split=self.min_samples_split,
@@ -646,8 +627,7 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> random_trees_embedding:
-
-        super().fit(X, y)
+        super(random_trees_embedding, self).fit(X, y)
 
         self._fitted = True
 
@@ -656,7 +636,6 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
@@ -664,7 +643,8 @@ class random_trees_embedding(sklearn.ensemble.RandomTreesEmbedding):
 
 
 class select_percentile_classification(
-        sklearn.feature_selection.SelectPercentile):
+    sklearn.feature_selection.SelectPercentile, BaseFeatureSelection
+):
     def __init__(
         self,
         percentile: int = 90,
@@ -684,7 +664,7 @@ class select_percentile_classification(
                 )
             )
 
-        super().__init__(
+        super(select_percentile_classification, self).__init__(
             percentile=self.percentile,
             score_func=self.score_func,
         )
@@ -696,7 +676,6 @@ class select_percentile_classification(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_percentile_classification:
-
         # for score_func = "chi2", make sure non-negative values are passed
         if self.score_func == sklearn.feature_selection.chi2:
             if scipy.sparse.issparse(X):
@@ -704,7 +683,7 @@ class select_percentile_classification(
             else:
                 X[X < 0] = 0
 
-        super().fit(X, y)
+        super(select_percentile_classification, self).fit(X, y)
 
         self._fitted = True
 
@@ -713,7 +692,6 @@ class select_percentile_classification(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
@@ -724,10 +702,12 @@ class select_percentile_classification(
             else:
                 X[X < 0] = 0
 
-        return super().transform(X)
+        return super(select_percentile_classification, self).transform(X)
 
 
-class select_percentile_regression(sklearn.feature_selection.SelectPercentile):
+class select_percentile_regression(
+    sklearn.feature_selection.SelectPercentile, BaseFeatureSelection
+):
     def __init__(
         self,
         percentile: int = 90,
@@ -745,7 +725,7 @@ class select_percentile_regression(sklearn.feature_selection.SelectPercentile):
                 )
             )
 
-        super().__init__(
+        super(select_percentile_regression, self).__init__(
             percentile=self.percentile,
             score_func=self.score_func,
         )
@@ -757,8 +737,7 @@ class select_percentile_regression(sklearn.feature_selection.SelectPercentile):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_percentile_regression:
-
-        super().fit(X, y)
+        super(select_percentile_regression, self).fit(X, y)
 
         self._fitted = True
 
@@ -767,15 +746,15 @@ class select_percentile_regression(sklearn.feature_selection.SelectPercentile):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
-        return super().transform(X)
+        return super(select_percentile_regression, self).transform(X)
 
 
 class select_rates_classification(
-        sklearn.feature_selection.GenericUnivariateSelect):
+    sklearn.feature_selection.GenericUnivariateSelect, BaseFeatureSelection
+):
     def __init__(
         self,
         alpha: float = 0.3,
@@ -798,7 +777,7 @@ class select_rates_classification(
                 )
             )
 
-        super().__init__(
+        super(select_rates_classification, self).__init__(
             param=self.alpha,
             score_func=self.score_func,
             mode=self.mode,
@@ -811,7 +790,6 @@ class select_rates_classification(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_rates_classification:
-
         # for score_func = "chi2", make sure non-negative values are passed
         if self.score_func == sklearn.feature_selection.chi2:
             if scipy.sparse.issparse(X):
@@ -819,7 +797,7 @@ class select_rates_classification(
             else:
                 X[X < 0] = 0
 
-        super().fit(X, y)
+        super(select_rates_classification, self).fit(X, y)
 
         self._fitted = True
 
@@ -828,7 +806,6 @@ class select_rates_classification(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
@@ -839,11 +816,12 @@ class select_rates_classification(
             else:
                 X[X < 0] = 0
 
-        return super().transform(X)
+        return super(select_rates_classification, self).transform(X)
 
 
 class select_rates_regression(
-        sklearn.feature_selection.GenericUnivariateSelect):
+    sklearn.feature_selection.GenericUnivariateSelect, BaseFeatureSelection
+):
     def __init__(
         self,
         alpha: float = 0.3,
@@ -864,7 +842,7 @@ class select_rates_regression(
                 )
             )
 
-        super().__init__(
+        super(select_rates_regression, self).__init__(
             param=self.alpha,
             score_func=self.score_func,
             mode=self.mode,
@@ -877,8 +855,7 @@ class select_rates_regression(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_rates_regression:
-
-        super().fit(X, y)
+        super(select_rates_regression, self).fit(X, y)
 
         self._fitted = True
 
@@ -887,20 +864,20 @@ class select_rates_regression(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
-        return super().transform(X)
+        return super(select_rates_regression, self).transform(X)
 
 
-class truncatedSVD(sklearn.decomposition.TruncatedSVD):
+class truncatedSVD(sklearn.decomposition.TruncatedSVD, BaseFeatureSelection):
     def __init__(
         self,
         target_dim: int = 5,
     ):
         self.target_dim = int(target_dim)
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -908,13 +885,12 @@ class truncatedSVD(sklearn.decomposition.TruncatedSVD):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> truncatedSVD:
-
-        super().__init__(
+        super(truncatedSVD, self).__init__(
             n_components=min(self.target_dim, X.shape[1] - 1),
             algorithm="randomized",
         )
 
-        super().fit(X)
+        super(truncatedSVD, self).fit(X)
 
         self._fitted = True
 
@@ -923,8 +899,7 @@ class truncatedSVD(sklearn.decomposition.TruncatedSVD):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise NotImplementedError("The model has not been fitted yet!")
 
-        return super().transform(X)
+        return super(truncatedSVD, self).transform(X)

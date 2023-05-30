@@ -52,6 +52,7 @@ from InsurAutoML.constant import (
     LIGHTGBM_BOOSTING,
     LIGHTGBM_TREE_LEARNER,
 )
+from .base import BaseModel
 
 ##########################################################################
 # LightGBM support
@@ -223,7 +224,7 @@ class LightGBM_Base:
         return self.model.predict_proba(X)
 
 
-class LightGBM_Classifier(LightGBM_Base):
+class LightGBM_Classifier(LightGBM_Base, BaseModel):
 
     """
     LightGBM Classification Wrapper
@@ -299,7 +300,7 @@ class LightGBM_Classifier(LightGBM_Base):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LightGBM_Classifier:
-        super().fit(X, y)
+        super(LightGBM_Classifier, self).fit(X, y)
 
         self._fitted = True
 
@@ -308,15 +309,15 @@ class LightGBM_Classifier(LightGBM_Base):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return super().predict(X)
+        return super(LightGBM_Classifier, self).predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return super().predict_proba(X)
+        return super(LightGBM_Classifier, self).predict_proba(X)
 
 
-class LightGBM_Regressor(LightGBM_Base):
+class LightGBM_Regressor(LightGBM_Base, BaseModel):
 
     """
     LightGBM Regression Wrapper
@@ -392,7 +393,7 @@ class LightGBM_Regressor(LightGBM_Base):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LightGBM_Regressor:
-        super().fit(X, y)
+        super(LightGBM_Regressor, self).fit(X, y)
 
         self._fitted = True
 
@@ -401,7 +402,7 @@ class LightGBM_Regressor(LightGBM_Base):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return super().predict(X)
+        return super(LightGBM_Regressor, self).predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]

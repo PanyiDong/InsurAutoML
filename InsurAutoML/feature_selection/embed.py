@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:50:18 pm
+Last Modified: Monday, 29th May 2023 2:43:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -41,7 +41,7 @@ SOFTWARE.
 from __future__ import annotations
 
 from typing import Union, Tuple
-import time
+import warnings
 import numbers
 import numpy as np
 import pandas as pd
@@ -51,11 +51,10 @@ import pandas as pd
 from sklearn.utils.extmath import stable_cumsum, svd_flip
 
 # from My_AutoML._utils import class_means, class_cov, empirical_covariance
+from .base import BaseFeatureSelection
 
-import warnings
 
-
-class PCA_FeatureSelection:
+class PCA_FeatureSelection(BaseFeatureSelection):
 
     """
     Principal Component Analysis
@@ -96,6 +95,7 @@ class PCA_FeatureSelection:
         self.n_iter = n_iter
         self.seed = seed
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -261,7 +261,7 @@ class PCA_FeatureSelection:
         return U, S, V
 
 
-# class LDASelection:
+# class LDASelection(BaseFeatureSelection):
 #     def __init__(
 #         self,
 #         priors=None,
@@ -270,6 +270,7 @@ class PCA_FeatureSelection:
 #         self.priors = priors
 #         self.n_components = n_components
 
+#         super().__init__()
 #         self._fitted = False
 
 #     def _eigen(self, X, y):
@@ -342,7 +343,7 @@ class PCA_FeatureSelection:
 #         return X_new[:, : self._max_components]
 
 
-class RBFSampler:
+class RBFSampler(BaseFeatureSelection):
 
     """
     Implement of Weighted Sums of Random Kitchen Sinks
@@ -364,6 +365,7 @@ class RBFSampler:
         self.n_components = n_components
         self.seed = seed
 
+        super().__init__()
         self._fitted = False
 
     def fit(
