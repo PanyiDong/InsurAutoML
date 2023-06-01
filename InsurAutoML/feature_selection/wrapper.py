@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 3:08:35 pm
+Last Modified: Thursday, 1st June 2023 9:28:41 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,12 +47,12 @@ import numpy as np
 import pandas as pd
 import itertools
 
-from InsurAutoML.utils import (
+from ..utils import (
     minloc,
     maxloc,
 )
-from InsurAutoML.utils.base import has_method
-from InsurAutoML.utils.optimize import (
+from ..utils.base import has_method
+from ..utils.optimize import (
     get_estimator,
     get_metrics,
 )
@@ -113,7 +113,7 @@ class ExhaustiveFS(BaseFeatureSelection):
 
         # check whether criteria is valid
         if self.criteria == "neg_accuracy":
-            from InsurAutoML.utils.stats import neg_accuracy
+            from ..utils.stats import neg_accuracy
 
             self.criteria = neg_accuracy
         elif self.criteria == "MSE":

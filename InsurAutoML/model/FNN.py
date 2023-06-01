@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:52:26 pm
+Last Modified: Thursday, 1st June 2023 9:40:53 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,8 +45,9 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from InsurAutoML.utils.data import assign_classes
+from ..utils.data import assign_classes
 from .base import BaseModel
+
 # check if pytorch exists
 # if exists, import pytorch
 import importlib

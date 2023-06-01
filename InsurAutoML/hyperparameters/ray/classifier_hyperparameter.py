@@ -11,7 +11,7 @@ File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 1:17:11 pm
+Last Modified: Thursday, 1st June 2023 9:37:24 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,8 +49,8 @@ SOFTWARE.
 
 from ray import tune
 
-from InsurAutoML.constant import LIGHTGBM_BOOSTING, LIGHTGBM_TREE_LEARNER
-from InsurAutoML.utils.base import format_hyper_dict
+from ...constant import LIGHTGBM_BOOSTING, LIGHTGBM_TREE_LEARNER
+from ...utils.base import format_hyper_dict
 
 ADABOOSTCLASSIFIER = {
     "model": "AdaboostClassifier",

@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:52:31 pm
+Last Modified: Thursday, 1st June 2023 9:41:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,7 @@ import numpy as np
 import pandas as pd
 from lightgbm import LGBMClassifier, LGBMRegressor
 
-from InsurAutoML.constant import (
+from ..constant import (
     LIGHTGBM_BINARY_CLASSIFICATION,
     LIGHTGBM_MULTICLASS_CLASSIFICATION,
     LIGHTGBM_REGRESSION,

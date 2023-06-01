@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:45:16 pm
+Last Modified: Thursday, 1st June 2023 9:43:06 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,7 +47,7 @@ import numpy as np
 import pandas as pd
 
 from .base import random_index
-from InsurAutoML.constant import UNI_CLASS
+from ..constant import UNI_CLASS
 
 # string list to list
 

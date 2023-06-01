@@ -11,7 +11,7 @@ File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 7:29:08 pm
+Last Modified: Thursday, 1st June 2023 9:27:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from InsurAutoML.base import no_processing
+from ..base import no_processing
 from .filter import (
     FeatureFilter,
     mRMR,

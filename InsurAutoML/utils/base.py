@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:46:23 pm
+Last Modified: Thursday, 1st June 2023 9:42:56 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,7 +46,7 @@ import time
 import numpy as np
 import pandas as pd
 from dateutil.parser import parse
-from InsurAutoML.constant import UNI_CLASS, PROP_UNIQUE
+from ..constant import UNI_CLASS, PROP_UNIQUE
 
 # set response to [0, 1] class, random guess at 0.5
 

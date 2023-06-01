@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hyperparameters/ray/scaling_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 30th January 2023 12:32:56 pm
+Last Modified: Thursday, 1st June 2023 9:39:13 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from ray import tune
-from InsurAutoML.utils.base import format_hyper_dict
+from ...utils.base import format_hyper_dict
 
 NOPROCESSING = {"scaling": "no_processing"}
 STANDARDIZE = {"scaling": "Standardize"}

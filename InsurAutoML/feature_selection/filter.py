@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:44:10 pm
+Last Modified: Thursday, 1st June 2023 9:27:23 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,7 +46,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from InsurAutoML.utils import (
+from ..utils import (
     maxloc,
     Pearson_Corr,
     MI,

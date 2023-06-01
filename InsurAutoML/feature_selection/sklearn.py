@@ -11,7 +11,7 @@ File: _sklearn.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 3:07:26 pm
+Last Modified: Thursday, 1st June 2023 9:27:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,7 +52,7 @@ import sklearn.preprocessing
 import sklearn.ensemble
 import warnings
 
-from InsurAutoML.utils.base import is_none
+from ..utils.base import is_none
 from .base import BaseFeatureSelection
 
 ##########################################################################

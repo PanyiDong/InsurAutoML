@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/scaling/__init__.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:30:52 pm
+Last Modified: Thursday, 1st June 2023 9:42:24 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,7 +49,7 @@ from .scaling import (
     Feature_Manipulation,
     Feature_Truncation,
 )
-from InsurAutoML.base import no_processing
+from ..base import no_processing
 
 scalings = {
     "no_processing": no_processing,

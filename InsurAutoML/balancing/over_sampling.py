@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:07:50 pm
+Last Modified: Thursday, 1st June 2023 9:26:23 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,7 +48,7 @@ import sklearn
 import sklearn.utils
 
 from .base import BaseBalancing
-from InsurAutoML.utils.data import is_imbalance, LinkTable
+from ..utils.data import is_imbalance, LinkTable
 
 """
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \

@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th May 2023 7:07:50 pm
+Last Modified: Thursday, 1st June 2023 9:37:55 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from ray import tune
-from InsurAutoML.utils.base import format_hyper_dict
+from ...utils.base import format_hyper_dict
 
 NOPROCESSING = {"feature_selection": "no_processing"}
 LDASELECTION = {"feature_selection": "LDASelection"}

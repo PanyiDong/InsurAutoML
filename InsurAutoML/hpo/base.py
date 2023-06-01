@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 6:40:50 pm
+Last Modified: Thursday, 1st June 2023 9:34:42 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,8 +40,33 @@ SOFTWARE.
 
 
 from __future__ import annotations
-from InsurAutoML import set_seed
-from InsurAutoML.utils.optimize import (
+from typing import Union, List, Callable, Dict, Tuple
+import os
+import warnings
+import importlib
+import shutil
+import copy
+import datetime
+import logging
+import pandas as pd
+import numpy as np
+from ray import tune
+from ray.tune.analysis import ExperimentAnalysis
+
+from ..base import set_seed, no_processing
+from ..constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
+from ..utils.base import type_of_script, format_hyper_dict
+from ..utils.data import (
+    str2list,
+    str2dict,
+)
+from ..utils.file import (
+    save_methods,
+    load_methods,
+    find_exact_path,
+)
+from ..utils.metadata import MetaData
+from ..utils.optimize import (
     setup_logger,
     get_algo,
     set_algo_seed,
@@ -52,41 +77,12 @@ from InsurAutoML.utils.optimize import (
     ray_status,
     check_status,
 )
-from InsurAutoML.utils.metadata import MetaData
-from InsurAutoML.utils.data import (
-    str2list,
-    str2dict,
-)
-from InsurAutoML.utils.file import (
-    save_methods,
-    load_methods,
-    find_exact_path,
-)
-from InsurAutoML.utils.base import type_of_script, format_hyper_dict
-from InsurAutoML.base import no_processing
-from InsurAutoML.constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
-from InsurAutoML.hpo.utils import (
+from .utils import (
     TabularObjective,
     Pipeline,
     ClassifierEnsemble,
     RegressorEnsemble,
 )
-from ray import tune
-from ray.tune.analysis import ExperimentAnalysis
-import pandas as pd
-import numpy as np
-import warnings
-import importlib
-import shutil
-import copy
-import datetime
-import os
-from typing import Union, List, Callable, Dict, Tuple
-import logging
-
-
-# import ray
-
 
 # filter certain warnings
 warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
@@ -342,7 +338,7 @@ class AutoTabularBase:
 
         # Encoding: convert string types to numerical type
         # all encoders available
-        from InsurAutoML.encoding import encoders
+        from ..encoding import encoders
 
         # if additional exists, import, otherwise set to default
         try:
@@ -378,7 +374,7 @@ class AutoTabularBase:
 
         # Imputer: fill missing values
         # all imputers available
-        from InsurAutoML.imputation import imputers
+        from ..imputation import imputers
 
         # if additional exists, import, otherwise set to default
         try:
@@ -428,7 +424,7 @@ class AutoTabularBase:
 
         # Balancing: deal with imbalanced dataset, using over-/under-sampling methods
         # all balancings available
-        from InsurAutoML.balancing import balancings
+        from ..balancing import balancings
 
         # if additional exists, import, otherwise set to default
         try:
@@ -463,7 +459,7 @@ class AutoTabularBase:
 
         # Scaling
         # all scalings available
-        from InsurAutoML.scaling import scalings
+        from ..scaling import scalings
 
         # if additional exists, import, otherwise set to default
         try:
@@ -498,7 +494,7 @@ class AutoTabularBase:
 
         # Feature selection: Remove redundant features, reduce dimensionality
         # all feature selections available
-        from InsurAutoML.feature_selection import feature_selections
+        from ..feature_selection import feature_selections
 
         # if additional exists, import, otherwise set to default
         try:
@@ -559,7 +555,7 @@ class AutoTabularBase:
         # if mode is classification, use classification models
         # if mode is regression, use regression models
         if self.task_mode == "classification":
-            from InsurAutoML.model import classifiers
+            from ..model import classifiers
 
             # if additional exists, import, otherwise set to default
             try:
@@ -572,7 +568,7 @@ class AutoTabularBase:
             # include additional classifiers
             self._all_models.update(add_classifiers)
         elif self.task_mode == "regression":
-            from InsurAutoML.model import regressors
+            from ..model import regressors
 
             # if additional exists, import, otherwise set to default
             try:
@@ -621,9 +617,9 @@ class AutoTabularBase:
         # _all_models_hyperparameters = copy.deepcopy(self._all_models_hyperparameters)
 
         # initialize default search space
-        from InsurAutoML.utils.optimize import _get_hyperparameter_space
+        from ..utils.optimize import _get_hyperparameter_space
 
-        from InsurAutoML.hyperparameters import (
+        from ..hyperparameters import (
             encoder_hyperparameter,
             imputer_hyperparameter,
             scaling_hyperparameter,
@@ -702,7 +698,7 @@ class AutoTabularBase:
         if self.task_mode == "classification":
             for item in _all_feature_selection_hyperparameters:
                 if "SFS" in item.values():
-                    from InsurAutoML.constant import (
+                    from ..constant import (
                         CLASSIFICATION_ESTIMATORS,
                         CLASSIFICATION_CRITERIA,
                     )
@@ -713,7 +709,7 @@ class AutoTabularBase:
         elif self.task_mode == "regression":
             for item in _all_feature_selection_hyperparameters:
                 if "SFS" in item.values():
-                    from InsurAutoML.constant import (
+                    from ..constant import (
                         REGRESSION_ESTIMATORS,
                         REGRESSION_CRITERIA,
                     )
@@ -746,11 +742,11 @@ class AutoTabularBase:
                 if "LightGBM_Classifier" in item.values():
                     # flatten to 1d
                     if len(pd.unique(y.to_numpy().flatten())) == 2:
-                        from InsurAutoML.constant import LIGHTGBM_BINARY_CLASSIFICATION
+                        from ..constant import LIGHTGBM_BINARY_CLASSIFICATION
 
                         item["objective"] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
                     else:
-                        from InsurAutoML.constant import (
+                        from ..constant import (
                             LIGHTGBM_MULTICLASS_CLASSIFICATION,
                         )
 

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/__init__.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:53 pm
+Last Modified: Thursday, 1st June 2023 9:25:57 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,7 +48,7 @@ from .under_sampling import (
     CNN_TomekLink,
 )
 from .mixed_sampling import Smote_TomekLink, Smote_ENN
-from InsurAutoML.base import no_processing
+from ..base import no_processing
 
 balancings = {
     "no_processing": no_processing,

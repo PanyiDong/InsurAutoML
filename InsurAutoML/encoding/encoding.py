@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:25:40 pm
+Last Modified: Thursday, 1st June 2023 9:26:56 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,9 +43,9 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
-from InsurAutoML.utils.base import is_date
-from InsurAutoML.utils.data import formatting
 
+from ..utils.base import is_date
+from ..utils.data import formatting
 from .base import BaseEncoder
 
 

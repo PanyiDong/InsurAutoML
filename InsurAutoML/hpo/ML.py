@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 6:42:18 pm
+Last Modified: Thursday, 1st June 2023 9:25:19 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -742,7 +742,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             self._type = "Unsupervised"
 
         if self._type in ["binary", "multiclass"]:  # assign classification tasks
-            self.model = AutoTabularClassifier(
+            super(AutoTabular, self).__init__(
                 n_estimators=self.n_estimators,
                 ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
@@ -778,8 +778,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 reset_index=self.reset_index,
                 seed=self.seed,
             )
+            super(AutoTabular, self).fit(X, y)
         elif self._type in ["integer", "continuous"]:  # assign regression tasks
-            self.model = AutoTabularRegressor(
+            super(AutoTabularClassifier, self).__init__(
                 n_estimators=self.n_estimators,
                 ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
@@ -814,6 +815,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 reset_index=self.reset_index,
                 seed=self.seed,
             )
+            super(AutoTabularClassifier, self).fit(X, y)
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
@@ -821,22 +823,24 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 )
             )
 
-        self.model.fit(X, y)
-
-        self._fitted = True
-
         return self
 
     def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        if self.model:
-            return self.model.predict(X)
+        if self._fitted:
+            if self._type in ["binary", "multiclass"]:  # assign classification tasks
+                return super(AutoTabular, self).predict(X)
+            elif self._type in ["integer", "continuous"]:  # assign regression tasks
+                return super(AutoTabularClassifier, self).predict(X)
         else:
             raise ValueError("No tasks found! Need to fit first.")
 
     def predict_proba(
         self, X: pd.DataFrame
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        if self.model:
-            return self.model.predict_proba(X)
+        if self._fitted:
+            if self._type in ["binary", "multiclass"]:  # assign classification tasks
+                return super(AutoTabular, self).predict_proba(X)
+            elif self._type in ["integer", "continuous"]:  # assign regression tasks
+                return super(AutoTabularClassifier, self).predict_proba(X)
         else:
             raise ValueError("No tasks found! Need to fit first.")

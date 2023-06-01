@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 6:39:48 pm
+Last Modified: Thursday, 1st June 2023 9:45:20 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,12 +57,14 @@ from contextlib import contextmanager
 
 # from wrapt_timeout_decorator import *
 
-from InsurAutoML.constant import METHOD_MAPPING, TimeoutException
-from InsurAutoML.utils.base import (
+from ..constant import METHOD_MAPPING, TimeoutException
+from ..utils.base import (
     has_method,
     distribution_to_suggest,
     DisableLogger,
 )
+
+logger = logging.getLogger(__name__)
 
 
 def setup_logger(name, log_file, level=logging.INFO):
@@ -1533,7 +1535,7 @@ class TimePlateauStopper(Stopper):
         # # Trial time stop
         # # Stop if global budget depleted
         # if self._budget <= 0:
-        #     logging.info(
+        #     logger.info(
         #         "TimePlateauStopper: Time limit {} seconds reached.".format(
         #             self.timeout
         #         )
@@ -1592,7 +1594,7 @@ class TimePlateauStopper(Stopper):
         self._stored_start = time.time()
 
         if self._budget <= 0:
-            logging.info(
+            logger.info(
                 "TimePlateauStopper: Time limit {} seconds reached.".format(
                     self.timeout
                 )
@@ -1649,13 +1651,13 @@ def get_estimator(estimator_str: str) -> Callable:
 # if not in min mode, call negative of the metric
 def get_metrics(metric_str: str) -> Callable:
     if metric_str == "neg_accuracy":
-        from InsurAutoML.utils.stats import neg_accuracy
+        from ..utils.stats import neg_accuracy
 
         return neg_accuracy
     elif metric_str == "accuracy":
         from sklearn.metrics import accuracy_score
 
-        logging.warning(
+        logger.warning(
             "accuracy_score is not for min mode, please use neg_accuracy instead."
         )
         # warnings.warn(
@@ -1663,13 +1665,13 @@ def get_metrics(metric_str: str) -> Callable:
         # )
         return accuracy_score
     elif metric_str == "neg_precision":
-        from InsurAutoML.utils.stats import neg_precision
+        from ..utils.stats import neg_precision
 
         return neg_precision
     elif metric_str == "precision":
         from sklearn.metrics import precision_score
 
-        logging.warning(
+        logger.warning(
             "precision_score is not for min mode, please use neg_precision instead."
         )
         # warnings.warn(
@@ -1677,35 +1679,33 @@ def get_metrics(metric_str: str) -> Callable:
         # )
         return precision_score
     elif metric_str == "neg_auc":
-        from InsurAutoML.utils.stats import neg_auc
+        from ..utils.stats import neg_auc
 
         return neg_auc
     elif metric_str == "auc":
         from sklearn.metrics import roc_auc_score
 
-        logging.warning(
-            "roc_auc_score is not for min mode, please use neg_auc instead."
-        )
+        logger.warning("roc_auc_score is not for min mode, please use neg_auc instead.")
         # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
     elif metric_str == "neg_hinge":
-        from InsurAutoML.utils.stats import neg_hinge
+        from ..utils.stats import neg_hinge
 
         return neg_hinge
     elif metric_str == "hinge":
         from sklearn.metrics import hinge_loss
 
-        logging.warning("hinge_loss is not for min mode, please use neg_hinge instead.")
+        logger.warning("hinge_loss is not for min mode, please use neg_hinge instead.")
         # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
     elif metric_str == "neg_f1":
-        from InsurAutoML.utils.stats import neg_f1
+        from ..utils.stats import neg_f1
 
         return neg_f1
     elif metric_str == "f1":
         from sklearn.metrics import f1_score
 
-        logging.warning("f1_score is not for min mode, please use neg_f1 instead.")
+        logger.warning("f1_score is not for min mode, please use neg_f1 instead.")
         # warnings.warn("f1_score is not for min mode, please use neg_f1 instead.")
         return f1_score
     elif metric_str == "MSE":
@@ -1721,13 +1721,13 @@ def get_metrics(metric_str: str) -> Callable:
 
         return mean_squared_log_error
     elif metric_str == "neg_R2":
-        from InsurAutoML.utils.stats import neg_R2
+        from ..utils.stats import neg_R2
 
         return neg_R2
     elif metric_str == "R2":
         from sklearn.metrics import r2_score
 
-        logging.warning("r2_score is not for min mode, please use neg_R2 instead.")
+        logger.warning("r2_score is not for min mode, please use neg_R2 instead.")
         # warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
         return r2_score
     elif metric_str == "MAX":

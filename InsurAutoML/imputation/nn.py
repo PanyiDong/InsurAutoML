@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:52:20 pm
+Last Modified: Thursday, 1st June 2023 9:40:37 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,20 +39,20 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from InsurAutoML.scaling import MinMaxScale
-from InsurAutoML.utils import (
-    random_index,
-    feature_rounding,
-    get_missing_matrix,
-    formatting,
-)
-
 from typing import Union
 from time import sleep
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
 import warnings
+
+from ..scaling import MinMaxScale
+from ..utils import (
+    random_index,
+    feature_rounding,
+    get_missing_matrix,
+    formatting,
+)
 
 # check if tensorflow exists
 # if exists, import tensorflow

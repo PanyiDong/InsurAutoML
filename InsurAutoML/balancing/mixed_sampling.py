@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:47:54 pm
+Last Modified: Thursday, 1st June 2023 9:26:10 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,7 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from InsurAutoML.utils.data import is_imbalance
+from ..utils.data import is_imbalance
 from .over_sampling import Smote
 from .under_sampling import TomekLink, EditedNearestNeighbor
 

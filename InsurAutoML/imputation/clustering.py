@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:51:28 pm
+Last Modified: Thursday, 1st June 2023 9:39:45 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,8 +48,8 @@ from functools import partial
 import multiprocessing
 from multiprocessing import Pool
 
-from InsurAutoML.utils import formatting
-from InsurAutoML.scaling import MinMaxScale
+from ..utils import formatting
+from ..scaling import MinMaxScale
 
 
 class AAI_kNN(formatting, MinMaxScale):

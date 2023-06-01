@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:45:23 pm
+Last Modified: Thursday, 1st June 2023 9:27:41 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,7 +47,7 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from InsurAutoML.utils import (
+from ..utils import (
     maxloc,
     True_index,
     MI,
@@ -55,7 +55,7 @@ from InsurAutoML.utils import (
     ANOVA,
     random_index,
 )
-from InsurAutoML.constant import UNI_CLASS
+from ..constant import UNI_CLASS
 from .base import BaseFeatureSelection
 
 

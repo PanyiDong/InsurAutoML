@@ -11,7 +11,7 @@ File: sklearn_classifier.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 3:52:35 pm
+Last Modified: Thursday, 1st June 2023 9:41:48 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -64,9 +64,9 @@ import sklearn.calibration
 # if sklearn_1_0_0:
 #     from sklearn.experimental import enable_hist_gradient_boosting
 
-from InsurAutoML.constant import MAX_ITER
-from InsurAutoML.utils.base import is_none
-from InsurAutoML.utils.data import softmax
+from ..constant import MAX_ITER
+from ..utils.base import is_none
+from ..utils.data import softmax
 from .base import BaseModel
 
 ##########################################################################

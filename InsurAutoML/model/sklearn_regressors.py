@@ -11,7 +11,7 @@ File Created: Monday, 29th May 2023 3:35:28 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 3:52:48 pm
+Last Modified: Thursday, 1st June 2023 9:42:10 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -64,8 +64,8 @@ import sklearn.calibration
 # if sklearn_1_0_0:
 #     from sklearn.experimental import enable_hist_gradient_boosting
 
-from InsurAutoML.constant import MAX_ITER
-from InsurAutoML.utils.base import is_none
+from ..constant import MAX_ITER
+from ..utils.base import is_none
 from .base import BaseModel
 
 ##########################################################################

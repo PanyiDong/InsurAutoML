@@ -11,7 +11,7 @@ File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 7:37:15 pm
+Last Modified: Thursday, 1st June 2023 9:38:25 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,12 +49,12 @@ SOFTWARE.
 
 from ray import tune
 
-from InsurAutoML.constant import (
+from ...constant import (
     LIGHTGBM_REGRESSION,
     LIGHTGBM_BOOSTING,
     LIGHTGBM_TREE_LEARNER,
 )
-from InsurAutoML.utils.base import format_hyper_dict
+from ...utils.base import format_hyper_dict
 
 ADABOOSTREGRESSOR = {
     "model": "AdaboostRegressor",

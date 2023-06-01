@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 27th May 2023 3:52:37 pm
+Last Modified: Thursday, 1st June 2023 9:41:21 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,8 +45,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from InsurAutoML.utils.data import assign_classes
-from InsurAutoML.utils.tensor import repackage_hidden
+from ..utils.data import assign_classes
+from ..utils.tensor import repackage_hidden
 from .base import BaseModel
 
 # check if pytorch exists
@@ -455,7 +455,7 @@ class RNN_Classifier(RNN_Base, BaseModel):
 
         self.is_cuda = is_cuda
         self.seed = seed
-        
+
         super().__init__()
         self._fitted = False
 
@@ -584,7 +584,7 @@ class RNN_Regressor(RNN_Base, BaseModel):
 
         self.is_cuda = is_cuda
         self.seed = seed
-        
+
         super().__init__()
         self._fitted = False
 

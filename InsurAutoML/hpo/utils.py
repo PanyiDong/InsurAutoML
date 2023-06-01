@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 7:39:08 pm
+Last Modified: Thursday, 1st June 2023 1:39:13 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,24 +39,24 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from sklearn.exceptions import ConvergenceWarning
-from sklearn.utils._testing import ignore_warnings
-from ray import tune
+from typing import Callable, Union, List, Tuple, Dict, Any
 import json
 import os
 import time
-import pandas as pd
-import numpy as np
 import scipy
-from typing import Callable, Union, List, Tuple, Dict, Any
 import warnings
 import logging
+from sklearn.exceptions import ConvergenceWarning
+from sklearn.utils._testing import ignore_warnings
+from ray import tune
+import pandas as pd
+import numpy as np
 
-from InsurAutoML.utils import train_test_split, formatting
-from InsurAutoML.utils.file import save_methods
-from InsurAutoML import set_seed
-from InsurAutoML.utils.optimize import time_limit, setup_logger
-from InsurAutoML.constant import TimeoutException
+from ..base import set_seed
+from ..constant import TimeoutException
+from ..utils.data import train_test_split, formatting
+from ..utils.file import save_methods
+from ..utils.optimize import time_limit, setup_logger
 
 logger = logging.getLogger(__name__)
 
@@ -412,9 +412,6 @@ class RegressorEnsemble(formatting):
             y = pd.DataFrame(y, columns=["response"])
             self._response = ["response"]
 
-        # remember all unique labels
-        super(RegressorEnsemble, self).fit(y)
-
         # if bagging, features much be provided
         if self.strategy == "bagging" and len(self.features) == 0:
             raise ValueError("features must be provided for bagging ensemble")
@@ -477,14 +474,11 @@ class RegressorEnsemble(formatting):
         elif self.strategy == "boosting":
             pred = np.sum(pred_list, axis=1)
 
-        # make sure all predictions are seen
-        if isinstance(pred, pd.DataFrame):
-            return super(RegressorEnsemble, self).refit(pred)
-        # if not dataframe, convert to dataframe for formatting
-        else:
-            return super(RegressorEnsemble, self).refit(
-                pd.DataFrame(pred, columns=self._response)
-            )
+        return (
+            pred
+            if isinstance(pred, pd.DataFrame)
+            else pd.DataFrame(pred, columns=self._response)
+        )
 
     def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
         raise NotImplementedError(

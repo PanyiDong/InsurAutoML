@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 7:28:40 pm
+Last Modified: Thursday, 1st June 2023 9:40:03 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,8 +45,8 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from InsurAutoML.constant import UNI_CLASS
-from InsurAutoML.utils import random_index, random_list
+from ..constant import UNI_CLASS
+from ..utils import random_index, random_list
 from .base import SimpleImputer, BaseImputer
 
 
