@@ -11,7 +11,7 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th May 2023 8:13:54 pm
+Last Modified: Wednesday, 31st May 2023 6:39:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,11 @@ SOFTWARE.
 """
 
 import logging
+
+
+class TimeoutException(Exception):
+    pass
+
 
 MAX_ERROR_TRIALOUT = 32
 

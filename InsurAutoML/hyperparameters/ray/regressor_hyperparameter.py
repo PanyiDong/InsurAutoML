@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hyperparameters/ray/regressor_hyperparameter.py
 File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:07 pm
+Last Modified: Wednesday, 31st May 2023 7:37:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -77,9 +77,8 @@ ARDREGRESSION = {
 }
 DECISIONTREE = {
     "model": "DecisionTree",
-    "criterion": tune.choice(
-        ["squared_error", "friedman_mse", "absolute_error", "poisson"]
-    ),
+    # "absolute_error" slow the training process and cannot be stopped by signal timeout
+    "criterion": tune.choice(["squared_error", "friedman_mse", "poisson"]),
     "max_features": tune.choice([1.0]),
     "max_depth_factor": tune.uniform(0.0, 2.0),
     "min_samples_split": tune.qrandint(2, 20, 1),
@@ -178,7 +177,8 @@ MLPREGRESSOR = {
 }
 RANDOMFOREST = {
     "model": "RandomForest",
-    "criterion": tune.choice(["squared_error", "absolute_error", "poisson"]),
+    # "absolute_error" slow the training process and cannot be stopped by signal timeout
+    "criterion": tune.choice(["squared_error", "friedman_mse", "poisson"]),
     "max_features": tune.uniform(0.1, 1.0),
     "max_depth": tune.choice([None]),
     "min_samples_split": tune.qrandint(2, 20, 1),

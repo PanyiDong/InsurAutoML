@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 12:57:29 pm
+Last Modified: Wednesday, 31st May 2023 6:39:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,12 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from InsurAutoML.constant import METHOD_MAPPING
-from InsurAutoML.utils.base import (
-    has_method,
-    distribution_to_suggest,
-    DisableLogger,
-)
 import importlib
 from ray.tune import Stopper
 from ray import tune
@@ -58,11 +52,45 @@ from inspect import isclass
 import warnings
 from typing import Dict, Callable, Union, List, Any
 import logging
-
-logger = logging.getLogger(__name__)
-
+import signal
+from contextlib import contextmanager
 
 # from wrapt_timeout_decorator import *
+
+from InsurAutoML.constant import METHOD_MAPPING, TimeoutException
+from InsurAutoML.utils.base import (
+    has_method,
+    distribution_to_suggest,
+    DisableLogger,
+)
+
+
+def setup_logger(name, log_file, level=logging.INFO):
+    """To setup as many loggers as you want"""
+
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+
+    handler = logging.FileHandler(log_file, mode="a")
+    handler.setFormatter(formatter)
+
+    logger = logging.getLogger(name)
+    logger.setLevel(level)
+    logger.addHandler(handler)
+
+    return logger
+
+
+@contextmanager
+def time_limit(seconds):
+    def signal_handler(signum, frame):
+        raise TimeoutException("Timed out!")
+
+    signal.signal(signal.SIGALRM, signal_handler)
+    signal.alarm(seconds)
+    try:
+        yield
+    finally:
+        signal.alarm(0)
 
 
 # create hyperparameter space using ray.tune.choice
@@ -1505,7 +1533,7 @@ class TimePlateauStopper(Stopper):
         # # Trial time stop
         # # Stop if global budget depleted
         # if self._budget <= 0:
-        #     logger.info(
+        #     logging.info(
         #         "TimePlateauStopper: Time limit {} seconds reached.".format(
         #             self.timeout
         #         )
@@ -1522,6 +1550,9 @@ class TimePlateauStopper(Stopper):
 
         # Result plateau stop
         metric_result = result.get(self._metric)  # get metric from result
+        # If metric is inf (timeout), stop current trial
+        if metric_result == np.inf:
+            return True
         self._trial_results[trial_id].append(metric_result)
         self._iter[trial_id] += 1  # record trial results and iteration
 
@@ -1561,7 +1592,7 @@ class TimePlateauStopper(Stopper):
         self._stored_start = time.time()
 
         if self._budget <= 0:
-            logger.info(
+            logging.info(
                 "TimePlateauStopper: Time limit {} seconds reached.".format(
                     self.timeout
                 )
@@ -1624,7 +1655,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "accuracy":
         from sklearn.metrics import accuracy_score
 
-        logger.warning(
+        logging.warning(
             "accuracy_score is not for min mode, please use neg_accuracy instead."
         )
         # warnings.warn(
@@ -1638,7 +1669,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "precision":
         from sklearn.metrics import precision_score
 
-        logger.warning(
+        logging.warning(
             "precision_score is not for min mode, please use neg_precision instead."
         )
         # warnings.warn(
@@ -1652,7 +1683,9 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "auc":
         from sklearn.metrics import roc_auc_score
 
-        logger.warning("roc_auc_score is not for min mode, please use neg_auc instead.")
+        logging.warning(
+            "roc_auc_score is not for min mode, please use neg_auc instead."
+        )
         # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
     elif metric_str == "neg_hinge":
@@ -1662,7 +1695,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "hinge":
         from sklearn.metrics import hinge_loss
 
-        logger.warning("hinge_loss is not for min mode, please use neg_hinge instead.")
+        logging.warning("hinge_loss is not for min mode, please use neg_hinge instead.")
         # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
     elif metric_str == "neg_f1":
@@ -1672,7 +1705,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "f1":
         from sklearn.metrics import f1_score
 
-        logger.warning("f1_score is not for min mode, please use neg_f1 instead.")
+        logging.warning("f1_score is not for min mode, please use neg_f1 instead.")
         # warnings.warn("f1_score is not for min mode, please use neg_f1 instead.")
         return f1_score
     elif metric_str == "MSE":
@@ -1694,7 +1727,7 @@ def get_metrics(metric_str: str) -> Callable:
     elif metric_str == "R2":
         from sklearn.metrics import r2_score
 
-        logger.warning("r2_score is not for min mode, please use neg_R2 instead.")
+        logging.warning("r2_score is not for min mode, please use neg_R2 instead.")
         # warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
         return r2_score
     elif metric_str == "MAX":

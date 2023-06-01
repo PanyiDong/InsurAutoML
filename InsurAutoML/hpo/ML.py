@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 1:08:35 pm
+Last Modified: Wednesday, 31st May 2023 6:42:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,18 +39,12 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-
-import os
-import shutil
-import logging
 from typing import Union, List, Callable, Dict
 import numpy as np
 import pandas as pd
 
 from .base import AutoTabularBase
-
-from InsurAutoML.utils.base import type_of_task
-from InsurAutoML.hpo.utils import setup_logger
+from ..utils.base import type_of_task
 
 
 class AutoTabularRegressor(AutoTabularBase):
@@ -69,6 +63,9 @@ class AutoTabularRegressor(AutoTabularBase):
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
     allow_error_prop: proportion of tasks allows failure, default = 0.1
     allowed number of failures is int(max_evals * allow_error_prop)
 
@@ -77,6 +74,9 @@ class AutoTabularRegressor(AutoTabularBase):
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -178,10 +178,12 @@ class AutoTabularRegressor(AutoTabularBase):
         ensemble_strategy: str = "stacking",
         timeout: int = 360,
         max_evals: int = 64,
+        timeout_per_trial: int = None,
         allow_error_prop: float = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -211,10 +213,12 @@ class AutoTabularRegressor(AutoTabularBase):
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
+        self.timeout_per_trial = timeout_per_trial
         self.allow_error_prop = allow_error_prop
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -247,11 +251,13 @@ class AutoTabularRegressor(AutoTabularBase):
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
             timeout=self.timeout,
+            timeout_per_trial=self.timeout_per_trial,
             max_evals=self.max_evals,
             allow_error_prop=self.allow_error_prop,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,
+            resume=self.resume,
             model_name=self.model_name,
             ignore_warning=self.ignore_warning,
             encoder=self.encoder,
@@ -278,45 +284,6 @@ class AutoTabularRegressor(AutoTabularBase):
             seed=self.seed,
         )
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> AutoTabularRegressor:
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(
-                os.path.join(self.temp_directory, self.model_name), ignore_errors=True
-            )
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
-
-        # setup up logger
-        if not hasattr(self, "_logger"):
-            self._logger = setup_logger(
-                __name__,
-                os.path.join(
-                    os.getcwd(), self.temp_directory, self.model_name, "logging.conf"
-                ),
-                level=logging.INFO,
-            )
-
-        super().fit(X, y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        return super().predict(X)
-
-    def predict_proba(
-        self, X: pd.DataFrame
-    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        raise NotImplementedError(
-            "predict_proba is not implemented for AutoTabularRegressor"
-        )
-
 
 class AutoTabularClassifier(AutoTabularBase):
 
@@ -334,6 +301,9 @@ class AutoTabularClassifier(AutoTabularBase):
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
     allow_error_prop: proportion of tasks allows failure, default = 0.1
     allowed number of failures is int(max_evals * allow_error_prop)
 
@@ -342,6 +312,9 @@ class AutoTabularClassifier(AutoTabularBase):
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -444,10 +417,12 @@ class AutoTabularClassifier(AutoTabularBase):
         ensemble_strategy: str = "stacking",
         timeout: int = 360,
         max_evals: int = 64,
+        timeout_per_trial: int = None,
         allow_error_prop: float = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -477,10 +452,12 @@ class AutoTabularClassifier(AutoTabularBase):
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
+        self.timeout_per_trial = timeout_per_trial
         self.allow_error_prop = allow_error_prop
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -514,10 +491,12 @@ class AutoTabularClassifier(AutoTabularBase):
             ensemble_strategy=self.ensemble_strategy,
             timeout=self.timeout,
             max_evals=self.max_evals,
+            timeout_per_trial=self.timeout_per_trial,
             allow_error_prop=self.allow_error_prop,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,
+            resume=self.resume,
             model_name=self.model_name,
             ignore_warning=self.ignore_warning,
             encoder=self.encoder,
@@ -544,43 +523,6 @@ class AutoTabularClassifier(AutoTabularBase):
             seed=self.seed,
         )
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> AutoTabularClassifier:
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(
-                os.path.join(self.temp_directory, self.model_name), ignore_errors=True
-            )
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
-
-        # setup up logger
-        if not hasattr(self, "_logger"):
-            self._logger = setup_logger(
-                __name__,
-                os.path.join(
-                    os.getcwd(), self.temp_directory, self.model_name, "logging.conf"
-                ),
-                level=logging.INFO,
-            )
-
-        super().fit(X, y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        return super().predict(X)
-
-    def predict_proba(
-        self, X: pd.DataFrame
-    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        return super().predict_proba(X)
-
 
 class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
@@ -598,6 +540,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
     allow_error_prop: proportion of tasks allows failure, default = 0.1
     allowed number of failures is int(max_evals * allow_error_prop)
 
@@ -606,6 +551,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -713,10 +661,12 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         ensemble_strategy: str = "stacking",
         timeout: int = 360,
         max_evals: int = 64,
+        timeout_per_trial: int = None,
         allow_error_prop: float = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -746,10 +696,12 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
+        self.timeout_per_trial = timeout_per_trial
         self.allow_error_prop = allow_error_prop
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -780,16 +732,6 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
     ) -> AutoTabular:
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(
-                os.path.join(self.temp_directory, self.model_name), ignore_errors=True
-            )
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
-
         if (
             isinstance(y, pd.DataFrame)
             or isinstance(y, pd.Series)
@@ -805,10 +747,12 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
                 max_evals=self.max_evals,
+                timeout_per_trial=self.timeout_per_trial,
                 allow_error_prop=self.allow_error_prop,
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
                 save=self.save,
+                resume=self.resume,
                 model_name=self.model_name,
                 ignore_warning=self.ignore_warning,
                 encoder=self.encoder,
@@ -840,10 +784,12 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
                 max_evals=self.max_evals,
+                timeout_per_trial=self.timeout_per_trial,
                 allow_error_prop=self.allow_error_prop,
                 temp_directory=self.temp_directory,
                 delete_temp_after_terminate=self.delete_temp_after_terminate,
                 save=self.save,
+                resume=self.resume,
                 model_name=self.model_name,
                 ignore_warning=self.ignore_warning,
                 encoder=self.encoder,

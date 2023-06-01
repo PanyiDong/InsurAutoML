@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 12:57:04 pm
+Last Modified: Wednesday, 31st May 2023 6:40:50 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,6 +42,7 @@ SOFTWARE.
 from __future__ import annotations
 from InsurAutoML import set_seed
 from InsurAutoML.utils.optimize import (
+    setup_logger,
     get_algo,
     set_algo_seed,
     get_scheduler,
@@ -65,16 +66,15 @@ from InsurAutoML.utils.base import type_of_script, format_hyper_dict
 from InsurAutoML.base import no_processing
 from InsurAutoML.constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
 from InsurAutoML.hpo.utils import (
-    setup_logger,
     TabularObjective,
     Pipeline,
     ClassifierEnsemble,
     RegressorEnsemble,
 )
 from ray import tune
+from ray.tune.analysis import ExperimentAnalysis
 import pandas as pd
 import numpy as np
-import random
 import warnings
 import importlib
 import shutil
@@ -137,6 +137,9 @@ class AutoTabularBase:
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
     allow_error_prop: proportion of tasks allows failure, default = 0.1
     allowed number of failures is int(max_evals * allow_error_prop)
 
@@ -145,6 +148,9 @@ class AutoTabularBase:
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -254,10 +260,12 @@ class AutoTabularBase:
         ensemble_strategy: str = "stacking",
         timeout: int = 360,
         max_evals: int = 64,
+        timeout_per_trial: int = None,
         allow_error_prop: float = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -288,10 +296,12 @@ class AutoTabularBase:
         self.ensemble_strategy = ensemble_strategy
         self.timeout = timeout
         self.max_evals = max_evals
+        self.timeout_per_trial = timeout_per_trial
         self.allow_error_prop = allow_error_prop
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -359,11 +369,6 @@ class AutoTabularBase:
                         ),
                         ValueError,
                     )
-                    # raise ValueError(
-                    #     "Only supported encoders are {}, get {}.".format(
-                    #         [*self._all_encoders], _encoder
-                    #     )
-                    # )
                 encoder[_encoder] = self._all_encoders[_encoder]
 
         # exclude unwanted encoders if specified
@@ -409,7 +414,7 @@ class AutoTabularBase:
                 imputer = {}  # if specified, check if imputers in default imputers
                 for _imputer in self.imputer:
                     if _imputer not in [*self._all_imputers]:
-                        raise ValueError(
+                        self._logger.error(
                             "Only supported imputers are {}, get {}.".format(
                                 [*self._all_imputers], _imputer
                             )
@@ -444,7 +449,7 @@ class AutoTabularBase:
             balancing = {}  # if specified, check if balancings in default balancings
             for _balancing in self.balancing:
                 if _balancing not in [*self._all_balancings]:
-                    raise ValueError(
+                    self._logger.error(
                         "Only supported balancings are {}, get {}.".format(
                             [*self._all_balancings], _balancing
                         )
@@ -479,7 +484,7 @@ class AutoTabularBase:
             scaling = {}  # if specified, check if scalings in default scalings
             for _scaling in self.scaling:
                 if _scaling not in [*self._all_scalings]:
-                    raise ValueError(
+                    self._logger.error(
                         "Only supported scalings are {}, get {}.".format(
                             [*self._all_scalings], _scaling
                         )
@@ -534,7 +539,7 @@ class AutoTabularBase:
             )  # if specified, check if balancings in default balancings
             for _feature_selection in self.feature_selection:
                 if _feature_selection not in [*self._all_feature_selection]:
-                    raise ValueError(
+                    self._logger.error(
                         "Only supported feature selections are {}, get {}.".format(
                             [*self._all_feature_selection], _feature_selection
                         )
@@ -600,7 +605,7 @@ class AutoTabularBase:
             models = {}  # if specified, check if models in default models
             for _model in self.models:
                 if _model not in [*self._all_models]:
-                    raise ValueError(
+                    self._logger.error(
                         "Only supported models are {}, get {}.".format(
                             [*self._all_models], _model
                         )
@@ -834,6 +839,17 @@ class AutoTabularBase:
             hyperparameter_space,
         )
 
+    @classmethod
+    def check_analysis(self, fit_analysis: ExperimentAnalysis):
+        # get all configs, trial_id
+        analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
+
+        if len(analysis_df) == 0:
+            logging.exception("No trials found. Please increase max_evals or timeout.")
+
+        if (analysis_df["loss"] != np.inf).sum() == 0:
+            logging.exception("No trials found. Please increase timeout.")
+
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(
         self, idx: int, optimal_point: Dict, best_path: str
@@ -1058,14 +1074,17 @@ class AutoTabularBase:
             )
 
     def _init_fit(self) -> None:
-        # temp directory already initialized at higher level
-        # # initialize temp directory
-        # # check if temp directory exists, if exists, empty it
-        # if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-        #     shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        # if not os.path.isdir(self.temp_directory):
-        #     os.makedirs(self.temp_directory)
-        # os.makedirs(os.path.join(self.temp_directory, self.model_name))
+        # initialize temp directory
+        # check if temp directory exists, if exists and not plan to resume, empty it
+        if (
+            os.path.isdir(os.path.join(self.temp_directory, self.model_name))
+            and not self.resume
+        ):
+            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
+        if not os.path.isdir(self.temp_directory):
+            os.makedirs(self.temp_directory)
+        if not os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
+            os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
         # setup up logger
         if not hasattr(self, "self._logger"):
@@ -1105,7 +1124,7 @@ class AutoTabularBase:
             )
         # raise error if gpu not available but used
         if device_count == 0 and self.use_gpu:
-            raise SystemError(
+            self._logger.error(
                 "You have no GPU available, but you have set use_gpu to True. \
                 Please check your GPU availability."
             )
@@ -1145,6 +1164,13 @@ class AutoTabularBase:
                 )
             self.timeout = min(self.timeout, MAX_TIME)
 
+        # set up timeout per trial
+        self.timeout_per_trial = (
+            max(1, int(self.timeout / self.max_evals * 5))
+            if self.timeout_per_trial is None
+            else self.timeout_per_trial
+        )
+
         # get progress report from environment
         # if specified, use specified progress report
         self.progress_reporter = (
@@ -1158,7 +1184,7 @@ class AutoTabularBase:
         )
 
         if self.progress_reporter not in ["CLIReporter", "JupyterNotebookReporter"]:
-            raise TypeError(
+            self._logger.error(
                 "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
                     self.progress_reporter
                 )
@@ -1193,30 +1219,29 @@ class AutoTabularBase:
         if not isinstance(X, pd.DataFrame):
             try:
                 X = pd.DataFrame(X)
+                self._logger.info(
+                    "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
+                    )
+                )
             except BaseException:
-                raise TypeError("Cannot convert X to dataframe, get {}".format(type(X)))
+                self._logger.error(
+                    "Cannot convert X to dataframe, get {}".format(type(X))
+                )
         if not isinstance(y, pd.DataFrame):
             try:
                 y = pd.DataFrame(y)
-            except BaseException:
-                raise TypeError("Cannot convert y to dataframe, get {}".format(type(y)))
-
-        # get data metadata
-        if not hasattr(self, "metadata"):
-            self.metadata = MetaData(X).metadata
-        # check if there's unsupported data type
-        # if datetime ,recommend to remove
-        if ("Datetime", "") in self.metadata.keys():
-            self._logger.warning(
-                "Found datatime data type columns {}, it's better to remove those columns".format(
-                    *self.metadata[("Datetime", "")]
+                self._logger.info(
+                    "[INFO] {} Experiment: {}. Status: y is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
+                    )
                 )
-            )
-        # TODO: when NLP and Image supported, redirect to corresponding model
-        if ("Object", "Text") in self.metadata.keys():
-            raise NotImplementedError("Text data type is not supported yet.")
-        if ("Path", "") in self.metadata.keys():
-            raise NotImplementedError("Image data type is not supported yet.")
+            except BaseException:
+                self._logger.error(
+                    "Cannot convert y to dataframe, get {}".format(type(y))
+                )
 
         # get features and response names
         if isinstance(X, pd.DataFrame):  # expect multiple features
@@ -1227,25 +1252,6 @@ class AutoTabularBase:
         elif isinstance(y, pd.Series):  # for the case of series
             self.response = list(y.name)
 
-        # make sure _X is a dataframe
-        if isinstance(X, pd.DataFrame):
-            pass
-        else:
-            try:
-                X = pd.DataFrame(X)
-                self._logger.info(
-                    "[INFO] {} Experiment: {}. Status: X is not a dataframe, converted to dataframe.".format(
-                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                        self.model_name,
-                    )
-                )
-            except BaseException:
-                raise TypeError(
-                    "X must be a dataframe! Can't convert {} to dataframe.".format(
-                        type(X)
-                    )
-                )
-
         _X = X.copy()
         _y = y.copy()
 
@@ -1253,6 +1259,23 @@ class AutoTabularBase:
             # reset index to avoid indexing error
             _X.reset_index(drop=True, inplace=True)
             _y.reset_index(drop=True, inplace=True)
+
+        # get data metadata
+        if not hasattr(self, "metadata"):
+            self.metadata = MetaData(_X).metadata
+        # check if there's unsupported data type
+        # if datetime ,recommend to remove
+        if ("Datetime", "") in self.metadata.keys():
+            self._logger.warning(
+                "Found datatime data type columns {}, it's better to remove those columns".format(
+                    *self.metadata[("Datetime", "")]
+                )
+            )
+        # TODO: when NLP and Image supported, redirect to corresponding model
+        if ("Object", "Text") in self.metadata.keys():
+            self._logger.error("Text data type is not supported yet.")
+        if ("Path", "") in self.metadata.keys():
+            self._logger.error("Image data type is not supported yet.")
 
         (
             encoder,
@@ -1381,7 +1404,7 @@ class AutoTabularBase:
                 valid_size=self.valid_size,
                 full_status=self.full_status,
                 reset_index=self.reset_index,
-                # timeout=self.timeout, # specified in stopper
+                timeout=self.timeout_per_trial,
                 _iter=self._iter,
                 seed=self.seed,
             )
@@ -1401,7 +1424,7 @@ class AutoTabularBase:
                     trainer,
                     # config=hyperparameter_space,
                     name=self.model_name,  # name of the tuning process, use model_name
-                    resume="AUTO",
+                    resume=self.resume,
                     checkpoint_freq=8,  # disable checkpoint
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
@@ -1433,7 +1456,7 @@ class AutoTabularBase:
                     trainer,
                     config=hyperparameter_space,
                     name=self.model_name,  # name of the tuning process, use model_name
-                    resume="AUTO",
+                    resume=self.resume,
                     checkpoint_freq=8,  # disable checkpoint
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
@@ -1466,6 +1489,8 @@ class AutoTabularBase:
                 )
             )
 
+            # check status of the trial analysis
+            self.check_analysis(fit_analysis)
             # get the best config settings
             best_trial_id = str(
                 fit_analysis.get_best_trial(
@@ -1502,7 +1527,7 @@ class AutoTabularBase:
                 valid_size=self.valid_size,
                 full_status=self.full_status,
                 reset_index=self.reset_index,
-                # timeout=self.timeout, # specified in stopper
+                timeout=self.timeout_per_trial,
                 _iter=self._iter,
                 seed=self.seed,
             )
@@ -1522,7 +1547,7 @@ class AutoTabularBase:
                     trainer,
                     # config=hyperparameter_space,
                     name=self.model_name,  # name of the tuning process, use model_name
-                    resume="AUTO",
+                    resume=self.resume,
                     checkpoint_freq=8,  # disable checkpoint
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
@@ -1554,7 +1579,7 @@ class AutoTabularBase:
                     trainer,
                     config=hyperparameter_space,
                     name=self.model_name,  # name of the tuning process, use model_name
-                    resume="AUTO",
+                    resume=self.resume,
                     checkpoint_freq=8,  # disable checkpoint
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
@@ -1587,6 +1612,8 @@ class AutoTabularBase:
                 )
             )
 
+            # check status of the trial analysis
+            self.check_analysis(fit_analysis)
             # get all configs, trial_id
             analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
 
@@ -1655,7 +1682,7 @@ class AutoTabularBase:
                     valid_size=self.valid_size,
                     full_status=self.full_status,
                     reset_index=self.reset_index,
-                    # timeout=self.timeout, # specified in stopper
+                    timeout=self.timeout_per_trial,
                     _iter=self._iter,
                     seed=self.seed,
                 )
@@ -1680,7 +1707,7 @@ class AutoTabularBase:
                         + "_"
                         + str(_n + 1),
                         # name of the tuning process, use model_name
-                        resume="AUTO",
+                        resume=self.resume,
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
                         keep_checkpoints_num=4,
@@ -1717,7 +1744,7 @@ class AutoTabularBase:
                         + "_"
                         + str(_n + 1),
                         # name of the tuning process, use model_name
-                        resume="AUTO",
+                        resume=self.resume,
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
                         keep_checkpoints_num=4,
@@ -1750,6 +1777,8 @@ class AutoTabularBase:
                     )
                 )
 
+                # check status of the trial analysis
+                self.check_analysis(fit_analysis)
                 # get the best config settings
                 best_trial_id = str(
                     fit_analysis.get_best_trial(
@@ -1809,7 +1838,7 @@ class AutoTabularBase:
                     valid_size=self.valid_size,
                     full_status=self.full_status,
                     reset_index=self.reset_index,
-                    # timeout=self.timeout, # specified in stopper
+                    timeout=self.timeout_per_trial,
                     _iter=self._iter,
                     seed=self.seed,
                 )
@@ -1832,7 +1861,7 @@ class AutoTabularBase:
                         + "_"
                         + str(_n + 1),
                         # name of the tuning process, use model_name
-                        resume="AUTO",
+                        resume=self.resume,
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
                         keep_checkpoints_num=4,
@@ -1869,7 +1898,7 @@ class AutoTabularBase:
                         + "_"
                         + str(_n + 1),
                         # name of the tuning process, use model_name
-                        resume="AUTO",
+                        resume=self.resume,
                         checkpoint_freq=8,  # disable checkpoint
                         checkpoint_at_end=True,
                         keep_checkpoints_num=4,
@@ -1902,6 +1931,8 @@ class AutoTabularBase:
                     )
                 )
 
+                # check status of the trial analysis
+                self.check_analysis(fit_analysis)
                 # get the best config settings
                 best_trial_id = str(
                     fit_analysis.get_best_trial(
