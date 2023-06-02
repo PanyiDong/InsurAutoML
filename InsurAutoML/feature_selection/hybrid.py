@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:27:41 am
+Last Modified: Thursday, 1st June 2023 11:15:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -165,6 +165,8 @@ class CBFS(BaseFeatureSelection):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> CBFS:
+        # get feature names
+        self._check_feature_names(X)
         # check if X is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -625,7 +627,8 @@ class GeneticAlgorithm(BaseFeatureSelection):
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> GeneticAlgorithm:
         np.random.seed(self.seed)  # set random seed
-
+        # get feature names
+        self._check_feature_names(X)
         # check if X is dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:27:23 am
+Last Modified: Thursday, 1st June 2023 11:14:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -93,6 +93,9 @@ class FeatureFilter(BaseFeatureSelection):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> FeatureFilter:
+        # get feature names
+        self._check_feature_names(X)
+
         # check whether y is empty
         if isinstance(y, pd.DataFrame):
             _empty = y.isnull().all().all()
@@ -202,6 +205,8 @@ class mRMR(BaseFeatureSelection):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> mRMR:
+        # get feature names
+        self._check_feature_names(X)
         # check if inputs are dataframes
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -263,6 +268,8 @@ class FOCI(BaseFeatureSelection):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> FOCI:
+        # get feature names
+        self._check_feature_names(X)
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.DataFrame):

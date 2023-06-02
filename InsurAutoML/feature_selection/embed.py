@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:43:02 pm
+Last Modified: Thursday, 1st June 2023 11:13:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -104,6 +104,9 @@ class PCA_FeatureSelection(BaseFeatureSelection):
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> PCA_FeatureSelection:
         n, p = X.shape
+
+        # get feature names
+        self._check_feature_names(X)
 
         # Deal with default n_componets = None
         if self.n_components is None:
@@ -373,6 +376,9 @@ class RBFSampler(BaseFeatureSelection):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> RBFSampler:
+        # get feature names
+        self._check_feature_names(X)
+
         if isinstance(X, list):
             n_features = len(X[0])
         else:

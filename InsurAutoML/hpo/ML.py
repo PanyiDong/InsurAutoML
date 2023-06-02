@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:25:19 am
+Last Modified: Thursday, 1st June 2023 3:08:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -246,7 +246,7 @@ class AutoTabularRegressor(AutoTabularBase):
 
         self._fitted = False  # whether the model has been fitted
 
-        super().__init__(
+        super(AutoTabularRegressor, self).__init__(
             task_mode="regression",
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
@@ -485,7 +485,7 @@ class AutoTabularClassifier(AutoTabularBase):
 
         self._fitted = False  # whether the model has been fitted
 
-        super().__init__(
+        super(AutoTabularClassifier, self).__init__(
             task_mode="classification",
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
@@ -524,7 +524,7 @@ class AutoTabularClassifier(AutoTabularBase):
         )
 
 
-class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
+class AutoTabular(AutoTabularBase):
 
     """
     AutoTabular that automatically assign to AutoTabularClassifier or AutoTabularRegressor
@@ -743,6 +743,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         if self._type in ["binary", "multiclass"]:  # assign classification tasks
             super(AutoTabular, self).__init__(
+                task_mode="classification",
                 n_estimators=self.n_estimators,
                 ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
@@ -778,9 +779,9 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 reset_index=self.reset_index,
                 seed=self.seed,
             )
-            super(AutoTabular, self).fit(X, y)
         elif self._type in ["integer", "continuous"]:  # assign regression tasks
-            super(AutoTabularClassifier, self).__init__(
+            super(AutoTabular, self).__init__(
+                task_mode="regression",
                 n_estimators=self.n_estimators,
                 ensemble_strategy=self.ensemble_strategy,
                 timeout=self.timeout,
@@ -815,7 +816,6 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 reset_index=self.reset_index,
                 seed=self.seed,
             )
-            super(AutoTabularClassifier, self).fit(X, y)
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
@@ -823,14 +823,13 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
                 )
             )
 
+        super(AutoTabular, self).fit(X, y)
+
         return self
 
     def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         if self._fitted:
-            if self._type in ["binary", "multiclass"]:  # assign classification tasks
-                return super(AutoTabular, self).predict(X)
-            elif self._type in ["integer", "continuous"]:  # assign regression tasks
-                return super(AutoTabularClassifier, self).predict(X)
+            return super(AutoTabular, self).predict(X)
         else:
             raise ValueError("No tasks found! Need to fit first.")
 
@@ -838,9 +837,6 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self, X: pd.DataFrame
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
         if self._fitted:
-            if self._type in ["binary", "multiclass"]:  # assign classification tasks
-                return super(AutoTabular, self).predict_proba(X)
-            elif self._type in ["integer", "continuous"]:  # assign regression tasks
-                return super(AutoTabularClassifier, self).predict_proba(X)
+            return super(AutoTabular, self).predict_proba(X)
         else:
             raise ValueError("No tasks found! Need to fit first.")

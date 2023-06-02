@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 1:39:13 pm
+Last Modified: Thursday, 1st June 2023 11:22:13 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -143,6 +143,12 @@ class Pipeline:
         # no need for balancing
         if self.scaling is not None:
             X = self.scaling.transform(X)
+
+        # unify the features order
+        if hasattr(self.feature_selection, "feature_names_in_"):
+            if not (self.feature_selection.feature_names_in_ == X.columns).all():
+                X = X[self.feature_selection.feature_names_in_]
+
         if self.feature_selection is not None:
             X = self.feature_selection.transform(X)
 
@@ -161,8 +167,17 @@ class Pipeline:
         # no need for balancing
         if self.scaling is not None:
             X = self.scaling.transform(X)
+
+        # unify the features order
+        if hasattr(self.feature_selection, "feature_names_in_"):
+            if not (self.feature_selection.feature_names_in_ == X.columns).all():
+                X = X[self.feature_selection.feature_names_in_]
+
         if self.feature_selection is not None:
             X = self.feature_selection.transform(X)
+
+        if not hasattr(self.model, "predict_proba"):
+            logger.error("model does not have predict_proba method!")
 
         return self.model.predict_proba(X)
 

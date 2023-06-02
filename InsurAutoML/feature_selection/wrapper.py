@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:28:41 am
+Last Modified: Thursday, 1st June 2023 11:15:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -92,6 +92,8 @@ class ExhaustiveFS(BaseFeatureSelection):
     def fit(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> ExhaustiveFS:
+        # get feature names
+        self._check_feature_names(X)
         # make sure estimator is recognized
         if self.estimator == "Lasso":
             from sklearn.linear_model import Lasso
@@ -222,6 +224,8 @@ class SFS(BaseFeatureSelection):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> SFS:
+        # get feature names
+        self._check_feature_names(X)
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -455,6 +459,8 @@ class ASFFS(BaseFeatureSelection):
     def fit(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> ASFFS:
+        # get feature names
+        self._check_feature_names(X)
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

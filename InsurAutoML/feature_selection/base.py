@@ -11,7 +11,7 @@ File Created: Monday, 29th May 2023 2:25:52 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:40:35 pm
+Last Modified: Thursday, 1st June 2023 11:12:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,6 +47,13 @@ import pandas as pd
 class BaseFeatureSelection:
     def __init__(self) -> None:
         pass
+
+    def _check_feature_names(self, X: Union[pd.DataFrame, np.ndarray]) -> None:
+        if not hasattr(self, "feature_names_in_"):
+            if isinstance(X, pd.DataFrame):
+                self.feature_names_in_ = X.columns.tolist()
+            else:
+                self.feature_names_in_ = [f"feature_{i}" for i in range(X.shape[1])]
 
     def fit(
         self,
