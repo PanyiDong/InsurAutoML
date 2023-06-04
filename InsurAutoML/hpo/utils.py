@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 11:22:13 pm
+Last Modified: Sunday, 4th June 2023 8:45:34 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -561,31 +561,28 @@ class TabularObjective(tune.Trainable):
                     self.timeout
                 )
             )
+            self.status_dict = {
+                "training_status": "TIMEOUT",
+                "loss": np.inf,
+            }
+            # return full status if full_status is True
             if self.full_status:
-                self.status_dict = {
-                    "encoder": self._encoder,
-                    "encoder_hyperparameter": self._encoder_hyper,
-                    "imputer": self._imputer,
-                    "imputer_hyperparameter": self._imputer_hyper,
-                    "balancing": self._balancing,
-                    "balancing_hyperparameter": self._balancing_hyper,
-                    "scaling": self._scaling,
-                    "scaling_hyperparameter": self._scaling_hyper,
-                    "feature_selection": self._feature_selection,
-                    "feature_selection_hyperparameter": self._feature_selection_hyper,
-                    "model": self._model,
-                    "model_hyperparameter": self._model_hyper,
-                    "training_status": "not fitted",
-                    "status": "TIMEOUT",
-                    "loss": np.inf,
-                }
-            else:
-                self.status_dict = {
-                    "training_status": "not fitted",
-                    "status": "TIMEOUT",
-                    "loss": np.inf,
-                }
-        # self.status_dict = self._objective()
+                self.status_dict.update(
+                    {
+                        "encoder": self._encoder,
+                        "encoder_hyperparameter": self._encoder_hyper,
+                        "imputer": self._imputer,
+                        "imputer_hyperparameter": self._imputer_hyper,
+                        "balancing": self._balancing,
+                        "balancing_hyperparameter": self._balancing_hyper,
+                        "scaling": self._scaling,
+                        "scaling_hyperparameter": self._scaling_hyper,
+                        "feature_selection": self._feature_selection,
+                        "feature_selection_hyperparameter": self._feature_selection_hyper,
+                        "model": self._model,
+                        "model_hyperparameter": self._model_hyper,
+                    }
+                )
 
         return self.status_dict
 
@@ -757,32 +754,6 @@ class TabularObjective(tune.Trainable):
             **self._model_hyper
         )  # call the model using passed parameters
 
-        # ignore hyperparameter writing here, it's already embedded
-        # if not os.path.exists("hyperparameter_settings.txt"):
-        #     write_type = "w"
-        # else:
-        #     write_type = "a"
-
-        # with open("hyperparameter_settings.txt", write_type) as f:
-        #     f.write("Encoding method: {}\n".format(self._encoder))
-        #     f.write("Encoding Hyperparameters:")
-        #     print(self._encoder_hyper, file=f, end="\n\n")
-        #     f.write("Imputation method: {}\n".format(self._imputer))
-        #     f.write("Imputation Hyperparameters:")
-        #     print(self._imputer_hyper, file=f, end="\n\n")
-        #     f.write("Balancing method: {}\n".format(self._balancing))
-        #     f.write("Balancing Hyperparameters:")
-        #     print(self._balancing_hyper, file=f, end="\n\n")
-        #     f.write("Scaling method: {}\n".format(self._scaling))
-        #     f.write("Scaling Hyperparameters:")
-        #     print(self._scaling_hyper, file=f, end="\n\n")
-        #     f.write("Feature Selection method: {}\n".format(self._feature_selection))
-        #     f.write("Feature Selection Hyperparameters:")
-        #     print(self._feature_selection_hyper, file=f, end="\n\n")
-        #     f.write("Model: {}\n".format(self._model))
-        #     f.write("Model Hyperparameters:")
-        #     print(self._model_hyper, file=f, end="\n\n")
-
     def save_checkpoint(self, tmp_checkpoint_dir: str) -> str:
         checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
 
@@ -798,14 +769,7 @@ class TabularObjective(tune.Trainable):
         with open(checkpoint_path, "r") as inp_f:
             self.status_dict = json.load(inp_f)
 
-    # # actual objective function
-    @ignore_warnings(category=ConvergenceWarning)
-    def _objective(
-        self,
-    ) -> Dict[str, Any]:
-        # set random seed
-        set_seed(self.seed)
-
+    def _get_objective(self) -> Callable:
         # different evaluation metrics for classification and regression
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
@@ -873,6 +837,19 @@ class TabularObjective(tune.Trainable):
                         self.task_mode, self.objective
                     )
                 )
+
+        return _obj
+
+    # # actual objective function
+    @ignore_warnings(category=ConvergenceWarning)
+    def _objective(
+        self,
+    ) -> Dict[str, Any]:
+        # set random seed
+        set_seed(self.seed)
+
+        # get objective function by task mode and input objective
+        _obj = self._get_objective()
 
         self._logger.info("[INFO] Objective starting...")
 
@@ -1034,29 +1011,29 @@ class TabularObjective(tune.Trainable):
         )
         self._iter += 1
 
-        # since we tries to minimize the objective function, take negative
-        # accuracy here
+        # return dictionary of objective
+        result = {
+            "fitted_model": self._model,
+            "training_status": "FITTED",
+            "loss": _loss,
+        }
+        # return full status if full_status is True
         if self.full_status:
-            return {
-                "encoder": self._encoder,
-                "encoder_hyperparameter": self._encoder_hyper,
-                "imputer": self._imputer,
-                "imputer_hyperparameter": self._imputer_hyper,
-                "balancing": self._balancing,
-                "balancing_hyperparameter": self._balancing_hyper,
-                "scaling": self._scaling,
-                "scaling_hyperparameter": self._scaling_hyper,
-                "feature_selection": self._feature_selection,
-                "feature_selection_hyperparameter": self._feature_selection_hyper,
-                "model": self._model,
-                "model_hyperparameter": self._model_hyper,
-                "fitted_model": self._model,
-                "training_status": "fitted",
-                "loss": _loss,
-            }
-        else:
-            return {
-                "fitted_model": self._model,
-                "training_status": "fitted",
-                "loss": _loss,
-            }
+            result.update(
+                {
+                    "encoder": self._encoder,
+                    "encoder_hyperparameter": self._encoder_hyper,
+                    "imputer": self._imputer,
+                    "imputer_hyperparameter": self._imputer_hyper,
+                    "balancing": self._balancing,
+                    "balancing_hyperparameter": self._balancing_hyper,
+                    "scaling": self._scaling,
+                    "scaling_hyperparameter": self._scaling_hyper,
+                    "feature_selection": self._feature_selection,
+                    "feature_selection_hyperparameter": self._feature_selection_hyper,
+                    "model": self._model,
+                    "model_hyperparameter": self._model_hyper,
+                }
+            )
+
+        return result

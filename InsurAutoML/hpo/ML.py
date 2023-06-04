@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 3:08:01 pm
+Last Modified: Friday, 2nd June 2023 1:23:59 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -729,114 +729,94 @@ class AutoTabular(AutoTabularBase):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
-    ) -> AutoTabular:
-        if (
-            isinstance(y, pd.DataFrame)
-            or isinstance(y, pd.Series)
-            or isinstance(y, np.ndarray)
-        ):
-            self._type = type_of_task(y)
-        elif not y:
-            self._type = "Unsupervised"
-
-        if self._type in ["binary", "multiclass"]:  # assign classification tasks
-            super(AutoTabular, self).__init__(
-                task_mode="classification",
-                n_estimators=self.n_estimators,
-                ensemble_strategy=self.ensemble_strategy,
-                timeout=self.timeout,
-                max_evals=self.max_evals,
-                timeout_per_trial=self.timeout_per_trial,
-                allow_error_prop=self.allow_error_prop,
-                temp_directory=self.temp_directory,
-                delete_temp_after_terminate=self.delete_temp_after_terminate,
-                save=self.save,
-                resume=self.resume,
-                model_name=self.model_name,
-                ignore_warning=self.ignore_warning,
-                encoder=self.encoder,
-                imputer=self.imputer,
-                balancing=self.balancing,
-                scaling=self.scaling,
-                feature_selection=self.feature_selection,
-                models=self.models,
-                exclude=self.exclude,
-                validation=self.validation,
-                valid_size=self.valid_size,
-                objective="accuracy" if not self.objective else self.objective,
-                search_algo=self.search_algo,
-                search_algo_settings=self.search_algo_settings,
-                search_scheduler=self.search_scheduler,
-                search_scheduler_settings=self.search_scheduler_settings,
-                logger=self.logger,
-                progress_reporter=self.progress_reporter,
-                full_status=self.full_status,
-                verbose=self.verbose,
-                cpu_threads=self.cpu_threads,
-                use_gpu=self.use_gpu,
-                reset_index=self.reset_index,
-                seed=self.seed,
-            )
-        elif self._type in ["integer", "continuous"]:  # assign regression tasks
-            super(AutoTabular, self).__init__(
-                task_mode="regression",
-                n_estimators=self.n_estimators,
-                ensemble_strategy=self.ensemble_strategy,
-                timeout=self.timeout,
-                max_evals=self.max_evals,
-                timeout_per_trial=self.timeout_per_trial,
-                allow_error_prop=self.allow_error_prop,
-                temp_directory=self.temp_directory,
-                delete_temp_after_terminate=self.delete_temp_after_terminate,
-                save=self.save,
-                resume=self.resume,
-                model_name=self.model_name,
-                ignore_warning=self.ignore_warning,
-                encoder=self.encoder,
-                imputer=self.imputer,
-                balancing=self.balancing,
-                scaling=self.scaling,
-                feature_selection=self.feature_selection,
-                models=self.models,
-                exclude=self.exclude,
-                validation=self.validation,
-                valid_size=self.valid_size,
-                objective="MSE" if not self.objective else self.objective,
-                search_algo=self.search_algo,
-                search_algo_settings=self.search_algo_settings,
-                search_scheduler=self.search_scheduler,
-                search_scheduler_settings=self.search_scheduler_settings,
-                progress_reporter=self.progress_reporter,
-                full_status=self.full_status,
-                verbose=self.verbose,
-                cpu_threads=self.cpu_threads,
-                use_gpu=self.use_gpu,
-                reset_index=self.reset_index,
-                seed=self.seed,
-            )
+    @staticmethod
+    def _get_task_mode(type: str) -> str:
+        if type in ["binary", "multiclass"]:
+            return "classification"
+        elif type in ["integer", "continuous"]:
+            return "regression"
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
-                    self._type
+                    type
                 )
             )
+
+    @staticmethod
+    def _get_default_objective(type: str, objective) -> Union[str, Callable]:
+        if type in ["binary", "multiclass"]:
+            return "accuracy" if not objective else objective
+        elif type in ["integer", "continuous"]:
+            return "MSE" if not objective else objective
+        else:
+            raise ValueError(
+                'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
+                    type
+                )
+            )
+
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
+    ) -> AutoTabular:
+        if isinstance(y, (pd.DataFrame, pd.Series, np.ndarray)):
+            self._type = type_of_task(y)
+        elif not y:
+            self._type = "unsupervised"
+
+        super(AutoTabular, self).__init__(
+            task_mode=self._get_task_mode(self._type),
+            n_estimators=self.n_estimators,
+            ensemble_strategy=self.ensemble_strategy,
+            timeout=self.timeout,
+            max_evals=self.max_evals,
+            timeout_per_trial=self.timeout_per_trial,
+            allow_error_prop=self.allow_error_prop,
+            temp_directory=self.temp_directory,
+            delete_temp_after_terminate=self.delete_temp_after_terminate,
+            save=self.save,
+            resume=self.resume,
+            model_name=self.model_name,
+            ignore_warning=self.ignore_warning,
+            encoder=self.encoder,
+            imputer=self.imputer,
+            balancing=self.balancing,
+            scaling=self.scaling,
+            feature_selection=self.feature_selection,
+            models=self.models,
+            exclude=self.exclude,
+            validation=self.validation,
+            valid_size=self.valid_size,
+            objective=self._get_default_objective(self._type, self.objective),
+            search_algo=self.search_algo,
+            search_algo_settings=self.search_algo_settings,
+            search_scheduler=self.search_scheduler,
+            search_scheduler_settings=self.search_scheduler_settings,
+            logger=self.logger,
+            progress_reporter=self.progress_reporter,
+            full_status=self.full_status,
+            verbose=self.verbose,
+            cpu_threads=self.cpu_threads,
+            use_gpu=self.use_gpu,
+            reset_index=self.reset_index,
+            seed=self.seed,
+        )
 
         super(AutoTabular, self).fit(X, y)
 
         return self
 
     def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        if self._fitted:
-            return super(AutoTabular, self).predict(X)
-        else:
+        # check if the model has been fitted
+        if not self._fitted:
             raise ValueError("No tasks found! Need to fit first.")
+
+        return super(AutoTabular, self).predict(X)
 
     def predict_proba(
         self, X: pd.DataFrame
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        if self._fitted:
-            return super(AutoTabular, self).predict_proba(X)
-        else:
+        # check if the model has been fitted
+        if not self._fitted:
             raise ValueError("No tasks found! Need to fit first.")
+
+        return super(AutoTabular, self).predict_proba(X)
