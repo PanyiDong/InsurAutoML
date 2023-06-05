@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 4th June 2023 10:50:12 pm
+Last Modified: Monday, 5th June 2023 8:15:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1589,7 +1589,7 @@ class AutoTabularBase:
 
             # sort by loss and get top configs
             analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
-                max(self.n_estimators, len(analysis_df["training_status"] == "FITTED"))
+                min(self.n_estimators, len(analysis_df["training_status"] == "FITTED"))
             )
 
             # select optimal settings and create the ensemble of pipeline
