@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 4th June 2023 8:45:34 am
+Last Modified: Sunday, 4th June 2023 10:36:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -591,6 +591,34 @@ class TabularObjective(tune.Trainable):
 
         return True
 
+    @staticmethod
+    def _extract_hyper(params: Dict, comp: str) -> Tuple[str, Dict]:
+        # issue 1: https://github.com/PanyiDong/InsurAutoML/issues/1
+        # HyperOpt hyperparameter space conflicts with ray.tune
+
+        # while setting hyperparameters space,
+        # the method name is injected into the hyperparameter space
+        # so, before fitting, these indications are remove
+
+        # get hyperparameter of component
+        _hyper = params[comp].copy()
+        # find corresponding encoder key
+        try:
+            for key in _hyper.keys():
+                if "{}_".format(comp) in key:
+                    _key = key
+                    break
+            _comp = _hyper[_key]
+            del _hyper[_key]
+            # remove indications
+            _hyper = {k.replace(_comp + "_", ""): _hyper[k] for k in _hyper}
+        # if not get above format, use default format
+        except BaseException:
+            _comp = _hyper[comp]
+            del _hyper[comp]
+
+        return _comp, _hyper
+
     # convert dict hyperparameter to actual classes
     def dict2config(self, params: Dict) -> None:
         # pipeline of objective, [encoder, imputer, balancing, scaling, feature_selection, model]
@@ -609,147 +637,34 @@ class TabularObjective(tune.Trainable):
             ]:
                 params.pop(key, None)
 
-        # issue 1: https://github.com/PanyiDong/InsurAutoML/issues/1
-        # HyperOpt hyperparameter space conflicts with ray.tune
-
-        # while setting hyperparameters space,
-        # the method name is injected into the hyperparameter space
-        # so, before fitting, these indications are remove
-
-        # must have encoder
-        self._encoder_hyper = params["encoder"].copy()
-        # find corresponding encoder key
-        try:
-            for key in self._encoder_hyper.keys():
-                if "encoder_" in key:
-                    _encoder_key = key
-                    break
-            self._encoder = self._encoder_hyper[_encoder_key]
-            del self._encoder_hyper[_encoder_key]
-            # remove indications
-            self._encoder_hyper = {
-                k.replace(self._encoder + "_", ""): self._encoder_hyper[k]
-                for k in self._encoder_hyper
-            }
-        # if not get above format, use default format
-        except BaseException:
-            self._encoder = self._encoder_hyper["encoder"]
-            del self._encoder_hyper["encoder"]
+        # get method & hyperparameter of encoder
+        self._encoder, self._encoder_hyper = self._extract_hyper(params, "encoder")
         self.enc = self.encoder[self._encoder](**self._encoder_hyper)
 
-        # select imputer and set hyperparameters
-        self._imputer_hyper = params["imputer"].copy()
-        # find corresponding imputer key
-        try:
-            for key in self._imputer_hyper.keys():
-                if "imputer_" in key:
-                    _imputer_key = key
-                    break
-            self._imputer = self._imputer_hyper[_imputer_key]
-            del self._imputer_hyper[_imputer_key]
-            # remove indications
-            self._imputer_hyper = {
-                k.replace(self._imputer + "_", ""): self._imputer_hyper[k]
-                for k in self._imputer_hyper
-            }
-        # if not get above format, use default format
-        except BaseException:
-            self._imputer = self._imputer_hyper["imputer"]
-            del self._imputer_hyper["imputer"]
+        # get method & hyperparameter of imputer
+        self._imputer, self._imputer_hyper = self._extract_hyper(params, "imputer")
         self.imp = self.imputer[self._imputer](**self._imputer_hyper)
 
-        # select balancing and set hyperparameters
-        # must have balancing, since no_preprocessing is included
-        self._balancing_hyper = params["balancing"].copy()
-        # find corresponding balancing key
-        try:
-            for key in self._balancing_hyper.keys():
-                if "balancing_" in key:
-                    _balancing_key = key
-                    break
-            self._balancing = self._balancing_hyper[_balancing_key]
-            del self._balancing_hyper[_balancing_key]
-            # remove indications
-            self._balancing_hyper = {
-                k.replace(self._balancing + "_", ""): self._balancing_hyper[k]
-                for k in self._balancing_hyper
-            }
-        # if not get above format, use default format
-        except BaseException:
-            self._balancing = self._balancing_hyper["balancing"]
-            del self._balancing_hyper["balancing"]
+        # get method & hyperparameter of balancing
+        self._balancing, self._balancing_hyper = self._extract_hyper(
+            params, "balancing"
+        )
         self.blc = self.balancing[self._balancing](**self._balancing_hyper)
 
-        # select scaling and set hyperparameters
-        # must have scaling, since no_preprocessing is included
-        self._scaling_hyper = params["scaling"].copy()
-        # find corresponding scaling key
-        try:
-            for key in self._scaling_hyper.keys():
-                if "scaling_" in key:
-                    _scaling_key = key
-                    break
-            self._scaling = self._scaling_hyper[_scaling_key]
-            del self._scaling_hyper[_scaling_key]
-            # remove indications
-            self._scaling_hyper = {
-                k.replace(self._scaling + "_", ""): self._scaling_hyper[k]
-                for k in self._scaling_hyper
-            }
-        # if not get above format, use default format
-        except BaseException:
-            self._scaling = self._scaling_hyper["scaling"]
-            del self._scaling_hyper["scaling"]
+        # get method & hyperparameter of scaling
+        self._scaling, self._scaling_hyper = self._extract_hyper(params, "scaling")
         self.scl = self.scaling[self._scaling](**self._scaling_hyper)
 
-        # select feature selection and set hyperparameters
-        # must have feature selection, since no_preprocessing is included
-        self._feature_selection_hyper = params["feature_selection"].copy()
-        # find corresponding feature_selection key
-        try:
-            for key in self._feature_selection_hyper.keys():
-                if "feature_selection_" in key:
-                    _feature_selection_key = key
-                    break
-            self._feature_selection = self._feature_selection_hyper[
-                _feature_selection_key
-            ]
-            del self._feature_selection_hyper[_feature_selection_key]
-            # remove indications
-            self._feature_selection_hyper = {
-                k.replace(
-                    self._feature_selection + "_", ""
-                ): self._feature_selection_hyper[k]
-                for k in self._feature_selection_hyper
-            }
-        # if not get above format, use default format
-        except BaseException:
-            self._feature_selection = self._feature_selection_hyper["feature_selection"]
-            del self._feature_selection_hyper["feature_selection"]
+        # get method & hyperparameter of feature selection
+        self._feature_selection, self._feature_selection_hyper = self._extract_hyper(
+            params, "feature_selection"
+        )
         self.fts = self.feature_selection[self._feature_selection](
             **self._feature_selection_hyper
         )
 
-        # select model model and set hyperparameters
-        # must have a model
-        self._model_hyper = params["model"].copy()
-        # find corresponding model key
-        try:
-            for key in self._model_hyper.keys():
-                if "model_" in key:
-                    _model_key = key
-                    break
-            self._model = self._model_hyper[_model_key]
-            del self._model_hyper[_model_key]
-            # remove indications
-            self._model_hyper = {
-                k.replace(self._model + "_", ""): self._model_hyper[k]
-                for k in self._model_hyper
-            }
-        # if not get above format, use default format
-        except BaseException:
-            self._model = self._model_hyper["model"]
-            del self._model_hyper["model"]
+        # get method & hyperparameter of model
+        self._model, self._model_hyper = self._extract_hyper(params, "model")
         self.mol = self.models[self._model](
             **self._model_hyper
         )  # call the model using passed parameters
@@ -841,7 +756,7 @@ class TabularObjective(tune.Trainable):
         return _obj
 
     # # actual objective function
-    @ignore_warnings(category=ConvergenceWarning)
+    # @ignore_warnings(category=ConvergenceWarning)
     def _objective(
         self,
     ) -> Dict[str, Any]:

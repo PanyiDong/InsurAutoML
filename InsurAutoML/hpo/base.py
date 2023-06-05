@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:34:42 am
+Last Modified: Sunday, 4th June 2023 10:50:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -85,8 +85,8 @@ from .utils import (
 )
 
 # filter certain warnings
-warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
-warnings.filterwarnings("ignore", message="Variables are collinear")
+# warnings.filterwarnings("ignore", message="The dataset is balanced, no change.")
+# warnings.filterwarnings("ignore", message="Variables are collinear")
 # warnings.filterwarnings("ignore", message="Function checkpointing is disabled")
 # warnings.filterwarnings(
 #     "ignore", message="The TensorboardX logger cannot be instantiated"
@@ -96,9 +96,9 @@ warnings.filterwarnings("ignore", message="Variables are collinear")
 # I wish to use sklearn v1.0 for new features
 # but there's conflicts between autosklearn models and sklearn models
 # mae <-> absolute_error, mse <-> squared_error inconsistency
-warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
-warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
-warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
+# warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
+# warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
+# warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
 warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available
@@ -840,112 +840,63 @@ class AutoTabularBase:
         # get all configs, trial_id
         analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
 
-        if len(analysis_df) == 0:
-            logging.exception("No trials found. Please increase max_evals or timeout.")
+        if len(analysis_df.training_status != "") == 0:
+            logging.exception(
+                "No valid trials found. Please increase max_evals or timeout."
+            )
 
-        if (analysis_df["loss"] != np.inf).sum() == 0:
-            logging.exception("No trials found. Please increase timeout.")
+        if (analysis_df.loss != np.inf).sum() == 0:
+            logging.exception("All trials time-out. Please increase timeout.")
+
+    # get optimal hyperparameters
+    @staticmethod
+    def _get_optimal_hyper(optimal_point: Dict, comp: str) -> Tuple[str, Dict]:
+        # optimal component
+        optimal_hyperparameters = optimal_point[comp]
+        # find optimal encoder key
+        for _key in optimal_hyperparameters.keys():
+            if comp in _key:
+                key = _key
+                break
+        optimal_comp = optimal_hyperparameters[key]
+        del optimal_hyperparameters[key]
+        # remove indications
+        optimal_hyperparameters = {
+            k.replace(optimal_comp + "_", ""): optimal_hyperparameters[k]
+            for k in optimal_hyperparameters
+        }
+
+        return optimal_comp, optimal_hyperparameters
 
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(
         self, idx: int, optimal_point: Dict, best_path: str
     ) -> Tuple(str, Pipeline):
-        # optimal encoder
-        optimal_encoder_hyperparameters = optimal_point["encoder"]
-        # find optimal encoder key
-        for _key in optimal_encoder_hyperparameters.keys():
-            if "encoder" in _key:
-                _encoder_key = _key
-                break
-        optimal_encoder = optimal_encoder_hyperparameters[_encoder_key]
-        del optimal_encoder_hyperparameters[_encoder_key]
-        # remove indications
-        optimal_encoder_hyperparameters = {
-            k.replace(optimal_encoder + "_", ""): optimal_encoder_hyperparameters[k]
-            for k in optimal_encoder_hyperparameters
-        }
-
-        # optimal imputer
-        optimal_imputer_hyperparameters = optimal_point["imputer"]
-        # find optimal imputer key
-        for _key in optimal_imputer_hyperparameters.keys():
-            if "imputer" in _key:
-                _imputer_key = _key
-                break
-        optimal_imputer = optimal_imputer_hyperparameters[_imputer_key]
-        del optimal_imputer_hyperparameters[_imputer_key]
-        # remove indications
-        optimal_imputer_hyperparameters = {
-            k.replace(optimal_imputer + "_", ""): optimal_imputer_hyperparameters[k]
-            for k in optimal_imputer_hyperparameters
-        }
-
-        # optimal balancing
-        optimal_balancing_hyperparameters = optimal_point["balancing"]
-        # find optimal balancing key
-        for _key in optimal_balancing_hyperparameters.keys():
-            if "balancing" in _key:
-                _balancing_key = _key
-                break
-        optimal_balancing = optimal_balancing_hyperparameters[_balancing_key]
-        del optimal_balancing_hyperparameters[_balancing_key]
-        # remove indications
-        optimal_balancing_hyperparameters = {
-            k.replace(optimal_balancing + "_", ""): optimal_balancing_hyperparameters[k]
-            for k in optimal_balancing_hyperparameters
-        }
-
-        # optimal scaling
-        optimal_scaling_hyperparameters = optimal_point["scaling"]
-        # find optimal scaling key
-        for _key in optimal_scaling_hyperparameters.keys():
-            if "scaling" in _key:
-                _scaling_key = _key
-                break
-        optimal_scaling = optimal_scaling_hyperparameters[_scaling_key]
-        del optimal_scaling_hyperparameters[_scaling_key]
-        # remove indications
-        optimal_scaling_hyperparameters = {
-            k.replace(optimal_scaling + "_", ""): optimal_scaling_hyperparameters[k]
-            for k in optimal_scaling_hyperparameters
-        }
-
-        # optimal feature selection
-        optimal_feature_selection_hyperparameters = optimal_point["feature_selection"]
-        # find optimal feature_selection key
-        for _key in optimal_feature_selection_hyperparameters.keys():
-            if "feature_selection" in _key:
-                _feature_selection_key = _key
-                break
-        optimal_feature_selection = optimal_feature_selection_hyperparameters[
-            _feature_selection_key
-        ]
-        del optimal_feature_selection_hyperparameters[_feature_selection_key]
-        # remove indications
-        optimal_feature_selection_hyperparameters = {
-            k.replace(
-                optimal_feature_selection + "_", ""
-            ): optimal_feature_selection_hyperparameters[k]
-            for k in optimal_feature_selection_hyperparameters
-        }
-
-        # optimal classifier
-        # optimal model selected
-        optimal_model_hyperparameters = optimal_point["model"]
-        # find optimal model key
-        for _key in optimal_model_hyperparameters.keys():
-            if "model" in _key:
-                _model_key = _key
-                break
-        optimal_model = optimal_model_hyperparameters[
-            _model_key
-        ]  # optimal hyperparameter settings selected
-        del optimal_model_hyperparameters[_model_key]
-        # remove indications
-        optimal_model_hyperparameters = {
-            k.replace(optimal_model + "_", ""): optimal_model_hyperparameters[k]
-            for k in optimal_model_hyperparameters
-        }
+        # get optimal encoder & hyperparameters
+        optimal_encoder, optimal_encoder_hyperparameters = self._get_optimal_hyper(
+            optimal_point, "encoder"
+        )
+        # get optimal imputer & hyperparameters
+        optimal_imputer, optimal_imputer_hyperparameters = self._get_optimal_hyper(
+            optimal_point, "imputer"
+        )
+        # get optimal balancing & hyperparameters
+        optimal_balancing, optimal_balancing_hyperparameters = self._get_optimal_hyper(
+            optimal_point, "balancing"
+        )
+        # get optimal scaling & hyperparameters
+        optimal_scaling, optimal_scaling_hyperparameters = self._get_optimal_hyper(
+            optimal_point, "scaling"
+        )
+        # get optimal feature_selection & hyperparameters
+        (
+            optimal_feature_selection,
+            optimal_feature_selection_hyperparameters,
+        ) = self._get_optimal_hyper(optimal_point, "feature_selection")
+        # get optimal model & hyperparameters
+        optimal_model, optimal_model_hyperparameters = self._get_optimal_hyper(
+            optimal_point, "model"
+        )
 
         # if already exists, use append mode
         # else, write mode
@@ -1625,9 +1576,20 @@ class AutoTabularBase:
                 },
                 axis=1,
             )
+            # if not enough valid trials, raise warning
+            if len(analysis_df.training_status == "FITTED") < self.n_estimators:
+                self._logger.warning(
+                    "[WARNING] {}  Experiment: {}. Ask for total {} estimators, but no enough valid trials exists. Use all {} pipelines instead.".format(
+                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                        self.model_name,
+                        self.n_estimators,
+                        len(analysis_df.training_status == "FITTED"),
+                    )
+                )
+
             # sort by loss and get top configs
             analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
-                self.n_estimators
+                max(self.n_estimators, len(analysis_df["training_status"] == "FITTED"))
             )
 
             # select optimal settings and create the ensemble of pipeline
