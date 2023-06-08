@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:37:55 am
+Last Modified: Thursday, 8th June 2023 10:02:35 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -61,7 +61,8 @@ GENETICALGORITHM = {
     "n_generations": tune.qrandint(10, 40),
     "fs_method": tune.choice(["auto", "random", "Entropy", "t_statistics"]),
     "n_initial": tune.qrandint(5, 15),
-    "fitness_fit": tune.choice(["Linear", "Decision Tree", "Random Forest", "SVM"]),
+    # ignore fitness_fit "SVM", taking too long
+    "fitness_fit": tune.choice(["Linear", "Decision Tree", "Random Forest"]),
     "p_crossover": tune.uniform(0.8, 1),
     "p_mutation": tune.loguniform(1e-5, 1),
 }

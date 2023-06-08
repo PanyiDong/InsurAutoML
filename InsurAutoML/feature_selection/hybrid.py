@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 11:15:00 pm
+Last Modified: Thursday, 8th June 2023 10:20:52 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -423,7 +423,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
         y: Union[pd.DataFrame, np.ndarray],
         selection: List[int],
     ) -> float:
-        if not self.fitness_func:  # fit selected features and calcualte accuracy score
+        if not self.fitness_func:  # fit selected features and calculate accuracy score
             if self.fitness_fit == "Linear":
                 if len(pd.unique(y.values.ravel())) <= UNI_CLASS:
                     from sklearn.linear_model import LogisticRegression

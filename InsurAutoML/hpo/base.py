@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 5th June 2023 8:15:51 am
+Last Modified: Thursday, 8th June 2023 11:02:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1577,19 +1577,22 @@ class AutoTabularBase:
                 axis=1,
             )
             # if not enough valid trials, raise warning
-            if len(analysis_df.training_status == "FITTED") < self.n_estimators:
+            if (analysis_df.training_status == "FITTED").sum() < self.n_estimators:
                 self._logger.warning(
                     "[WARNING] {}  Experiment: {}. Ask for total {} estimators, but no enough valid trials exists. Use all {} pipelines instead.".format(
                         datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                         self.model_name,
                         self.n_estimators,
-                        len(analysis_df.training_status == "FITTED"),
+                        (analysis_df.training_status == "FITTED").sum(),
                     )
                 )
 
             # sort by loss and get top configs
             analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
-                min(self.n_estimators, len(analysis_df["training_status"] == "FITTED"))
+                min(
+                    self.n_estimators,
+                    (analysis_df["training_status"] == "FITTED").sum(),
+                )
             )
 
             # select optimal settings and create the ensemble of pipeline
@@ -1948,6 +1951,10 @@ class AutoTabularBase:
             raise ValueError("Pipeline not fitted yet! Call fit() first.")
 
         _X = X.copy()
+
+        # check features consistency
+        if not (self.features == _X.columns).all():
+            _X = _X[self.features]
 
         # since pipeline is converted to ensemble, no need to predict on each component
         # may need preprocessing for test data, the preprocessing should be the same as in fit part

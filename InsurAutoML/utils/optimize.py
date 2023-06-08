@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:45:20 am
+Last Modified: Tuesday, 6th June 2023 9:48:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1584,7 +1584,8 @@ class TimePlateauStopper(Stopper):
             current_mean = float("inf")
 
         # If stdev is lower than threshold, stop early.
-        return current_std / current_mean < self._std_ratio
+        # if current_mean is 0, stop early
+        return current_std / current_mean < self._std_ratio if current_mean else True
 
     def stop_all(self) -> bool:
         if self._stored_start:

@@ -11,7 +11,7 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 6:39:25 pm
+Last Modified: Monday, 5th June 2023 10:34:19 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,7 @@ class TimeoutException(Exception):
     pass
 
 
-MAX_ERROR_TRIALOUT = 32
+MAX_ERROR_TRIALOUT = 8
 
 LOGGINGLEVEL = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 

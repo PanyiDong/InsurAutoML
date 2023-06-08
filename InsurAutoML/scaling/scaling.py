@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:42:44 am
+Last Modified: Thursday, 8th June 2023 11:03:55 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -657,6 +657,8 @@ class QuantileTransformer(BaseScaling):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
+        if not (self.mol.feature_names_in_ == X.columns).all():
+            X = X[self.mol.feature_names_in_]
         return pd.DataFrame(self.mol.transform(X), columns=self.features)
 
     def inverse_transform(
@@ -668,6 +670,8 @@ class QuantileTransformer(BaseScaling):
             )
 
         self._fitted = False
+        if not (self.mol.feature_names_in_ == X.columns).all():
+            X = X[self.mol.feature_names_in_]
 
         return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
 
