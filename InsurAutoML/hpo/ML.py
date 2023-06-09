@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 2nd June 2023 1:23:59 pm
+Last Modified: Friday, 9th June 2023 9:19:02 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -123,9 +123,10 @@ class AutoTabularRegressor(AutoTabularBase):
     example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
@@ -193,8 +194,8 @@ class AutoTabularRegressor(AutoTabularBase):
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
         exclude: Dict = {},
-        validation: bool = True,
-        valid_size: float = 0.15,
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = "MSE",
         search_algo: str = "HyperOpt",
         search_algo_settings: Dict = {},
@@ -362,9 +363,10 @@ class AutoTabularClassifier(AutoTabularBase):
     example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
@@ -432,8 +434,8 @@ class AutoTabularClassifier(AutoTabularBase):
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
         exclude: Dict = {},
-        validation: bool = True,
-        valid_size: float = 0.15,
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
         search_algo: str = "HyperOpt",
         search_algo_settings: Dict = {},
@@ -605,9 +607,10 @@ class AutoTabular(AutoTabularBase):
     example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
@@ -676,8 +679,8 @@ class AutoTabular(AutoTabularBase):
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
         exclude: Dict = {},
-        validation: bool = True,
-        valid_size: float = 0.15,
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = None,
         search_algo: str = "HyperOpt",
         search_algo_settings: Dict = {},

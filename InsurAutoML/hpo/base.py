@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 8th June 2023 11:02:12 am
+Last Modified: Friday, 9th June 2023 2:09:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -198,9 +198,10 @@ class AutoTabularBase:
     example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
     validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
@@ -271,8 +272,8 @@ class AutoTabularBase:
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
         exclude: Dict = {},
-        validation: bool = True,
-        valid_size: float = 0.15,
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
         search_algo: str = "HyperOpt",
         search_algo_settings: Dict = {},
@@ -347,25 +348,25 @@ class AutoTabularBase:
             add_encoders = {}
 
         # include original encoders
-        self._all_encoders = copy.deepcopy(encoders)
+        _all_encoders = copy.deepcopy(encoders)
         # include additional encoders
-        self._all_encoders.update(add_encoders)
+        _all_encoders.update(add_encoders)
 
         # get default encoder methods space
         if self.encoder == "auto":
-            encoder = copy.deepcopy(self._all_encoders)
+            encoder = copy.deepcopy(_all_encoders)
         else:
             self.encoder = str2list(self.encoder)  # string list to list
             encoder = {}  # if specified, check if encoders in default encoders
             for _encoder in self.encoder:
-                if _encoder not in [*self._all_encoders]:
+                if _encoder not in [*_all_encoders]:
                     self._logger.error(
                         "Only supported encoders are {}, get {}.".format(
-                            [*self._all_encoders], _encoder
+                            [_all_encoders], _encoder
                         ),
                         ValueError,
                     )
-                encoder[_encoder] = self._all_encoders[_encoder]
+                encoder[_encoder] = _all_encoders[_encoder]
 
         # exclude unwanted encoders if specified
         if "encoder" in self.exclude.keys():
@@ -383,39 +384,39 @@ class AutoTabularBase:
             add_imputers = {}
 
         # include original imputers
-        self._all_imputers = copy.deepcopy(imputers)
+        _all_imputers = copy.deepcopy(imputers)
         # include additional imputers
-        self._all_imputers.update(add_imputers)
+        _all_imputers.update(add_imputers)
 
         # special case: kNN imputer can not handle categorical data
         # remove kNN imputer from all imputers
         for _column in list(X.columns):
             if len(X[_column].unique()) <= min(0.1 * len(X), UNI_CLASS):
-                del self._all_imputers["KNNImputer"]
+                del _all_imputers["KNNImputer"]
                 break
 
         # get default imputer methods space
         if self.imputer == "auto":
             if not X.isnull().values.any():  # if no missing values
                 imputer = {"no_processing": no_processing}
-                self._all_imputers = imputer  # limit default imputer space
+                _all_imputers = imputer  # limit default imputer space
             else:
-                imputer = copy.deepcopy(self._all_imputers)
+                imputer = copy.deepcopy(_all_imputers)
         else:
             self.imputer = str2list(self.imputer)  # string list to list
             if not X.isnull().values.any():  # if no missing values
                 imputer = {"no_processing": no_processing}
-                self._all_imputers = imputer
+                _all_imputers = imputer
             else:
                 imputer = {}  # if specified, check if imputers in default imputers
                 for _imputer in self.imputer:
-                    if _imputer not in [*self._all_imputers]:
+                    if _imputer not in [*_all_imputers]:
                         self._logger.error(
                             "Only supported imputers are {}, get {}.".format(
-                                [*self._all_imputers], _imputer
+                                [*_all_imputers], _imputer
                             )
                         )
-                    imputer[_imputer] = self._all_imputers[_imputer]
+                    imputer[_imputer] = _all_imputers[_imputer]
 
         # exclude unwanted imputers if specified
         if "imputer" in self.exclude.keys():
@@ -433,24 +434,24 @@ class AutoTabularBase:
             add_balancings = {}
 
         # include original balancings
-        self._all_balancings = copy.deepcopy(balancings)
+        _all_balancings = copy.deepcopy(balancings)
         # include additional balancings
-        self._all_balancings.update(add_balancings)
+        _all_balancings.update(add_balancings)
 
         # get default balancing methods space
         if self.balancing == "auto":
-            balancing = copy.deepcopy(self._all_balancings)
+            balancing = copy.deepcopy(_all_balancings)
         else:
             self.balancing = str2list(self.balancing)  # string list to list
             balancing = {}  # if specified, check if balancings in default balancings
             for _balancing in self.balancing:
-                if _balancing not in [*self._all_balancings]:
+                if _balancing not in [*_all_balancings]:
                     self._logger.error(
                         "Only supported balancings are {}, get {}.".format(
-                            [*self._all_balancings], _balancing
+                            [*_all_balancings], _balancing
                         )
                     )
-                balancing[_balancing] = self._all_balancings[_balancing]
+                balancing[_balancing] = _all_balancings[_balancing]
 
         # exclude unwanted balancings if specified
         if "balancing" in self.exclude.keys():
@@ -468,24 +469,24 @@ class AutoTabularBase:
             add_scalings = {}
 
         # include original scalings
-        self._all_scalings = copy.deepcopy(scalings)
+        _all_scalings = copy.deepcopy(scalings)
         # include additional scalings
-        self._all_scalings.update(add_scalings)
+        _all_scalings.update(add_scalings)
 
         # get default scaling methods space
         if self.scaling == "auto":
-            scaling = copy.deepcopy(self._all_scalings)
+            scaling = copy.deepcopy(_all_scalings)
         else:
             self.scaling = str2list(self.scaling)  # string list to list
             scaling = {}  # if specified, check if scalings in default scalings
             for _scaling in self.scaling:
-                if _scaling not in [*self._all_scalings]:
+                if _scaling not in [*_all_scalings]:
                     self._logger.error(
                         "Only supported scalings are {}, get {}.".format(
-                            [*self._all_scalings], _scaling
+                            [*_all_scalings], _scaling
                         )
                     )
-                scaling[_scaling] = self._all_scalings[_scaling]
+                scaling[_scaling] = _all_scalings[_scaling]
 
         # exclude unwanted scalings if specified
         if "scaling" in self.exclude.keys():
@@ -503,29 +504,29 @@ class AutoTabularBase:
             add_feature_selections = {}
 
         # include original feature selections
-        self._all_feature_selection = copy.deepcopy(feature_selections)
+        _all_feature_selection = copy.deepcopy(feature_selections)
         # include additional feature selections
-        self._all_feature_selection.update(add_feature_selections)
+        _all_feature_selection.update(add_feature_selections)
 
         if self.task_mode == "classification":
             # special treatment, if classification
             # remove some feature selection for regression
-            del self._all_feature_selection["extra_trees_preproc_for_regression"]
-            del self._all_feature_selection["select_percentile_regression"]
-            del self._all_feature_selection["select_rates_regression"]
+            del _all_feature_selection["extra_trees_preproc_for_regression"]
+            del _all_feature_selection["select_percentile_regression"]
+            del _all_feature_selection["select_rates_regression"]
         elif self.task_mode == "regression":
             # special treatment, if regression
             # remove some feature selection for classification
-            del self._all_feature_selection["extra_trees_preproc_for_classification"]
-            del self._all_feature_selection["select_percentile_classification"]
-            del self._all_feature_selection["select_rates_classification"]
+            del _all_feature_selection["extra_trees_preproc_for_classification"]
+            del _all_feature_selection["select_percentile_classification"]
+            del _all_feature_selection["select_rates_classification"]
 
         if X.shape[0] * X.shape[1] > 10000 or self.task_mode == "regression":
-            del self._all_feature_selection["liblinear_svc_preprocessor"]
+            del _all_feature_selection["liblinear_svc_preprocessor"]
 
         # get default feature selection methods space
         if self.feature_selection == "auto":
-            feature_selection = copy.deepcopy(self._all_feature_selection)
+            feature_selection = copy.deepcopy(_all_feature_selection)
         else:
             self.feature_selection = str2list(
                 self.feature_selection
@@ -534,13 +535,13 @@ class AutoTabularBase:
                 {}
             )  # if specified, check if balancings in default balancings
             for _feature_selection in self.feature_selection:
-                if _feature_selection not in [*self._all_feature_selection]:
+                if _feature_selection not in [*_all_feature_selection]:
                     self._logger.error(
                         "Only supported feature selections are {}, get {}.".format(
-                            [*self._all_feature_selection], _feature_selection
+                            [*_all_feature_selection], _feature_selection
                         )
                     )
-                feature_selection[_feature_selection] = self._all_feature_selection[
+                feature_selection[_feature_selection] = _all_feature_selection[
                     _feature_selection
                 ]
 
@@ -564,9 +565,9 @@ class AutoTabularBase:
                 add_classifiers = {}
 
             # include original classifiers
-            self._all_models = copy.deepcopy(classifiers)
+            _all_models = copy.deepcopy(classifiers)
             # include additional classifiers
-            self._all_models.update(add_classifiers)
+            _all_models.update(add_classifiers)
         elif self.task_mode == "regression":
             from ..model import regressors
 
@@ -577,9 +578,9 @@ class AutoTabularBase:
                 add_regressors = {}
 
             # include original regressors
-            self._all_models = copy.deepcopy(regressors)
+            _all_models = copy.deepcopy(regressors)
             # include additional regressors
-            self._all_models.update(add_regressors)
+            _all_models.update(add_regressors)
 
         # special treatment, remove SVM methods when observations are large
         # SVM suffers from the complexity o(n_samples^2 * n_features),
@@ -587,34 +588,31 @@ class AutoTabularBase:
         if X.shape[0] * X.shape[1] > 10000:
             # in case the methods are not included, will check before delete
             if self.task_mode == "classification":
-                del self._all_models["LibLinear_SVC"]
-                del self._all_models["LibSVM_SVC"]
+                del _all_models["LibLinear_SVC"]
+                del _all_models["LibSVM_SVC"]
             elif self.task_mode == "regression":
-                del self._all_models["LibLinear_SVR"]
-                del self._all_models["LibSVM_SVR"]
+                del _all_models["LibLinear_SVR"]
+                del _all_models["LibSVM_SVR"]
 
         # model space, only select chosen models to space
         if self.models == "auto":  # if auto, model pool will be all default models
-            models = copy.deepcopy(self._all_models)
+            models = copy.deepcopy(_all_models)
         else:
             self.models = str2list(self.models)  # string list to list
             models = {}  # if specified, check if models in default models
             for _model in self.models:
-                if _model not in [*self._all_models]:
+                if _model not in [*_all_models]:
                     self._logger.error(
                         "Only supported models are {}, get {}.".format(
-                            [*self._all_models], _model
+                            [*_all_models], _model
                         )
                     )
-                models[_model] = self._all_models[_model]
+                models[_model] = _all_models[_model]
 
         # exclude unwanted models if specified
         if "model" in self.exclude.keys():
             for _model in self.exclude["model"]:
                 models.pop(_model, None)
-
-        # # initialize model hyperparameter space
-        # _all_models_hyperparameters = copy.deepcopy(self._all_models_hyperparameters)
 
         # initialize default search space
         from ..utils.optimize import _get_hyperparameter_space
@@ -656,9 +654,6 @@ class AutoTabularBase:
         # include additional hyperparameters
         _all_encoders_hyperparameters += add_encoder_hyperparameter
 
-        # # initialize encoders hyperparameter space
-        # _all_encoders_hyperparameters = copy.deepcopy(self._all_encoders_hyperparameters)
-
         # all hyperparameters for imputers
         if "no_processing" in imputer.keys():
             _all_imputers_hyperparameters = [{"imputer": "no_processing"}]
@@ -667,24 +662,15 @@ class AutoTabularBase:
         # include additional hyperparameters
         _all_imputers_hyperparameters += add_imputer_hyperparameter
 
-        # # initialize imputers hyperparameter space
-        # _all_imputers_hyperparameters = copy.deepcopy(self._all_imputers_hyperparameters)
-
         # all hyperparameters for balancing methods
         _all_balancings_hyperparameters = copy.deepcopy(balancing_hyperparameter)
         # include additional hyperparameters
         _all_balancings_hyperparameters += add_balancing_hyperparameter
 
-        # # initialize balancing hyperparameter space
-        # _all_balancings_hyperparameters = copy.deepcopy(self._all_balancings_hyperparameters)
-
         # all hyperparameters for scalings
         _all_scalings_hyperparameters = copy.deepcopy(scaling_hyperparameter)
         # include additional hyperparameters
         _all_scalings_hyperparameters += add_scaling_hyperparameter
-
-        # # initialize scaling hyperparameter space
-        # _all_scalings_hyperparameters = copy.deepcopy(self._all_scalings_hyperparameters)
 
         # all hyperparameters for feature selections
         _all_feature_selection_hyperparameters = copy.deepcopy(
@@ -717,11 +703,6 @@ class AutoTabularBase:
                     item["estimator"] = tune.choice(REGRESSION_ESTIMATORS)
                     item["criteria"] = tune.choice(REGRESSION_CRITERIA)
                     break
-
-        # # initialize feature selection hyperparameter space
-        # _all_feature_selection_hyperparameters = copy.deepcopy(
-        #     self._all_feature_selection_hyperparameters
-        # )
 
         # all hyperparameters for the models by mode
         if self.task_mode == "classification":
@@ -1134,6 +1115,14 @@ class AutoTabularBase:
             self._logger.error(
                 "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
                     self.progress_reporter
+                )
+            )
+
+        # record K fold if validation == "KFold"
+        if self.validation == "KFold":
+            self._logger.info(
+                "For validation = {}, set KFold to {}.".format(
+                    self.validation, int(1 / self.valid_size)
                 )
             )
 

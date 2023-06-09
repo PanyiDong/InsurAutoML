@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 8th June 2023 11:05:05 am
+Last Modified: Friday, 9th June 2023 9:38:35 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -48,6 +48,7 @@ import warnings
 import logging
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._testing import ignore_warnings
+from sklearn.model_selection import KFold
 from ray import tune
 import pandas as pd
 import numpy as np
@@ -755,40 +756,13 @@ class TabularObjective(tune.Trainable):
 
         return _obj
 
-    # # actual objective function
-    # @ignore_warnings(category=ConvergenceWarning)
-    def _objective(
+    def _fit(
         self,
-    ) -> Dict[str, Any]:
-        # set random seed
-        set_seed(self.seed)
-
-        # get objective function by task mode and input objective
-        _obj = self._get_objective()
-
-        self._logger.info("[INFO] Objective starting...")
-
-        if self.validation:
-            # only perform train_test_split when validation
-            # train test split so the performance of model selection and
-            # hyperparameter optimization can be evaluated
-            X_train, X_test, y_train, y_test = train_test_split(
-                self._X, self._y, test_perc=self.valid_size, seed=self.seed
-            )
-        else:
-            # if no validation, use all data for training
-            X_train, X_test, y_train, y_test = self._X, self._X, self._y, self._y
-
-        if self.reset_index:
-            # reset index to avoid indexing order error
-            X_train.reset_index(drop=True, inplace=True)
-            X_test.reset_index(drop=True, inplace=True)
-            y_train.reset_index(drop=True, inplace=True)
-            y_test.reset_index(drop=True, inplace=True)
-
-        _X_train_obj, _X_test_obj = X_train.copy(), X_test.copy()
-        _y_train_obj, _y_test_obj = y_train.copy(), y_test.copy()
-
+        _X_train_obj: pd.DataFrame,
+        _y_train_obj: pd.DataFrame,
+        _X_test_obj: pd.DataFrame,
+        _y_test_obj: pd.DataFrame,
+    ) -> Tuple[Union[np.ndarray, pd.DataFrame], Union[np.ndarray, pd.DataFrame]]:
         # encoding
         start_time = time.time()
         _X_train_obj = self.enc.fit(_X_train_obj)
@@ -894,6 +868,16 @@ class TabularObjective(tune.Trainable):
         )
         self._logger.info("[INFO] Model fitting finished.")
 
+        return (_X_test_obj, _y_test_obj)
+
+    def _predict(
+        self,
+        _X_test_obj: Union[np.ndarray, pd.DataFrame],
+        _y_test_obj: Union[np.ndarray, pd.DataFrame],
+    ) -> Union[int, float]:
+        # get objective function by task mode and input objective
+        _obj = self._get_objective()
+
         y_pred = self.mol.predict(_X_test_obj)
         if self.objective in [
             "R2",
@@ -911,6 +895,68 @@ class TabularObjective(tune.Trainable):
 
         # register failed losses as np.inf
         _loss = _loss if isinstance(_loss, (int, float)) else np.inf
+
+        return _loss
+
+    # # actual objective function
+    # @ignore_warnings(category=ConvergenceWarning)
+    def _objective(
+        self,
+    ) -> Dict[str, Any]:
+        # set random seed
+        set_seed(self.seed)
+
+        self._logger.info("[INFO] Objective starting...")
+
+        if self.validation == "KFold":
+            kf = KFold(
+                n_splits=int(1 / self.valid_size), shuffle=True, random_state=self.seed
+            )
+            _data_split = [
+                [
+                    (self._X.loc[_train_idx, :], self._y.loc[_train_idx, :]),
+                    (self._X.loc[_test_idx, :], self._y.loc[_test_idx, :]),
+                ]
+                for idx, (_train_idx, _test_idx) in enumerate(
+                    kf.split(self._X, self._y)
+                )
+            ]
+        elif self.validation:
+            # only perform train_test_split when validation
+            # train test split so the performance of model selection and
+            # hyperparameter optimization can be evaluated
+            X_train, X_test, y_train, y_test = train_test_split(
+                self._X, self._y, test_perc=self.valid_size, seed=self.seed
+            )
+            _data_split = [[(X_train, y_train), (X_test, y_test)]]
+        else:
+            # if no validation, use all data for training
+            _data_split = [[(self._X, self._y), (self._X, self._y)]]
+
+        if self.reset_index:
+            # reset index to avoid indexing order error
+            _data_split = [
+                [
+                    (X_train.reset_index(drop=True), y_train.reset_index(drop=True)),
+                    (X_test.reset_index(drop=True), y_test.reset_index(drop=True)),
+                ]
+                for (X_train, y_train), (X_test, y_test) in _data_split
+            ]
+
+        # fit & predict
+        _loss_list = []
+        for idx, (_train, _test) in enumerate(_data_split):
+            if self.validation == "KFold":
+                self._logger.info("[INFO] Fold: {}".format(idx + 1))
+
+            # fit the pipeline and return the preprocessed test datasets
+            _test = self._fit(*_train, *_test)
+            _loss = self._predict(*_test)
+            _loss_list.append(_loss)
+
+        # calculate mean loss
+        # if KFold, calculate mean of all folds
+        _loss = np.average(_loss_list)
 
         # save the fitted model objects
         save_methods(
