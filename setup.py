@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 1:15:03 pm
+Last Modified: Sunday, 11th June 2023 2:46:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -108,7 +108,6 @@ INSTALL_LIST = [
     "redis;platform_system=='Windows'",
     "tqdm",
     "tensorboardX",
-    "hyperopt",
     # "auto-sklearn==0.14.6;platform_system=='Linux'",
     # "scikit-learn==0.24.2;platform_system=='Linux'",
     # "scikit-learn>1.0.0;platform_system=='Windows'",
@@ -118,12 +117,12 @@ INSTALL_LIST = [
 
 EXTRA_DICT = {
     "normal": [],
-    "legacy": [
-        "tqdm==4.62.3",
-        "mlflow==1.21.0",
-        "tensorboardX",
-        "hyperopt==0.2.5",
-    ],
+    # "legacy": [
+    #     "tqdm==4.62.3",
+    #     "mlflow==1.21.0",
+    #     "tensorboardX",
+    #     "hyperopt==0.2.5",
+    # ],
     "extended": [
         # "rpy2;platform_system=='Linux'",
         "mlflow",
@@ -136,6 +135,7 @@ EXTRA_DICT = {
         "bayesian_optimization==1.4.0",
         "colorama==0.4.4",
         "nevergrad",
+        "hyperopt",
         "optuna",
     ],
     "nn": [

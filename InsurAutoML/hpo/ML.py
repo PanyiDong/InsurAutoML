@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 9th June 2023 9:19:02 am
+Last Modified: Sunday, 11th June 2023 2:44:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -131,7 +131,7 @@ class AutoTabularRegressor(AutoTabularBase):
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -197,7 +197,7 @@ class AutoTabularRegressor(AutoTabularBase):
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "MSE",
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
@@ -371,7 +371,7 @@ class AutoTabularClassifier(AutoTabularBase):
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -437,7 +437,7 @@ class AutoTabularClassifier(AutoTabularBase):
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
@@ -616,7 +616,7 @@ class AutoTabular(AutoTabularBase):
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -682,7 +682,7 @@ class AutoTabular(AutoTabularBase):
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = None,
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},

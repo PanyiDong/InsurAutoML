@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 9th June 2023 2:09:28 pm
+Last Modified: Sunday, 11th June 2023 2:43:44 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -207,7 +207,7 @@ class AutoTabularBase:
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -275,7 +275,7 @@ class AutoTabularBase:
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
@@ -1121,8 +1121,8 @@ class AutoTabularBase:
         # record K fold if validation == "KFold"
         if self.validation == "KFold":
             self._logger.info(
-                "For validation = {}, set KFold to {}.".format(
-                    self.validation, int(1 / self.valid_size)
+                "For validation = {} and valid_size = {}, set KFold to {}.".format(
+                    self.validation, self.valid_size, int(1 / self.valid_size)
                 )
             )
 

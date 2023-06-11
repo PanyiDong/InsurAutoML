@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /main.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:21:34 pm
+Last Modified: Sunday, 11th June 2023 2:44:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -56,11 +56,7 @@ model_dict = {
 # read arguments
 parser = argparse.ArgumentParser(description="set arguments for AutoML job")
 # data-related arguments
-parser.add_argument(
-    "--data_folder",
-    default="",
-    type=str,
-    help="read-in data folder")
+parser.add_argument("--data_folder", default="", type=str, help="read-in data folder")
 parser.add_argument(
     "--train_data", type=str, help="train data name (no file extension needed)"
 )
@@ -72,10 +68,8 @@ parser.add_argument(
 )
 parser.add_argument("--response", type=str, help="response column name")
 parser.add_argument(
-    "--test_eval",
-    default="auto",
-    type=str,
-    help="evaluation metric on test data")
+    "--test_eval", default="auto", type=str, help="evaluation metric on test data"
+)
 # model-related arguments
 parser.add_argument(
     "--task_type",
@@ -116,13 +110,12 @@ parser.add_argument(
     type=bool,
     help="whether to delete temporary information after training",
 )
-parser.add_argument("--save", default=True, type=bool,
-                    help="whether to save optimal training model")
 parser.add_argument(
-    "--ignore_warning",
-    default=True,
-    type=bool,
-    help="whether to ignore all warnings")
+    "--save", default=True, type=bool, help="whether to save optimal training model"
+)
+parser.add_argument(
+    "--ignore_warning", default=True, type=bool, help="whether to ignore all warnings"
+)
 parser.add_argument(
     "--encoder",
     default="auto",
@@ -166,15 +159,11 @@ parser.add_argument(
     help="models for the tasks, auto or a list of models",
 )
 parser.add_argument(
-    "--validation",
-    default=True,
-    type=bool,
-    help="whether to split a validation set")
+    "--validation", default=True, type=bool, help="whether to split a validation set"
+)
 parser.add_argument(
-    "--valid_size",
-    default=0.15,
-    type=float,
-    help="validation set percentage to split")
+    "--valid_size", default=0.15, type=float, help="validation set percentage to split"
+)
 parser.add_argument(
     "--objective",
     default=None,
@@ -183,7 +172,7 @@ parser.add_argument(
 )
 parser.add_argument(
     "--search_algo",
-    default="HyperOpt",
+    default="RandomSearch",
     type=str,
     help="model selection/hyperparameter optimization search algorithm",
 )
@@ -250,7 +239,6 @@ FULL_STATUS = args.full_status
 SEED = args.seed
 
 if __name__ == "__main__":
-
     print(
         "[INFO] {} Get task. Start preprocessing:".format(
             datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
@@ -276,8 +264,7 @@ if __name__ == "__main__":
         features = list(database[train].columns)
         features.remove(response)
 
-        train_X, train_y = database[train][features], database[train][[
-            response]]
+        train_X, train_y = database[train][features], database[train][[response]]
         test_X, test_y = database[test][features], database[test][[response]]
     # if no test_data provided, read only train_dat
     # and use train_test_split to get train/test sets
