@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 11th June 2023 2:44:28 pm
+Last Modified: Monday, 12th June 2023 12:06:44 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -66,8 +66,8 @@ class AutoTabularRegressor(AutoTabularBase):
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
@@ -180,7 +180,7 @@ class AutoTabularRegressor(AutoTabularBase):
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
-        allow_error_prop: float = 0.1,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
@@ -215,7 +215,7 @@ class AutoTabularRegressor(AutoTabularBase):
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
-        self.allow_error_prop = allow_error_prop
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
@@ -254,7 +254,7 @@ class AutoTabularRegressor(AutoTabularBase):
             timeout=self.timeout,
             timeout_per_trial=self.timeout_per_trial,
             max_evals=self.max_evals,
-            allow_error_prop=self.allow_error_prop,
+            allow_error=self.allow_error,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,
@@ -305,8 +305,8 @@ class AutoTabularClassifier(AutoTabularBase):
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
@@ -420,7 +420,7 @@ class AutoTabularClassifier(AutoTabularBase):
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
-        allow_error_prop: float = 0.1,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
@@ -455,7 +455,7 @@ class AutoTabularClassifier(AutoTabularBase):
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
-        self.allow_error_prop = allow_error_prop
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
@@ -494,7 +494,7 @@ class AutoTabularClassifier(AutoTabularBase):
             timeout=self.timeout,
             max_evals=self.max_evals,
             timeout_per_trial=self.timeout_per_trial,
-            allow_error_prop=self.allow_error_prop,
+            allow_error=self.allow_error,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,
@@ -545,8 +545,8 @@ class AutoTabular(AutoTabularBase):
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
@@ -665,7 +665,7 @@ class AutoTabular(AutoTabularBase):
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
-        allow_error_prop: float = 0.1,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
@@ -700,7 +700,7 @@ class AutoTabular(AutoTabularBase):
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
-        self.allow_error_prop = allow_error_prop
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
@@ -773,7 +773,7 @@ class AutoTabular(AutoTabularBase):
             timeout=self.timeout,
             max_evals=self.max_evals,
             timeout_per_trial=self.timeout_per_trial,
-            allow_error_prop=self.allow_error_prop,
+            allow_error=self.allow_error,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,

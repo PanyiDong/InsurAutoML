@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 11th June 2023 2:43:44 pm
+Last Modified: Monday, 12th June 2023 12:02:58 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -136,8 +136,8 @@ class AutoTabularBase:
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
@@ -258,7 +258,7 @@ class AutoTabularBase:
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
-        allow_error_prop: float = 0.1,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
@@ -294,7 +294,7 @@ class AutoTabularBase:
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
-        self.allow_error_prop = allow_error_prop
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
@@ -1127,8 +1127,10 @@ class AutoTabularBase:
             )
 
         # get maximum allowed errors
-        self.max_error = min(
-            MAX_ERROR_TRIALOUT, int(self.max_evals * self.allow_error_prop)
+        self.max_error = (
+            min(MAX_ERROR_TRIALOUT, int(self.max_evals * self.allow_error))
+            if isinstance(self.allow_error, float)
+            else min(MAX_ERROR_TRIALOUT, int(self.allow_error))
         )
 
         # load dict settings for search_algo and search_scheduler

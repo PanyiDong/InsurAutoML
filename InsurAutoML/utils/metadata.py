@@ -11,7 +11,7 @@ File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:43:30 am
+Last Modified: Monday, 12th June 2023 5:19:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -374,7 +374,7 @@ class MetaData:
             type = "Datetime"
             subtype = ""
         # Object
-        elif _dtype == "object":
+        elif _dtype in ["object", "category"]:
             # check if is path
             if os.path.isfile(data[0]):
                 type = "Path"
