@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 11:13:52 pm
+Last Modified: Wednesday, 12th July 2023 8:19:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -205,7 +205,7 @@ class PCA_FeatureSelection(BaseFeatureSelection):
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
         if n_components < min(n, p):
-            self._noise_variance_ = _var[n_components:].mean()
+            self._noise_variance_ = _var[n_components:].mean(axis=0)
         else:
             self._noise_variance_ = 0.0
 

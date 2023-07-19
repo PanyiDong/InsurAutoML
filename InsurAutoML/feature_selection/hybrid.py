@@ -11,7 +11,7 @@ File: _hybrid.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 8th June 2023 10:20:52 am
+Last Modified: Thursday, 6th July 2023 9:04:08 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -238,7 +238,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
     n_components: Number of features to retain, default = 20
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
 
     n_generations: Number of looping generation for GA, default = 10
@@ -249,7 +249,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
     n_initial: Number of random feature selection rules to initialize, default = 10
 
     fitness_func: Fitness function, default None
-    deafult will set as w * Accuracy + (1 - w) / regularization, all functions must be maximization optimization
+    default will set as w * Accuracy + (1 - w) / regularization, all functions must be maximization optimization
 
     fitness_fit: Model to fit selection and calculate accuracy for fitness, default = 'SVM'
     support ('Linear', 'Logistic', 'Random Forest', 'SVM')
@@ -267,7 +267,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
     support ('Single-point', 'Two-point', 'Uniform')
 
     crossover_n: Place of crossover points to perform, default = None
-    deafult will set to p / 4 for single-point crossover
+    default will set to p / 4 for single-point crossover
 
     p_mutation: Probability to perform mutation (flip bit in selection list), default = 0.001
 
@@ -316,7 +316,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
         self._auto_sel = {
             "Entropy": self._entropy,
             "t_statistics": self._t_statistics,
-            "SVM_RFE": self._SVM_RFE,
+            # "SVM_RFE": self._SVM_RFE, # suppress as SVR takes too long
         }
 
         super().__init__()
@@ -412,7 +412,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
         _selected = (
             _selector.support_.tolist()
-        )  # retunr the mask list of feature selection
+        )  # return the mask list of feature selection
         _selected = [int(item) for item in _selected]
 
         return _selected

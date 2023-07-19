@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th June 2023 9:48:10 pm
+Last Modified: Monday, 10th July 2023 11:01:43 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -1651,11 +1651,11 @@ def get_estimator(estimator_str: str) -> Callable:
 # get metrics based on string or class
 # if not in min mode, call negative of the metric
 def get_metrics(metric_str: str) -> Callable:
-    if metric_str == "neg_accuracy":
+    if metric_str.lower() == "neg_accuracy":
         from ..utils.stats import neg_accuracy
 
         return neg_accuracy
-    elif metric_str == "accuracy":
+    elif metric_str.lower() == "accuracy":
         from sklearn.metrics import accuracy_score
 
         logger.warning(
@@ -1665,11 +1665,11 @@ def get_metrics(metric_str: str) -> Callable:
         #     "accuracy_score is not for min mode, please use neg_accuracy instead."
         # )
         return accuracy_score
-    elif metric_str == "neg_precision":
+    elif metric_str.lower() == "neg_precision":
         from ..utils.stats import neg_precision
 
         return neg_precision
-    elif metric_str == "precision":
+    elif metric_str.lower() == "precision":
         from sklearn.metrics import precision_score
 
         logger.warning(
@@ -1679,31 +1679,31 @@ def get_metrics(metric_str: str) -> Callable:
         #     "precision_score is not for min mode, please use neg_precision instead."
         # )
         return precision_score
-    elif metric_str == "neg_auc":
+    elif metric_str.lower() == "neg_auc":
         from ..utils.stats import neg_auc
 
         return neg_auc
-    elif metric_str == "auc":
+    elif metric_str.lower() == "auc":
         from sklearn.metrics import roc_auc_score
 
         logger.warning("roc_auc_score is not for min mode, please use neg_auc instead.")
         # warnings.warn("roc_auc_score is not for min mode, please use neg_auc instead.")
         return roc_auc_score
-    elif metric_str == "neg_hinge":
+    elif metric_str.lower() == "neg_hinge":
         from ..utils.stats import neg_hinge
 
         return neg_hinge
-    elif metric_str == "hinge":
+    elif metric_str.lower() == "hinge":
         from sklearn.metrics import hinge_loss
 
         logger.warning("hinge_loss is not for min mode, please use neg_hinge instead.")
         # warnings.warn("hinge_loss is not for min mode, please use neg_hinge instead.")
         return hinge_loss
-    elif metric_str == "neg_f1":
+    elif metric_str.lower() == "neg_f1":
         from ..utils.stats import neg_f1
 
         return neg_f1
-    elif metric_str == "f1":
+    elif metric_str.lower() == "f1":
         from sklearn.metrics import f1_score
 
         logger.warning("f1_score is not for min mode, please use neg_f1 instead.")
@@ -1729,7 +1729,6 @@ def get_metrics(metric_str: str) -> Callable:
         from sklearn.metrics import r2_score
 
         logger.warning("r2_score is not for min mode, please use neg_R2 instead.")
-        # warnings.warn("r2_score is not for min mode, please use neg_R2 instead.")
         return r2_score
     elif metric_str == "MAX":
         from sklearn.metrics import max_error

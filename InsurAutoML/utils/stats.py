@@ -1,17 +1,17 @@
 """
-File Name: _stat.py
+File Name: stats.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_utils/_stat.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/utils/stats.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 4:26:02 pm
+Last Modified: Monday, 10th July 2023 8:49:43 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,21 +52,24 @@ def merge_mean(old, new):
     (n1, mean1), (n2, mean2) = old, new
     return (mean1 * n1 + mean2 * n2) / (n1 + n2)
 
+
 # merge the standard deviation of two datasets
 
 
 def merge_std(old, new):
     (n1, mean1, std1), (n2, mean2, std2) = old, new
     return np.sqrt(
-        (std1 ** 2 * n1 + std2 ** 2 * n2) / (n1 + n2) +
-        n1 * n2 * (mean1 - mean2) ** 2 / (n1 + n2) ** 2
+        (std1**2 * n1 + std2**2 * n2) / (n1 + n2)
+        + n1 * n2 * (mean1 - mean2) ** 2 / (n1 + n2) ** 2
     )
+
 
 # merge two dict and sum up the values of common keys
 
 
 def merge_dict(dict1, dict2):
     return {k: dict1.get(k, 0) + dict2.get(k, 0) for k in set(dict1) | set(dict2)}
+
 
 # return non-nan covariance matrix between X and y, (return covariance of X if y = None)
 # default calculate at columns (axis = 0), axis = 1 at rows
@@ -77,7 +80,6 @@ def nan_cov(
     y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
     axis: int = 0,
 ) -> np.ndarray:
-
     if isinstance(y, pd.DataFrame):
         _empty = y.isnull().all().all()
     elif isinstance(y, pd.Series):
@@ -117,8 +119,7 @@ def nan_cov(
     _y_mean = np.nanmean(y, axis=axis)
 
     _cov = np.array(
-        [[0.0 for _i in range(y.shape[1 - axis])]
-         for _j in range(X.shape[1 - axis])]
+        [[0.0 for _i in range(y.shape[1 - axis])] for _j in range(X.shape[1 - axis])]
     )  # initialize covariance matrix
 
     for i in range(_cov.shape[0]):
@@ -140,7 +141,6 @@ def class_means(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> List[float]:
-
     _class = np.unique(y)
     result = []
 
@@ -155,7 +155,6 @@ def class_means(
 def empirical_covariance(
     X: Union[pd.DataFrame, pd.Series, np.ndarray], *, assume_centered: bool = False
 ) -> np.ndarray:
-
     X = np.asarray(X)
 
     if X.ndim == 1:
@@ -180,7 +179,6 @@ def class_cov(
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
     priors: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> np.ndarray:
-
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
@@ -201,15 +199,13 @@ def Pearson_Corr(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> List:
-
     if not isinstance(X, pd.DataFrame):
         X = pd.DataFrame(X)
 
     features = list(X.columns)
 
     result = [
-        (nan_cov(X[_column], y) /
-         np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
+        (nan_cov(X[_column], y) / np.sqrt(nan_cov(X[_column]) * nan_cov(y)))[0][0]
         for _column in features
     ]
     # Oct. 10 decrypted:
@@ -227,7 +223,6 @@ def MI(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> List[float]:
-
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
@@ -244,19 +239,16 @@ def MI(
     _H_y = -sum(item * np.log(item) for item in _y_pro)
 
     for _column in features:
-
         _X_y = pd.concat([X[_column], y], axis=1)
         _pro = (
             _X_y.groupby([_column, _y_column[0]]).size().div(len(X))
         )  # combine probability (x, y)
         _pro_val = _pro.values  # take only values
-        _X_pro = X[[_column]].groupby(
-            _column).size().div(len(X))  # probability (x)
+        _X_pro = X[[_column]].groupby(_column).size().div(len(X))  # probability (x)
         _H_y_X = -sum(
             _pro_val[i]
             * np.log(
-                _pro_val[i] / _X_pro.loc[_X_pro.index ==
-                                         _pro.index[i][0]].values[0]
+                _pro_val[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]].values[0]
             )
             for i in range(len(_pro))
         )
@@ -272,7 +264,6 @@ def t_score(
     fvalue: bool = True,
     pvalue: bool = False,
 ) -> Union[float, Tuple[float, float]]:
-
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
@@ -314,7 +305,6 @@ def ANOVA(
     fvalue: bool = True,
     pvalue: bool = False,
 ) -> Union[float, Tuple[float, float]]:
-
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
@@ -351,17 +341,22 @@ def neg_R2(
     y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
     y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> float:
-
     from sklearn.metrics import r2_score
 
-    return -r2_score(y_true, y_pred)
+    # check range of R2
+    # if out of normal range, return np.inf
+    _result = -r2_score(y_true, y_pred)
+
+    if _result < -1 or _result > 1:
+        return np.inf
+    else:
+        return _result
 
 
 def neg_accuracy(
     y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
     y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> float:
-
     from sklearn.metrics import accuracy_score
 
     return -accuracy_score(y_true, y_pred)
@@ -371,7 +366,6 @@ def neg_precision(
     y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
     y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> float:
-
     from sklearn.metrics import precision_score
 
     return -precision_score(y_true, y_pred)
@@ -381,7 +375,6 @@ def neg_auc(
     y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
     y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> float:
-
     from sklearn.metrics import roc_auc_score
 
     return -roc_auc_score(y_true, y_pred)
@@ -391,7 +384,6 @@ def neg_hinge(
     y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
     y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> float:
-
     from sklearn.metrics import hinge_loss
 
     return -hinge_loss(y_true, y_pred)
@@ -401,7 +393,6 @@ def neg_f1(
     y_true: Union[pd.DataFrame, pd.Series, np.ndarray],
     y_pred: Union[pd.DataFrame, pd.Series, np.ndarray],
 ) -> float:
-
     from sklearn.metrics import f1_score
 
     return -f1_score(y_true, y_pred)
@@ -439,12 +430,14 @@ def ACCC(
     # check shape
     if not len(Z) == len(y):
         raise ValueError(
-            "Z and y must have the same length, but Z has length %d and y has length %d" %
-            (len(Z), len(y)))
+            "Z and y must have the same length, but Z has length %d and y has length %d"
+            % (len(Z), len(y))
+        )
     if not (X is None) and not len(y) == len(X):
         raise ValueError(
-            "X and y must have the same length, but X has length %d and y has length %d" %
-            (len(X), len(y)))
+            "X and y must have the same length, but X has length %d and y has length %d"
+            % (len(X), len(y))
+        )
 
     from sklearn.neighbors import KNeighborsRegressor
 
@@ -483,8 +476,7 @@ def ACCC(
             n_neighbors=2, p=2, metric="minkowski"
         )  # standard Euclidean distance
         knn_M.fit(pd.concat([X, Z], axis=1, ignore_index=True), y_rank)
-        _, ind_M = knn_M.kneighbors(
-            pd.concat([X, Z], axis=1, ignore_index=True))
+        _, ind_M = knn_M.kneighbors(pd.concat([X, Z], axis=1, ignore_index=True))
         # get second closest since the closest will be itself
         ind_M = ind_M[:, -1]
 

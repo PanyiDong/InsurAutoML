@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 8th June 2023 11:03:55 am
+Last Modified: Wednesday, 12th July 2023 8:19:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -467,8 +467,8 @@ class Winsorization(BaseScaling):
         for _column in features:
             quantile = np.nanquantile(_X[_column], self.quantile, axis=0)
             self._quantile_list.append(quantile)
-            _above_quantile = y[_X[_column] > quantile].mean()[0]
-            _below_quantile = y[_X[_column] <= quantile].mean()[0]
+            _above_quantile = y[_X[_column] > quantile].mean(axis=0)[0]
+            _below_quantile = y[_X[_column] <= quantile].mean(axis=0)[0]
             # deal with the case where above quantile do not exists
             if not _above_quantile:
                 _above_quantile = quantile

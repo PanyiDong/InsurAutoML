@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 9th June 2023 9:38:35 am
+Last Modified: Monday, 10th July 2023 10:17:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,7 +57,7 @@ from ..base import set_seed
 from ..constant import TimeoutException
 from ..utils.data import train_test_split, formatting
 from ..utils.file import save_methods
-from ..utils.optimize import time_limit, setup_logger
+from ..utils.optimize import time_limit, setup_logger, get_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -691,63 +691,35 @@ class TabularObjective(tune.Trainable):
         # at actual fitting process below (since try to minimize the loss)
         if self.task_mode == "regression":
             # evaluation for predictions
-            if self.objective == "MSE":
-                from sklearn.metrics import mean_squared_error
-
-                _obj = mean_squared_error
-            elif self.objective == "MAE":
-                from sklearn.metrics import mean_absolute_error
-
-                _obj = mean_absolute_error
-            elif self.objective == "MSLE":
-                from sklearn.metrics import mean_squared_log_error
-
-                _obj = mean_squared_log_error
-            elif self.objective == "R2":
-                from sklearn.metrics import r2_score
-
-                _obj = r2_score
-            elif self.objective == "MAX":
-                from sklearn.metrics import (
-                    max_error,
-                )  # focus on reducing extreme losses
-
-                _obj = max_error
-            elif isinstance(self.objective, Callable):
-                # if callable, use the callable
-                _obj = self.objective
+            if self.objective in ["R2"]:
+                _objective = "neg_" + self.objective
             else:
+                _objective = self.objective
+            try:
+                _obj = get_metrics(_objective)
+            except:
                 self._logger.error(
                     'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
+
+            self._logger.info("Objective: {} by {}".format(_obj, _objective))
         elif self.task_mode == "classification":
             # evaluation for predictions
-            if self.objective == "accuracy":
-                from sklearn.metrics import accuracy_score
-
-                _obj = accuracy_score
-            elif self.objective == "precision":
-                from sklearn.metrics import precision_score
-
-                _obj = precision_score
-            elif self.objective == "auc":
-                from sklearn.metrics import roc_auc_score
-
-                _obj = roc_auc_score
-            elif self.objective == "hinge":
-                from sklearn.metrics import hinge_loss
-
-                _obj = hinge_loss
-            elif self.objective == "f1":
-                from sklearn.metrics import f1_score
-
-                _obj = f1_score
-            elif isinstance(self.objective, Callable):
-                # if callable, use the callable
-                _obj = self.objective
+            if self.objective.lower() in [
+                "accuracy",
+                "precision",
+                "auc",
+                "hinge",
+                "f1",
+            ]:
+                _objective = "neg_" + self.objective
             else:
+                _objective = self.objective
+            try:
+                _obj = get_metrics(_objective)
+            except:
                 self._logger.error(
                     'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
                         self.task_mode, self.objective
@@ -756,17 +728,22 @@ class TabularObjective(tune.Trainable):
 
         return _obj
 
+    # test sets are only utilized when not refit
     def _fit(
         self,
         _X_train_obj: pd.DataFrame,
         _y_train_obj: pd.DataFrame,
-        _X_test_obj: pd.DataFrame,
-        _y_test_obj: pd.DataFrame,
-    ) -> Tuple[Union[np.ndarray, pd.DataFrame], Union[np.ndarray, pd.DataFrame]]:
+        _X_test_obj: pd.DataFrame = None,
+        _y_test_obj: pd.DataFrame = None,
+        refit: bool = False,
+    ) -> Union[
+        Tuple[Union[np.ndarray, pd.DataFrame], Union[np.ndarray, pd.DataFrame]], None
+    ]:
         # encoding
         start_time = time.time()
         _X_train_obj = self.enc.fit(_X_train_obj)
-        _X_test_obj = self.enc.refit(_X_test_obj)
+        if not refit:
+            _X_test_obj = self.enc.refit(_X_test_obj)
         end_time = time.time()
         self._logger.info(
             "[INFO] Encoding takes: {:24.4f}s".format(end_time - start_time)
@@ -776,7 +753,8 @@ class TabularObjective(tune.Trainable):
         # imputer
         start_time = time.time()
         _X_train_obj = self.imp.fill(_X_train_obj)
-        _X_test_obj = self.imp.fill(_X_test_obj)
+        if not refit:
+            _X_test_obj = self.imp.fill(_X_test_obj)
         end_time = time.time()
         self._logger.info(
             "[INFO] Imputation takes: {:22.4f}s".format(end_time - start_time)
@@ -795,14 +773,16 @@ class TabularObjective(tune.Trainable):
         # make sure the classes are integers (belongs to certain classes)
         if self.task_mode == "classification":
             _y_train_obj = _y_train_obj.astype(int)
-            _y_test_obj = _y_test_obj.astype(int)
+            if not refit:
+                _y_test_obj = _y_test_obj.astype(int)
 
         # scaling
         start_time = time.time()
         self.scl.fit(_X_train_obj, _y_train_obj)
         end_time = time.time()
         _X_train_obj = self.scl.transform(_X_train_obj)
-        _X_test_obj = self.scl.transform(_X_test_obj)
+        if not refit:
+            _X_test_obj = self.scl.transform(_X_test_obj)
         self._logger.info(
             "[INFO] Scaling takes: {:25.4f}s".format(end_time - start_time)
         )
@@ -813,7 +793,8 @@ class TabularObjective(tune.Trainable):
         self.fts.fit(_X_train_obj, _y_train_obj)
         end_time = time.time()
         _X_train_obj = self.fts.transform(_X_train_obj)
-        _X_test_obj = self.fts.transform(_X_test_obj)
+        if not refit:
+            _X_test_obj = self.fts.transform(_X_test_obj)
         self._logger.info(
             "[INFO] Feature selection takes: {:15.4f}s".format(end_time - start_time)
         )
@@ -827,38 +808,27 @@ class TabularObjective(tune.Trainable):
                 "[INFO] Sparse train matrix detected, convert to dense array."
             )
             _X_train_obj = _X_train_obj.toarray()
-        if scipy.sparse.issparse(_X_test_obj):
-            self._logger.info(
-                "[INFO] Sparse test matrix detected, convert to dense array."
-            )
-            _X_test_obj = _X_test_obj.toarray()
+        if not refit:
+            if scipy.sparse.issparse(_X_test_obj):
+                self._logger.info(
+                    "[INFO] Sparse test matrix detected, convert to dense array."
+                )
+                _X_test_obj = _X_test_obj.toarray()
 
-        # store the preprocessed train/test datasets
-        if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
-            pd.concat(
-                [pd.DataFrame(_X_train_obj), _y_train_obj],
-                axis=1,
-                ignore_index=True,
-            ).to_csv("train_preprocessed.csv", index=False)
-        elif isinstance(_X_train_obj, pd.DataFrame):
-            pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
-                "train_preprocessed.csv", index=False
-            )
-        else:
-            self._logger.error("Only accept numpy array or pandas dataframe!")
-
-        if isinstance(_X_test_obj, np.ndarray):
-            pd.concat(
-                [pd.DataFrame(_X_test_obj), _y_test_obj],
-                axis=1,
-                ignore_index=True,
-            ).to_csv("test_preprocessed.csv", index=False)
-        elif isinstance(_X_test_obj, pd.DataFrame):
-            pd.concat([_X_test_obj, _y_test_obj], axis=1).to_csv(
-                "test_preprocessed.csv", index=False
-            )
-        else:
-            self._logger.error("Only accept numpy array or pandas dataframe!")
+        # store the preprocessed train/test datasets when refit
+        if refit:
+            if isinstance(_X_train_obj, np.ndarray):  # in case numpy array is returned
+                pd.concat(
+                    [pd.DataFrame(_X_train_obj), _y_train_obj],
+                    axis=1,
+                    ignore_index=True,
+                ).to_csv("train_preprocessed.csv", index=False)
+            elif isinstance(_X_train_obj, pd.DataFrame):
+                pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
+                    "train_preprocessed.csv", index=False
+                )
+            else:
+                self._logger.error("Only accept numpy array or pandas dataframe!")
 
         start_time = time.time()
         self.mol.fit(_X_train_obj, _y_train_obj.values.ravel())
@@ -868,7 +838,10 @@ class TabularObjective(tune.Trainable):
         )
         self._logger.info("[INFO] Model fitting finished.")
 
-        return (_X_test_obj, _y_test_obj)
+        if not refit:
+            return (_X_test_obj, _y_test_obj)
+        else:
+            return None
 
     def _predict(
         self,
@@ -879,19 +852,10 @@ class TabularObjective(tune.Trainable):
         _obj = self._get_objective()
 
         y_pred = self.mol.predict(_X_test_obj)
-        if self.objective in [
-            "R2",
-            "accuracy",
-            "precision",
-            "auc",
-            "hinge",
-            "f1",
-        ]:
-            # special treatment for ["R2", "accuracy", "precision", "auc", "hinge", "f1"]
-            # larger the better, since to minimize, add negative sign
-            _loss = -_obj(_y_test_obj.values, y_pred)
-        else:
-            _loss = _obj(_y_test_obj.values, y_pred)
+
+        # UPDATE: Jul. 10, 2023
+        # negative losses are handled by get_metrics earlier
+        _loss = _obj(_y_test_obj.values, y_pred)
 
         # register failed losses as np.inf
         _loss = _loss if isinstance(_loss, (int, float)) else np.inf
@@ -950,14 +914,19 @@ class TabularObjective(tune.Trainable):
                 self._logger.info("[INFO] Fold: {}".format(idx + 1))
 
             # fit the pipeline and return the preprocessed test datasets
-            _test = self._fit(*_train, *_test)
+            _test = self._fit(*_train, *_test, refit=False)
             _loss = self._predict(*_test)
             _loss_list.append(_loss)
 
         # calculate mean loss
         # if KFold, calculate mean of all folds
+        self._logger.info("[INFO] Loss from all folds: {}".format(_loss_list))
         _loss = np.average(_loss_list)
 
+        # if validation, refit the model with all data
+        if self.validation:
+            self._logger.info("[INFO] Refit the model with all data...")
+            self._fit(self._X, self._y, refit=True)
         # save the fitted model objects
         save_methods(
             self.model_name,

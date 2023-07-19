@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:26:23 am
+Last Modified: Wednesday, 12th July 2023 8:19:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -264,7 +264,9 @@ class Smote(BaseBalancing):
             ]
             _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
             if self.generation == "mean":
-                X.loc[len(X), :] = X.loc[[_sample.index[0], X.index[_link]], :].mean()
+                X.loc[len(X), :] = X.loc[[_sample.index[0], X.index[_link]], :].mean(
+                    axis=0
+                )
             elif self.generation == "random":
                 X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
                     X.loc[X.index[_link], :] - X.lox[_sample.index, :]

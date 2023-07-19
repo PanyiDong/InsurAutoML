@@ -11,7 +11,7 @@ File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 12th June 2023 5:19:20 pm
+Last Modified: Wednesday, 12th July 2023 8:19:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -67,7 +67,7 @@ def meta_map_object(data: pd.Series) -> str:
         return "Categorical"
     # judge by average length
     try:
-        txt_avg_len = pd.Series(data.unique()).str.split().str.len().mean()
+        txt_avg_len = pd.Series(data.unique()).str.split().str.len().mean(axis=0)
         if txt_avg_len >= 3:
             return "Text"
     except BaseException:
@@ -376,7 +376,7 @@ class MetaData:
         # Object
         elif _dtype in ["object", "category"]:
             # check if is path
-            if os.path.isfile(data[0]):
+            if os.path.isfile(data.iloc[0]):
                 type = "Path"
                 subtype = ""
 

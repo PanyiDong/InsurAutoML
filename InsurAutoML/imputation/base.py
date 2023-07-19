@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:39:24 am
+Last Modified: Wednesday, 12th July 2023 8:19:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -163,8 +163,8 @@ class DummyImputer(BaseImputer):
 
         for _column in features:
             if X[_column].isnull().values.any():
-                _mean_nan = y[X[_column].isnull()].mean()
-                _mean_non_nan = y[~X[_column].isnull()].mean()
+                _mean_nan = y[X[_column].isnull()].mean(axis=0)
+                _mean_non_nan = y[~X[_column].isnull()].mean(axis=0)
                 if abs(_mean_nan / _mean_non_nan - 1) >= self.threshold:
                     X[_column + "_nan"] = X[_column].isnull().astype(int)
                     X[_column] = X[_column].fillna(0)
