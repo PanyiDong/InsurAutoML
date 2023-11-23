@@ -14,8 +14,11 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: 3.9
-      - name: "run builds (without neural network)"
+      - name: Setup environment
         run: |
           python -m pip install --upgrade pip
           pip install pytest
+      - name: "run builds (without neural network)"
+        run: |
+          git describe --tags
           pip install -e .[normal]

@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 22nd November 2023 11:18:42 pm
+Last Modified: Wednesday, 22nd November 2023 11:20:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -76,14 +76,12 @@ InsurAutoML_version = (
     .stdout.decode("utf-8")
     .strip()[1:]  # remove the first character 'v'
 )
-print(InsurAutoML_version)
 # get only the version release number in case push is attached
 InsurAutoML_version = (
     InsurAutoML_version.split("-")[0]
     if "-" in InsurAutoML_version
     else InsurAutoML_version
 )
-print(InsurAutoML_version)
 
 # assert version file
 assert os.path.isfile("InsurAutoML/version.py")
