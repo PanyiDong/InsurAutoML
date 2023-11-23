@@ -16,6 +16,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+      	with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@master
         with:
@@ -51,6 +53,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@master
+      	with:
+          fetch-depth: 0
       - name: Set up Python
         uses: actions/setup-python@master
         with:
