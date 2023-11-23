@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 10th July 2023 8:49:43 pm
+Last Modified: Thursday, 20th July 2023 2:02:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -377,7 +377,10 @@ def neg_auc(
 ) -> float:
     from sklearn.metrics import roc_auc_score
 
-    return -roc_auc_score(y_true, y_pred)
+    if y_pred.shape[1] <= 2:
+        return -roc_auc_score(y_true, y_pred[:, -1])
+    else:
+        return -roc_auc_score(y_true, y_pred, multi_class="ovr")
 
 
 def neg_hinge(

@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 12th June 2023 12:02:58 am
+Last Modified: Thursday, 20th July 2023 5:45:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -593,6 +593,12 @@ class AutoTabularBase:
             elif self.task_mode == "regression":
                 del _all_models["LibLinear_SVR"]
                 del _all_models["LibSVM_SVR"]
+        # Remove GAM methods if multi-class classification
+        if (
+            self.task_mode == "classification"
+            and len(pd.unique(y.to_numpy().flatten())) > 2
+        ):
+            del _all_models["GAM_Classifier"]
 
         # model space, only select chosen models to space
         if self.models == "auto":  # if auto, model pool will be all default models

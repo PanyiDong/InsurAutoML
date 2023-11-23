@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:41:21 am
+Last Modified: Sunday, 10th September 2023 2:39:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -276,7 +276,7 @@ class RNN_Base:
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> RNN_Base:
         # set seed
-        torch.manual_seed(self.seed)
+        # torch.manual_seed(self.seed)
 
         # use cuda if detect GPU and is_cuda is True
         self.device = torch.device(
@@ -456,7 +456,6 @@ class RNN_Classifier(RNN_Base, BaseModel):
         self.is_cuda = is_cuda
         self.seed = seed
 
-        super().__init__()
         self._fitted = False
 
     def fit(
@@ -585,7 +584,6 @@ class RNN_Regressor(RNN_Base, BaseModel):
         self.is_cuda = is_cuda
         self.seed = seed
 
-        super().__init__()
         self._fitted = False
 
     def fit(

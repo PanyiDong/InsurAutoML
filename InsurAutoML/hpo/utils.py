@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 10th July 2023 10:17:09 pm
+Last Modified: Wednesday, 22nd November 2023 3:34:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -54,7 +54,6 @@ import pandas as pd
 import numpy as np
 
 from ..base import set_seed
-from ..constant import TimeoutException
 from ..utils.data import train_test_split, formatting
 from ..utils.file import save_methods
 from ..utils.optimize import time_limit, setup_logger, get_metrics
@@ -556,7 +555,7 @@ class TabularObjective(tune.Trainable):
         try:
             with time_limit(self.timeout):
                 self.status_dict = self._objective()
-        except TimeoutException:
+        except TimeoutError:
             self._logger.warning(
                 "Objective not finished due to timeout after {} seconds.".format(
                     self.timeout
@@ -851,12 +850,16 @@ class TabularObjective(tune.Trainable):
         # get objective function by task mode and input objective
         _obj = self._get_objective()
 
-        y_pred = self.mol.predict(_X_test_obj)
+        # UPDATE: Jul. 20, 2023
+        # special case for auc and hinge
+        if self.objective.lower() in ["hinge", "auc"]:
+            y_pred = self.mol.predict_proba(_X_test_obj)
+        else:
+            y_pred = self.mol.predict(_X_test_obj)
 
         # UPDATE: Jul. 10, 2023
         # negative losses are handled by get_metrics earlier
         _loss = _obj(_y_test_obj.values, y_pred)
-
         # register failed losses as np.inf
         _loss = _loss if isinstance(_loss, (int, float)) else np.inf
 

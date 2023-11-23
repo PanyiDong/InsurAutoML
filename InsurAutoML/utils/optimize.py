@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 10th July 2023 11:01:43 am
+Last Modified: Wednesday, 22nd November 2023 3:34:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,7 +57,7 @@ from contextlib import contextmanager
 
 # from wrapt_timeout_decorator import *
 
-from ..constant import METHOD_MAPPING, TimeoutException
+from ..constant import METHOD_MAPPING
 from ..utils.base import (
     has_method,
     distribution_to_suggest,
@@ -85,7 +85,7 @@ def setup_logger(name, log_file, level=logging.INFO):
 @contextmanager
 def time_limit(seconds):
     def signal_handler(signum, frame):
-        raise TimeoutException("Timed out!")
+        raise TimeoutError("Timed out!")
 
     signal.signal(signal.SIGALRM, signal_handler)
     signal.alarm(seconds)
