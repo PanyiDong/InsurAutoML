@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 22nd November 2023 3:34:53 pm
+Last Modified: Friday, 24th November 2023 2:48:15 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,8 +44,8 @@ import json
 import os
 import time
 import scipy
-import warnings
 import logging
+import func_timeout
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.utils._testing import ignore_warnings
 from sklearn.model_selection import KFold
@@ -553,9 +553,13 @@ class TabularObjective(tune.Trainable):
 
     def step(self) -> Dict[str, Any]:
         try:
-            with time_limit(self.timeout):
-                self.status_dict = self._objective()
-        except TimeoutError:
+            # Update: Nov. 24, 2023
+            # Signal/Multiprocessing timeout methods can be ignored by ctypes callback
+            # Use func_timeout instead
+            # self.status_dict = time_limit(self.timeout)(self._objective)()
+            self.status_dict = func_timeout.func_timeout(self.timeout, self._objective)
+        # except TimeoutError:
+        except func_timeout.FunctionTimedOut:
             self._logger.warning(
                 "Objective not finished due to timeout after {} seconds.".format(
                     self.timeout

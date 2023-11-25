@@ -11,7 +11,7 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 5th June 2023 10:34:19 pm
+Last Modified: Friday, 24th November 2023 12:37:26 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,6 +43,14 @@ import logging
 
 class TimeoutException(Exception):
     pass
+
+
+class TimeoutWarning(Warning):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
 
 
 MAX_ERROR_TRIALOUT = 8

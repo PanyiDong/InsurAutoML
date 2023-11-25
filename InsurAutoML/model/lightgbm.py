@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:41:03 am
+Last Modified: Friday, 24th November 2023 12:21:51 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -207,7 +207,10 @@ class LightGBM_Base:
                 num_iterations=self.num_iterations,
             )
 
-        self.model.fit(X, y)
+        try:
+            self.model.fit(X, y)
+        except Exception as e:
+            raise e
 
         self._fitted = True
 

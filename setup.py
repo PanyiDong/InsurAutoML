@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 22nd November 2023 11:20:07 pm
+Last Modified: Friday, 24th November 2023 2:46:28 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -99,6 +99,7 @@ INSTALL_LIST = [
     "scipy",
     "pyarrow",
     "fastparquet",
+    "func-timeout",
     "matplotlib",
     "seaborn>=0.11.0",
     "ray<2.0.0",
