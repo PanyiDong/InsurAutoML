@@ -11,7 +11,7 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 2:45:29 pm
+Last Modified: Tuesday, 5th December 2023 5:21:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -52,14 +52,12 @@ import pandas as pd
 import numpy as np
 from ray import tune
 from ray.tune.analysis import ExperimentAnalysis
+from sklearn.model_selection import KFold
 
 from ..base import set_seed, no_processing
 from ..constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
 from ..utils.base import type_of_script, format_hyper_dict
-from ..utils.data import (
-    str2list,
-    str2dict,
-)
+from ..utils.data import str2list, str2dict, train_test_split
 from ..utils.file import (
     save_methods,
     load_methods,
@@ -77,8 +75,8 @@ from ..utils.optimize import (
     ray_status,
     check_status,
 )
-from .utils import (
-    TabularObjective,
+from .utils import TabularObjective
+from .ensemble import (
     Pipeline,
     ClassifierEnsemble,
     RegressorEnsemble,
@@ -125,6 +123,9 @@ class AutoTabularBase:
     support ("classification", "regression")
 
     n_estimators: top k pipelines used to create the ensemble, default: 5
+
+    voting: voting method used for ensemble, default: None
+    if None, use "hard" for classification, "mean" for regression
 
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
@@ -255,6 +256,7 @@ class AutoTabularBase:
         task_mode: str = "classification",
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting: str = None,
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
@@ -291,6 +293,13 @@ class AutoTabularBase:
         self.task_mode = task_mode
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        if not voting:
+            if self.task_mode == "classification":
+                self.voting = "hard"
+            elif self.task_mode == "regression":
+                self.voting = "mean"
+        else:
+            self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
@@ -889,7 +898,7 @@ class AutoTabularBase:
         # else, write mode
         if not os.path.exists(
             os.path.join(self.temp_directory, self.model_name, "optimal_setting.txt")
-        ):
+        ) or self.ensemble_strategy in ["boosting"]:
             write_type = "w"
         else:
             write_type = "a"
@@ -948,14 +957,13 @@ class AutoTabularBase:
         self, trial_id: str, config: Dict, iter: int = None, features: List[str] = None
     ) -> None:
         # initialize ensemble list
-        try:
-            # if ensemble list exists, append to it
-            if len(ensemble_list) > 0 or len(feature_list) > 0:
-                pass
-        except BaseException:
+        # if ensemble list exists, append to it
+        if hasattr(self, "ensemble_list") or hasattr(self, "feature_list"):
+            pass
+        else:
             # else, initialize the list
-            ensemble_list = []
-            feature_list = []
+            self.ensemble_list = []
+            self.feature_list = []
 
         # if only one optimal input, need to convert to iterable
         if not isinstance(trial_id, pd.Series) or not isinstance(config, pd.Series):
@@ -972,7 +980,7 @@ class AutoTabularBase:
                 )
                 _path = os.path.join(_path, self.model_name)
 
-                ensemble_list.append(self._fit_optimal(idx, config, _path))
+                self.ensemble_list.append(self._fit_optimal(idx, config, _path))
             else:
                 _path = find_exact_path(
                     os.path.join(
@@ -987,23 +995,25 @@ class AutoTabularBase:
                 )
                 _path = os.path.join(_path, self.model_name)
 
-                ensemble_list.append(self._fit_optimal(iter, config, _path))
+                self.ensemble_list.append(self._fit_optimal(iter, config, _path))
             if (
                 features is not None
             ):  # if feature subset is provided, save the feature subsets
-                feature_list.append(features)
+                self.feature_list.append(features)
 
         # wrap pipelines into ensemble
         if self.task_mode == "classification":
-            self._ensemble = ClassifierEnsemble(
-                estimators=ensemble_list,
-                features=feature_list,
+            self.ensemble = ClassifierEnsemble(
+                estimators=self.ensemble_list,
+                voting=self.voting,
+                features=self.feature_list,
                 strategy=self.ensemble_strategy,
             )
         elif self.task_mode == "regression":
-            self._ensemble = RegressorEnsemble(
-                estimators=ensemble_list,
-                features=feature_list,
+            self.ensemble = RegressorEnsemble(
+                estimators=self.ensemble_list,
+                voting=self.voting,
+                features=self.feature_list,
                 strategy=self.ensemble_strategy,
             )
 
@@ -1247,7 +1257,7 @@ class AutoTabularBase:
                     self.model_name,
                 )
             )
-            [self._ensemble] = load_methods(self.model_name)
+            [self.ensemble] = load_methods(self.model_name)
 
             self._fitted = True  # successfully fitted the model
 
@@ -1312,6 +1322,39 @@ class AutoTabularBase:
             )
         )
 
+        if self.validation == "KFold":
+            kf = KFold(
+                n_splits=int(1 / self.valid_size), shuffle=True, random_state=self.seed
+            )
+            data_split = [
+                [
+                    (_X.loc[_train_idx, :], _y.loc[_train_idx, :]),
+                    (_X.loc[_test_idx, :], _y.loc[_test_idx, :]),
+                ]
+                for idx, (_train_idx, _test_idx) in enumerate(kf.split(_X, _y))
+            ]
+        elif self.validation:
+            # only perform train_test_split when validation
+            # train test split so the performance of model selection and
+            # hyperparameter optimization can be evaluated
+            X_train, X_test, y_train, y_test = train_test_split(
+                _X, _y, test_perc=self.valid_size, seed=self.seed
+            )
+            data_split = [[(X_train, y_train), (X_test, y_test)]]
+        else:
+            # if no validation, use all data for training
+            data_split = [[(_X, _y), (_X, _y)]]
+
+        if self.reset_index:
+            # reset index to avoid indexing order error
+            data_split = [
+                [
+                    (X_train.reset_index(drop=True), y_train.reset_index(drop=True)),
+                    (X_test.reset_index(drop=True), y_test.reset_index(drop=True)),
+                ]
+                for (X_train, y_train), (X_test, y_test) in data_split
+            ]
+
         # set ray status
         rayStatus = ray_status(
             cpu_threads=self.cpu_threads,
@@ -1333,8 +1376,7 @@ class AutoTabularBase:
             # set trainable
             trainer = tune.with_parameters(
                 TabularObjective,
-                _X=_X,
-                _y=_y,
+                data_split=data_split,
                 encoder=encoder,
                 imputer=imputer,
                 balancing=balancing,
@@ -1344,8 +1386,6 @@ class AutoTabularBase:
                 model_name=self.model_name,
                 task_mode=self.task_mode,
                 objective=self.objective,
-                validation=self.validation,
-                valid_size=self.valid_size,
                 full_status=self.full_status,
                 reset_index=self.reset_index,
                 timeout=self.timeout_per_trial,
@@ -1373,7 +1413,7 @@ class AutoTabularBase:
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
                     checkpoint_score_attr="loss",
-                    # mode="min",  # always call a minimization process
+                    mode="min",  # always call a minimization process
                     search_alg=algo(
                         space=hyperparameter_space,
                         mode="min",  # always call a minimization process
@@ -1383,7 +1423,7 @@ class AutoTabularBase:
                     scheduler=scheduler(**self.search_scheduler_settings),
                     reuse_actors=True,
                     raise_on_failed_trial=False,
-                    # metric="loss",
+                    metric="loss",
                     num_samples=self.max_evals,
                     max_failures=self.max_error,
                     stop=stopper,  # use stopper
@@ -1456,8 +1496,7 @@ class AutoTabularBase:
             # set trainable
             trainer = tune.with_parameters(
                 TabularObjective,
-                _X=_X,
-                _y=_y,
+                data_split=data_split,
                 encoder=encoder,
                 imputer=imputer,
                 balancing=balancing,
@@ -1467,8 +1506,6 @@ class AutoTabularBase:
                 model_name=self.model_name,
                 task_mode=self.task_mode,
                 objective=self.objective,
-                validation=self.validation,
-                valid_size=self.valid_size,
                 full_status=self.full_status,
                 reset_index=self.reset_index,
                 timeout=self.timeout_per_trial,
@@ -1496,7 +1533,7 @@ class AutoTabularBase:
                     checkpoint_at_end=True,
                     keep_checkpoints_num=4,
                     checkpoint_score_attr="loss",
-                    # mode="min",  # always call a minimization process
+                    mode="min",  # always call a minimization process
                     search_alg=algo(
                         space=hyperparameter_space,
                         mode="min",  # always call a minimization process
@@ -1506,7 +1543,7 @@ class AutoTabularBase:
                     scheduler=scheduler(**self.search_scheduler_settings),
                     reuse_actors=True,
                     raise_on_failed_trial=False,
-                    # metric="loss",
+                    metric="loss",
                     num_samples=self.max_evals,
                     max_failures=self.max_error,
                     stop=stopper,  # use stopper
@@ -1615,6 +1652,15 @@ class AutoTabularBase:
                     else (self.max_evals // self.n_estimators)
                 )
 
+                # assign feature subset to data_split
+                _data_split = [
+                    [
+                        (X_train.loc[:, feature_subset], y_train),
+                        (X_test.loc[:, feature_subset], y_test),
+                    ]
+                    for (X_train, y_train), (X_test, y_test) in data_split
+                ]
+
                 # get progress reporter
                 progress_reporter = get_progress_reporter(
                     self.progress_reporter,
@@ -1625,8 +1671,7 @@ class AutoTabularBase:
                 # set trainable
                 trainer = tune.with_parameters(
                     TabularObjective,
-                    _X=_X[feature_subset],
-                    _y=_y,
+                    data_split=_data_split,
                     encoder=encoder,
                     imputer=imputer,
                     balancing=balancing,
@@ -1636,8 +1681,6 @@ class AutoTabularBase:
                     model_name=self.model_name,
                     task_mode=self.task_mode,
                     objective=self.objective,
-                    validation=self.validation,
-                    valid_size=self.valid_size,
                     full_status=self.full_status,
                     reset_index=self.reset_index,
                     timeout=self.timeout_per_trial,
@@ -1670,7 +1713,7 @@ class AutoTabularBase:
                         checkpoint_at_end=True,
                         keep_checkpoints_num=4,
                         checkpoint_score_attr="loss",
-                        # mode="min",  # always call a minimization process
+                        mode="min",  # always call a minimization process
                         search_alg=algo(
                             space=hyperparameter_space,
                             metric="loss",
@@ -1680,7 +1723,7 @@ class AutoTabularBase:
                         scheduler=scheduler(**self.search_scheduler_settings),
                         reuse_actors=True,
                         raise_on_failed_trial=False,
-                        # metric="loss",
+                        metric="loss",
                         num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
                         max_failures=self.max_error,
                         stop=stopper,  # use stopper
@@ -1766,10 +1809,19 @@ class AutoTabularBase:
 
                 try:
                     # if fitted before, use pred for residuals
-                    _y_resid -= _y_pred
-                except BaseException:
+                    data_split = [
+                        [
+                            (X_train, y_train - _y_train_pred),
+                            (X_test, y_test - _y_test_pred),
+                        ]
+                        for ((X_train, y_train), (X_test, y_test)), (
+                            _y_train_pred,
+                            _y_test_pred,
+                        ) in zip(data_split, _y_pred)
+                    ]
+                except:
                     # if not, use y as residuals
-                    _y_resid = _y
+                    pass
 
                 # get progress reporter
                 progress_reporter = get_progress_reporter(
@@ -1781,8 +1833,7 @@ class AutoTabularBase:
                 # set trainable
                 trainer = tune.with_parameters(
                     TabularObjective,
-                    _X=_X,
-                    _y=_y_resid,
+                    data_split=data_split,
                     encoder=encoder,
                     imputer=imputer,
                     balancing=balancing,
@@ -1792,8 +1843,6 @@ class AutoTabularBase:
                     model_name=self.model_name,
                     task_mode=self.task_mode,
                     objective=self.objective,
-                    validation=self.validation,
-                    valid_size=self.valid_size,
                     full_status=self.full_status,
                     reset_index=self.reset_index,
                     timeout=self.timeout_per_trial,
@@ -1909,20 +1958,27 @@ class AutoTabularBase:
 
                 # make sure the ensemble is fitted
                 # usually, most of the methods are already fitted
-                self._ensemble.fit(_X, _y)
+                self.ensemble.fit(_X, _y)
 
                 # get predictions on the residuals
                 # only use the last/latest pipeline
-                _y_pred = self._ensemble.estimators[-1][1].predict(_X)
+                _best_estimator = self.ensemble.estimators[-1][1]
+                _y_pred = [
+                    [
+                        _best_estimator.predict(X_train),
+                        _best_estimator.predict(X_test),
+                    ]
+                    for (X_train, y_train), (X_test, y_test) in data_split
+                ]
 
         # make sure the ensemble is fitted
         # usually, every method is already fitted
         # but all pipelines need to be checked and set to fitted
-        self._ensemble.fit(_X, _y)
+        self.ensemble.fit(_X, _y)
 
         # if need to save the ensemble
         if self.save:
-            save_methods(self.model_name, [self._ensemble])
+            save_methods(self.model_name, [self.ensemble])
 
         # whether to retain temp files
         if self.delete_temp_after_terminate:
@@ -1977,7 +2033,7 @@ class AutoTabularBase:
         # # use model to predict
         # return self._fit_model.predict(_X)
 
-        return self._ensemble.predict(_X)
+        return self.ensemble.predict(_X)
 
     def predict_proba(
         self, X: pd.DataFrame
@@ -1992,4 +2048,4 @@ class AutoTabularBase:
 
         _X = X.copy()
 
-        return self._ensemble.predict_proba(_X)
+        return self.ensemble.predict_proba(_X)

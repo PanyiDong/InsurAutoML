@@ -14,7 +14,6 @@ InsurAutoML.egg-info/
 htmlcov/*
 .ipynb_checkpoints/
 .pytest_cache/
-experiments/
 test.py
 *.so
 *.json

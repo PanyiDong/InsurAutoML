@@ -11,7 +11,7 @@ File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:37:24 am
+Last Modified: Sunday, 3rd December 2023 11:24:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -281,7 +281,8 @@ LIGHTGBMCLASSIFIER = {
     "model": "LightGBM_Classifier",
     "objective": tune.choice(["Need to specify in HPO by response"]),
     "boosting": tune.choice(LIGHTGBM_BOOSTING),
-    "n_estimators": tune.qlograndint(50, 500, 1),
+    # same as num_iterations
+    # "n_estimators": tune.qlograndint(50, 500, 1),
     # max_depth == -1 for no limit
     "max_depth": tune.randint(-1, 31),
     "num_leaves": tune.qlograndint(3, 2047, 1),
@@ -289,6 +290,10 @@ LIGHTGBMCLASSIFIER = {
     "learning_rate": tune.loguniform(1e-4, 1),
     "tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
     "num_iterations": tune.qlograndint(50, 500, 1),
+    "min_gain_to_split": tune.loguniform(1e-8, 1),
+    "early_stopping_round": tune.randint(1, 200),
+    "max_bin": tune.qlograndint(3, 1024, 1),
+    "feature_fraction": tune.uniform(0.1, 1),
 }
 XGBOOSTCLASSIFIER = {
     "model": "XGBoost_Classifier",

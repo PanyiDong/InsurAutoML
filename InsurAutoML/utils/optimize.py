@@ -11,7 +11,7 @@ File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 2:16:13 pm
+Last Modified: Tuesday, 12th December 2023 1:03:27 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -57,7 +57,7 @@ from contextlib import contextmanager
 
 # from wrapt_timeout_decorator import *
 
-from ..constant import METHOD_MAPPING
+from ..constant import METHOD_MAPPING, MAX_ITER
 from ..utils.base import (
     has_method,
     distribution_to_suggest,
@@ -1558,6 +1558,10 @@ class TimePlateauStopper(Stopper):
         self._trial_results[trial_id].append(metric_result)
         self._iter[trial_id] += 1  # record trial results and iteration
 
+        # If max iteration reached, stop current trial
+        if self._iter[trial_id] >= int(MAX_ITER / 4):
+            return True
+
         # If still in grace period, do not stop yet
         # If not enough results yet, do not stop yet
         if self._iter[trial_id] < min(self._grace_period, self._num_results):
@@ -1577,15 +1581,18 @@ class TimePlateauStopper(Stopper):
             current_std = np.std(self._trial_results[trial_id])
         except Exception:
             current_std = float("inf")
-
+        previous_mean = np.mean(self._trial_results[trial_id])
         try:
             current_mean = np.mean(self._trial_results[trial_id])
         except Exception:
             current_mean = float("inf")
 
         # If stdev is lower than threshold, stop early.
+        plateau_check = current_std / current_mean < self._std_ratio
+        # If mean is lower than previous mean, stop early.
+        improvement_check = current_mean <= previous_mean
         # if current_mean is 0, stop early
-        return current_std / current_mean < self._std_ratio if current_mean else True
+        return (plateau_check and improvement_check) if current_mean else True
 
     def stop_all(self) -> bool:
         if self._stored_start:
@@ -1651,7 +1658,10 @@ def get_estimator(estimator_str: str) -> Callable:
 # get metrics based on string or class
 # if not in min mode, call negative of the metric
 def get_metrics(metric_str: str) -> Callable:
-    if metric_str.lower() == "neg_accuracy":
+    if isinstance(metric_str, Callable):
+        # if callable, pass
+        return metric_str
+    elif metric_str.lower() == "neg_accuracy":
         from ..utils.stats import neg_accuracy
 
         return neg_accuracy
@@ -1734,9 +1744,6 @@ def get_metrics(metric_str: str) -> Callable:
         from sklearn.metrics import max_error
 
         return max_error
-    elif isinstance(metric_str, Callable):
-        # if callable, pass
-        return metric_str
     else:
         raise ValueError("Unrecognized criteria!")
 

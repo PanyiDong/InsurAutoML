@@ -11,7 +11,7 @@ File Created: Monday, 29th May 2023 2:05:55 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:38:25 pm
+Last Modified: Friday, 1st December 2023 8:17:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,6 +40,7 @@ SOFTWARE.
 
 from typing import Union, Tuple
 import pandas as pd
+from ..constant import MAX_ITER
 
 
 class BaseBalancing:
@@ -50,6 +51,9 @@ class BaseBalancing:
 
     def __init__(self) -> None:
         pass
+
+    def get_max_iter(self) -> int:
+        return MAX_ITER
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None

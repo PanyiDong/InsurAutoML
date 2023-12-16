@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 2:48:15 pm
+Last Modified: Tuesday, 12th December 2023 1:15:05 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,474 +39,29 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Callable, Union, List, Tuple, Dict, Any
+from typing import Callable, Union, Tuple, Dict, Any, List
 import json
 import os
 import time
 import scipy
 import logging
 import func_timeout
-from sklearn.exceptions import ConvergenceWarning
-from sklearn.utils._testing import ignore_warnings
-from sklearn.model_selection import KFold
 from ray import tune
 import pandas as pd
 import numpy as np
 
 from ..base import set_seed
-from ..utils.data import train_test_split, formatting
 from ..utils.file import save_methods
-from ..utils.optimize import time_limit, setup_logger, get_metrics
+from ..utils.optimize import setup_logger, get_metrics
 
 logger = logging.getLogger(__name__)
-
-
-class Pipeline:
-
-    """ "
-    A pipeline of entire AutoML process.
-    """
-
-    def __init__(
-        self,
-        encoder: Callable = None,
-        imputer: Callable = None,
-        balancing: Callable = None,
-        scaling: Callable = None,
-        feature_selection: Callable = None,
-        model: Callable = None,
-    ) -> None:
-        self.encoder = encoder
-        self.imputer = imputer
-        self.balancing = balancing
-        self.scaling = scaling
-        self.feature_selection = feature_selection
-        self.model = model
-
-        self._fitted = False  # whether the pipeline is fitted
-
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series] = None
-    ) -> Pipeline:
-        # loop all components, make sure they are fitted
-        # if they are not fitted, fit them
-        if self.encoder is not None:
-            if self.encoder._fitted:
-                pass
-            else:
-                X = self.encoder.fit(X)
-        if self.imputer is not None:
-            if self.imputer._fitted:
-                pass
-            else:
-                X = self.imputer.fill(X)
-        if self.balancing is not None:
-            if self.balancing._fitted:
-                pass
-            else:
-                X, y = self.balancing.fit_transform(X, y)
-        if self.scaling is not None:
-            if self.scaling._fitted:
-                pass
-            else:
-                self.scaling.fit(X, y)
-                X = self.scaling.transform(X)
-        if self.feature_selection is not None:
-            if self.feature_selection._fitted:
-                pass
-            else:
-                self.feature_selection.fit(X, y)
-                X = self.feature_selection.transform(X)
-
-        if scipy.sparse.issparse(X):  # check if returns sparse matrix
-            X = X.toarray()
-
-        if self.model is None:
-            raise ValueError("model is not defined!")
-        if self.model._fitted:
-            pass
-        else:
-            self.model.fit(X, y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        if not self._fitted:
-            raise ValueError("Pipeline is not fitted!")
-
-        if self.encoder is not None:
-            X = self.encoder.refit(X)
-        if self.imputer is not None:
-            X = self.imputer.fill(X)
-        # no need for balancing
-        if self.scaling is not None:
-            X = self.scaling.transform(X)
-
-        # unify the features order
-        if hasattr(self.feature_selection, "feature_names_in_"):
-            if not (self.feature_selection.feature_names_in_ == X.columns).all():
-                X = X[self.feature_selection.feature_names_in_]
-
-        if self.feature_selection is not None:
-            X = self.feature_selection.transform(X)
-
-        return self.model.predict(X)
-
-    def predict_proba(
-        self, X: pd.DataFrame
-    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-        if not self._fitted:
-            raise ValueError("Pipeline is not fitted!")
-
-        if self.encoder is not None:
-            X = self.encoder.refit(X)
-        if self.imputer is not None:
-            X = self.imputer.fill(X)
-        # no need for balancing
-        if self.scaling is not None:
-            X = self.scaling.transform(X)
-
-        # unify the features order
-        if hasattr(self.feature_selection, "feature_names_in_"):
-            if not (self.feature_selection.feature_names_in_ == X.columns).all():
-                X = X[self.feature_selection.feature_names_in_]
-
-        if self.feature_selection is not None:
-            X = self.feature_selection.transform(X)
-
-        if not hasattr(self.model, "predict_proba"):
-            logger.error("model does not have predict_proba method!")
-
-        return self.model.predict_proba(X)
-
-
-# ensemble methods:
-# 1. Stacking Ensemble
-# 2. Boosting Ensemble
-# 3. Bagging Ensemble
-
-
-class ClassifierEnsemble(formatting):
-
-    """
-    Ensemble of classifiers for classification.
-    """
-
-    def __init__(
-        self,
-        estimators: List[Tuple[str, Pipeline]],
-        voting: str = "hard",
-        weights: List[float] = None,
-        features: List[str] = [],
-        strategy: str = "stacking",
-    ) -> None:
-        self.estimators = estimators
-        self.voting = voting
-        self.weights = weights
-        self.features = features
-        self.strategy = strategy
-
-        # initialize the formatting
-        super(ClassifierEnsemble, self).__init__(
-            inplace=False,
-        )
-
-        self._fitted = False
-
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> ClassifierEnsemble:
-        # check for voting type
-        if self.voting not in ["hard", "soft"]:
-            raise ValueError("voting must be either 'hard' or 'soft'")
-
-        # format the weights
-        self.weights = (
-            [w for est, w in zip(self.estimators, self.weights)]
-            if self.weights is not None
-            else None
-        )
-
-        # if bagging, features much be provided
-        if self.strategy == "bagging" and len(self.features) == 0:
-            raise ValueError("features must be provided for bagging ensemble")
-
-        # initialize the feature list if not given
-        # by full feature list
-        if len(self.features) == 0:
-            self.features = [X.columns for _ in range(len(self.estimators))]
-
-        # remember the name of response
-        if isinstance(y, pd.Series):
-            self._response = [y.name]
-        elif isinstance(y, pd.DataFrame):
-            self._response = list(y.columns)
-        elif isinstance(y, np.ndarray):
-            y = pd.DataFrame(y, columns=["response"])
-            self._response = ["response"]
-
-        # remember all unique labels
-        super(ClassifierEnsemble, self).fit(y)
-
-        # check for estimators type
-        if not isinstance(self.estimators, list):
-            raise TypeError("estimators must be a list")
-        for item, feature_subset in zip(self.estimators, self.features):
-            if not isinstance(item, tuple):
-                raise TypeError("estimators must be a list of tuples.")
-            if not isinstance(item[1], Pipeline):
-                raise TypeError(
-                    "estimators must be a list of tuples of (name, Pipeline)."
-                )
-
-            # make sure all estimators are fitted
-            if not item[1]._fitted:
-                item[1].fit(X[feature_subset], y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self, X: pd.DataFrame) -> pd.DataFrame:
-        if not self._fitted:
-            raise ValueError("Ensemble is not fitted!")
-
-        if self.voting == "hard":
-            # calculate predictions for all pipelines
-            pred_list = np.asarray(
-                [
-                    pipeline.predict(X[feature_subset])
-                    for (name, pipeline), feature_subset in zip(
-                        self.estimators, self.features
-                    )
-                ]
-            ).T
-            # if larger than 2d, take until get 2d array
-            while True:
-                if len(pred_list.shape) > 2:
-                    pred_list = pred_list[0]
-                else:
-                    break
-
-            if self.strategy == "stacking" or self.strategy == "bagging":
-                pred = np.apply_along_axis(
-                    lambda x: np.argmax(np.bincount(x, weights=self.weights)),
-                    axis=1,
-                    arr=pred_list,
-                )
-            elif self.strategy == "boosting":
-                pred = np.apply_along_axis(
-                    lambda x: np.sum(np.bincount(x, weights=self.weights)),
-                    axis=1,
-                    arr=pred_list,
-                )
-        elif self.voting == "soft":
-            # calculate probabilities for all pipelines
-            prob_list = np.asarray(
-                [
-                    pipeline.predict_proba(X[feature_subset])
-                    for (name, pipeline), feature_subset in zip(
-                        self.estimators, self.features
-                    )
-                ]
-            )
-            if self.strategy == "stacking" or self.strategy == "bagging":
-                pred = np.argmax(
-                    np.average(prob_list, axis=0, weights=self.weights), axis=1
-                )
-            elif self.strategy == "boosting":
-                pred = np.argmax(
-                    np.sum(prob_list, axis=0, weights=self.weights), axis=1
-                )
-
-        # make sure all predictions are seen
-        if isinstance(pred, pd.DataFrame):
-            return super(ClassifierEnsemble, self).refit(pred)
-        # if not dataframe, convert to dataframe for formatting
-        else:
-            return super(ClassifierEnsemble, self).refit(
-                pd.DataFrame(pred, columns=self._response)
-            )
-
-    def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
-        if not self._fitted:
-            raise ValueError("Ensemble is not fitted!")
-
-        # certain hyperparameters are not supported for predict_proba
-        # ignore those pipelines
-        prob_list = []
-        for (name, pipeline), feature_subset in zip(self.estimators, self.features):
-            try:
-                prob_list.append(pipeline.predict_proba(X[feature_subset]))
-            except:
-                logger.warning(
-                    "Pipeline {} does not support predict_proba. Ignoring.".format(name)
-                )
-
-        # if no pipeline supports predict_proba, raise error
-        if len(prob_list) == 0:
-            raise ValueError("No pipeline supports predict_proba. Aborting.")
-
-        # calculate probabilities for all pipelines
-        prob_list = np.asarray(prob_list)
-
-        pred = np.average(prob_list, axis=0, weights=self.weights)
-
-        # ignore formatting for probabilities
-        if isinstance(pred, pd.DataFrame):
-            return pred
-        # if not dataframe, convert to dataframe
-        else:
-            return pd.DataFrame(
-                pred, columns=["class_{}".format(i) for i in range(pred.shape[1])]
-            )
-
-
-class RegressorEnsemble(formatting):
-
-    """
-    Ensemble of regressors for regression.
-    """
-
-    def __init__(
-        self,
-        estimators: List[Tuple[str, Pipeline]],
-        voting: str = "mean",
-        weights: List[float] = None,
-        features: List[str] = [],
-        strategy: str = "stacking",
-    ) -> None:
-        self.estimators = estimators
-        self.voting = voting
-        self.weights = weights
-        self.features = features
-        self.strategy = strategy
-
-        # initialize the formatting
-        super(RegressorEnsemble, self).__init__(
-            inplace=False,
-        )
-
-        self._fitted = False
-
-        self._voting_methods = {
-            "mean": np.average,
-            "median": np.median,
-            "max": np.max,
-            "min": np.min,
-        }
-
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> RegressorEnsemble:
-        # check for voting type
-        if self.voting in ["mean", "median", "max", "min"]:
-            self.voting = self._voting_methods[self.voting]
-        elif isinstance(self.voting, Callable):
-            self.voting = self.voting
-        else:
-            raise ValueError(
-                "voting must be either 'mean', 'median', 'max', 'min' or a callable"
-            )
-
-        # format the weights
-        self.weights = (
-            [w for est, w in zip(self.estimators, self.weights)]
-            if self.weights is not None
-            else None
-        )
-
-        # remember the name of response
-        if isinstance(y, pd.Series):
-            self._response = [y.name]
-        elif isinstance(y, pd.DataFrame):
-            self._response = list(y.columns)
-        elif isinstance(y, np.ndarray):
-            y = pd.DataFrame(y, columns=["response"])
-            self._response = ["response"]
-
-        # if bagging, features much be provided
-        if self.strategy == "bagging" and len(self.features) == 0:
-            raise ValueError("features must be provided for bagging ensemble")
-
-        # initialize the feature list if not given
-        # by full feature list
-        if len(self.features) == 0:
-            self.features = [X.columns for _ in range(len(self.estimators))]
-
-        # check for estimators type
-        if not isinstance(self.estimators, list):
-            raise TypeError("estimators must be a list")
-        for item, feature_subset in zip(self.estimators, self.features):
-            if not isinstance(item, tuple):
-                raise TypeError("estimators must be a list of tuples.")
-            if not isinstance(item[1], Pipeline):
-                raise TypeError(
-                    "estimators must be a list of tuples of (name, Pipeline)."
-                )
-
-            # make sure all estimators are fitted
-            if not item[1]._fitted:
-                item[1].fit(X[feature_subset], y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self, X: pd.DataFrame) -> pd.DataFrame:
-        if not self._fitted:
-            raise ValueError("Ensemble is not fitted!")
-
-        # calculate predictions for all pipelines
-        pred_list = np.asarray(
-            [
-                pipeline.predict(X[feature_subset]).flatten()
-                for (name, pipeline), feature_subset in zip(
-                    self.estimators, self.features
-                )
-            ]
-        ).T
-        # if larger than 2d, take until get 2d array
-        while True:
-            if len(pred_list.shape) > 2:
-                pred_list = pred_list[0]
-            else:
-                break
-
-        if self.strategy == "stacking" or self.strategy == "bagging":
-            # if weights not included, not use weights
-            try:
-                pred = self.voting(pred_list, axis=1, weights=self.weights)
-            except BaseException:
-                # if weights included, but not available in voting function,
-                # warn users
-                if self.weights is not None:
-                    logger.warning("weights are not used in voting method")
-                    # warnings.warn("weights are not used in voting method")
-                pred = self.voting(pred_list, axis=1)
-        elif self.strategy == "boosting":
-            pred = np.sum(pred_list, axis=1)
-
-        return (
-            pred
-            if isinstance(pred, pd.DataFrame)
-            else pd.DataFrame(pred, columns=self._response)
-        )
-
-    def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
-        raise NotImplementedError(
-            "predict_proba is not implemented for RegressorEnsemble"
-        )
 
 
 class TabularObjective(tune.Trainable):
     def setup(
         self,
         config: Dict,
-        _X: pd.DataFrame = None,
-        _y: pd.DataFrame = None,
+        data_split: List[Tuple[pd.DataFrame, pd.DataFrame]] = None,
         encoder: Dict[str, Callable] = None,
         imputer: Dict[str, Callable] = None,
         balancing: Dict[str, Callable] = None,
@@ -516,8 +71,6 @@ class TabularObjective(tune.Trainable):
         model_name: str = "model",
         task_mode: str = "classification",
         objective: str = "accuracy",
-        validation: bool = True,
-        valid_size: float = 0.15,
         full_status: bool = False,
         reset_index: bool = True,
         timeout: int = 36,
@@ -533,20 +86,17 @@ class TabularObjective(tune.Trainable):
         self.models = models
 
         # assign objective parameters
-        self._X = _X
-        self._y = _y
+        self.data_split = data_split
         self.model_name = model_name
         self.task_mode = task_mode
         self.objective = objective
-        self.validation = validation
-        self.valid_size = valid_size
         self.full_status = full_status
         self.reset_index = reset_index
         self.timeout = timeout
         self._iter = _iter
         self.seed = seed
 
-        if isinstance(self._X, pd.DataFrame):
+        if isinstance(data_split[0][0][0], pd.DataFrame):
             self.dict2config(config)
 
         self._logger = setup_logger(__name__, "stdout.log")
@@ -560,7 +110,7 @@ class TabularObjective(tune.Trainable):
             self.status_dict = func_timeout.func_timeout(self.timeout, self._objective)
         # except TimeoutError:
         except func_timeout.FunctionTimedOut:
-            self._logger.warning(
+            self._logger.error(
                 "Objective not finished due to timeout after {} seconds.".format(
                     self.timeout
                 )
@@ -692,10 +242,15 @@ class TabularObjective(tune.Trainable):
         # different evaluation metrics for classification and regression
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
+        objective_str = (
+            self.objective.__name__
+            if hasattr(self.objective, "__name__")
+            else self.objective
+        )
         if self.task_mode == "regression":
             # evaluation for predictions
-            if self.objective in ["R2"]:
-                _objective = "neg_" + self.objective
+            if objective_str in ["R2"]:
+                _objective = "neg_" + objective_str
             else:
                 _objective = self.objective
             try:
@@ -710,14 +265,14 @@ class TabularObjective(tune.Trainable):
             self._logger.info("Objective: {} by {}".format(_obj, _objective))
         elif self.task_mode == "classification":
             # evaluation for predictions
-            if self.objective.lower() in [
+            if objective_str.lower() in [
                 "accuracy",
                 "precision",
                 "auc",
                 "hinge",
                 "f1",
             ]:
-                _objective = "neg_" + self.objective
+                _objective = "neg_" + objective_str
             else:
                 _objective = self.objective
             try:
@@ -731,7 +286,6 @@ class TabularObjective(tune.Trainable):
 
         return _obj
 
-    # test sets are only utilized when not refit
     def _fit(
         self,
         _X_train_obj: pd.DataFrame,
@@ -844,7 +398,7 @@ class TabularObjective(tune.Trainable):
         if not refit:
             return (_X_test_obj, _y_test_obj)
         else:
-            return None
+            return (_X_train_obj, _y_train_obj)
 
     def _predict(
         self,
@@ -856,7 +410,12 @@ class TabularObjective(tune.Trainable):
 
         # UPDATE: Jul. 20, 2023
         # special case for auc and hinge
-        if self.objective.lower() in ["hinge", "auc"]:
+        objective_str = (
+            self.objective.__name__
+            if hasattr(self.objective, "__name__")
+            else self.objective
+        )
+        if objective_str.lower() in ["hinge", "auc"]:
             y_pred = self.mol.predict_proba(_X_test_obj)
         else:
             y_pred = self.mol.predict(_X_test_obj)
@@ -879,45 +438,47 @@ class TabularObjective(tune.Trainable):
 
         self._logger.info("[INFO] Objective starting...")
 
-        if self.validation == "KFold":
-            kf = KFold(
-                n_splits=int(1 / self.valid_size), shuffle=True, random_state=self.seed
-            )
-            _data_split = [
-                [
-                    (self._X.loc[_train_idx, :], self._y.loc[_train_idx, :]),
-                    (self._X.loc[_test_idx, :], self._y.loc[_test_idx, :]),
-                ]
-                for idx, (_train_idx, _test_idx) in enumerate(
-                    kf.split(self._X, self._y)
-                )
-            ]
-        elif self.validation:
-            # only perform train_test_split when validation
-            # train test split so the performance of model selection and
-            # hyperparameter optimization can be evaluated
-            X_train, X_test, y_train, y_test = train_test_split(
-                self._X, self._y, test_perc=self.valid_size, seed=self.seed
-            )
-            _data_split = [[(X_train, y_train), (X_test, y_test)]]
-        else:
-            # if no validation, use all data for training
-            _data_split = [[(self._X, self._y), (self._X, self._y)]]
+        # Update: Dec. 2, 2023
+        # split data has been moved to AutoTabular methods for consistent splitting
+        # if self.validation == "KFold":
+        #     kf = KFold(
+        #         n_splits=int(1 / self.valid_size), shuffle=True, random_state=self.seed
+        #     )
+        #     _data_split = [
+        #         [
+        #             (self._X.loc[_train_idx, :], self._y.loc[_train_idx, :]),
+        #             (self._X.loc[_test_idx, :], self._y.loc[_test_idx, :]),
+        #         ]
+        #         for idx, (_train_idx, _test_idx) in enumerate(
+        #             kf.split(self._X, self._y)
+        #         )
+        #     ]
+        # elif self.validation:
+        #     # only perform train_test_split when validation
+        #     # train test split so the performance of model selection and
+        #     # hyperparameter optimization can be evaluated
+        #     X_train, X_test, y_train, y_test = train_test_split(
+        #         self._X, self._y, test_perc=self.valid_size, seed=self.seed
+        #     )
+        #     _data_split = [[(X_train, y_train), (X_test, y_test)]]
+        # else:
+        #     # if no validation, use all data for training
+        #     _data_split = [[(self._X, self._y), (self._X, self._y)]]
 
-        if self.reset_index:
-            # reset index to avoid indexing order error
-            _data_split = [
-                [
-                    (X_train.reset_index(drop=True), y_train.reset_index(drop=True)),
-                    (X_test.reset_index(drop=True), y_test.reset_index(drop=True)),
-                ]
-                for (X_train, y_train), (X_test, y_test) in _data_split
-            ]
+        # if self.reset_index:
+        #     # reset index to avoid indexing order error
+        #     _data_split = [
+        #         [
+        #             (X_train.reset_index(drop=True), y_train.reset_index(drop=True)),
+        #             (X_test.reset_index(drop=True), y_test.reset_index(drop=True)),
+        #         ]
+        #         for (X_train, y_train), (X_test, y_test) in _data_split
+        #     ]
 
         # fit & predict
         _loss_list = []
-        for idx, (_train, _test) in enumerate(_data_split):
-            if self.validation == "KFold":
+        for idx, (_train, _test) in enumerate(self.data_split):
+            if len(self.data_split) > 1:
                 self._logger.info("[INFO] Fold: {}".format(idx + 1))
 
             # fit the pipeline and return the preprocessed test datasets
@@ -930,10 +491,26 @@ class TabularObjective(tune.Trainable):
         self._logger.info("[INFO] Loss from all folds: {}".format(_loss_list))
         _loss = np.average(_loss_list)
 
-        # if validation, refit the model with all data
-        if self.validation:
+        # concat train/test splits if using validation, refit the model with all data
+        if self.data_split[0][0][0].shape != self.data_split[0][1][0].shape:
+            _X = pd.concat(
+                [self.data_split[0][0][0], self.data_split[0][1][0]],
+                axis=0,
+                ignore_index=True,
+            )
+            _y = pd.concat(
+                [self.data_split[0][0][1], self.data_split[0][1][1]],
+                axis=0,
+                ignore_index=True,
+            )
             self._logger.info("[INFO] Refit the model with all data...")
-            self._fit(self._X, self._y, refit=True)
+            _full_processed = self._fit(_X, _y, refit=True)
+            self._logger.info(
+                "[INFO] Refit loss with all data is {:.6f}".format(
+                    self._predict(*_full_processed)
+                )
+            )
+
         # save the fitted model objects
         save_methods(
             self.model_name,

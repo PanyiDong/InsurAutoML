@@ -11,7 +11,7 @@ File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:38:25 am
+Last Modified: Sunday, 3rd December 2023 11:25:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -305,14 +305,19 @@ LIGHTGBMREGRESSOR = {
     "model": "LightGBM_Regressor",
     "objective": tune.choice(LIGHTGBM_REGRESSION),
     "boosting": tune.choice(LIGHTGBM_BOOSTING),
-    "n_estimators": tune.qlograndint(50, 500, 1),
+    # same as num_iterations
+    # "n_estimators": tune.qlograndint(50, 500, 1),
     # max_depth == -1 for no limit
     "max_depth": tune.randint(-1, 31),
     "num_leaves": tune.qlograndint(3, 2047, 1),
     "min_data_in_leaf": tune.qrandint(1, 20, 1),
-    "learning_rate": tune.loguniform(1e-7, 1),
+    "learning_rate": tune.loguniform(1e-4, 1),
     "tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
     "num_iterations": tune.qlograndint(50, 500, 1),
+    "min_gain_to_split": tune.loguniform(1e-8, 1),
+    "early_stopping_round": tune.randint(1, 200),
+    "max_bin": tune.qlograndint(3, 1024, 1),
+    "feature_fraction": tune.uniform(0.1, 1),
 }
 XGBOOSTREGRESSOR = {
     "model": "XGBoost_Regressor",

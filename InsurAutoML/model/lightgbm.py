@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 12:21:51 am
+Last Modified: Monday, 4th December 2023 9:54:20 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, List
 import numpy as np
 import pandas as pd
 from lightgbm import LGBMClassifier, LGBMRegressor
@@ -97,25 +97,32 @@ class LightGBM_Base:
         task_type: str = "classification",
         objective: str = "regression",
         boosting: str = "gbdt",
-        n_estimators: int = 100,
         max_depth: int = -1,
         num_leaves: int = 31,
         min_data_in_leaf: int = 20,
         learning_rate: float = 0.1,
         tree_learner: str = "serial",
         num_iterations: int = 100,
+        min_gain_to_split: float = 0.0,
+        early_stopping_round: int = 0,
+        max_bin: int = 255,
+        feature_fraction: float = 1.0,
         seed: int = None,
     ) -> None:
         self.task_type = task_type
         self.objective = objective
         self.boosting = boosting
-        self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.num_leaves = num_leaves
         self.min_data_in_leaf = min_data_in_leaf
         self.learning_rate = learning_rate
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
+        self.min_data_in_leaf = min_data_in_leaf
+        self.min_gain_to_split = min_gain_to_split
+        self.early_stopping_round = early_stopping_round
+        self.max_bin = max_bin
+        self.feature_fraction = feature_fraction
         self.seed = seed
 
         self._fitted = False
@@ -124,6 +131,7 @@ class LightGBM_Base:
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        eval_set: List,
     ) -> LightGBM_Base:
         # get binary classification and multiclass classification
         if self.task_type == "classification":
@@ -186,29 +194,39 @@ class LightGBM_Base:
             self.model = LGBMClassifier(
                 objective=self.objective,
                 boosting_type=self.boosting,
-                n_estimators=self.n_estimators,
                 max_depth=self.max_depth,
                 num_leaves=self.num_leaves,
                 min_data_in_leaf=self.min_data_in_leaf,
                 learning_rate=self.learning_rate,
                 tree_learner=self.tree_learner,
                 num_iterations=self.num_iterations,
+                min_split_gain=self.min_gain_to_split,
+                early_stopping_rounds=self.early_stopping_round,
+                max_bin=self.max_bin,
+                feature_fraction=self.feature_fraction,
+                verbosity=0,
+                n_jobs=1,
             )
         elif self.task_type == "regression":
             self.model = LGBMRegressor(
                 objective=self.objective,
                 boosting_type=self.boosting,
-                n_estimators=self.n_estimators,
                 max_depth=self.max_depth,
                 num_leaves=self.num_leaves,
                 min_data_in_leaf=self.min_data_in_leaf,
                 learning_rate=self.learning_rate,
                 tree_learner=self.tree_learner,
                 num_iterations=self.num_iterations,
+                min_split_gain=self.min_gain_to_split,
+                early_stopping_rounds=self.early_stopping_round,
+                max_bin=self.max_bin,
+                feature_fraction=self.feature_fraction,
+                verbosity=0,
+                n_jobs=1,
             )
 
         try:
-            self.model.fit(X, y)
+            self.model.fit(X, y, eval_set=eval_set)
         except Exception as e:
             raise e
 
@@ -262,24 +280,31 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
         self,
         objective: str = "multiclass",
         boosting: str = "gbdt",
-        n_estimators: int = 100,
         max_depth: int = -1,
         num_leaves: int = 31,
         min_data_in_leaf: int = 20,
         learning_rate: float = 0.1,
         tree_learner: str = "serial",
         num_iterations: int = 100,
+        min_gain_to_split: float = 0.0,
+        early_stopping_round: int = 0,
+        max_bin: int = 255,
+        feature_fraction: float = 1.0,
         seed: int = None,
     ) -> None:
         self.objective = objective
         self.boosting = boosting
-        self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.num_leaves = num_leaves
         self.min_data_in_leaf = min_data_in_leaf
         self.learning_rate = learning_rate
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
+        self.min_data_in_leaf = min_data_in_leaf
+        self.min_gain_to_split = min_gain_to_split
+        self.early_stopping_round = early_stopping_round
+        self.max_bin = max_bin
+        self.feature_fraction = feature_fraction
         self.seed = seed
 
         self._fitted = False
@@ -288,13 +313,16 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
             task_type="classification",
             objective=self.objective,
             boosting=self.boosting,
-            n_estimators=self.n_estimators,
             max_depth=self.max_depth,
             num_leaves=self.num_leaves,
             min_data_in_leaf=self.min_data_in_leaf,
             learning_rate=self.learning_rate,
             tree_learner=self.tree_learner,
             num_iterations=self.num_iterations,
+            min_gain_to_split=self.min_gain_to_split,
+            early_stopping_round=self.early_stopping_round,
+            max_bin=self.max_bin,
+            feature_fraction=self.feature_fraction,
             seed=self.seed,
         )
 
@@ -303,7 +331,7 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LightGBM_Classifier:
-        super(LightGBM_Classifier, self).fit(X, y)
+        super(LightGBM_Classifier, self).fit(X, y, eval_set=(X, y))
 
         self._fitted = True
 
@@ -355,24 +383,31 @@ class LightGBM_Regressor(LightGBM_Base, BaseModel):
         self,
         objective: str = "regression",
         boosting: str = "gbdt",
-        n_estimators: int = 100,
         max_depth: int = -1,
         num_leaves: int = 31,
         min_data_in_leaf: int = 20,
         learning_rate: float = 0.1,
         tree_learner: str = "serial",
         num_iterations: int = 100,
+        min_gain_to_split: float = 0.0,
+        early_stopping_round: int = 0,
+        max_bin: int = 255,
+        feature_fraction: float = 1.0,
         seed: int = None,
     ) -> None:
         self.objective = objective
         self.boosting = boosting
-        self.n_estimators = n_estimators
         self.max_depth = max_depth
         self.num_leaves = num_leaves
         self.min_data_in_leaf = min_data_in_leaf
         self.learning_rate = learning_rate
         self.tree_learner = tree_learner
         self.num_iterations = num_iterations
+        self.min_data_in_leaf = min_data_in_leaf
+        self.min_gain_to_split = min_gain_to_split
+        self.early_stopping_round = early_stopping_round
+        self.max_bin = max_bin
+        self.feature_fraction = feature_fraction
         self.seed = seed
 
         self._fitted = False
@@ -381,13 +416,16 @@ class LightGBM_Regressor(LightGBM_Base, BaseModel):
             task_type="regression",
             objective=self.objective,
             boosting=self.boosting,
-            n_estimators=self.n_estimators,
             max_depth=self.max_depth,
             num_leaves=self.num_leaves,
             min_data_in_leaf=self.min_data_in_leaf,
             learning_rate=self.learning_rate,
             tree_learner=self.tree_learner,
             num_iterations=self.num_iterations,
+            min_gain_to_split=self.min_gain_to_split,
+            early_stopping_round=self.early_stopping_round,
+            max_bin=self.max_bin,
+            feature_fraction=self.feature_fraction,
             seed=self.seed,
         )
 
@@ -396,7 +434,7 @@ class LightGBM_Regressor(LightGBM_Base, BaseModel):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LightGBM_Regressor:
-        super(LightGBM_Regressor, self).fit(X, y)
+        super(LightGBM_Regressor, self).fit(X, y, eval_set=(X, y))
 
         self._fitted = True
 

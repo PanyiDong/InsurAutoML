@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:26:33 am
+Last Modified: Thursday, 14th December 2023 9:58:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,14 +40,16 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Callable
 import numpy as np
 import pandas as pd
 import warnings
 import sklearn
 import sklearn.utils
 
+from ..constant import MAX_ITER
 from .base import BaseBalancing
+from ..utils.base import type_of_task
 from ..utils.data import is_imbalance, LinkTable
 
 """
@@ -70,9 +72,9 @@ class SimpleRandomUnderSampling(BaseBalancing):
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -81,13 +83,13 @@ class SimpleRandomUnderSampling(BaseBalancing):
     def __init__(
         self,
         imbalance_threshold: float = 0.9,
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed if seed is not None else 1
 
         super().__init__()
@@ -142,8 +144,9 @@ class SimpleRandomUnderSampling(BaseBalancing):
         _majority_class = X.loc[X[_imbalanced_feature] == _majority]
 
         # calculate the number of samples needed to be removed
-        n_minority = n - len(_majority_class)
-        n_majority_removed = max(1, int(n - n_minority / self.imbalance_threshold))
+        # n_minority = n - len(_majority_class)
+        # n_majority_removed = max(1, int(n - n_minority / self.imbalance_threshold))
+        n_majority_removed = max(1, int(len(_majority_class) / 20))
 
         # randomly remove samples from majority class
         sample = _majority_class.sample(
@@ -169,9 +172,9 @@ class TomekLink(BaseBalancing):
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -181,14 +184,14 @@ class TomekLink(BaseBalancing):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed if seed is not None else 1
 
         super().__init__()
@@ -277,9 +280,9 @@ class EditedNearestNeighbor(BaseBalancing):
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -291,15 +294,15 @@ class EditedNearestNeighbor(BaseBalancing):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         seed: int = None,
         k: int = 3,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed if seed is not None else 1
         self.k = k
 
@@ -412,9 +415,9 @@ class CondensedNearestNeighbor(BaseBalancing):
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -423,13 +426,13 @@ class CondensedNearestNeighbor(BaseBalancing):
     def __init__(
         self,
         imbalance_threshold: float = 0.9,
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed if seed is not None else 1
 
         super().__init__()
@@ -471,12 +474,30 @@ class CondensedNearestNeighbor(BaseBalancing):
         else:
             return _data
 
-    def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        from sklearn.neighbors import KNeighborsClassifier
+    @staticmethod
+    def _get_initial_neigh(X: pd.DataFrame) -> Callable:
+        _type = type_of_task(X)
+        if _type in ["binary", "multiclass"]:
+            from sklearn.neighbors import KNeighborsClassifier
 
+            return KNeighborsClassifier
+        elif _type in ["continuous", "integer"]:
+            from sklearn.neighbors import KNeighborsRegressor
+
+            return KNeighborsRegressor
+        else:
+            raise ValueError(
+                'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
+                    type
+                )
+            )
+
+    def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
+        ini_neigh = self._get_initial_neigh(X[_imbalanced_feature])
+
         _seed = self.seed
         _iter = 0
 
@@ -489,7 +510,7 @@ class CondensedNearestNeighbor(BaseBalancing):
             _subset = pd.concat(
                 [_minority_class, _majority_class.sample(n=1, random_state=_seed)]
             ).reset_index(drop=True)
-            neigh = KNeighborsClassifier(n_neighbors=1)
+            neigh = ini_neigh(n_neighbors=1)
             neigh.fit(
                 _subset.loc[:, _subset.columns != _imbalanced_feature],
                 _subset[_imbalanced_feature],
@@ -526,9 +547,9 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -538,14 +559,14 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
@@ -612,9 +633,9 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -624,14 +645,14 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted

@@ -1,17 +1,17 @@
 """
-File Name: test_hpo_utils.py
+File Name: test_hpo_ensemble.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /tests/test_hpo/test_hpo_utils.py
+Latest Version: 0.2.5
+Relative Path: /tests/test_hpo/test_hpo_ensemble.py
 File Created: Monday, 7th November 2022 11:38:53 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:35:43 pm
+Last Modified: Friday, 1st December 2023 6:47:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,8 +43,7 @@ from InsurAutoML import load_data
 
 
 def test_pipeline():
-
-    from InsurAutoML.hpo.utils import Pipeline
+    from InsurAutoML.hpo.ensemble import Pipeline
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
     from InsurAutoML.base import no_processing
@@ -82,9 +81,8 @@ def test_pipeline():
 
 
 def test_ClassifierEnsemble():
-
-    from InsurAutoML.hpo.utils import ClassifierEnsemble
-    from InsurAutoML.hpo.utils import Pipeline
+    from InsurAutoML.hpo.ensemble import ClassifierEnsemble
+    from InsurAutoML.hpo.ensemble import Pipeline
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
     from InsurAutoML.base import no_processing
@@ -156,9 +154,8 @@ def test_ClassifierEnsemble():
 
 
 def test_RegressorEnsemble():
-
-    from InsurAutoML.hpo.utils import RegressorEnsemble
-    from InsurAutoML.hpo.utils import Pipeline
+    from InsurAutoML.hpo.ensemble import RegressorEnsemble
+    from InsurAutoML.hpo.ensemble import Pipeline
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
     from InsurAutoML.base import no_processing

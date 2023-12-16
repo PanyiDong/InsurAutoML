@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 12th June 2023 12:06:44 am
+Last Modified: Friday, 1st December 2023 6:43:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -59,6 +59,8 @@ class AutoTabularRegressor(AutoTabularBase):
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
 
+    voting: voting method used for ensemble, default: "mean"
+
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
@@ -177,6 +179,7 @@ class AutoTabularRegressor(AutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting: str = "mean",
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
@@ -212,6 +215,7 @@ class AutoTabularRegressor(AutoTabularBase):
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
@@ -251,6 +255,7 @@ class AutoTabularRegressor(AutoTabularBase):
             task_mode="regression",
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
+            voting=self.voting,
             timeout=self.timeout,
             timeout_per_trial=self.timeout_per_trial,
             max_evals=self.max_evals,
@@ -298,6 +303,8 @@ class AutoTabularClassifier(AutoTabularBase):
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
 
+    voting: voting method used for ensemble, default: "hard"
+
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
@@ -417,6 +424,7 @@ class AutoTabularClassifier(AutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting="hard",
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
@@ -452,6 +460,7 @@ class AutoTabularClassifier(AutoTabularBase):
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
@@ -491,6 +500,7 @@ class AutoTabularClassifier(AutoTabularBase):
             task_mode="classification",
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
+            voting=self.voting,
             timeout=self.timeout,
             max_evals=self.max_evals,
             timeout_per_trial=self.timeout_per_trial,
@@ -537,6 +547,9 @@ class AutoTabular(AutoTabularBase):
 
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
+
+    voting: voting method used for ensemble, default: None
+    if None, use "soft" for classification, "mean" for regression
 
     timeout: Total time limit for the job in seconds, default = 360
 
@@ -662,6 +675,7 @@ class AutoTabular(AutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting: str = None,
         timeout: int = 360,
         max_evals: int = 64,
         timeout_per_trial: int = None,
@@ -697,6 +711,7 @@ class AutoTabular(AutoTabularBase):
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
         self.timeout_per_trial = timeout_per_trial
@@ -770,6 +785,7 @@ class AutoTabular(AutoTabularBase):
             task_mode=self._get_task_mode(self._type),
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
+            voting=self.voting,
             timeout=self.timeout,
             max_evals=self.max_evals,
             timeout_per_trial=self.timeout_per_trial,

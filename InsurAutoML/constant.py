@@ -11,7 +11,7 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 12:37:26 am
+Last Modified: Sunday, 10th December 2023 11:13:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -211,8 +211,8 @@ UNI_CLASS = 31
 MAX_ITER = 1024
 
 # maximum time budge allowed per run (in seconds)
-# set at 3 days
-MAX_TIME = 259200
+# set at 10 days
+MAX_TIME = 3600 * 24 * 10
 
 # LightGBM default object (metric/loss)
 # binary classification

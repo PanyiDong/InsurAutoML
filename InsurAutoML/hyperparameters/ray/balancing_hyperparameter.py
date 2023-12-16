@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:36:50 am
+Last Modified: Monday, 4th December 2023 8:49:05 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,46 +46,46 @@ NOPROCESSING = {
 }
 SIMPLERANDOMOVERSAMPLING = {
     "balancing": "SimpleRandomOverSampling",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
 }
 SIMPLERANDOMUNDERSAMPLING = {
     "balancing": "SimpleRandomUnderSampling",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
 }
 TOMEKLINK = {
     "balancing": "TomekLink",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
 }
 EDITEDNEARESTNEIGHBOR = {
     "balancing": "EditedNearestNeighbor",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
     "k": tune.qrandint(1, 7, 1),
 }
 CONDENSEDNEARESTNEIGHBOR = {
     "balancing": "CondensedNearestNeighbor",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
 }
 ONESIDEDSELECTION = {
     "balancing": "OneSidedSelection",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
 }
 CNNTOMEKLINK = {
     "balancing": "CNN_TomekLink",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
 }
 SMOTE = {
     "balancing": "Smote",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
     "k": tune.qrandint(1, 10, 1),
 }
 SMOTETOMEKLINK = {
     "balancing": "Smote_TomekLink",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
     "k": tune.qrandint(1, 10, 1),
 }
 SMOTEENN = {
     "balancing": "Smote_ENN",
-    "imbalance_threshold": tune.uniform(0.8, 1),
+    "imbalance_threshold": tune.uniform(0.7, 1),
     "k": tune.qrandint(1, 10, 1),
 }
 
