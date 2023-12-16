@@ -113,8 +113,6 @@ def load_methods(file_name: str) -> List:
 
 # find exact folder path
 def find_exact_path(path: str, spec_str: str) -> str:
-
     for folder in os.listdir(path):
-
         if spec_str in os.path.join(path, folder):
             return os.path.join(path, folder)

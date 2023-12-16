@@ -81,7 +81,6 @@ class AdaboostClassifier(apcc.adaboost.AdaboostClassifier):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> AdaboostClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -91,13 +90,11 @@ class AdaboostClassifier(apcc.adaboost.AdaboostClassifier):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -119,7 +116,6 @@ class BernoulliNB(apcc.bernoulli_nb.BernoulliNB):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> BernoulliNB:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -129,13 +125,11 @@ class BernoulliNB(apcc.bernoulli_nb.BernoulliNB):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -178,7 +172,6 @@ class DecisionTreeClassifier(apcc.decision_tree.DecisionTree):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> DecisionTreeClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -188,13 +181,11 @@ class DecisionTreeClassifier(apcc.decision_tree.DecisionTree):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -240,7 +231,6 @@ class ExtraTreesClassifier(apcc.extra_trees.ExtraTreesClassifier):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> ExtraTreesClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -250,13 +240,11 @@ class ExtraTreesClassifier(apcc.extra_trees.ExtraTreesClassifier):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -264,7 +252,6 @@ class GaussianNB(apcc.gaussian_nb.GaussianNB):
     def __init__(
         self,
     ) -> None:
-
         super().__init__()
 
         self._fitted = False
@@ -274,7 +261,6 @@ class GaussianNB(apcc.gaussian_nb.GaussianNB):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> GaussianNB:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -284,18 +270,15 @@ class GaussianNB(apcc.gaussian_nb.GaussianNB):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
-class HistGradientBoostingClassifier(
-        apcc.gradient_boosting.GradientBoostingClassifier):
+class HistGradientBoostingClassifier(apcc.gradient_boosting.GradientBoostingClassifier):
     def __init__(
         self,
         loss: str = "auto",
@@ -346,7 +329,6 @@ class HistGradientBoostingClassifier(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> HistGradientBoostingClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -356,18 +338,15 @@ class HistGradientBoostingClassifier(
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
-class KNearestNeighborsClassifier(
-        apcc.k_nearest_neighbors.KNearestNeighborsClassifier):
+class KNearestNeighborsClassifier(apcc.k_nearest_neighbors.KNearestNeighborsClassifier):
     def __init__(
         self,
         n_neighbors: int = 1,
@@ -391,7 +370,6 @@ class KNearestNeighborsClassifier(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> KNearestNeighborsClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -401,13 +379,11 @@ class KNearestNeighborsClassifier(
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -435,7 +411,6 @@ class LDA(apcc.lda.LDA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LDA:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -445,13 +420,11 @@ class LDA(apcc.lda.LDA):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -494,7 +467,6 @@ class LibLinear_SVC(apcc.liblinear_svc.LibLinear_SVC):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LibLinear_SVC:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -504,13 +476,11 @@ class LibLinear_SVC(apcc.liblinear_svc.LibLinear_SVC):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -553,7 +523,6 @@ class LibSVM_SVC(apcc.libsvm_svc.LibSVM_SVC):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LibSVM_SVC:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -563,13 +532,11 @@ class LibSVM_SVC(apcc.libsvm_svc.LibSVM_SVC):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -633,7 +600,6 @@ class MLPClassifier(apcc.mlp.MLPClassifier):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> MLPClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -643,13 +609,11 @@ class MLPClassifier(apcc.mlp.MLPClassifier):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -674,7 +638,6 @@ class MultinomialNB(apcc.multinomial_nb.MultinomialNB):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> MultinomialNB:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -684,13 +647,11 @@ class MultinomialNB(apcc.multinomial_nb.MultinomialNB):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -724,7 +685,6 @@ class PassiveAggressive(apcc.passive_aggressive.PassiveAggressive):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> PassiveAggressive:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -734,13 +694,11 @@ class PassiveAggressive(apcc.passive_aggressive.PassiveAggressive):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -762,7 +720,6 @@ class QDA(apcc.qda.QDA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> QDA:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -772,13 +729,11 @@ class QDA(apcc.qda.QDA):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -824,7 +779,6 @@ class RandomForestClassifier(apcc.random_forest.RandomForest):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> RandomForestClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -834,13 +788,11 @@ class RandomForestClassifier(apcc.random_forest.RandomForest):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -892,7 +844,6 @@ class SGDClassifier(apcc.sgd.SGD):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> SGDClassifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -902,13 +853,11 @@ class SGDClassifier(apcc.sgd.SGD):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict_proba(X)
 
 
@@ -943,7 +892,6 @@ class AdaboostRegressor(apcr.adaboost.AdaboostRegressor):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> AdaboostRegressor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -953,15 +901,12 @@ class AdaboostRegressor(apcr.adaboost.AdaboostRegressor):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ARDRegression(apcr.ard_regression.ARDRegression):
@@ -1003,7 +948,6 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> ARDRegression:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1013,15 +957,12 @@ class ARDRegression(apcr.ard_regression.ARDRegression):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
@@ -1063,7 +1004,6 @@ class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> DecisionTreeRegressor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1073,15 +1013,12 @@ class DecisionTreeRegressor(apcr.decision_tree.DecisionTree):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
@@ -1126,7 +1063,6 @@ class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> ExtraTreesRegressor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1136,15 +1072,12 @@ class ExtraTreesRegressor(apcr.extra_trees.ExtraTreesRegressor):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class GaussianProcess(apcr.gaussian_process.GaussianProcess):
@@ -1171,7 +1104,6 @@ class GaussianProcess(apcr.gaussian_process.GaussianProcess):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> GaussianProcess:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1181,15 +1113,12 @@ class GaussianProcess(apcr.gaussian_process.GaussianProcess):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
@@ -1243,7 +1172,6 @@ class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> HistGradientBoostingRegressor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1253,19 +1181,15 @@ class HistGradientBoostingRegressor(apcr.gradient_boosting.GradientBoosting):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
-class KNearestNeighborsRegressor(
-        apcr.k_nearest_neighbors.KNearestNeighborsRegressor):
+class KNearestNeighborsRegressor(apcr.k_nearest_neighbors.KNearestNeighborsRegressor):
     def __init__(
         self,
         n_neighbors: int = 1,
@@ -1289,7 +1213,6 @@ class KNearestNeighborsRegressor(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> KNearestNeighborsRegressor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1299,15 +1222,12 @@ class KNearestNeighborsRegressor(
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
@@ -1346,7 +1266,6 @@ class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LibLinear_SVR:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1356,15 +1275,12 @@ class LibLinear_SVR(apcr.liblinear_svr.LibLinear_SVR):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
@@ -1409,7 +1325,6 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> LibSVM_SVR:
-
         if not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
 
@@ -1422,15 +1337,12 @@ class LibSVM_SVR(apcr.libsvm_svr.LibSVM_SVR):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class MLPRegressor(apcr.mlp.MLPRegressor):
@@ -1493,7 +1405,6 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> MLPRegressor:
-
         if not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
 
@@ -1506,15 +1417,12 @@ class MLPRegressor(apcr.mlp.MLPRegressor):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class RandomForestRegressor(apcr.random_forest.RandomForest):
@@ -1559,7 +1467,6 @@ class RandomForestRegressor(apcr.random_forest.RandomForest):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> RandomForestRegressor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -1569,15 +1476,12 @@ class RandomForestRegressor(apcr.random_forest.RandomForest):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
 class SGDRegressor(apcr.sgd.SGD):
@@ -1628,7 +1532,6 @@ class SGDRegressor(apcr.sgd.SGD):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> SGDRegressor:
-
         if not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
 
@@ -1641,12 +1544,9 @@ class SGDRegressor(apcr.sgd.SGD):
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
         return super().predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")

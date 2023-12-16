@@ -42,7 +42,6 @@ SOFTWARE.
 
 
 def test_MetaData():
-
     try:
         import torch
         from InsurAutoML.preprocessing.multiProc import MultiPreprocessing

@@ -43,11 +43,9 @@ from InsurAutoML.utils import formatting
 
 
 def test_classifiers():
-
     from InsurAutoML.model import classifiers
 
     for method_name, method in classifiers.items():
-
         # pass these methods as they are tested individually
         if method_name not in [
             "LightGBM_Classifier",
@@ -56,7 +54,6 @@ def test_classifiers():
             "MLP_Classifier",
             "RNN_Classifier",
         ]:
-
             data = pd.read_csv("example/example_data/heart.csv")
             # encoding categorical features
             encoder = formatting()
@@ -71,9 +68,7 @@ def test_classifiers():
             y_pred = mol.predict(X)
             y_prob = mol.predict_proba(X)
 
-            assert mol._fitted, "Model {} has not been fitted.".format(
-                method_name
-            )
+            assert mol._fitted, "Model {} has not been fitted.".format(method_name)
 
     from InsurAutoML.model import (
         AdaboostClassifier,
@@ -114,7 +109,6 @@ def test_classifiers():
     }
 
     for method_name, method in sklearn_classifiers.items():
-
         data = pd.read_csv("example/example_data/heart.csv")
         # encoding categorical features
         encoder = formatting()
@@ -133,11 +127,9 @@ def test_classifiers():
 
 
 def test_regressors():
-
     from InsurAutoML.model import regressors
 
     for method_name, method in regressors.items():
-
         # pass these methods as they are tested individually
         if method_name not in [
             "LightGBM_Regressor",
@@ -146,7 +138,6 @@ def test_regressors():
             "MLP_Regressor",
             "RNN_Regressor",
         ]:
-
             data = pd.read_csv("example/example_data/insurance.csv")
             # encoding categorical features
             encoder = formatting()
@@ -164,9 +155,7 @@ def test_regressors():
             except NotImplementedError:
                 pass
 
-            assert mol._fitted, "Model {} has not been fitted.".format(
-                method_name
-            )
+            assert mol._fitted, "Model {} has not been fitted.".format(method_name)
 
     from InsurAutoML.model import (
         AdaboostRegressor,
@@ -199,7 +188,6 @@ def test_regressors():
     }
 
     for method_name, method in sklearn_regressors.items():
-
         data = pd.read_csv("example/example_data/insurance.csv")
         # encoding categorical features
         encoder = formatting()
