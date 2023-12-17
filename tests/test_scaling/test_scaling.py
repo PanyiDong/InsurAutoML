@@ -55,14 +55,11 @@ data_y = pd.DataFrame({"col_3": [1, 0, 1, 0, 1, 0, 1, 0, 1, 0]})
 
 class TestScaling(unittest.TestCase):
     def test_Scaling(self):
-
         self.method_dict = scalings
         self.method_names = list(self.method_dict.keys())
         self.method_objects = list(self.method_dict.values())
 
-        for method_name, method_object in zip(
-                self.method_names, self.method_objects):
-
+        for method_name, method_object in zip(self.method_names, self.method_objects):
             mol = method_object()
             scaled_X = mol.fit_transform(data_X, data_y)
 
@@ -88,7 +85,6 @@ class TestScaling(unittest.TestCase):
 
 
 def test_NoScaing():
-
     from InsurAutoML.scaling.scaling import NoScaling
 
     method = NoScaling()
@@ -104,11 +100,11 @@ def test_NoScaing():
 
 # test decrepted methods
 def test_feature_manipulation():
-
     from InsurAutoML.scaling import Feature_Manipulation
 
-    data = pd.DataFrame(np.arange(15).reshape(5, 3), columns=[
-        "column_" + str(i + 1) for i in range(3)])
+    data = pd.DataFrame(
+        np.arange(15).reshape(5, 3), columns=["column_" + str(i + 1) for i in range(3)]
+    )
     transformed_data = Feature_Manipulation(
         data,
         columns=["column_1", "column_2", "column_3"],
@@ -127,7 +123,6 @@ def test_feature_manipulation():
 
 
 def test_feature_truncation():
-
     from InsurAutoML.scaling import Feature_Truncation
 
     data = pd.DataFrame(

@@ -40,7 +40,6 @@ SOFTWARE.
 
 
 def test_get_algo():
-
     from InsurAutoML.utils.optimize import get_algo
 
     get_algo("GridSearch")
@@ -79,7 +78,6 @@ def test_get_algo():
 
 
 def test_get_scheduler():
-
     from InsurAutoML.utils.optimize import get_scheduler
 
     get_scheduler("FIFOScheduler")
@@ -105,7 +103,6 @@ def test_get_scheduler():
 
 
 def test_get_progress_reporter():
-
     from InsurAutoML.utils.optimize import get_progress_reporter
 
     get_progress_reporter("CLIReporter", max_evals=64, max_error=4)
@@ -113,14 +110,12 @@ def test_get_progress_reporter():
 
 
 def test_get_logger():
-
     from InsurAutoML.utils.optimize import get_logger
 
     get_logger(["Logger", "TBX", "JSON", "CSV", "MLflow"])
 
 
 def test_get_estimator():
-
     from InsurAutoML.utils.optimize import get_estimator
     from sklearn.linear_model import LinearRegression
     from InsurAutoML.utils.base import has_method
@@ -144,7 +139,6 @@ def test_get_estimator():
 
 
 def test_get_metrics():
-
     from InsurAutoML.utils.optimize import get_metrics
     from sklearn.metrics import accuracy_score
     from typing import Callable
@@ -176,7 +170,6 @@ def test_get_metrics():
 
 
 def test_check_func():
-
     from InsurAutoML.utils.optimize import check_func
     from InsurAutoML.model import LogisticRegression
 
@@ -186,7 +179,6 @@ def test_check_func():
 
 
 def test_check_status():
-
     from InsurAutoML.utils.optimize import check_status
     from InsurAutoML.hyperparameters import regressor_hyperparameter
     from InsurAutoML.model import regressors

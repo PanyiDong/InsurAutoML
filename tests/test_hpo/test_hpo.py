@@ -50,7 +50,6 @@ from InsurAutoML import load_data
 
 
 def test_objective_1():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -129,7 +128,6 @@ def test_objective_1():
 
 
 def test_objective_2():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -208,7 +206,6 @@ def test_objective_2():
 
 
 def test_objective_3():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -284,7 +281,6 @@ def test_objective_3():
 
 
 def test_objective_4():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -360,7 +356,6 @@ def test_objective_4():
 
 
 def test_objective_5():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer

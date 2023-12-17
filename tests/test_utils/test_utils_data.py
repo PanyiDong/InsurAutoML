@@ -43,7 +43,6 @@ import pandas as pd
 
 
 def test_as_dataframe():
-
     from InsurAutoML.utils.data import as_dataframe
 
     converter = as_dataframe()
@@ -62,7 +61,6 @@ def test_as_dataframe():
 
 
 def test_unify_nan():
-
     from InsurAutoML.utils.data import unify_nan
 
     data = np.arange(15).reshape(5, 3)
@@ -88,7 +86,6 @@ def test_unify_nan():
 
 
 def test_remove_index_columns():
-
     from InsurAutoML.utils.data import remove_index_columns
 
     data = pd.DataFrame(
@@ -102,8 +99,7 @@ def test_remove_index_columns():
     )
 
     remove_data_0 = remove_index_columns(data.values, axis=0, threshold=0.8)
-    remove_data_1 = remove_index_columns(
-        data, axis=1, threshold=0.8, save=True)
+    remove_data_1 = remove_index_columns(data, axis=1, threshold=0.8, save=True)
 
     assert isinstance(
         remove_data_0, pd.DataFrame
@@ -136,7 +132,6 @@ def test_remove_index_columns():
 
 
 def test_formatting():
-
     from InsurAutoML.utils.data import formatting
 
     data = pd.read_csv("Appendix/insurance.csv")
@@ -152,7 +147,6 @@ def test_formatting():
 
 
 def test_get_missing_matrix():
-
     from InsurAutoML.utils.data import get_missing_matrix
 
     test = pd.DataFrame(
@@ -185,7 +179,6 @@ def test_get_missing_matrix():
 
 
 def test_extremeclass():
-
     from InsurAutoML.utils.data import ExtremeClass
 
     cutter = ExtremeClass(extreme_threshold=0.9)
@@ -199,7 +192,6 @@ def test_extremeclass():
 
 
 def test_assign_classes():
-
     from InsurAutoML.utils.data import assign_classes
 
     test = [[0.9, 0.1], [0.2, 0.8]]
@@ -210,7 +202,6 @@ def test_assign_classes():
 
 
 def test_softmax():
-
     from InsurAutoML.utils.data import softmax
 
     a = np.array([0.1, -0.1, 1])

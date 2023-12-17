@@ -42,11 +42,11 @@ from typing import Union, Dict, Tuple, List
 import os
 import torch
 from torch.utils.data import Dataset
+
 # detach tensor from the computation graph
 
 
 def repackage_hidden(h):
-
     if isinstance(h, torch.Tensor):
         return h.detach()
     else:
@@ -72,7 +72,9 @@ class CustomTensorDataset(Dataset):
         if len(self.inputs) != len(self.labels):
             raise ValueError(
                 "inputs and labels must have the same length. Get {} and {}".format(
-                    len(inputs), len(labels)))
+                    len(inputs), len(labels)
+                )
+            )
 
     def __len__(self) -> int:
         return len(self.inputs)
@@ -87,12 +89,10 @@ class CustomTensorDataset(Dataset):
 
     @property
     def inputSize(self) -> int:
-
         return self.inputs.size()[-1]
 
     @property
     def outputSize(self) -> int:
-
         return len(self.labels.unique())
 
 
@@ -156,15 +156,18 @@ class ListTensorDataset(Dataset):
         if len(inputs[0]) != len(labels):
             raise ValueError(
                 "inputs and labels must have the same length. Get {} and {}".format(
-                    len(inputs[0]), len(labels)))
+                    len(inputs[0]), len(labels)
+                )
+            )
 
         # make dir for list/dict type
         if not os.path.exists(os.path.join(path, "input")):
             os.makedirs(os.path.join(path, "input"))
 
         # get paths and save tensors for inputs
-        self.input = [os.path.join(
-            self.path, "input/{}.pt".format(i)) for i in range(len(inputs))]
+        self.input = [
+            os.path.join(self.path, "input/{}.pt".format(i)) for i in range(len(inputs))
+        ]
         for _input, _path in zip(inputs, self.input):
             torch.save(_input, _path)
 
@@ -177,7 +180,8 @@ class ListTensorDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
         input, label = [torch.load(_input)[idx] for _input in self.input], torch.load(
-            self.labels)[idx]
+            self.labels
+        )[idx]
 
         if self.format == "dict":
             return {"input": input, "label": label}
@@ -205,15 +209,18 @@ class DictTensorDataset(Dataset):
         if len(list(inputs.values())[0]) != len(labels):
             raise ValueError(
                 "inputs and labels must have the same length. Get {} and {}".format(
-                    len(list(inputs.values())[0]), len(labels)))
+                    len(list(inputs.values())[0]), len(labels)
+                )
+            )
 
         # make dir for list/dict type
         if not os.path.exists(os.path.join(path, "input")):
             os.makedirs(os.path.join(path, "input"))
 
         # get paths and save tensors for inputs
-        self.input = [os.path.join(
-            self.path, "input/{}.pt".format(i)) for i in inputs.keys()]
+        self.input = [
+            os.path.join(self.path, "input/{}.pt".format(i)) for i in inputs.keys()
+        ]
         for _input, _path in zip(inputs.values(), self.input):
             torch.save(_input, _path)
 
@@ -226,7 +233,8 @@ class DictTensorDataset(Dataset):
 
     def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
         input, label = [torch.load(_input)[idx] for _input in self.input], torch.load(
-            self.labels)[idx]
+            self.labels
+        )[idx]
 
         if self.format == "dict":
             return {"input": input, "label": label}
@@ -247,13 +255,9 @@ class SerialTensorDataset(ListTensorDataset, DictTensorDataset):
         path: str = "tmp",
         format: str = "tuple",
     ) -> None:
-
         if isinstance(inputs, torch.Tensor):
-            super(SerialTensorDataset, self).__init__(
-                [inputs], labels, path, format)
+            super(SerialTensorDataset, self).__init__([inputs], labels, path, format)
         elif isinstance(inputs, list):
-            super(SerialTensorDataset, self).__init__(
-                inputs, labels, path, format)
+            super(SerialTensorDataset, self).__init__(inputs, labels, path, format)
         elif isinstance(inputs, dict):
-            super(ListTensorDataset, self).__init__(
-                inputs, labels, path, format)
+            super(ListTensorDataset, self).__init__(inputs, labels, path, format)
