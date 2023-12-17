@@ -61,7 +61,6 @@ class densifier(askfs.densifier.Densifier):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> densifier:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -71,7 +70,6 @@ class densifier(askfs.densifier.Densifier):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -111,7 +109,6 @@ class extra_trees_preproc_for_classification(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> extra_trees_preproc_for_classification:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -121,7 +118,6 @@ class extra_trees_preproc_for_classification(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -159,7 +155,6 @@ class extra_trees_preproc_for_regression(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> extra_trees_preproc_for_regression:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -169,7 +164,6 @@ class extra_trees_preproc_for_regression(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -195,7 +189,6 @@ class fast_ica(askfs.fast_ica.FastICA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> fast_ica:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -205,7 +198,6 @@ class fast_ica(askfs.fast_ica.FastICA):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -231,7 +223,6 @@ class feature_agglomeration(askfs.feature_agglomeration.FeatureAgglomeration):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> feature_agglomeration:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -241,7 +232,6 @@ class feature_agglomeration(askfs.feature_agglomeration.FeatureAgglomeration):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -269,7 +259,6 @@ class kernel_pca(askfs.kernel_pca.KernelPCA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> kernel_pca:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -279,7 +268,6 @@ class kernel_pca(askfs.kernel_pca.KernelPCA):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -301,7 +289,6 @@ class kitchen_sinks(askfs.kitchen_sinks.RandomKitchenSinks):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> kitchen_sinks:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -311,7 +298,6 @@ class kitchen_sinks(askfs.kitchen_sinks.RandomKitchenSinks):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -347,7 +333,6 @@ class liblinear_svc_preprocessor(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> liblinear_svc_preprocessor:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -357,7 +342,6 @@ class liblinear_svc_preprocessor(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -385,7 +369,6 @@ class nystroem_sampler(askfs.nystroem_sampler.Nystroem):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> nystroem_sampler:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -395,7 +378,6 @@ class nystroem_sampler(askfs.nystroem_sampler.Nystroem):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -417,7 +399,6 @@ class pca(askfs.pca.PCA):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> pca:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -427,7 +408,6 @@ class pca(askfs.pca.PCA):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -451,7 +431,6 @@ class polynomial(askfs.polynomial.PolynomialFeatures):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> polynomial:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -461,12 +440,10 @@ class polynomial(askfs.polynomial.PolynomialFeatures):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
-class random_trees_embedding(
-        askfs.random_trees_embedding.RandomTreesEmbedding):
+class random_trees_embedding(askfs.random_trees_embedding.RandomTreesEmbedding):
     def __init__(
         self,
         n_estimators: int = 5,
@@ -494,7 +471,6 @@ class random_trees_embedding(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> random_trees_embedding:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -504,7 +480,6 @@ class random_trees_embedding(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -528,7 +503,6 @@ class select_percentile_classification(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_percentile_classification:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -538,7 +512,6 @@ class select_percentile_classification(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -562,7 +535,6 @@ class select_percentile_regression(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_percentile_regression:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -572,7 +544,6 @@ class select_percentile_regression(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -601,7 +572,6 @@ class select_rates_classification(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_rates_classification:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -611,12 +581,10 @@ class select_rates_classification(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
-class select_rates_regression(
-        askfs.select_rates_regression.SelectRegressionRates):
+class select_rates_regression(askfs.select_rates_regression.SelectRegressionRates):
     def __init__(
         self,
         alpha: float = 0.3,
@@ -636,7 +604,6 @@ class select_rates_regression(
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> select_rates_regression:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -646,7 +613,6 @@ class select_rates_regression(
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)
 
 
@@ -666,7 +632,6 @@ class truncatedSVD(askfs.truncatedSVD.TruncatedSVD):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> truncatedSVD:
-
         super().fit(X, y)
 
         self._fitted = True
@@ -676,5 +641,4 @@ class truncatedSVD(askfs.truncatedSVD.TruncatedSVD):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return super().transform(X)

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_model/test_model_2.py
 File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:57 pm
+Last Modified: Saturday, 16th December 2023 8:30:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,8 +43,7 @@ from InsurAutoML.utils import formatting
 
 
 def test_add_classifier():
-
-    from InsurAutoML.model.sklearn import ComplementNB
+    from InsurAutoML.model.sklearn_classifiers import ComplementNB
 
     data = pd.read_csv("example/example_data/heart.csv")
     # encoding categorical features
@@ -64,7 +63,6 @@ def test_add_classifier():
 
 
 def test_add_regressor():
-
     from InsurAutoML.model import LibSVM_SVR, MLPRegressor, SGDRegressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -120,7 +118,6 @@ def test_add_regressor():
 
 
 def test_lightgbm_classifier():
-
     from InsurAutoML.model import LightGBM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
@@ -136,13 +133,16 @@ def test_lightgbm_classifier():
     model = LightGBM_Classifier(
         objective="binary",
         boosting="gbdt",
-        n_estimators=100,
         max_depth=-1,
         num_leaves=31,
         min_data_in_leaf=20,
         learning_rate=0.1,
         tree_learner="serial",
         num_iterations=100,
+        min_gain_to_split=0.0,
+        early_stopping_round=0,
+        max_bin=255,
+        feature_fraction=1.0,
         seed=1,
     )
 
@@ -154,7 +154,6 @@ def test_lightgbm_classifier():
 
 
 def test_lightgbm_regressor():
-
     from InsurAutoML.model import LightGBM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -170,13 +169,16 @@ def test_lightgbm_regressor():
     model = LightGBM_Regressor(
         objective="regression",
         boosting="gbdt",
-        n_estimators=100,
         max_depth=-1,
         num_leaves=31,
         min_data_in_leaf=20,
         learning_rate=0.1,
         tree_learner="serial",
         num_iterations=100,
+        min_gain_to_split=0.0,
+        early_stopping_round=0,
+        max_bin=255,
+        feature_fraction=1.0,
         seed=1,
     )
 
@@ -191,7 +193,6 @@ def test_lightgbm_regressor():
 
 
 def test_xgboost_classifier():
-
     from InsurAutoML.model import XGBoost_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
@@ -222,7 +223,6 @@ def test_xgboost_classifier():
 
 
 def test_xgboost_regressor():
-
     from InsurAutoML.model import XGBoost_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -256,7 +256,6 @@ def test_xgboost_regressor():
 
 
 def test_gam_classifier():
-
     from InsurAutoML.model import GAM_Classifier
 
     data = pd.read_csv("example/example_data/heart.csv")
@@ -282,7 +281,6 @@ def test_gam_classifier():
 
 
 def test_gam_regressor():
-
     from InsurAutoML.model import GAM_Regressor
 
     data = pd.read_csv("example/example_data/insurance.csv")
@@ -349,6 +347,4 @@ def test_gam_regressor():
     except NotImplementedError:
         pass
 
-    assert (
-        model._fitted
-    ), "Model GAM_Regressor Inverse Gaussian has not been fitted."
+    assert model._fitted, "Model GAM_Regressor Inverse Gaussian has not been fitted."

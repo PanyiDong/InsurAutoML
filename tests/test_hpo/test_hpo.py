@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_hpo/test_hpo.py
 File: test_hpo.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:35:30 pm
+Last Modified: Saturday, 16th December 2023 7:22:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -50,7 +50,6 @@ from InsurAutoML import load_data
 
 
 def test_objective_1():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -97,8 +96,9 @@ def test_objective_1():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -108,8 +108,6 @@ def test_objective_1():
         model_name="obj_1",
         task_mode="classification",
         objective="accuracy",
-        validation=True,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -129,7 +127,6 @@ def test_objective_1():
 
 
 def test_objective_2():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -176,8 +173,9 @@ def test_objective_2():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -187,8 +185,6 @@ def test_objective_2():
         model_name="obj_2",
         task_mode="classification",
         objective="auc",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -208,7 +204,6 @@ def test_objective_2():
 
 
 def test_objective_3():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -252,8 +247,9 @@ def test_objective_3():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -263,8 +259,6 @@ def test_objective_3():
         model_name="obj_3",
         task_mode="regression",
         objective="MAE",
-        validation=True,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -284,7 +278,6 @@ def test_objective_3():
 
 
 def test_objective_4():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -328,8 +321,9 @@ def test_objective_4():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -339,8 +333,6 @@ def test_objective_4():
         model_name="obj_4",
         task_mode="regression",
         objective="R2",
-        validation=True,
-        valid_size=0.15,
         full_status=True,
         reset_index=True,
         _iter=1,
@@ -360,7 +352,6 @@ def test_objective_4():
 
 
 def test_objective_5():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -407,8 +398,9 @@ def test_objective_5():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -418,8 +410,6 @@ def test_objective_5():
         model_name="obj_5",
         task_mode="classification",
         objective="precision",
-        validation=True,
-        valid_size=0.15,
         full_status=True,
         reset_index=True,
         _iter=1,

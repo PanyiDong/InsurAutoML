@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/feature_selection/__init__.py
 File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:44 pm
+Last Modified: Thursday, 1st June 2023 9:27:12 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from InsurAutoML.base import no_processing
+from ..base import no_processing
 from .filter import (
     FeatureFilter,
     mRMR,
@@ -94,7 +94,8 @@ feature_selections = {
     "ASFFS": ASFFS,
     "GeneticAlgorithm": GeneticAlgorithm,
     # "ExhaustiveFS": ExhaustiveFS, # exhaustive search is not practical, takes too long
-    "SFS": SFS,
+    # TODO: add SFS back when multiclass/binary identification is done in hpo/base.py
+    # "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
     # "FOCI": FOCI,
@@ -152,7 +153,7 @@ feature_selections[
     "extra_trees_preproc_for_regression"
 ] = extra_trees_preproc_for_regression
 feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
-feature_selections["polynomial"] = polynomial
+# feature_selections["polynomial"] = polynomial
 feature_selections[
     "select_percentile_classification"
 ] = select_percentile_classification

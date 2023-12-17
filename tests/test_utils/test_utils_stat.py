@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_utils/test_utils_stat.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th December 2022 11:27:36 pm
+Last Modified: Saturday, 16th December 2023 8:25:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,7 +43,6 @@ import pandas as pd
 
 
 def test_nan_cov():
-
     from InsurAutoML.utils.stats import nan_cov
 
     assert (
@@ -52,7 +51,6 @@ def test_nan_cov():
 
 
 def test_class_means():
-
     from InsurAutoML.utils.stats import class_means
 
     X = pd.DataFrame(
@@ -65,15 +63,11 @@ def test_class_means():
     y = pd.Series([1, 1, 1, 0, 0])
 
     assert isinstance(
-        class_means(
-            X, y), list), "class_means should return a list, get {}".format(
-        type(
-            class_means(
-                X, y)))
+        class_means(X, y), list
+    ), "class_means should return a list, get {}".format(type(class_means(X, y)))
 
 
 def test_empirical_covariance():
-
     from InsurAutoML.utils import empirical_covariance
 
     cov = empirical_covariance(10 * np.random.random(size=(10, 10)))
@@ -84,7 +78,6 @@ def test_empirical_covariance():
 
 
 def test_class_cov():
-
     from InsurAutoML.utils.stats import class_cov
 
     X = np.arange(10)
@@ -98,86 +91,62 @@ def test_class_cov():
 
 
 def test_MI():
-
     from InsurAutoML.utils.stats import MI
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
-    y = pd.DataFrame(
-        np.random.randint(
-            0, 2, size=(
-                10, 2)), columns=[
-            "y_1", "y_2"])
+    y = pd.DataFrame(np.random.randint(0, 2, size=(10, 2)), columns=["y_1", "y_2"])
 
     mi = MI(X, y)
 
-    assert len(mi) == 2, "MI should return a list of length 2, get {}".format(
-        len(mi))
+    assert len(mi) == 2, "MI should return a list of length 2, get {}".format(len(mi))
 
 
 def test_ACCC():
-
     from InsurAutoML.utils.stats import ACCC
 
-    Z = pd.DataFrame(
-        np.random.normal(
-            0, 2, size=(
-                10, 2)), columns=[
-            "X_1", "X_2"])
-    X = pd.DataFrame(
-        np.random.normal(
-            0, 2, size=(
-                10, 2)), columns=[
-            "X_1", "X_2"])
+    Z = pd.DataFrame(np.random.normal(0, 2, size=(10, 2)), columns=["X_1", "X_2"])
+    X = pd.DataFrame(np.random.normal(0, 2, size=(10, 2)), columns=["X_1", "X_2"])
     y = pd.DataFrame(np.random.normal(0, 2, size=(10, 1)), columns=["y"])
 
     accc = ACCC(Z, y)
     accc = ACCC(Z, y, Z)
 
-    assert isinstance(
-        accc, float), "MI should return a float value, get {}".format(
-        type(float))
+    assert isinstance(accc, float), "MI should return a float value, get {}".format(
+        type(float)
+    )
 
 
 def test_t_score():
-
     from InsurAutoML.utils.stats import t_score
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
-    y = pd.DataFrame(
-        np.random.randint(
-            0, 2, size=(
-                10, 2)), columns=[
-            "y_1", "y_2"])
+    y = pd.DataFrame(np.random.randint(0, 2, size=(10, 2)), columns=["y_1", "y_2"])
 
     score = t_score(X, y)
 
     fvalue, pvalue = t_score(X, y, pvalue=True)
 
     assert len(score) == 2, "t_score should return a list of length 2, get {}".format(
-        len(score))
+        len(score)
+    )
 
 
 def test_ANOVA():
-
     from InsurAutoML.utils.stats import ANOVA
 
     X = pd.DataFrame(np.arange(20).reshape(10, 2), columns=["X_1", "X_2"])
-    y = pd.DataFrame(
-        np.random.randint(
-            0, 5, size=(
-                10, 2)), columns=[
-            "y_1", "y_2"])
+    y = pd.DataFrame(np.random.randint(0, 5, size=(10, 2)), columns=["y_1", "y_2"])
 
     score = ANOVA(X, y)
 
     fvalue, pvalue = ANOVA(X, y, pvalue=True)
 
     assert len(score) == 2, "ANOVA should return a list of length 2, get {}".format(
-        len(score))
+        len(score)
+    )
 
 
 def test_neg_metrics():
-
     from InsurAutoML.utils.stats import (
         neg_R2,
         neg_accuracy,
@@ -197,9 +166,12 @@ def test_neg_metrics():
 
     y_true = np.random.randint(0, 2, size=(100,))
     y_pred = np.random.randint(0, 2, size=(100,))
-    assert neg_R2(y_true, y_pred) == -1 * r2_score(
-        y_true, y_pred
-    ), "The neg_R2 function is not correct."
+    if -1 < neg_R2(y_true, y_pred) and neg_R2(y_true, y_pred) < 1:
+        assert neg_R2(y_true, y_pred) == -1 * r2_score(
+            y_true, y_pred
+        ), "The neg_R2 function is not correct."
+    else:
+        assert neg_R2(y_true, y_pred) == np.inf, "The neg_R2 function is not correct."
     assert neg_accuracy(y_true, y_pred) == -1 * accuracy_score(
         y_true, y_pred
     ), "The neg_accuracy function is not correct."

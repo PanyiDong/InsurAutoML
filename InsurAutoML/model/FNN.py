@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/model/FNN.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:40:59 pm
+Last Modified: Sunday, 10th September 2023 2:39:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,8 @@ import warnings
 import numpy as np
 import pandas as pd
 
-from InsurAutoML.utils.data import assign_classes
+from ..utils.data import assign_classes
+from .base import BaseModel
 
 # check if pytorch exists
 # if exists, import pytorch
@@ -130,18 +131,12 @@ class MLP_Model(nn.Module):
 
         # in the middle layer, from previous hidden layer to next hidden layer
         for _ in range(self.hidden_layer):
-            self.forward_model.append(
-                nn.Linear(
-                    self.hidden_size,
-                    self.hidden_size))
+            self.forward_model.append(nn.Linear(self.hidden_size, self.hidden_size))
             self.forward_model.append(self.activation)
 
         # at last layer, from last hidden layer to output layer
         # no activation function
-        self.forward_model.append(
-            nn.Linear(
-                self.hidden_size,
-                self.output_size))
+        self.forward_model.append(nn.Linear(self.hidden_size, self.output_size))
 
         # if softmax is True, add softmax function
         if self.softmax:
@@ -150,7 +145,6 @@ class MLP_Model(nn.Module):
         self.forward_model = nn.Sequential(*self.forward_model)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
-
         return self.forward_model(X)
 
 
@@ -205,7 +199,7 @@ class MLP_Base:
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.input_size = input_size
         self.hidden_layer = hidden_layer
@@ -228,9 +222,8 @@ class MLP_Base:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> MLP_Base:
-
         # set seed
-        torch.manual_seed(self.seed)
+        # torch.manual_seed(self.seed)
 
         # use cuda if detect GPU and is_cuda is True
         self.device = torch.device(
@@ -269,22 +262,17 @@ class MLP_Base:
         elif self.criteria == "NegativeLogLikelihood":
             criteria = nn.NLLLoss()
         else:
-            raise ValueError(
-                "Not recognized criteria: {}.".format(
-                    self.criteria))
+            raise ValueError("Not recognized criteria: {}.".format(self.criteria))
 
         # load dataset to TensorDataset
         train_tensor = TensorDataset(X, y)
         # load dataset to DataLoader
         train_loader = DataLoader(
-            train_tensor,
-            batch_size=self.batch_size,
-            shuffle=True,
-            drop_last=True)
+            train_tensor, batch_size=self.batch_size, shuffle=True, drop_last=True
+        )
 
         # train model
         for epoch in range(self.num_epochs):
-
             for batch_idx, (data, target) in enumerate(train_loader):
                 # load batch to device
                 data, target = data.to(self.device), target.to(self.device)
@@ -299,21 +287,16 @@ class MLP_Base:
         return self
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-
         # load test dataset to DataLoader
         if isinstance(X, pd.DataFrame):
-            test_tensor = TensorDataset(
-                torch.as_tensor(
-                    X.values, dtype=torch.float32))
+            test_tensor = TensorDataset(torch.as_tensor(X.values, dtype=torch.float32))
         else:
-            test_tensor = TensorDataset(
-                torch.as_tensor(X, dtype=torch.float32))
+            test_tensor = TensorDataset(torch.as_tensor(X, dtype=torch.float32))
 
         test_loader = DataLoader(test_tensor, batch_size=len(test_tensor))
 
         # predict
         for batch_idx, [data] in enumerate(test_loader):
-
             with torch.no_grad():
                 results = self.model(data.to(self.device))
 
@@ -321,7 +304,7 @@ class MLP_Base:
 
 
 # Multi-Layer Perceptron classifier
-class MLP_Classifier(MLP_Base):
+class MLP_Classifier(MLP_Base, BaseModel):
 
     """
     Multi-Layer Perceptron classification model
@@ -364,7 +347,7 @@ class MLP_Classifier(MLP_Base):
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -385,7 +368,6 @@ class MLP_Classifier(MLP_Base):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> MLP_Classifier:
-
         self.input_size = X.shape[1]  # number of features as input size
         self.output_size = len(pd.unique(y))  # unique classes as output size
 
@@ -393,7 +375,7 @@ class MLP_Classifier(MLP_Base):
         if self.criteria not in ["CrossEntropy", "NegativeLogLikelihood"]:
             raise ValueError("Loss must be CrossEntropy!")
 
-        super().__init__(
+        super(MLP_Classifier, self).__init__(
             input_size=self.input_size,
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
@@ -419,22 +401,20 @@ class MLP_Classifier(MLP_Base):
 
         self._fitted = True
 
-        return super().fit(X, y)
+        return super(MLP_Classifier, self).fit(X, y)
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-
         # need to wrap predict function to convert output format
-        return assign_classes(super().predict(X))
+        return assign_classes(super(MLP_Classifier, self).predict(X))
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-
         # not need to use argmax to select the one class
         # but to return full probability
-        return super().predict(X)
+        return super(MLP_Classifier, self).predict(X)
 
 
 # Multi-Layer Perceptron regressor
-class MLP_Regressor(MLP_Base):
+class MLP_Regressor(MLP_Base, BaseModel):
 
     """
     Multi-Layer Perceptron regression model
@@ -477,7 +457,7 @@ class MLP_Regressor(MLP_Base):
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -498,7 +478,6 @@ class MLP_Regressor(MLP_Base):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> MLP_Regressor:
-
         self.input_size = X.shape[1]  # number of features as input size
         self.output_size = 1  # output size is 1 (regression purpose)
 
@@ -506,7 +485,7 @@ class MLP_Regressor(MLP_Base):
         if self.criteria not in ["MSE", "MAE"]:
             raise ValueError("Loss must be MSE or MAE!")
 
-        super().__init__(
+        super(MLP_Regressor, self).__init__(
             input_size=self.input_size,
             hidden_layer=self.hidden_layer,
             hidden_size=self.hidden_size,
@@ -532,13 +511,10 @@ class MLP_Regressor(MLP_Base):
 
         self._fitted = True
 
-        return super().fit(X, y)
+        return super(MLP_Regressor, self).fit(X, y)
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-
-        return super().predict(X)
+        return super(MLP_Regressor, self).predict(X)
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-
-        return NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        return NotImplementedError("predict_proba is not implemented for regression.")

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/feature_selection/wrapper.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th December 2022 11:27:10 pm
+Last Modified: Thursday, 1st June 2023 11:15:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,15 +47,16 @@ import numpy as np
 import pandas as pd
 import itertools
 
-from InsurAutoML.utils import (
+from ..utils import (
     minloc,
     maxloc,
 )
-from InsurAutoML.utils.base import has_method
-from InsurAutoML.utils.optimize import (
+from ..utils.base import has_method
+from ..utils.optimize import (
     get_estimator,
     get_metrics,
 )
+from .base import BaseFeatureSelection
 
 # FeatureWrapper
 
@@ -64,7 +65,7 @@ from InsurAutoML.utils.optimize import (
 # so it's not included in the package, but it can be used.
 
 
-class ExhaustiveFS:
+class ExhaustiveFS(BaseFeatureSelection):
 
     """
     Exhaustive Feature Selection
@@ -85,11 +86,14 @@ class ExhaustiveFS:
         self.estimator = estimator
         self.criteria = criteria
 
+        super().__init__()
         self._fitted = False
 
-    def fit(self, X: Union[pd.DataFrame, np.ndarray],
-            y: Union[pd.DataFrame, np.ndarray]) -> ExhaustiveFS:
-
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> ExhaustiveFS:
+        # get feature names
+        self._check_feature_names(X)
         # make sure estimator is recognized
         if self.estimator == "Lasso":
             from sklearn.linear_model import Lasso
@@ -111,7 +115,7 @@ class ExhaustiveFS:
 
         # check whether criteria is valid
         if self.criteria == "neg_accuracy":
-            from InsurAutoML.utils.stats import neg_accuracy
+            from ..utils.stats import neg_accuracy
 
             self.criteria = neg_accuracy
         elif self.criteria == "MSE":
@@ -136,8 +140,7 @@ class ExhaustiveFS:
 
         for comb in all_comb:
             self.estimator.fit(X.iloc[:, comb], y)
-            results.append(self.criteria(
-                y, self.estimator.predict(X.iloc[:, comb])))
+            results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
 
         self.selected_features = all_comb[np.argmin(results)]
 
@@ -148,12 +151,11 @@ class ExhaustiveFS:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return X.iloc[:, self.selected_features]
 
 
 # Sequential Feature Selection (SFS)
-class SFS:
+class SFS(BaseFeatureSelection):
 
     """
     Use Sequential Forward Selection/SFS to select subset of features.
@@ -186,6 +188,7 @@ class SFS:
         self.n_prop = n_prop
         self.criteria = criteria
 
+        super().__init__()
         self._fitted = False
 
     def select_feature(
@@ -196,7 +199,6 @@ class SFS:
         selected_features: List[str],
         unselected_features: List[str],
     ) -> Tuple[float, str]:
-
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
         # concat new test_comb with selected_features
@@ -208,8 +210,7 @@ class SFS:
             # fit estimator
             estimator.fit(X.iloc[:, _comb], y)
             # get test results
-            test_results = self.criteria(
-                y, estimator.predict(X.iloc[:, _comb]))
+            test_results = self.criteria(y, estimator.predict(X.iloc[:, _comb]))
             # append test results
             results.append(test_results)
 
@@ -223,7 +224,8 @@ class SFS:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> SFS:
-
+        # get feature names
+        self._check_feature_names(X)
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -286,14 +288,13 @@ class SFS:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return X.iloc[:, self.selected_features]
 
 
 # Sequential Backward Selection (SBS)
 # Sequential Floating Forward Selection (SFFS)
 # Adapative Sequential Forward Floating Selection (ASFFS)
-class ASFFS:
+class ASFFS(BaseFeatureSelection):
 
     """
     Adaptive Sequential Forward Floating Selection (ASFFS)
@@ -343,10 +344,10 @@ class ASFFS:
         self.model = model
         self.objective = objective
 
+        super().__init__()
         self._fitted = False
 
     def generalization_limit(self, k: int, d: int, b: int) -> int:
-
         if np.abs(k - d) < b:
             r = self.r_max
         elif np.abs(k - d) < self.r_max + b:
@@ -364,7 +365,6 @@ class ASFFS:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray],
     ) -> Tuple[str, float]:
-
         _subset = list(itertools.combinations(unselected, o))
         _comb_subset = [
             selected + list(item) for item in _subset
@@ -414,10 +414,10 @@ class ASFFS:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray],
     ) -> Tuple[str, float]:
-
         _subset = list(itertools.combinations(selected, o))
-        _comb_subset = [[_full for _full in selected if _full not in item]
-                        for item in _subset]  # remove new features from selected features
+        _comb_subset = [
+            [_full for _full in selected if _full not in item] for item in _subset
+        ]  # remove new features from selected features
 
         _objective_list = []
         if self.model == "Linear":
@@ -456,9 +456,11 @@ class ASFFS:
             _objective_list[maxloc(_objective_list)],
         )
 
-    def fit(self, X: Union[pd.DataFrame, np.ndarray],
-            y: Union[pd.DataFrame, np.ndarray]) -> ASFFS:
-
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> ASFFS:
+        # get feature names
+        self._check_feature_names(X)
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -488,7 +490,6 @@ class ASFFS:
         _selected = []
 
         while True:
-
             # Forward Phase
             _r = self.generalization_limit(_k, _n_components, _b)
             _o = 1
@@ -496,7 +497,6 @@ class ASFFS:
             while (
                 _o <= _r and len(_unselected) >= 1
             ):  # not reasonable to add feature when all selected
-
                 _new_feature, _max_obj = self._Forward_Objective(
                     _selected, _unselected, _o, X, y
                 )
@@ -538,9 +538,7 @@ class ASFFS:
             while (
                 _o <= _r and _o < _k
             ):  # not reasonable to remove when only _o feature selected
-
-                _new_feature, _max_obj = self._Backward_Objective(
-                    _selected, _o, X, y)
+                _new_feature, _max_obj = self._Backward_Objective(_selected, _o, X, y)
 
                 if _max_obj > self.J_max[_k - _o]:
                     self.J_max[_k - _o] = _max_obj.copy()
@@ -571,7 +569,6 @@ class ASFFS:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         # check if the input is a dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)

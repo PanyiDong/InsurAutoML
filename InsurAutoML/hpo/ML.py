@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hpo/ML.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:34:55 pm
+Last Modified: Friday, 1st December 2023 6:43:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,18 +39,12 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-
-import os
-import shutil
-import logging
 from typing import Union, List, Callable, Dict
 import numpy as np
 import pandas as pd
 
 from .base import AutoTabularBase
-
-from InsurAutoML.utils.base import type_of_task
-from InsurAutoML.hpo.utils import setup_logger
+from ..utils.base import type_of_task
 
 
 class AutoTabularRegressor(AutoTabularBase):
@@ -65,18 +59,26 @@ class AutoTabularRegressor(AutoTabularBase):
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
 
+    voting: voting method used for ensemble, default: "mean"
+
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -118,15 +120,20 @@ class AutoTabularRegressor(AutoTabularBase):
             "MLPRegressor", "RandomForest", "SGD")
     'auto' will select all default models, or use a list to select
 
-    validation: Whether to use train_test_split to test performance on test set, default = True
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
+
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -172,12 +179,15 @@ class AutoTabularRegressor(AutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting: str = "mean",
         timeout: int = 360,
         max_evals: int = 64,
-        allow_error_prop: float = 0.1,
+        timeout_per_trial: int = None,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -186,10 +196,11 @@ class AutoTabularRegressor(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        validation: bool = True,
-        valid_size: float = 0.15,
+        exclude: Dict = {},
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = "MSE",
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
@@ -200,16 +211,19 @@ class AutoTabularRegressor(AutoTabularBase):
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
-        self.allow_error_prop = allow_error_prop
+        self.timeout_per_trial = timeout_per_trial
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -218,6 +232,7 @@ class AutoTabularRegressor(AutoTabularBase):
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -236,16 +251,19 @@ class AutoTabularRegressor(AutoTabularBase):
 
         self._fitted = False  # whether the model has been fitted
 
-        super().__init__(
+        super(AutoTabularRegressor, self).__init__(
             task_mode="regression",
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
+            voting=self.voting,
             timeout=self.timeout,
+            timeout_per_trial=self.timeout_per_trial,
             max_evals=self.max_evals,
-            allow_error_prop=self.allow_error_prop,
+            allow_error=self.allow_error,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,
+            resume=self.resume,
             model_name=self.model_name,
             ignore_warning=self.ignore_warning,
             encoder=self.encoder,
@@ -254,6 +272,7 @@ class AutoTabularRegressor(AutoTabularBase):
             scaling=self.scaling,
             feature_selection=self.feature_selection,
             models=self.models,
+            exclude=self.exclude,
             validation=self.validation,
             valid_size=self.valid_size,
             objective=self.objective,
@@ -270,36 +289,6 @@ class AutoTabularRegressor(AutoTabularBase):
             reset_index=self.reset_index,
             seed=self.seed,
         )
-
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> AutoTabularRegressor:
-
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
-
-        # setup up logger
-        if not hasattr(self, "_logger"):
-            self._logger = setup_logger(__name__, os.path.join(
-                self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
-
-        super().fit(X, y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
-        return super().predict(X)
 
 
 class AutoTabularClassifier(AutoTabularBase):
@@ -314,18 +303,26 @@ class AutoTabularClassifier(AutoTabularBase):
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
 
+    voting: voting method used for ensemble, default: "hard"
+
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -368,15 +365,20 @@ class AutoTabularClassifier(AutoTabularBase):
             'RandomForest',  'SGD')
     'auto' will select all default models, or use a list to select
 
-    validation: Whether to use train_test_split to test performance on test set, default = True
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
+
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -422,12 +424,15 @@ class AutoTabularClassifier(AutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting="hard",
         timeout: int = 360,
         max_evals: int = 64,
-        allow_error_prop: float = 0.1,
+        timeout_per_trial: int = None,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -436,10 +441,11 @@ class AutoTabularClassifier(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        validation: bool = True,
-        valid_size: float = 0.15,
+        exclude: Dict = {},
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
@@ -450,16 +456,19 @@ class AutoTabularClassifier(AutoTabularBase):
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
-        self.allow_error_prop = allow_error_prop
+        self.timeout_per_trial = timeout_per_trial
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -468,6 +477,7 @@ class AutoTabularClassifier(AutoTabularBase):
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -486,16 +496,19 @@ class AutoTabularClassifier(AutoTabularBase):
 
         self._fitted = False  # whether the model has been fitted
 
-        super().__init__(
+        super(AutoTabularClassifier, self).__init__(
             task_mode="classification",
             n_estimators=self.n_estimators,
             ensemble_strategy=self.ensemble_strategy,
+            voting=self.voting,
             timeout=self.timeout,
             max_evals=self.max_evals,
-            allow_error_prop=self.allow_error_prop,
+            timeout_per_trial=self.timeout_per_trial,
+            allow_error=self.allow_error,
             temp_directory=self.temp_directory,
             delete_temp_after_terminate=self.delete_temp_after_terminate,
             save=self.save,
+            resume=self.resume,
             model_name=self.model_name,
             ignore_warning=self.ignore_warning,
             encoder=self.encoder,
@@ -504,6 +517,7 @@ class AutoTabularClassifier(AutoTabularBase):
             scaling=self.scaling,
             feature_selection=self.feature_selection,
             models=self.models,
+            exclude=self.exclude,
             validation=self.validation,
             valid_size=self.valid_size,
             objective=self.objective,
@@ -521,38 +535,8 @@ class AutoTabularClassifier(AutoTabularBase):
             seed=self.seed,
         )
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> AutoTabularClassifier:
 
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
-
-        # setup up logger
-        if not hasattr(self, "_logger"):
-            self._logger = setup_logger(__name__, os.path.join(
-                self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
-
-        super().fit(X, y)
-
-        self._fitted = True
-
-        return self
-
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
-        return super().predict(X)
-
-
-class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
+class AutoTabular(AutoTabularBase):
 
     """
     AutoTabular that automatically assign to AutoTabularClassifier or AutoTabularRegressor
@@ -564,18 +548,27 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
     ensemble_strategy: strategy of ensemble, default: "stacking"
     support ("stacking", "bagging", "boosting")
 
+    voting: voting method used for ensemble, default: None
+    if None, use "soft" for classification, "mean" for regression
+
     timeout: Total time limit for the job in seconds, default = 360
 
     max_evals: Maximum number of function evaluations allowed, default = 32
 
-    allow_error_prop: proportion of tasks allows failure, default = 0.1
-    allowed number of failures is int(max_evals * allow_error_prop)
+    timeout_per_trial: Time limit for each trial in seconds, default = None
+    default by (timeout / max_evals * 5)
+
+    allow_error: proportion of tasks allows failure when float and number by int, default = 0.1
+    allowed number of failures is int(max_evals * allow_error) or int(allow_error)
 
     temp_directory: folder path to store temporary model, default = 'tmp'
 
     delete_temp_after_terminate: whether to delete temporary information, default = False
 
     save: whether to save model after training, default = True
+
+    resume: whether to resume training from last checkpoint, default = "AUTO"
+    support ("AUTO", bool)
 
     model_name: saved model name, default = 'model'
 
@@ -622,16 +615,21 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
             "MLPRegressor", "RandomForest", "SGD")
     'auto' will select all default models, or use a list to select
 
-    validation: Whether to use train_test_split to test performance on test set, default = True
+    exclude: components to exclude, default = {}
+    keys are components, values are lists of components to exclude
+    example: {'encoder': ['DataEncoding'], 'imputer': ['SimpleImputer', 'JointImputer']}
 
-    valid_size: Test percentage used to evaluate the performance, default = 0.15
-    only effective when validation = True
+    validation: Whether to use train_test_split to test performance on test set, default = True
+    optional KFold, K is inverse of valid_size (K = int(1 / valid_size)))
+
+    valid_size: Test percentage used to evaluate the performance, default = 0.2
+    only effective when validation = True or "KFold"
 
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "HyperOpt"
+    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -677,12 +675,15 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
+        voting: str = None,
         timeout: int = 360,
         max_evals: int = 64,
-        allow_error_prop: float = 0.1,
+        timeout_per_trial: int = None,
+        allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
         save: bool = True,
+        resume: Union[bool, str] = "AUTO",
         model_name: str = "model",
         ignore_warning: bool = True,
         encoder: Union[str, List[str]] = "auto",
@@ -691,10 +692,11 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        validation: bool = True,
-        valid_size: float = 0.15,
+        exclude: Dict = {},
+        validation: Union[bool, str] = True,
+        valid_size: float = 0.2,
         objective: Union[str, Callable] = None,
-        search_algo: str = "HyperOpt",
+        search_algo: str = "RandomSearch",
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
@@ -705,16 +707,19 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         cpu_threads: int = None,
         use_gpu: bool = None,
         reset_index: bool = True,
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
+        self.voting = voting
         self.timeout = timeout
         self.max_evals = max_evals
-        self.allow_error_prop = allow_error_prop
+        self.timeout_per_trial = timeout_per_trial
+        self.allow_error = allow_error
         self.temp_directory = temp_directory
         self.delete_temp_after_terminate = delete_temp_after_terminate
         self.save = save
+        self.resume = resume
         self.model_name = model_name
         self.ignore_warning = ignore_warning
         self.encoder = encoder
@@ -723,6 +728,7 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
         self.scaling = scaling
         self.feature_selection = feature_selection
         self.models = models
+        self.exclude = exclude
         self.validation = validation
         self.valid_size = valid_size
         self.objective = objective
@@ -741,119 +747,95 @@ class AutoTabular(AutoTabularClassifier, AutoTabularRegressor):
 
         self._fitted = False  # whether the model has been fitted
 
-    def fit(self,
-            X: pd.DataFrame,
-            y: Union[pd.DataFrame,
-                     pd.Series,
-                     np.ndarray] = None) -> AutoTabular:
-
-        # initialize temp directory
-        # check if temp directory exists, if exists, empty it
-        if os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
-            shutil.rmtree(os.path.join(self.temp_directory, self.model_name))
-        if not os.path.isdir(self.temp_directory):
-            os.makedirs(self.temp_directory)
-        os.makedirs(os.path.join(self.temp_directory, self.model_name))
-
-        # setup up logger
-        self._logger = setup_logger(__name__, os.path.join(
-            self.temp_directory, self.model_name, "logging.conf"), level=logging.INFO,)
-
-        if (
-            isinstance(y, pd.DataFrame)
-            or isinstance(y, pd.Series)
-            or isinstance(y, np.ndarray)
-        ):
-            self._type = type_of_task(y)
-        elif not y:
-            self._type = "Unsupervised"
-
-        if self._type in [
-            "binary",
-                "multiclass"]:  # assign classification tasks
-            self.model = AutoTabularClassifier(
-                n_estimators=self.n_estimators,
-                ensemble_strategy=self.ensemble_strategy,
-                timeout=self.timeout,
-                max_evals=self.max_evals,
-                allow_error_prop=self.allow_error_prop,
-                temp_directory=self.temp_directory,
-                delete_temp_after_terminate=self.delete_temp_after_terminate,
-                save=self.save,
-                model_name=self.model_name,
-                ignore_warning=self.ignore_warning,
-                encoder=self.encoder,
-                imputer=self.imputer,
-                balancing=self.balancing,
-                scaling=self.scaling,
-                feature_selection=self.feature_selection,
-                models=self.models,
-                validation=self.validation,
-                valid_size=self.valid_size,
-                objective="accuracy" if not self.objective else self.objective,
-                search_algo=self.search_algo,
-                search_algo_settings=self.search_algo_settings,
-                search_scheduler=self.search_scheduler,
-                search_scheduler_settings=self.search_scheduler_settings,
-                logger=self.logger,
-                progress_reporter=self.progress_reporter,
-                full_status=self.full_status,
-                verbose=self.verbose,
-                cpu_threads=self.cpu_threads,
-                use_gpu=self.use_gpu,
-                reset_index=self.reset_index,
-                seed=self.seed,
-            )
-        elif self._type in ["integer", "continuous"]:  # assign regression tasks
-            self.model = AutoTabularRegressor(
-                n_estimators=self.n_estimators,
-                ensemble_strategy=self.ensemble_strategy,
-                timeout=self.timeout,
-                max_evals=self.max_evals,
-                allow_error_prop=self.allow_error_prop,
-                temp_directory=self.temp_directory,
-                delete_temp_after_terminate=self.delete_temp_after_terminate,
-                save=self.save,
-                model_name=self.model_name,
-                ignore_warning=self.ignore_warning,
-                encoder=self.encoder,
-                imputer=self.imputer,
-                balancing=self.balancing,
-                scaling=self.scaling,
-                feature_selection=self.feature_selection,
-                models=self.models,
-                validation=self.validation,
-                valid_size=self.valid_size,
-                objective="MSE" if not self.objective else self.objective,
-                search_algo=self.search_algo,
-                search_algo_settings=self.search_algo_settings,
-                search_scheduler=self.search_scheduler,
-                search_scheduler_settings=self.search_scheduler_settings,
-                progress_reporter=self.progress_reporter,
-                full_status=self.full_status,
-                verbose=self.verbose,
-                cpu_threads=self.cpu_threads,
-                use_gpu=self.use_gpu,
-                reset_index=self.reset_index,
-                seed=self.seed,
-            )
+    @staticmethod
+    def _get_task_mode(type: str) -> str:
+        if type in ["binary", "multiclass"]:
+            return "classification"
+        elif type in ["integer", "continuous"]:
+            return "regression"
         else:
             raise ValueError(
                 'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
-                    self._type))
+                    type
+                )
+            )
 
-        self.model.fit(X, y)
+    @staticmethod
+    def _get_default_objective(type: str, objective) -> Union[str, Callable]:
+        if type in ["binary", "multiclass"]:
+            return "accuracy" if not objective else objective
+        elif type in ["integer", "continuous"]:
+            return "MSE" if not objective else objective
+        else:
+            raise ValueError(
+                'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
+                    type
+                )
+            )
 
-        self._fitted = True
+    def fit(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
+    ) -> AutoTabular:
+        if isinstance(y, (pd.DataFrame, pd.Series, np.ndarray)):
+            self._type = type_of_task(y)
+        elif not y:
+            self._type = "unsupervised"
+
+        super(AutoTabular, self).__init__(
+            task_mode=self._get_task_mode(self._type),
+            n_estimators=self.n_estimators,
+            ensemble_strategy=self.ensemble_strategy,
+            voting=self.voting,
+            timeout=self.timeout,
+            max_evals=self.max_evals,
+            timeout_per_trial=self.timeout_per_trial,
+            allow_error=self.allow_error,
+            temp_directory=self.temp_directory,
+            delete_temp_after_terminate=self.delete_temp_after_terminate,
+            save=self.save,
+            resume=self.resume,
+            model_name=self.model_name,
+            ignore_warning=self.ignore_warning,
+            encoder=self.encoder,
+            imputer=self.imputer,
+            balancing=self.balancing,
+            scaling=self.scaling,
+            feature_selection=self.feature_selection,
+            models=self.models,
+            exclude=self.exclude,
+            validation=self.validation,
+            valid_size=self.valid_size,
+            objective=self._get_default_objective(self._type, self.objective),
+            search_algo=self.search_algo,
+            search_algo_settings=self.search_algo_settings,
+            search_scheduler=self.search_scheduler,
+            search_scheduler_settings=self.search_scheduler_settings,
+            logger=self.logger,
+            progress_reporter=self.progress_reporter,
+            full_status=self.full_status,
+            verbose=self.verbose,
+            cpu_threads=self.cpu_threads,
+            use_gpu=self.use_gpu,
+            reset_index=self.reset_index,
+            seed=self.seed,
+        )
+
+        super(AutoTabular, self).fit(X, y)
 
         return self
 
-    def predict(self,
-                X: pd.DataFrame) -> Union[pd.DataFrame,
-                                          pd.Series,
-                                          np.ndarray]:
-
-        if self.model:
-            return self.model.predict(X)
-        else:
+    def predict(self, X: pd.DataFrame) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+        # check if the model has been fitted
+        if not self._fitted:
             raise ValueError("No tasks found! Need to fit first.")
+
+        return super(AutoTabular, self).predict(X)
+
+    def predict_proba(
+        self, X: pd.DataFrame
+    ) -> Union[pd.DataFrame, pd.Series, np.ndarray]:
+        # check if the model has been fitted
+        if not self._fitted:
+            raise ValueError("No tasks found! Need to fit first.")
+
+        return super(AutoTabular, self).predict_proba(X)

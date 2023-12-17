@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/over_sampling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:15 pm
+Last Modified: Friday, 1st December 2023 10:29:09 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,7 +47,9 @@ import warnings
 import sklearn
 import sklearn.utils
 
-from InsurAutoML.utils.data import is_imbalance, LinkTable
+from ..constant import MAX_ITER
+from .base import BaseBalancing
+from ..utils.data import is_imbalance, LinkTable
 
 """
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
@@ -59,7 +61,7 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 """
 
 
-class SimpleRandomOverSampling:
+class SimpleRandomOverSampling(BaseBalancing):
 
     """
     Simple Random Over-Sampling
@@ -69,9 +71,9 @@ class SimpleRandomOverSampling:
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the minority class will increase the random seed by 1
@@ -80,21 +82,21 @@ class SimpleRandomOverSampling:
     def __init__(
         self,
         imbalance_threshold: float = 0.9,
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -130,32 +132,36 @@ class SimpleRandomOverSampling:
 
     def _fit_transform(
         self, X: Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]
-    ) -> pd.DataFrame:  # using random over-sampling to balance the first imbalanced feature
-
-        features = list(X.columns)
+    ) -> (
+        pd.DataFrame
+    ):  # using random over-sampling to balance the first imbalanced feature
+        n, features = len(X), list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
-        _seed = self.seed
-        _iter = 0
+        _minority_class = X.loc[X[_imbalanced_feature] != _majority]
 
-        while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
-            and _iter <= self.max_iter
-        ):
-            _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-            X = pd.concat([X, _minority_class.sample(n=1, random_state=_seed)])
-            _seed += 1
-            _iter += 1
-        X = sklearn.utils.shuffle(
-            X.reset_index(
-                drop=True)).reset_index(
-            drop=True)
+        # calculate the number of samples needed to be added
+        # n_majority = n - len(_minority_class)
+        # n_minor_needed = max(1, int(n_majority / self.imbalance_threshold - n))
+        n_minor_needed = max(1, int(len(_minority_class) / 20))
+
+        # randomly draw samples from minority class and replicate the sample
+        X = pd.concat(
+            [
+                X,
+                _minority_class.sample(
+                    n=n_minor_needed, random_state=self.seed, replace=True
+                ),
+            ]
+        )
+        # shuffle the data
+        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
 
 
-class Smote:
+class Smote(BaseBalancing):
 
     """
     Synthetic Minority Over-sampling Technique (Smote)
@@ -168,9 +174,9 @@ class Smote:
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the minority class will increase the random seed by 1
@@ -186,26 +192,26 @@ class Smote:
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
         k: int = 5,
         generation: str = "mean",
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
         self.k = k
         self.generation = generation
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -240,33 +246,33 @@ class Smote:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
+        n, features = len(X), list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
-        _seed = self.seed
-        _iter = 0
+        _minority_class = X.loc[X[_imbalanced_feature] != _majority]
 
-        while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
-            and _iter <= self.max_iter
-        ):
-            _minority_class = X.loc[X[_imbalanced_feature] != _majority]
-            _sample = _minority_class.sample(n=1, random_state=_seed)
+        # calculate the number of samples needed to be added
+        n_majority = n - len(_minority_class)
+        n_minor_needed = max(1, int(n_majority / self.imbalance_threshold - n))
+
+        for _ in range(n_minor_needed):
+            _sample = _minority_class.sample(n=1, random_state=self.seed, replace=True)
             _link_table = LinkTable(_sample, X, self.norm)
             for _link_item in _link_table:
                 _k_nearest = [
                     _link_item.index(item)
-                    for item in sorted(_link_item)[1: (self.k + 1)]
+                    for item in sorted(_link_item)[1 : (self.k + 1)]
                 ]
                 _link = _k_nearest[np.random.randint(0, len(_k_nearest))]
                 if self.generation == "mean":
                     X.loc[len(X), :] = X.loc[
                         [_sample.index[0], X.index[_link]], :
-                    ].mean()
+                    ].mean(axis=0)
                 elif self.generation == "random":
-                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * \
-                        (X.loc[X.index[_link], :] - X.lox[_sample.index, :])
+                    X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
+                        X.loc[X.index[_link], :] - X.lox[_sample.index, :]
+                    )
                 else:
                     raise ValueError(
                         'Not recognizing generation method! Should be in \
@@ -274,7 +280,5 @@ class Smote:
                             self.generation
                         )
                     )
-            _seed += 1
-            _iter += 1
 
         return X

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/__init__.py
 File Created: Wednesday, 16th November 2022 7:23:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:37:19 pm
+Last Modified: Thursday, 25th May 2023 11:04:19 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,13 +40,13 @@ SOFTWARE.
 
 
 from .version import _get_version
-from .base import no_processing, load_data
+from .base import no_processing, load_data, set_seed
 from .hpo import (
     AutoTabular,
     AutoTabularClassifier,
     AutoTabularRegressor,
-    AutoTextClassifier,
-    AutoNextWordPrediction,
+    # AutoTextClassifier,
+    # AutoNextWordPrediction,
 )
 from .utils import (
     # random_guess,

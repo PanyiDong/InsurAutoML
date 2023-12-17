@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hyperparameters/ray/classifier_hyperparameter.py
 File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:16 pm
+Last Modified: Sunday, 3rd December 2023 11:24:12 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,8 +49,8 @@ SOFTWARE.
 
 from ray import tune
 
-from InsurAutoML.constant import LIGHTGBM_BOOSTING, LIGHTGBM_TREE_LEARNER
-from InsurAutoML.utils.base import format_hyper_dict
+from ...constant import LIGHTGBM_BOOSTING, LIGHTGBM_TREE_LEARNER
+from ...utils.base import format_hyper_dict
 
 ADABOOSTCLASSIFIER = {
     "model": "AdaboostClassifier",
@@ -214,7 +214,7 @@ SGD = {
 }
 LOGISTICREGRESSION = {
     "model": "LogisticRegression",
-    "penalty": tune.choice(["l2", "none"]),
+    "penalty": tune.choice(["l2", None]),
     "tol": tune.loguniform(1e-5, 1e-1),
     "C": tune.loguniform(1e-5, 10),
 }
@@ -281,7 +281,8 @@ LIGHTGBMCLASSIFIER = {
     "model": "LightGBM_Classifier",
     "objective": tune.choice(["Need to specify in HPO by response"]),
     "boosting": tune.choice(LIGHTGBM_BOOSTING),
-    "n_estimators": tune.qlograndint(50, 500, 1),
+    # same as num_iterations
+    # "n_estimators": tune.qlograndint(50, 500, 1),
     # max_depth == -1 for no limit
     "max_depth": tune.randint(-1, 31),
     "num_leaves": tune.qlograndint(3, 2047, 1),
@@ -289,6 +290,10 @@ LIGHTGBMCLASSIFIER = {
     "learning_rate": tune.loguniform(1e-4, 1),
     "tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
     "num_iterations": tune.qlograndint(50, 500, 1),
+    "min_gain_to_split": tune.loguniform(1e-8, 1),
+    "early_stopping_round": tune.randint(1, 200),
+    "max_bin": tune.qlograndint(3, 1024, 1),
+    "feature_fraction": tune.uniform(0.1, 1),
 }
 XGBOOSTCLASSIFIER = {
     "model": "XGBoost_Classifier",

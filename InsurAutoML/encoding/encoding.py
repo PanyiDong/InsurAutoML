@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/encoding/encoding.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:32 pm
+Last Modified: Tuesday, 5th December 2023 5:27:01 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,11 +43,13 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 from sklearn import preprocessing
-from InsurAutoML.utils.base import is_date
-from InsurAutoML.utils.data import formatting
+
+from ..utils.base import is_date
+from ..utils.data import formatting
+from .base import BaseEncoder
 
 
-class DataEncoding(formatting):
+class DataEncoding(BaseEncoder, formatting):
 
     """
     Data preprocessing
@@ -68,11 +70,11 @@ class DataEncoding(formatting):
 
     """
 
-    def __init__(self, dummy_coding: bool = False,
-                 transform: bool = False) -> None:
+    def __init__(self, dummy_coding: bool = False, transform: bool = False) -> None:
         self.dummy_coding = dummy_coding
         self.transform = transform
 
+        super().__init__()
         self._fitted = False  # record whether the method is fitted
 
     def fit(self, _df: pd.DataFrame) -> pd.DataFrame:
@@ -98,21 +100,18 @@ class DataEncoding(formatting):
                         self.category = pd.DataFrame({column: unique_value})
                     else:
                         self.category = pd.concat(
-                            [self.category, pd.DataFrame(
-                                {column: unique_value})],
+                            [self.category, pd.DataFrame({column: unique_value})],
                             axis=1,
                         )
                     for elem in unique_value:
-                        df[column + "_" +
-                            str(elem)] = (df[column] == elem).astype(int)
+                        df[column + "_" + str(elem)] = (df[column] == elem).astype(int)
                 else:
                     unique_value = np.sort(df[column].dropna().unique())
                     if self.category.empty:
                         self.category = pd.DataFrame({column: unique_value})
                     else:
                         self.category = pd.concat(
-                            [self.category, pd.DataFrame(
-                                {column: unique_value})],
+                            [self.category, pd.DataFrame({column: unique_value})],
                             axis=1,
                         )
                     for i in range(len(unique_value)):
@@ -131,8 +130,7 @@ class DataEncoding(formatting):
                     )
                     # save scale map for scale back
                     self.mean_scaler.update({column: standard_scaler.mean_[0]})
-                    self.sigma_scaler.update(
-                        {column: standard_scaler.scale_[0]})
+                    self.sigma_scaler.update({column: standard_scaler.scale_[0]})
                     df[column] = standard_scaler.transform(df[[column]].values)
                 elif self.transform == "center":
                     standard_scaler = preprocessing.StandardScaler().fit(
@@ -141,8 +139,7 @@ class DataEncoding(formatting):
                     # save scale map for scale back
                     self.mean_scaler.update({column: standard_scaler.mean_[0]})
                     df.loc[~df[column].isnull(), column] = (
-                        df.loc[~df[column].isnull(), column] -
-                        standard_scaler.mean_[0]
+                        df.loc[~df[column].isnull(), column] - standard_scaler.mean_[0]
                     )
                 elif self.transform == "log":
                     df.loc[~df[column].isnull(), column] = np.log(
@@ -190,8 +187,7 @@ class DataEncoding(formatting):
                     else:
                         # update, put notin in front of refit, so after refit,
                         # there will be no mistake
-                        df.loc[~df[column].isin(
-                            unique_values), column] = np.NaN
+                        df.loc[~df[column].isin(unique_values), column] = np.NaN
                         for i in range(len(unique_values)):
                             df.loc[df[column] == unique_values[i], column] = i
                         df.loc[~df[column].isnull(), column] = df.loc[
@@ -208,8 +204,7 @@ class DataEncoding(formatting):
                     )
                     # save scale map for scale back
                     self.mean_scaler.update({column: standard_scaler.mean_[0]})
-                    self.sigma_scaler.update(
-                        {column: standard_scaler.scale_[0]})
+                    self.sigma_scaler.update({column: standard_scaler.scale_[0]})
                     df[column] = standard_scaler.transform(df[[column]].values)
                 elif self.transform == "center":
                     standard_scaler = preprocessing.StandardScaler().fit(
@@ -218,8 +213,7 @@ class DataEncoding(formatting):
                     # save scale map for scale back
                     self.mean_scaler.update({column: standard_scaler.mean_[0]})
                     df.loc[~df[column].isnull(), column] = (
-                        df.loc[~df[column].isnull(), column] -
-                        standard_scaler.mean_[0]
+                        df.loc[~df[column].isnull(), column] - standard_scaler.mean_[0]
                     )
                 elif self.transform == "log":
                     df.loc[~df[column].isnull(), column] = np.log(
@@ -233,23 +227,26 @@ class DataEncoding(formatting):
         return df
 
 
-class CategoryShift:
+class CategoryShift(BaseEncoder):
 
     """
     Add 3 to every cateogry
 
     Parameters
     ----------
+    shift: shift value, default = 3
+
     seed: random seed
     """
 
-    def __init__(self, seed: int = 1) -> None:
+    def __init__(self, shift: int = 3, seed: int = None) -> None:
+        self.shift = shift
         self.seed = seed
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
-    def fit(self, X: pd.DataFrame) -> None:
-
+    def fit(self, X: pd.DataFrame) -> pd.DataFrame:
         # Check data type
         columns = list(X.columns)
         for _column in columns:
@@ -258,10 +255,25 @@ class CategoryShift:
             elif str(X[_column].dtype) == "category":
                 raise ValueError("Cannot handle categorical type!")
 
+        # shift
+        _X = X.copy(deep=True)
+        _X += self.shift
+
         self._fitted = True
 
-    def transform(self, X: pd.DataFrame) -> pd.DataFrame:
+        return _X
 
+    def refit(self, X: pd.DataFrame) -> pd.DataFrame:
+        # Check data type
+        columns = list(X.columns)
+        for _column in columns:
+            if X[_column].dtype == object:
+                raise ValueError("Cannot handle object type!")
+            elif str(X[_column].dtype) == "category":
+                raise ValueError("Cannot handle categorical type!")
+
+        # shift
         _X = X.copy(deep=True)
-        _X += 3
+        _X += self.shift
+
         return _X

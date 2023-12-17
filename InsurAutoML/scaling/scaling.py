@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/scaling/scaling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:38 pm
+Last Modified: Wednesday, 12th July 2023 8:19:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -50,12 +50,13 @@ import pandas as pd
 import scipy
 import scipy.stats
 
-from InsurAutoML.encoding import DataEncoding
+from ..encoding import DataEncoding
+from .base import BaseScaling
 
 
-class NoScaling:
+class NoScaling(BaseScaling):
     def __init__(self) -> None:
-
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -63,7 +64,6 @@ class NoScaling:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> NoScaling:
-
         self._fitted = True
 
         return self
@@ -76,7 +76,6 @@ class NoScaling:
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
@@ -86,7 +85,7 @@ class NoScaling:
         return X
 
 
-class Standardize:
+class Standardize(BaseScaling):
 
     """
     Standardize the dataset by column (each feature), using _x = (x - mean) / std
@@ -99,14 +98,13 @@ class Standardize:
     """
 
     def __init__(
-            self,
-            with_mean: bool = True,
-            with_std: bool = True,
-            deep_copy: bool = True) -> None:
+        self, with_mean: bool = True, with_std: bool = True, deep_copy: bool = True
+    ) -> None:
         self.with_mean = with_mean
         self.with_std = with_std
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
@@ -114,7 +112,6 @@ class Standardize:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Standardize:
-
         _X = X.copy(deep=self.deep_copy)
 
         n, p = _X.shape
@@ -144,7 +141,6 @@ class Standardize:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=self.deep_copy)
         if self.with_mean:
             _X -= self._mean
@@ -153,26 +149,9 @@ class Standardize:
 
         return _X
 
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        _X = X.copy(deep=self.deep_copy)
-
-        self.fit(_X, y)
-
-        self._fitted = True
-
-        _X = self.transform(_X)
-
-        return _X
-
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
@@ -188,7 +167,7 @@ class Standardize:
         return X
 
 
-class Normalize:
+class Normalize(BaseScaling):
 
     """
     Normalize features with x / x_
@@ -207,6 +186,7 @@ class Normalize:
         self.norm = norm
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
@@ -214,7 +194,6 @@ class Normalize:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Normalize:
-
         if self.norm not in ["l1", "l2", "max"]:
             raise ValueError("Not recognizing norm method!")
 
@@ -238,32 +217,14 @@ class Normalize:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=self.deep_copy)
         _X /= self._scale
-
-        return _X
-
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        _X = X.copy(deep=self.deep_copy)
-
-        self.fit(_X, y)
-
-        self._fitted = True
-
-        _X = self.transform(_X)
 
         return _X
 
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
@@ -276,7 +237,7 @@ class Normalize:
         return X
 
 
-class RobustScale:
+class RobustScale(BaseScaling):
 
     """
     Use quantile to scale, x / (q_max - q_min)
@@ -306,6 +267,7 @@ class RobustScale:
         self.unit_variance = unit_variance
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
@@ -313,7 +275,6 @@ class RobustScale:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> RobustScale:
-
         q_min, q_max = self.quantile
         if q_min is None:  # in case no input
             q_min = 25.0
@@ -321,8 +282,8 @@ class RobustScale:
             q_max = 75.0
         if not 0 <= q_min <= q_max <= 100.0:
             raise ValueError(
-                "Quantile not in range, get {0:.1f} and {1:.1f}!".format(
-                    q_min, q_max))
+                "Quantile not in range, get {0:.1f} and {1:.1f}!".format(q_min, q_max)
+            )
 
         _X = X.copy(deep=self.deep_copy)
         n, p = _X.shape
@@ -360,7 +321,6 @@ class RobustScale:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=self.deep_copy)
 
         if self.with_centering:
@@ -370,26 +330,9 @@ class RobustScale:
 
         return _X
 
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        _X = X.copy(deep=self.deep_copy)
-
-        self.fit(_X, y)
-
-        self._fitted = True
-
-        _X = self.transform(_X)
-
-        return _X
-
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
@@ -405,7 +348,7 @@ class RobustScale:
         return X
 
 
-class MinMaxScale:
+class MinMaxScale(BaseScaling):
 
     """
     Use min_max value to scale the feature, x / (x_max - x_min)
@@ -423,6 +366,7 @@ class MinMaxScale:
         self.feature_range = feature_range
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
@@ -430,7 +374,6 @@ class MinMaxScale:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> MinMaxScale:
-
         _X = X.copy(deep=self.deep_copy)
         n, p = _X.shape
 
@@ -449,11 +392,9 @@ class MinMaxScale:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         f_min, f_max = self.feature_range
         if not f_min < f_max:
-            raise ValueError(
-                "Minimum of feature range must be smaller than maximum!")
+            raise ValueError("Minimum of feature range must be smaller than maximum!")
 
         _X = X.copy(deep=self.deep_copy)
         _X = (_X - self._min) / (np.array(self._max) - np.array(self._min))
@@ -461,26 +402,9 @@ class MinMaxScale:
 
         return _X
 
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        _X = X.copy(deep=self.deep_copy)
-
-        self.fit(_X, y)
-
-        self._fitted = True
-
-        _X = self.transform(_X)
-
-        return _X
-
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
@@ -488,8 +412,7 @@ class MinMaxScale:
 
         f_min, f_max = self.feature_range
         if not f_min < f_max:
-            raise ValueError(
-                "Minimum of feature range must be smaller than maximum!")
+            raise ValueError("Minimum of feature range must be smaller than maximum!")
 
         _X = X.copy(deep=True)
         _X = (_X - f_min) / (f_max - f_min)
@@ -500,7 +423,7 @@ class MinMaxScale:
         return _X
 
 
-class Winsorization:
+class Winsorization(BaseScaling):
 
     """
     Limit feature to certain quantile (remove the effect of extreme values)
@@ -526,14 +449,14 @@ class Winsorization:
         self.threshold = threshold
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
-    def fit(self, X: Union[pd.DataFrame, np.ndarray],
-            y: Union[pd.DataFrame, np.ndarray]) -> Winsorization:
-
+    def fit(
+        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+    ) -> Winsorization:
         if not isinstance(y, pd.DataFrame) and not isinstance(X, pd.Series):
-            warnings.warn(
-                "Method Winsorization requires response, but not getting it.")
+            warnings.warn("Method Winsorization requires response, but not getting it.")
 
         _X = X.copy(deep=self.deep_copy)
 
@@ -544,8 +467,8 @@ class Winsorization:
         for _column in features:
             quantile = np.nanquantile(_X[_column], self.quantile, axis=0)
             self._quantile_list.append(quantile)
-            _above_quantile = y[_X[_column] > quantile].mean()[0]
-            _below_quantile = y[_X[_column] <= quantile].mean()[0]
+            _above_quantile = y[_X[_column] > quantile].mean(axis=0)[0]
+            _below_quantile = y[_X[_column] <= quantile].mean(axis=0)[0]
             # deal with the case where above quantile do not exists
             if not _above_quantile:
                 _above_quantile = quantile
@@ -559,26 +482,9 @@ class Winsorization:
 
         return self
 
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        _X = X.copy(deep=self.deep_copy)
-
-        self.fit(_X, y)
-
-        self._fitted = True
-
-        _X = self.transform(_X)
-
-        return _X
-
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=self.deep_copy)
         features = list(_X.columns)
         i = 0
@@ -593,7 +499,7 @@ class Winsorization:
         return _X
 
 
-class PowerTransformer:
+class PowerTransformer(BaseScaling):
 
     """
     PowerTransformer, implemented by sklearn, is a transformer that applies
@@ -626,6 +532,7 @@ class PowerTransformer:
         self.standardize = standardize
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
@@ -633,7 +540,6 @@ class PowerTransformer:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> PowerTransformer:
-
         # check if the inputs are dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -660,25 +566,11 @@ class PowerTransformer:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return pd.DataFrame(self.mol.transform(X), columns=self.features)
-
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        self.fit(X, y)
-
-        self._fitted = True
-
-        return self.transform(X)
 
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
@@ -686,12 +578,10 @@ class PowerTransformer:
 
         self._fitted = False
 
-        return pd.DataFrame(
-            self.mol.inverse_transform(X),
-            columns=self.features)
+        return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
 
 
-class QuantileTransformer:
+class QuantileTransformer(BaseScaling):
 
     """
     QuantileTransformer, implemented by sklearn
@@ -727,6 +617,7 @@ class QuantileTransformer:
         self.random_state = random_state
         self.deep_copy = deep_copy
 
+        super().__init__()
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
@@ -734,7 +625,6 @@ class QuantileTransformer:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> QuantileTransformer:
-
         # check if the inputs are dataframe
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -767,35 +657,23 @@ class QuantileTransformer:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
-
+        if not (self.mol.feature_names_in_ == X.columns).all():
+            X = X[self.mol.feature_names_in_]
         return pd.DataFrame(self.mol.transform(X), columns=self.features)
-
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        self.fit(X, y)
-
-        self._fitted = True
-
-        return self.transform(X)
 
     def inverse_transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         if not self._fitted:
             raise ValueError(
                 "Model has not been fitted yet! Can't perform inverse transform."
             )
 
         self._fitted = False
+        if not (self.mol.feature_names_in_ == X.columns).all():
+            X = X[self.mol.feature_names_in_]
 
-        return pd.DataFrame(
-            self.mol.inverse_transform(X),
-            columns=self.features)
+        return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
 
 
 ##########################################################################
@@ -870,14 +748,16 @@ def Feature_Manipulation(
     if len(columns) != len(manipulation):
         raise ValueError(
             "Expect same length of columns and manipulation, get {} and {} respectively.".format(
-                len(columns), len(manipulation)))
+                len(columns), len(manipulation)
+            )
+        )
     manipulation = dict(zip(columns, manipulation))
 
     for _column in columns:
-
         # if observed in rename dict, change column names
         new_column_name = (
-            rename_columns[_column] if _column in rename_columns.keys() else _column)
+            rename_columns[_column] if _column in rename_columns.keys() else _column
+        )
 
         # if not replace, and new column names coincide with old column names
         # new column names = old column names + manipulation
@@ -902,7 +782,7 @@ def Feature_Manipulation(
 
 ##########################################################################
 # Feature Truncation
-class Feature_Truncation:
+class Feature_Truncation(BaseScaling):
 
     """
     Truncate feature to certain quantile (remove the effect of extreme values)
@@ -935,12 +815,13 @@ class Feature_Truncation:
         self.quantile = quantile
         self.deep_copy = deep_copy
 
+        super().__init__()
+
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Feature_Truncation:
-
         # make sure input is dataframe
         if not isinstance(X, pd.DataFrame):
             try:
@@ -964,8 +845,7 @@ class Feature_Truncation:
         self.quantile_list = {}
 
         for _column in self.columns:
-            quantile = np.nanquantile(
-                X[_column], self.quantile[_column], axis=0)
+            quantile = np.nanquantile(X[_column], self.quantile[_column], axis=0)
             self.quantile_list[_column] = quantile
 
         return self
@@ -973,7 +853,6 @@ class Feature_Truncation:
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=self.deep_copy)
 
         for _column in self.columns:
@@ -985,19 +864,5 @@ class Feature_Truncation:
                 _X.loc[
                     _X[_column] < self.quantile_list[_column], _column
                 ] = self.quantile_list[_column]
-
-        return _X
-
-    def fit_transform(
-        self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
-    ) -> Union[pd.DataFrame, np.ndarray]:
-
-        _X = X.copy(deep=self.deep_copy)
-
-        self.fit(X, y)
-
-        _X = self.transform(_X)
 
         return _X

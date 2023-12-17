@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/utils/metadata.py
 File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th December 2022 11:27:20 pm
+Last Modified: Wednesday, 12th July 2023 8:19:42 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,7 +47,7 @@ import warnings
 from typing import Any, Dict, Tuple, List
 from itertools import compress
 
-from InsurAutoML.constant import UNI_CLASS, UNIQUE_FULLTYPE
+from ..constant import UNI_CLASS, UNIQUE_FULLTYPE
 from .stats import merge_mean, merge_std, merge_dict
 
 # get subtype of int
@@ -67,7 +67,7 @@ def meta_map_object(data: pd.Series) -> str:
         return "Categorical"
     # judge by average length
     try:
-        txt_avg_len = pd.Series(data.unique()).str.split().str.len().mean()
+        txt_avg_len = pd.Series(data.unique()).str.split().str.len().mean(axis=0)
         if txt_avg_len >= 3:
             return "Text"
     except BaseException:
@@ -80,7 +80,6 @@ class get_details:
         self.subtype = subtype
 
     def get(self, data: pd.Series) -> Dict[Tuple, List] or dict:
-
         if self.type == "Float" or self.subtype == "Numerical":
             return self._get_details_numerical(data)
         elif self.subtype == "Categorical":
@@ -99,7 +98,6 @@ class get_details:
     # get details of numerical data
     @staticmethod
     def _get_details_numerical(data: pd.Series) -> Dict[str, np.ndarray]:
-
         return {
             "length": len(data),
             "mean": np.mean(data),
@@ -109,7 +107,9 @@ class get_details:
         }
 
     @staticmethod
-    def _merge_details_numerical(data: pd.Series, dict: Dict[str, np.ndarray]) -> Dict[str, np.ndarray]:
+    def _merge_details_numerical(
+        data: pd.Series, dict: Dict[str, np.ndarray]
+    ) -> Dict[str, np.ndarray]:
         # get length of two data
         _old_len, _new_len = dict["length"], len(data)
         # get mean of two data
@@ -119,7 +119,9 @@ class get_details:
         return {
             "length": _old_len + _new_len,
             "mean": merge_mean((_old_len, _old_mean), (_new_len, _new_mean)),
-            "std": merge_std((_old_len, _old_mean, _old_std), (_new_len, _new_mean, _new_std)),
+            "std": merge_std(
+                (_old_len, _old_mean, _old_std), (_new_len, _new_mean, _new_std)
+            ),
             "min": np.min(dict["min"], np.min(data)),
             "max": np.max(dict["max"], np.max(data)),
         }
@@ -130,14 +132,20 @@ class get_details:
         return {
             "unique_count": {
                 key: value for key, value in zip(*np.unique(data, return_counts=True))
-            }}
+            }
+        }
 
     @staticmethod
-    def _merge_details_categorical(data: pd.Series, dict: Dict[str, dict]) -> Dict[str, dict]:
+    def _merge_details_categorical(
+        data: pd.Series, dict: Dict[str, dict]
+    ) -> Dict[str, dict]:
         return {
             "unique_count": merge_dict(
-                dict["unique_count"], {key: value for key, value in zip(
-                    *np.unique(data, return_counts=True))}
+                dict["unique_count"],
+                {
+                    key: value
+                    for key, value in zip(*np.unique(data, return_counts=True))
+                },
             )
         }
 
@@ -151,7 +159,6 @@ class MetaData:
     _unique_fulltype = UNIQUE_FULLTYPE
 
     def __init__(self, data: Any = None) -> None:
-
         # if fed data, get metadata from data
         if data is not None:
             self.get(data)
@@ -171,8 +178,11 @@ class MetaData:
     # find the key of the name in metadata
     @staticmethod
     def _get_key(value, metadata):
-        _key = list(compress(list(metadata.keys()), [
-                    value in item for item in metadata.values()]))
+        _key = list(
+            compress(
+                list(metadata.keys()), [value in item for item in metadata.values()]
+            )
+        )
 
         if len(_key) != 1:
             raise ValueError("Expected 1 key, got {}.".format(len(_key)))
@@ -181,11 +191,9 @@ class MetaData:
 
     def _check_metadata(self):
         if not hasattr(self, "metadata"):
-            raise AttributeError(
-                "Metadata not generated yet. Please use get() first.")
+            raise AttributeError("Metadata not generated yet. Please use get() first.")
 
     def get(self, data: Any) -> Dict[Tuple, List] or dict:
-
         if isinstance(data, pd.DataFrame):
             return self.get_from_df(data)
         else:
@@ -194,7 +202,6 @@ class MetaData:
     def update(
         self, data: pd.DataFrame, names: List[str] = None
     ) -> Dict[Tuple, List] or dict:
-
         # check whether metadata generated
         self._check_metadata()
 
@@ -224,7 +231,9 @@ class MetaData:
 
         return self.metadata
 
-    def merge(self, data: pd.DataFrame, names: List[str] = None) -> Dict[Tuple, List] or dict:
+    def merge(
+        self, data: pd.DataFrame, names: List[str] = None
+    ) -> Dict[Tuple, List] or dict:
         # check whether metadata generated
         self._check_metadata()
 
@@ -243,11 +252,13 @@ class MetaData:
             # if the type/subtype is different, raise error
             if _type != type or _subtype != subtype:
                 raise TypeError(
-                    "Type/subtype mismatch. For feature {}, expected type/subtype is {}, but got {}.".format(name, _key, (type, subtype)))
+                    "Type/subtype mismatch. For feature {}, expected type/subtype is {}, but got {}.".format(
+                        name, _key, (type, subtype)
+                    )
+                )
 
             # get the details
-            details = get_details(type, subtype).merge(
-                data[name], self.details[_key])
+            details = get_details(type, subtype).merge(data[name], self.details[_key])
 
             # register the metadata
             self.register(name, (type, subtype), details)
@@ -257,7 +268,6 @@ class MetaData:
     def force_update(
         self, names: List[str] or str, fulltypes: List[Tuple[str, str]] or str
     ) -> Dict[Tuple, List] or dict:
-
         # check whether metadata generated
         self._check_metadata()
 
@@ -270,7 +280,9 @@ class MetaData:
         if len(names) != len(fulltypes):
             raise ValueError(
                 "Length of names and fulltypes must be the same. Got {} and {}.".format(
-                    len(names), len(fulltypes)))
+                    len(names), len(fulltypes)
+                )
+            )
 
         for name, fulltype in zip(names, fulltypes):
             # find the key of the name in metadata
@@ -288,12 +300,7 @@ class MetaData:
 
         return self.metadata
 
-    def register(
-            self,
-            name: str,
-            fulltype: dict,
-            details: dict = None) -> None:
-
+    def register(self, name: str, fulltype: dict, details: dict = None) -> None:
         # check whether metadata generated
         self._check_metadata()
 
@@ -311,30 +318,31 @@ class MetaData:
             self.details[name] = {}
 
     def _get_from_others(self, data: Any) -> Dict[Tuple, List] or dict:
-
         # convert to dataframe
         try:
             data = pd.DataFrame(data)
         except BaseException:
             raise TypeError(
                 "The input data type {} cannot be converted to a dataframe.".format(
-                    type(data)))
+                    type(data)
+                )
+            )
         data.columns = ["col_" + str(i) for i in range(data.shape[1])]
 
         return self.get_from_df(data)
 
     @staticmethod
     def _check_fulltype(metadata: dict, ref: list) -> None:
-
         for key in metadata.keys():
             if key not in ref:
                 raise TypeError(
                     "The fulltype {} is not supported. All supported fulltypes are {}".format(
-                        key, ref))
+                        key, ref
+                    )
+                )
 
     @staticmethod
     def _get_fulltype(data: pd.Series) -> str:
-
         _column = data.name  # get column name
         _dtype = data.dtypes  # get column dtype
 
@@ -345,7 +353,6 @@ class MetaData:
             subtype = meta_map_int(data)
         # Float
         elif "float" in str(_dtype):
-
             # in case int registed as float
             # if nan values, fillna first, since those values will not impact
             # our judgement
@@ -367,10 +374,9 @@ class MetaData:
             type = "Datetime"
             subtype = ""
         # Object
-        elif _dtype == "object":
-
+        elif _dtype in ["object", "category"]:
             # check if is path
-            if os.path.isfile(data[0]):
+            if os.path.isfile(data.iloc[0]):
                 type = "Path"
                 subtype = ""
 
@@ -386,14 +392,12 @@ class MetaData:
         return type, subtype
 
     def get_from_df(self, data: pd.DataFrame) -> Dict[Tuple, List] or dict:
-
         # initialize the metadata
         self.metadata = {}
         # initialize the details
         self.details = {}
 
         for _column in data.columns:
-
             # get type and subtype
             type, subtype = self._get_fulltype(data[_column])
 

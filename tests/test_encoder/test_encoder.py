@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_encoder/test_encoder.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:35:20 pm
+Last Modified: Saturday, 16th December 2023 5:33:16 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,7 +40,6 @@ SOFTWARE.
 
 
 def test_encoder_1():
-
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
@@ -55,7 +54,6 @@ def test_encoder_1():
 
 
 def test_encoder_2():
-
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
@@ -70,7 +68,6 @@ def test_encoder_2():
 
 
 def test_encoder_3():
-
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
@@ -85,7 +82,6 @@ def test_encoder_3():
 
 
 def test_encoder_4():
-
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 

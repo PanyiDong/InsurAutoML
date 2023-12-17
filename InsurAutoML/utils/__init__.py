@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/utils/__init__.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 6:36:00 pm
+Last Modified: Wednesday, 24th May 2023 11:12:27 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -38,24 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# try:
-#     from ._c import (
-#         random_guess,
-#         random_index,
-#         random_list,
-#         minloc,
-#         maxloc,
-#     )
-# except ImportError:
-#     from .base import (
-#         random_guess,
-#         random_index,
-#         random_list,
-#         minloc,
-#         maxloc,
-#     )
-# else:
-#     raise ImportError("Cannot import the C++ and Python extension.")
 
 from .base import (
     random_guess,

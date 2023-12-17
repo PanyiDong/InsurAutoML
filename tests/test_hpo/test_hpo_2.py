@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_hpo/test_hpo_2.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:35:39 pm
+Last Modified: Saturday, 16th December 2023 7:14:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,6 @@ from InsurAutoML import load_data
 
 
 def test_objective_6():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -89,8 +88,9 @@ def test_objective_6():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -100,8 +100,6 @@ def test_objective_6():
         model_name="obj_6",
         task_mode="classification",
         objective="hinge",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -121,7 +119,6 @@ def test_objective_6():
 
 
 def test_objective_7():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -168,8 +165,9 @@ def test_objective_7():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -179,8 +177,6 @@ def test_objective_7():
         model_name="obj_7",
         task_mode="classification",
         objective="f1",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -200,7 +196,6 @@ def test_objective_7():
 
 
 def test_objective_8():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -244,8 +239,9 @@ def test_objective_8():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -255,8 +251,6 @@ def test_objective_8():
         model_name="obj_8",
         task_mode="regression",
         objective="MSE",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -276,7 +270,6 @@ def test_objective_8():
 
 
 def test_objective_9():
-
     from InsurAutoML.hpo.utils import TabularObjective
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.imputation import SimpleImputer
@@ -320,8 +313,9 @@ def test_objective_9():
     )
     clf.setup(
         params,
-        _X=data[features],
-        _y=data[response],
+        data_split=[
+            [(data[features], data[response]), (data[features], data[response])]
+        ],
         encoder=encoder,
         imputer=imputer,
         balancing=balancing,
@@ -331,8 +325,6 @@ def test_objective_9():
         model_name="obj_9",
         task_mode="regression",
         objective="MAX",
-        validation=True,
-        valid_size=0.15,
         full_status=True,
         reset_index=True,
         _iter=1,

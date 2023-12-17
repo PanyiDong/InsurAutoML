@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_constant.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/constant.py
 File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 26th November 2022 12:40:39 am
+Last Modified: Sunday, 10th December 2023 11:13:54 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,6 +39,21 @@ SOFTWARE.
 """
 
 import logging
+
+
+class TimeoutException(Exception):
+    pass
+
+
+class TimeoutWarning(Warning):
+    def __init__(self, message):
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
+
+
+MAX_ERROR_TRIALOUT = 8
 
 LOGGINGLEVEL = [logging.ERROR, logging.WARNING, logging.INFO, logging.DEBUG]
 
@@ -185,6 +200,9 @@ REGRESSORS = [
     "RNN_Regressor",
 ]
 
+# proportion of unique values in a column to be considered as regression problem
+PROP_UNIQUE = 0.1
+
 # maximum unique classes determined as categorical variable
 # 31 is capped by days in a month
 UNI_CLASS = 31
@@ -193,15 +211,14 @@ UNI_CLASS = 31
 MAX_ITER = 1024
 
 # maximum time budge allowed per run (in seconds)
-# set at 3 days
-MAX_TIME = 259200
+# set at 10 days
+MAX_TIME = 3600 * 24 * 10
 
 # LightGBM default object (metric/loss)
 # binary classification
 LIGHTGBM_BINARY_CLASSIFICATION = ["binary", "cross_entropy"]
 # multiclass classification
-LIGHTGBM_MULTICLASS_CLASSIFICATION = [
-    "multiclass", "multiclassova", "num_class"]
+LIGHTGBM_MULTICLASS_CLASSIFICATION = ["multiclass", "multiclassova", "num_class"]
 # regression
 LIGHTGBM_REGRESSION = [
     "regression",

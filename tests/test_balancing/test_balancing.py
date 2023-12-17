@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_balancing/test_balancing.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:36:24 pm
+Last Modified: Saturday, 16th December 2023 5:33:08 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -55,16 +55,12 @@ data_y = pd.DataFrame(
 
 class TestScaling(unittest.TestCase):
     def test_Scaling(self):
-
         self.method_dict = balancings
         self.method_names = list(self.method_dict.keys())
         self.method_objects = list(self.method_dict.values())
 
-        for method_name, method_object in zip(
-                self.method_names, self.method_objects):
-
+        for method_name, method_object in zip(self.method_names, self.method_objects):
             if method_name != "no_processing":
-
                 mol = method_object(imbalance_threshold=0.8)
                 mol.fit_transform(data_X, data_y)
 
@@ -72,6 +68,5 @@ class TestScaling(unittest.TestCase):
                 self.assertEqual(
                     mol._fitted,
                     True,
-                    "The method {} is not correctly fitted.".format(
-                        method_name),
+                    "The method {} is not correctly fitted.".format(method_name),
                 )

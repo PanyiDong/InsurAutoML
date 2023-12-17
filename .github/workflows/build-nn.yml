@@ -10,6 +10,8 @@ jobs:
       PYTHON: "3.9"
     steps:
       - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
       - name: Setup Python
         uses: actions/setup-python@master
         with:

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_feature_selection/test_feature_selection.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 7:31:49 pm
+Last Modified: Saturday, 16th December 2023 5:33:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,7 +44,6 @@ from InsurAutoML.feature_selection import feature_selections
 
 
 def test_feature_selection():
-
     # loop through all feature selection methods
     for method_name, method in zip(
         feature_selections.keys(), feature_selections.values()
@@ -53,11 +52,7 @@ def test_feature_selection():
         X = data.iloc[:, :-1]
         y = data.iloc[:, -1]
 
-        if method_name in [
-            "FeatureFilter",
-            "ASFFS",
-            "GeneticAlgorithm",
-                "RBFSampler"]:
+        if method_name in ["FeatureFilter", "ASFFS", "GeneticAlgorithm", "RBFSampler"]:
             pass
         elif method_name == "SFS":
             feature_selection = method(
@@ -120,7 +115,6 @@ def test_feature_selection():
 
 
 def test_FeatureFilter():
-
     from InsurAutoML.feature_selection import FeatureFilter
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
@@ -149,7 +143,6 @@ def test_FeatureFilter():
 
 
 def test_ASFFS():
-
     from InsurAutoML.feature_selection import ASFFS
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
@@ -185,7 +178,6 @@ def test_ASFFS():
 
 
 def test_GA():
-
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.feature_selection import GeneticAlgorithm
 
@@ -240,7 +232,6 @@ def test_GA():
 
 
 def test_FOCI():
-
     from InsurAutoML.feature_selection.filter import FOCI
 
     data = pd.read_csv("Appendix/Medicalpremium.csv")
@@ -256,7 +247,6 @@ def test_FOCI():
 
 
 def test_ExhaustiveFS():
-
     from InsurAutoML.feature_selection.wrapper import ExhaustiveFS
     from sklearn.linear_model import Ridge
 

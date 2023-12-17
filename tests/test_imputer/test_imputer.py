@@ -82,15 +82,12 @@ import pandas as pd
 
 
 def test_imputer():
-
     from InsurAutoML.imputation import imputers
     from InsurAutoML.utils import formatting
 
     for method_name, method_object in zip(imputers.keys(), imputers.values()):
-
         imputer = method_object()
         if method_name != "KNNImputer":
-
             data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
 
             encoder = formatting()
@@ -98,9 +95,9 @@ def test_imputer():
 
             data = imputer.fill(data)
 
-            assert (
-                imputer._fitted
-            ), "The method {} is not correctly fitted.".format(method_name)
+            assert imputer._fitted, "The method {} is not correctly fitted.".format(
+                method_name
+            )
             assert (
                 data.isnull().any().any() == False
             ), "The imputation method {} fail to impute all missings.".format(
@@ -109,7 +106,6 @@ def test_imputer():
 
 
 def test_DummyImputer():
-
     from InsurAutoML.imputation import DummyImputer
 
     data = pd.DataFrame(
@@ -136,7 +132,6 @@ def test_DummyImputer():
 
 
 def test_kNNImputer():
-
     from InsurAutoML.imputation import KNNImputer
 
     data = pd.DataFrame(

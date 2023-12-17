@@ -1,17 +1,17 @@
 """
-File Name: _gam.py
+File Name: gam.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/_model/_gam.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/model/gam.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 14th November 2022 8:15:04 pm
+Last Modified: Thursday, 20th July 2023 5:52:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,9 +43,10 @@ from __future__ import annotations
 from typing import Union
 import numpy as np
 import pandas as pd
+from .base import BaseModel
 
 
-class GAM_Classifier:
+class GAM_Classifier(BaseModel):
     def __init__(
         self,
         type: str = "logistic",
@@ -54,6 +55,7 @@ class GAM_Classifier:
         self.type = type
         self.tol = tol
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -61,7 +63,6 @@ class GAM_Classifier:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> GAM_Classifier:
-
         if self.type == "logistic":
             from pygam import LogisticGAM
 
@@ -76,17 +77,18 @@ class GAM_Classifier:
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return self.model.predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
+        # GAM returns 1d array for binary classification
+        # need to add a dimension to make it 2d array
+        _result = self.model.predict_proba(X)
+        return np.array([1 - _result, _result]).T  # need 2d array
 
-        return self.model.predict_proba(X)
 
-
-class GAM_Regressor:
+class GAM_Regressor(BaseModel):
     def __init__(
         self,
         type: str = "linear",
@@ -95,6 +97,7 @@ class GAM_Regressor:
         self.type = type
         self.tol = tol
 
+        super().__init__()
         self._fitted = False
 
     def fit(
@@ -102,7 +105,6 @@ class GAM_Regressor:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> GAM_Regressor:
-
         if self.type == "linear":
             from pygam import LinearGAM
 
@@ -129,12 +131,9 @@ class GAM_Regressor:
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         return self.model.predict(X)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
-        raise NotImplementedError(
-            "predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")

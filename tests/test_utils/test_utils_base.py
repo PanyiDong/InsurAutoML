@@ -43,7 +43,6 @@ import pandas as pd
 
 
 def test_load_data():
-
     from InsurAutoML import load_data
 
     data = load_data().load("Appendix", "insurance")
@@ -60,7 +59,6 @@ def test_load_data():
 
 
 def test_random_guess():
-
     from InsurAutoML.utils.base import random_guess
 
     assert random_guess(1) == 1, "random_guess(1) should be 1, get {}".format(
@@ -75,7 +73,6 @@ def test_random_guess():
 
 
 def test_random_index():
-
     from InsurAutoML.utils.base import random_index
 
     assert (
@@ -86,7 +83,6 @@ def test_random_index():
 
 
 def test_random_list():
-
     from InsurAutoML.utils.base import random_list
 
     assert (
@@ -97,7 +93,6 @@ def test_random_list():
 
 
 def test_is_date():
-
     from InsurAutoML.utils.base import is_date
 
     test = pd.DataFrame(
@@ -113,12 +108,10 @@ def test_is_date():
         }
     )
 
-    assert is_date(
-        test, rule="all"), "The is_date method is not correctly done."
+    assert is_date(test, rule="all"), "The is_date method is not correctly done."
 
 
 def test_feature_rounding():
-
     from InsurAutoML.utils.base import feature_rounding
 
     test = pd.DataFrame(
@@ -136,12 +129,11 @@ def test_feature_rounding():
     )
 
     assert (
-        feature_rounding(test) == target_data
-    ).all().all(), "The feature_rounding method is not correctly done."
+        (feature_rounding(test) == target_data).all().all()
+    ), "The feature_rounding method is not correctly done."
 
 
 def test_timer():
-
     from InsurAutoML.utils.base import Timer
     import time
 
@@ -154,12 +146,10 @@ def test_timer():
     timer.stop()
 
     assert timer.sum() / timer.avg() == 2.0, "The timer is not correctly done."
-    assert timer.cumsum(
-    )[-1] == timer.sum(), "The timer is not correctly done."
+    assert timer.cumsum()[-1] == timer.sum(), "The timer is not correctly done."
 
 
 def test_minloc():
-
     from InsurAutoML.utils.base import minloc
 
     assert (
@@ -168,7 +158,6 @@ def test_minloc():
 
 
 def test_maxloc():
-
     from InsurAutoML.utils.base import maxloc
 
     assert (
@@ -177,7 +166,6 @@ def test_maxloc():
 
 
 def test_True_index():
-
     from InsurAutoML.utils.base import True_index
 
     assert True_index([True, False, 1, 0, "hello", 5]) == [
@@ -189,7 +177,6 @@ def test_True_index():
 
 
 def test_type_of_script():
-
     from InsurAutoML.utils.base import type_of_script
 
     assert (
@@ -198,19 +185,16 @@ def test_type_of_script():
 
 
 def test_has_method():
-
     from InsurAutoML.utils.base import has_method
     from sklearn.linear_model import LogisticRegression
 
     mol = LogisticRegression()
 
     assert has_method(mol, "fit"), "The has_method function is not correct."
-    assert has_method(
-        mol, "__fit") == False, "The has_method function is not correct."
+    assert has_method(mol, "__fit") == False, "The has_method function is not correct."
 
 
 def test_is_none():
-
     from InsurAutoML.utils.base import is_none
 
     assert is_none(None), "The is_none function is not correct."
@@ -218,15 +202,14 @@ def test_is_none():
 
 
 def test_format_hyper_dict():
-
     from InsurAutoML.utils.base import format_hyper_dict
 
     input = {"encoder": "encoder", "n_estimators": 2}
     expected = {"encoder_1": "encoder", "encoder_n_estimators": 2}
 
     assert (
-        format_hyper_dict(input, 1, ref="encoder",
-                          search_algo="RandomSearch") == input
+        format_hyper_dict(input, 1, ref="encoder", search_algo="RandomSearch") == input
     ), "The format_hyper_dict function is not correct."
-    assert (format_hyper_dict(input, 1, ref="encoder", search_algo="HyperOpt")
-            == expected), "The format_hyper_dict function is not correct."
+    assert (
+        format_hyper_dict(input, 1, ref="encoder", search_algo="HyperOpt") == expected
+    ), "The format_hyper_dict function is not correct."

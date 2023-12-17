@@ -49,4 +49,5 @@ __all__ = [
     "AutoTabularClassifier",
     "AutoTabularRegressor",
     "AutoTextClassifier",
-    "AutoNextWordPrediction"]
+    "AutoNextWordPrediction",
+]

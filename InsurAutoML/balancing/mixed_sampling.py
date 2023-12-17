@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/mixed_sampling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:18 pm
+Last Modified: Friday, 1st December 2023 8:21:13 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -45,7 +45,8 @@ import numpy as np
 import pandas as pd
 import warnings
 
-from InsurAutoML.utils.data import is_imbalance
+from ..constant import MAX_ITER
+from ..utils.data import is_imbalance
 from .over_sampling import Smote
 from .under_sampling import TomekLink, EditedNearestNeighbor
 
@@ -69,16 +70,16 @@ class Smote_TomekLink(Smote, TomekLink):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
+        all: bool = True,
+        max_iter: int = None,
         k: int = 5,
         generation: str = "mean",
-        seed: int = 1,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed
         self.k = k
         self.generation = generation
@@ -88,7 +89,6 @@ class Smote_TomekLink(Smote, TomekLink):
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -147,16 +147,16 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
         k: int = 5,
         generation: str = "mean",
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
         self.seed = seed
         self.k = k
         self.generation = generation
@@ -166,7 +166,6 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:

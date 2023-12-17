@@ -43,7 +43,6 @@ import numpy as np
 
 
 def test_save_model():
-
     from InsurAutoML.utils.file import save_model
 
     save_model(
@@ -66,7 +65,6 @@ def test_save_model():
 
 
 def test_EDA():
-
     from InsurAutoML.utils.eda import EDA
     from InsurAutoML.datasets import PROD, HEART
 
@@ -74,21 +72,18 @@ def test_EDA():
 
     EDA(features, plot=False)
 
-    assert os.path.exists(
-        "tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
     assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
 
     features, label = HEART()
 
     EDA(features, label, plot=False)
 
-    assert os.path.exists(
-        "tmp/EDA/data_type.csv"), "EDA data type not created."
+    assert os.path.exists("tmp/EDA/data_type.csv"), "EDA data type not created."
     assert os.path.exists("tmp/EDA/summary.txt"), "EDA summary not created."
 
 
 def test_feature_type():
-
     from InsurAutoML.utils.data import feature_type
     from InsurAutoML.datasets import PROD, HEART
 
@@ -97,20 +92,17 @@ def test_feature_type():
     for column in data.columns:
         data_type[column] = feature_type(data[column])
 
-    assert isinstance(
-        data_type, dict), "The feature_type function is not correct."
+    assert isinstance(data_type, dict), "The feature_type function is not correct."
 
     data, label = HEART()
     data_type = {}
     for column in data.columns:
         data_type[column] = feature_type(data[column])
 
-    assert isinstance(
-        data_type, dict), "The feature_type function is not correct."
+    assert isinstance(data_type, dict), "The feature_type function is not correct."
 
 
 def test_plotHighDimCluster():
-
     from InsurAutoML.utils.data import plotHighDimCluster
 
     X = np.random.randint(0, 100, size=(1000, 200))
@@ -124,7 +116,6 @@ def test_plotHighDimCluster():
 
 
 def test_word2vec():
-
     from InsurAutoML.datasets import PROD
     from InsurAutoML.utils.data import text2vec
 

@@ -40,7 +40,6 @@ SOFTWARE.
 
 
 def test_load_data():
-
     from InsurAutoML.base import load_data
     import importlib
 

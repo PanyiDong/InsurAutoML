@@ -41,7 +41,7 @@ SOFTWARE.
 ##########################################################################
 # classifiers
 
-from .sklearn import (
+from .sklearn_classifiers import (
     # sklearn classifiers
     AdaboostClassifier,
     BernoulliNB,
@@ -59,6 +59,12 @@ from .sklearn import (
     QDA,
     RandomForestClassifier,
     SGDClassifier,
+    LogisticRegression,
+    # ComplementNB,
+    # HistGradientBoostingClassifier,
+    GradientBoostingClassifier,
+)
+from .sklearn_regressors import (
     # sklearn regressors
     AdaboostRegressor,
     ARDRegression,
@@ -72,12 +78,6 @@ from .sklearn import (
     MLPRegressor,
     RandomForestRegressor,
     SGDRegressor,
-    # sklearn classifiers
-    LogisticRegression,
-    # ComplementNB,
-    # HistGradientBoostingClassifier,
-    GradientBoostingClassifier,
-    # sklearn regressors
     LinearRegression,
     Lasso,
     Ridge,
@@ -87,6 +87,7 @@ from .sklearn import (
     GradientBoostingRegressor,
 )
 import importlib
+
 classifiers = {
     # self-defined models
 }

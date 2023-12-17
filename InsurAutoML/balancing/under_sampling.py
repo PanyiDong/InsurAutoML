@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/balancing/under_sampling.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:41:09 pm
+Last Modified: Thursday, 14th December 2023 9:58:03 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -40,14 +40,17 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import Union, Tuple, Callable
 import numpy as np
 import pandas as pd
 import warnings
 import sklearn
 import sklearn.utils
 
-from InsurAutoML.utils.data import is_imbalance, LinkTable
+from ..constant import MAX_ITER
+from .base import BaseBalancing
+from ..utils.base import type_of_task
+from ..utils.data import is_imbalance, LinkTable
 
 """
 Reference for: Simple Random Over Sampling, Simple Random Under Sampling, Tomek Link, \
@@ -59,7 +62,7 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 """
 
 
-class SimpleRandomUnderSampling:
+class SimpleRandomUnderSampling(BaseBalancing):
 
     """
     Simple Random Under-Sampling
@@ -69,9 +72,9 @@ class SimpleRandomUnderSampling:
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -80,21 +83,21 @@ class SimpleRandomUnderSampling:
     def __init__(
         self,
         imbalance_threshold: float = 0.9,
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -131,33 +134,32 @@ class SimpleRandomUnderSampling:
     def _fit_transform(
         self,
         X: pd.DataFrame,
-    ) -> pd.DataFrame:  # using random over-sampling to balance the first imbalanced feature
-
-        features = list(X.columns)
+    ) -> (
+        pd.DataFrame
+    ):  # using random over-sampling to balance the first imbalanced feature
+        n, features = len(X), list(X.columns)
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
-        _seed = self.seed
-        _iter = 0
+        _majority_class = X.loc[X[_imbalanced_feature] == _majority]
 
-        while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
-            and _iter <= self.max_iter
-        ):
-            _majority_class = X.loc[X[_imbalanced_feature] == _majority]
-            sample = _majority_class.sample(n=1, random_state=_seed)
-            X = X.drop(sample.index)
-            _seed += 1
-            _iter += 1
-        X = sklearn.utils.shuffle(
-            X.reset_index(
-                drop=True)).reset_index(
-            drop=True)
+        # calculate the number of samples needed to be removed
+        # n_minority = n - len(_majority_class)
+        # n_majority_removed = max(1, int(n - n_minority / self.imbalance_threshold))
+        n_majority_removed = max(1, int(len(_majority_class) / 20))
+
+        # randomly remove samples from majority class
+        sample = _majority_class.sample(
+            n=n_majority_removed, random_state=self.seed, replace=True
+        )
+        X = X.drop(sample.index)
+        # shuffle the data
+        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
 
         return X
 
 
-class TomekLink:
+class TomekLink(BaseBalancing):
 
     """
     Use Tomek Links to remove noisy or border significant majority class sample
@@ -170,9 +172,9 @@ class TomekLink:
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -182,22 +184,22 @@ class TomekLink:
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -244,7 +246,9 @@ class TomekLink:
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _minority_sample = _minority_class.sample(
-                n=max(int(len(_minority_class) / 100), 1), random_state=_seed
+                n=max(int(len(_minority_class) / 20), 1),
+                random_state=_seed,
+                replace=True,
             )
             _link_table = LinkTable(_minority_sample, X, self.norm)
             drop_index = []
@@ -263,7 +267,7 @@ class TomekLink:
         return X
 
 
-class EditedNearestNeighbor:
+class EditedNearestNeighbor(BaseBalancing):
 
     """
     Edited Nearest Neighbor (ENN)
@@ -276,9 +280,9 @@ class EditedNearestNeighbor:
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -290,24 +294,24 @@ class EditedNearestNeighbor:
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
         k: int = 3,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
         self.k = k
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -329,7 +333,9 @@ class EditedNearestNeighbor:
         if (self.k % 2) == 0:
             warnings.warn(
                 "Criteria of majority better select odd k nearest neighbors, get {}.".format(
-                    self.k))
+                    self.k
+                )
+            )
 
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
@@ -348,7 +354,6 @@ class EditedNearestNeighbor:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
@@ -363,18 +368,17 @@ class EditedNearestNeighbor:
             _majority_index = _majority_class.index
             _sample = X.sample(n=1, random_state=_seed)
             _sample_type = (
-                "majority" if (
-                    _sample.index[0] in _majority_index) else "minority")
+                "majority" if (_sample.index[0] in _majority_index) else "minority"
+            )
             _link_table = LinkTable(_sample, X, self.norm)
             for _link_item in _link_table:
                 _k_nearest = [
                     _link_item.index(item)
-                    for item in sorted(_link_item)[1: (self.k + 1)]
+                    for item in sorted(_link_item)[1 : (self.k + 1)]
                 ]
                 count = 0
                 for _index in _k_nearest:
-                    _class = "majority" if (
-                        _index in _majority_index) else "minority"
+                    _class = "majority" if (_index in _majority_index) else "minority"
                     if _class == _sample_type:
                         count += 1
                 if count < (self.k + 1) / 2:
@@ -383,10 +387,9 @@ class EditedNearestNeighbor:
                     if _sample_type == "majority":
                         X = X.drop(_sample.index).reset_index(drop=True)
                     else:
-                        X = X.drop(
-                            _link_item.index(
-                                sorted(_link_item)[1])).reset_index(
-                            drop=True)
+                        X = X.drop(_link_item.index(sorted(_link_item)[1])).reset_index(
+                            drop=True
+                        )
             _seed += 1
             _iter += 1
 
@@ -400,7 +403,7 @@ class EditedNearestNeighbor:
         return X
 
 
-class CondensedNearestNeighbor:
+class CondensedNearestNeighbor(BaseBalancing):
 
     """
     Condensed Nearest Neighbor Rule (CNN)
@@ -412,9 +415,9 @@ class CondensedNearestNeighbor:
     ----------
     imbalance_threshold: determine to what extent will the data be considered as imbalanced data, default = 0.9
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -423,21 +426,21 @@ class CondensedNearestNeighbor:
     def __init__(
         self,
         imbalance_threshold: float = 0.9,
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
 
+        super().__init__()
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -471,13 +474,30 @@ class CondensedNearestNeighbor:
         else:
             return _data
 
+    @staticmethod
+    def _get_initial_neigh(X: pd.DataFrame) -> Callable:
+        _type = type_of_task(X)
+        if _type in ["binary", "multiclass"]:
+            from sklearn.neighbors import KNeighborsClassifier
+
+            return KNeighborsClassifier
+        elif _type in ["continuous", "integer"]:
+            from sklearn.neighbors import KNeighborsRegressor
+
+            return KNeighborsRegressor
+        else:
+            raise ValueError(
+                'Not recognizing type, only ["binary", "multiclass", "integer", "continuous"] accepted, get {}!'.format(
+                    type
+                )
+            )
+
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-
-        from sklearn.neighbors import KNeighborsClassifier
-
         _imbalanced_feature, _majority = is_imbalance(
             X, self.imbalance_threshold, value=True
         )
+        ini_neigh = self._get_initial_neigh(X[_imbalanced_feature])
+
         _seed = self.seed
         _iter = 0
 
@@ -488,22 +508,25 @@ class CondensedNearestNeighbor:
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
             _subset = pd.concat(
-                [_minority_class, _majority_class.sample(
-                    n=1, random_state=_seed)]
+                [_minority_class, _majority_class.sample(n=1, random_state=_seed)]
             ).reset_index(drop=True)
-            neigh = KNeighborsClassifier(n_neighbors=1)
+            neigh = ini_neigh(n_neighbors=1)
             neigh.fit(
                 _subset.loc[:, _subset.columns != _imbalanced_feature],
                 _subset[_imbalanced_feature],
             )
-            y_predict = neigh.predict(X.loc[~X.index.isin(
-                list(_subset.index)), X.columns != _imbalanced_feature])
-            y_true = X.loc[~X.index.isin(
-                list(_subset.index)), X.columns == _imbalanced_feature].values.T[0]
-            _not_matching_index = np.where(
-                (np.array(y_predict) != np.array(y_true)))[0]
-            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]
-                          ).reset_index(drop=True)
+            y_predict = neigh.predict(
+                X.loc[
+                    ~X.index.isin(list(_subset.index)), X.columns != _imbalanced_feature
+                ]
+            )
+            y_true = X.loc[
+                ~X.index.isin(list(_subset.index)), X.columns == _imbalanced_feature
+            ].values.T[0]
+            _not_matching_index = np.where((np.array(y_predict) != np.array(y_true)))[0]
+            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]).reset_index(
+                drop=True
+            )
             _seed += 1
             _iter += 1
 
@@ -524,9 +547,9 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -536,22 +559,21 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:
@@ -611,9 +633,9 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
     norm: how the distance between different samples calculated, default = 'l2'
     all supported norm ['l1', 'l2']
 
-    all: whether to stop until all features are balanced, default = False
+    all: whether to stop until all features are balanced, default = True
 
-    max_iter: Maximum number of iterations for over-/under-sampling, default = 1000
+    max_iter: Maximum number of iterations for over-/under-sampling, default = 1024
 
     seed: random seed, default = 1
     every random draw from the majority class will increase the random seed by 1
@@ -623,22 +645,21 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         self,
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
-        all: bool = False,
-        max_iter: int = 1000,
-        seed: int = 1,
+        all: bool = True,
+        max_iter: int = None,
+        seed: int = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
         self.all = all
-        self.max_iter = max_iter
-        self.seed = seed
+        self.max_iter = max_iter if max_iter is not None else MAX_ITER
+        self.seed = seed if seed is not None else 1
 
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
         self, X: pd.DataFrame, y: pd.DataFrame = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
-
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
             _empty = y.empty
         except AttributeError:

@@ -1,17 +1,17 @@
 """
-File Name: _base.py
+File Name: base.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
-Relative Path: /InsurAutoML/imputation/_base.py
+Latest Version: 0.2.5
+Relative Path: /InsurAutoML/imputation/base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:20:10 pm
+Last Modified: Wednesday, 12th July 2023 8:19:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -44,10 +44,20 @@ from typing import Union
 import numpy as np
 import pandas as pd
 
-from InsurAutoML.utils import nan_cov
+from ..utils import nan_cov
 
 
-class SimpleImputer:
+class BaseImputer:
+    def __init__(self) -> None:
+        pass
+
+    def fill(
+        self, X: Union[pd.DataFrame, np.ndarray]
+    ) -> Union[pd.DataFrame, np.ndarray]:
+        raise NotImplementedError
+
+
+class SimpleImputer(BaseImputer):
 
     """
     Simple Imputer to fill nan values
@@ -66,12 +76,12 @@ class SimpleImputer:
     def __init__(self, method: str = "mean") -> None:
         self.method = method
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=True)
 
         if _X.isnull().values.any():
@@ -84,9 +94,7 @@ class SimpleImputer:
 
         return _X
 
-    def _fill(self, X: Union[pd.Series, np.ndarray]
-              ) -> Union[pd.Series, np.ndarray]:
-
+    def _fill(self, X: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
         if self.method == "mean":
             X = X.fillna(np.nanmean(X))
         elif self.method == "zero":
@@ -101,7 +109,7 @@ class SimpleImputer:
         return X
 
 
-class DummyImputer:
+class DummyImputer(BaseImputer):
 
     """
     Create dummy variable for nan values and fill the original feature with 0
@@ -133,12 +141,12 @@ class DummyImputer:
         self.threshold = threshold
         self.method = method
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=True)
 
         if _X.isnull().values.any():
@@ -151,13 +159,12 @@ class DummyImputer:
     def _fill(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         features = list(X.columns)
 
         for _column in features:
             if X[_column].isnull().values.any():
-                _mean_nan = y[X[_column].isnull()].mean()
-                _mean_non_nan = y[~X[_column].isnull()].mean()
+                _mean_nan = y[X[_column].isnull()].mean(axis=0)
+                _mean_non_nan = y[~X[_column].isnull()].mean(axis=0)
                 if abs(_mean_nan / _mean_non_nan - 1) >= self.threshold:
                     X[_column + "_nan"] = X[_column].isnull().astype(int)
                     X[_column] = X[_column].fillna(0)
@@ -167,8 +174,7 @@ class DummyImputer:
                     elif self.method == "zero":
                         X[_column] = X[_column].fillna(0)
                     elif self.method == "median":
-                        X[_column] = X[_column].fillna(
-                            np.nanmedian(X[_column]))
+                        X[_column] = X[_column].fillna(np.nanmedian(X[_column]))
                     elif self.method == "most frequent":
                         X[_column] = X[_column].fillna(
                             X[_column].value_counts().index[0]
@@ -179,7 +185,7 @@ class DummyImputer:
         return X
 
 
-class JointImputer:
+class JointImputer(BaseImputer):
 
     """
     Impute the missing values assume a joint distribution, default as multivariate Gaussian distribution
@@ -188,12 +194,12 @@ class JointImputer:
     def __init__(self, kernel: str = "normal") -> None:
         self.kernel = kernel
 
+        super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         _X = X.copy(deep=True)
 
         if _X.isnull().values.any():
@@ -206,7 +212,6 @@ class JointImputer:
     def _fill(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-
         rows = list(X.index)
         for _row in rows:
             if X.loc[_row, :].isnull().values.any():
@@ -256,6 +261,7 @@ class JointImputer:
         _sigma = _sigma_11 - _sigma_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
 
         X.loc[row_index, X.loc[row_index, :].isnull()] = np.random.multivariate_normal(
-            mean=_mu, cov=_sigma, size=(X.loc[row_index, :].isnull().values.sum(), 1))
+            mean=_mu, cov=_sigma, size=(X.loc[row_index, :].isnull().values.sum(), 1)
+        )
 
         return X.loc[row_index, :]

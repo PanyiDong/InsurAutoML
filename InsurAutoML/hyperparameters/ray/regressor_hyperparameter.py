@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /InsurAutoML/hyperparameters/ray/regressor_hyperparameter.py
 File: _regressor_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:07 pm
+Last Modified: Sunday, 3rd December 2023 11:25:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,12 +49,12 @@ SOFTWARE.
 
 from ray import tune
 
-from InsurAutoML.constant import (
+from ...constant import (
     LIGHTGBM_REGRESSION,
     LIGHTGBM_BOOSTING,
     LIGHTGBM_TREE_LEARNER,
 )
-from InsurAutoML.utils.base import format_hyper_dict
+from ...utils.base import format_hyper_dict
 
 ADABOOSTREGRESSOR = {
     "model": "AdaboostRegressor",
@@ -77,9 +77,8 @@ ARDREGRESSION = {
 }
 DECISIONTREE = {
     "model": "DecisionTree",
-    "criterion": tune.choice(
-        ["squared_error", "friedman_mse", "absolute_error", "poisson"]
-    ),
+    # "absolute_error" slow the training process and cannot be stopped by signal timeout
+    "criterion": tune.choice(["squared_error", "friedman_mse", "poisson"]),
     "max_features": tune.choice([1.0]),
     "max_depth_factor": tune.uniform(0.0, 2.0),
     "min_samples_split": tune.qrandint(2, 20, 1),
@@ -178,7 +177,8 @@ MLPREGRESSOR = {
 }
 RANDOMFOREST = {
     "model": "RandomForest",
-    "criterion": tune.choice(["squared_error", "absolute_error", "poisson"]),
+    # "absolute_error" slow the training process and cannot be stopped by signal timeout
+    "criterion": tune.choice(["squared_error", "friedman_mse", "poisson"]),
     "max_features": tune.uniform(0.1, 1.0),
     "max_depth": tune.choice([None]),
     "min_samples_split": tune.qrandint(2, 20, 1),
@@ -305,14 +305,19 @@ LIGHTGBMREGRESSOR = {
     "model": "LightGBM_Regressor",
     "objective": tune.choice(LIGHTGBM_REGRESSION),
     "boosting": tune.choice(LIGHTGBM_BOOSTING),
-    "n_estimators": tune.qlograndint(50, 500, 1),
+    # same as num_iterations
+    # "n_estimators": tune.qlograndint(50, 500, 1),
     # max_depth == -1 for no limit
     "max_depth": tune.randint(-1, 31),
     "num_leaves": tune.qlograndint(3, 2047, 1),
     "min_data_in_leaf": tune.qrandint(1, 20, 1),
-    "learning_rate": tune.loguniform(1e-7, 1),
+    "learning_rate": tune.loguniform(1e-4, 1),
     "tree_learner": tune.choice(LIGHTGBM_TREE_LEARNER),
     "num_iterations": tune.qlograndint(50, 500, 1),
+    "min_gain_to_split": tune.loguniform(1e-8, 1),
+    "early_stopping_round": tune.randint(1, 200),
+    "max_bin": tune.qlograndint(3, 1024, 1),
+    "feature_fraction": tune.uniform(0.1, 1),
 }
 XGBOOSTREGRESSOR = {
     "model": "XGBoost_Regressor",
