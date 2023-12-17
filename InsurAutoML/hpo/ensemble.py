@@ -11,7 +11,7 @@ File Created: Friday, 1st December 2023 6:43:44 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th December 2023 5:28:20 pm
+Last Modified: Saturday, 16th December 2023 7:42:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -310,17 +310,7 @@ class ClassifierEnsemble(formatting):
                     np.average(prob_list, axis=0, weights=self.weights), axis=1
                 )
             elif self.strategy == "boosting":
-                pred = np.argmax(
-                    np.array(
-                        [
-                            weight * prob
-                            for weight, prob in zip(
-                                self.weights, np.sum(prob_list, axis=0)
-                            )
-                        ]
-                    ),
-                    axis=1,
-                )
+                pred = np.sum(np.average(prob_list, axis=0), axis=1)
 
         # make sure all predictions are seen
         if isinstance(pred, pd.DataFrame):

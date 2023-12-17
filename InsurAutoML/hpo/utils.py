@@ -11,7 +11,7 @@ File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th December 2023 1:15:05 am
+Last Modified: Saturday, 16th December 2023 7:19:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -96,7 +96,9 @@ class TabularObjective(tune.Trainable):
         self._iter = _iter
         self.seed = seed
 
-        if isinstance(data_split[0][0][0], pd.DataFrame):
+        if data_split is None:
+            pass
+        elif isinstance(data_split[0][0][0], pd.DataFrame):
             self.dict2config(config)
 
         self._logger = setup_logger(__name__, "stdout.log")
@@ -415,7 +417,7 @@ class TabularObjective(tune.Trainable):
             if hasattr(self.objective, "__name__")
             else self.objective
         )
-        if objective_str.lower() in ["hinge", "auc"]:
+        if objective_str.lower() in ["auc"]:
             y_pred = self.mol.predict_proba(_X_test_obj)
         else:
             y_pred = self.mol.predict(_X_test_obj)

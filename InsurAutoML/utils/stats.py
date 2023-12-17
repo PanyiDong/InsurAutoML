@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 20th July 2023 2:02:21 pm
+Last Modified: Saturday, 16th December 2023 8:27:00 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -377,6 +377,8 @@ def neg_auc(
 ) -> float:
     from sklearn.metrics import roc_auc_score
 
+    if len(y_pred.shape) == 1:
+        return -roc_auc_score(y_true, y_pred)
     if y_pred.shape[1] <= 2:
         return -roc_auc_score(y_true, y_pred[:, -1])
     else:

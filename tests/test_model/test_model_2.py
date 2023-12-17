@@ -11,7 +11,7 @@ File: test_model_2.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 7:25:50 pm
+Last Modified: Saturday, 16th December 2023 8:30:56 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -133,13 +133,16 @@ def test_lightgbm_classifier():
     model = LightGBM_Classifier(
         objective="binary",
         boosting="gbdt",
-        n_estimators=100,
         max_depth=-1,
         num_leaves=31,
         min_data_in_leaf=20,
         learning_rate=0.1,
         tree_learner="serial",
         num_iterations=100,
+        min_gain_to_split=0.0,
+        early_stopping_round=0,
+        max_bin=255,
+        feature_fraction=1.0,
         seed=1,
     )
 
@@ -166,13 +169,16 @@ def test_lightgbm_regressor():
     model = LightGBM_Regressor(
         objective="regression",
         boosting="gbdt",
-        n_estimators=100,
         max_depth=-1,
         num_leaves=31,
         min_data_in_leaf=20,
         learning_rate=0.1,
         tree_learner="serial",
         num_iterations=100,
+        min_gain_to_split=0.0,
+        early_stopping_round=0,
+        max_bin=255,
+        feature_fraction=1.0,
         seed=1,
     )
 

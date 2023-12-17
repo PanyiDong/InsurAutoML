@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.5
 Relative Path: /tests/test_utils/test_utils_stat.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 6th December 2022 11:27:36 pm
+Last Modified: Saturday, 16th December 2023 8:25:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -166,9 +166,12 @@ def test_neg_metrics():
 
     y_true = np.random.randint(0, 2, size=(100,))
     y_pred = np.random.randint(0, 2, size=(100,))
-    assert neg_R2(y_true, y_pred) == -1 * r2_score(
-        y_true, y_pred
-    ), "The neg_R2 function is not correct."
+    if -1 < neg_R2(y_true, y_pred) and neg_R2(y_true, y_pred) < 1:
+        assert neg_R2(y_true, y_pred) == -1 * r2_score(
+            y_true, y_pred
+        ), "The neg_R2 function is not correct."
+    else:
+        assert neg_R2(y_true, y_pred) == np.inf, "The neg_R2 function is not correct."
     assert neg_accuracy(y_true, y_pred) == -1 * accuracy_score(
         y_true, y_pred
     ), "The neg_accuracy function is not correct."

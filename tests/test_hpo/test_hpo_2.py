@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th December 2023 11:23:17 pm
+Last Modified: Saturday, 16th December 2023 7:14:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -100,8 +100,6 @@ def test_objective_6():
         model_name="obj_6",
         task_mode="classification",
         objective="hinge",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -179,8 +177,6 @@ def test_objective_7():
         model_name="obj_7",
         task_mode="classification",
         objective="f1",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -255,8 +251,6 @@ def test_objective_8():
         model_name="obj_8",
         task_mode="regression",
         objective="MSE",
-        validation=False,
-        valid_size=0.15,
         full_status=False,
         reset_index=True,
         _iter=1,
@@ -331,8 +325,6 @@ def test_objective_9():
         model_name="obj_9",
         task_mode="regression",
         objective="MAX",
-        validation=True,
-        valid_size=0.15,
         full_status=True,
         reset_index=True,
         _iter=1,
