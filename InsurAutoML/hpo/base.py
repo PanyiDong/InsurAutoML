@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hpo/base.py
 File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 8:18:35 pm
+Last Modified: Tuesday, 30th April 2024 8:00:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from __future__ import annotations
 from typing import Union, List, Callable, Dict, Tuple
@@ -111,7 +110,6 @@ else:
 
 
 class AutoTabularBase:
-
     """ "
     Base class module for AutoTabular (for classification and regression tasks)
 
@@ -331,7 +329,7 @@ class AutoTabularBase:
         self.cpu_threads = cpu_threads
         self.use_gpu = use_gpu
         self.reset_index = reset_index
-        self.seed = seed
+        self.seed = seed if seed else 42
 
         self._iter = 0  # record iteration number
         self._fitted = False  # record whether the model has been fitted

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/encoding/encoding.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 5th December 2023 5:27:01 pm
+Last Modified: Thursday, 5th September 2024 7:14:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,10 +47,10 @@ from sklearn import preprocessing
 from ..utils.base import is_date
 from ..utils.data import formatting
 from .base import BaseEncoder
+from ..constant import UNI_CLASS
 
 
 class DataEncoding(BaseEncoder, formatting):
-
     """
     Data preprocessing
     1. convert string type features to numerical categorical/dummy variables
@@ -86,8 +86,8 @@ class DataEncoding(BaseEncoder, formatting):
         for column in features:
             if (
                 df[column].dtype == object
-                and is_date(df[[column]])
-                and len(df[column].dropna().unique()) > 31
+                and is_date(df[column])
+                and len(df[column].dropna().unique()) > UNI_CLASS
             ):
                 df[column] = pd.to_numeric(pd.to_datetime(df[column]))
             elif (df[column].dtype == object) or (str(df[column].dtype) == "category"):
@@ -115,10 +115,8 @@ class DataEncoding(BaseEncoder, formatting):
                             axis=1,
                         )
                     for i in range(len(unique_value)):
-                        df.loc[df[column] == unique_value[i], column] = i
-                    df.loc[~df[column].isnull(), column] = df.loc[
-                        ~df[column].isnull(), column
-                    ].astype(int)
+                        df.loc[df[column] == unique_value[i], column] = int(i)
+                    df[column] = pd.to_numeric(df[column])
             else:
                 df.loc[~df[column].isnull(), column] = df.loc[
                     ~df[column].isnull(), column
@@ -151,6 +149,7 @@ class DataEncoding(BaseEncoder, formatting):
             df.drop(columns=list(self.category.columns), inplace=True)
 
         self._fitted = True
+        df.columns = df.columns.astype(str)
 
         return df
 
@@ -162,8 +161,8 @@ class DataEncoding(BaseEncoder, formatting):
         for column in list(df.columns):
             if (
                 df[column].dtype == object
-                and is_date(df[[column]])
-                and len(df[column].dropna().unique()) > 31
+                and is_date(df[column])
+                and len(df[column].dropna().unique()) > UNI_CLASS
             ):
                 df[column] = pd.to_numeric(pd.to_datetime(df[column]))
             elif df[column].dtype == object or str(df[column].dtype) == "category":
@@ -190,9 +189,7 @@ class DataEncoding(BaseEncoder, formatting):
                         df.loc[~df[column].isin(unique_values), column] = np.NaN
                         for i in range(len(unique_values)):
                             df.loc[df[column] == unique_values[i], column] = i
-                        df.loc[~df[column].isnull(), column] = df.loc[
-                            ~df[column].isnull(), column
-                        ].astype(int)
+                        df[column] = pd.to_numeric(df[column])
             else:
                 df.loc[~df[column].isnull(), column] = df.loc[
                     ~df[column].isnull(), column
@@ -223,12 +220,12 @@ class DataEncoding(BaseEncoder, formatting):
         # remove categorical variables
         if self.dummy_coding:
             df.drop(columns=list(self.category.columns), inplace=True)
+        df.columns = df.columns.astype(str)
 
         return df
 
 
 class CategoryShift(BaseEncoder):
-
     """
     Add 3 to every cateogry
 

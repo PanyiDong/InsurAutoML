@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/metadata.py
 File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 12th July 2023 8:19:42 pm
+Last Modified: Thursday, 5th September 2024 6:35:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -72,6 +72,7 @@ def meta_map_object(data: pd.Series) -> str:
             return "Text"
     except BaseException:
         return "Categorical"
+    return "Categorical"
 
 
 class get_details:
@@ -129,11 +130,13 @@ class get_details:
     # get details of categorical data
     @staticmethod
     def _get_details_categorical(data: pd.Series) -> Dict[str, dict]:
-        return {
-            "unique_count": {
-                key: value for key, value in zip(*np.unique(data, return_counts=True))
-            }
-        }
+        # Using pandas value_counts to avoid nan values error in np.unique
+        # return {
+        #     "unique_count": {
+        #         key: value for key, value in zip(*np.unique(data, return_counts=True))
+        #     }
+        # }
+        return {"unique_count": dict(data.value_counts(dropna=True))}
 
     @staticmethod
     def _merge_details_categorical(
@@ -151,7 +154,6 @@ class get_details:
 
 
 class MetaData:
-
     """
     MetaData class is used to store the metadata and details of a dataset.
     """
@@ -413,7 +415,6 @@ class MetaData:
 
 
 class ChunkMetaData(MetaData):
-
     """
     Metadata for chunk data to deal with very large dataset.
     """

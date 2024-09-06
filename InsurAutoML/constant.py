@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/constant.py
 File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th December 2023 11:13:54 am
+Last Modified: Wednesday, 24th April 2024 2:57:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -205,7 +205,8 @@ PROP_UNIQUE = 0.1
 
 # maximum unique classes determined as categorical variable
 # 31 is capped by days in a month
-UNI_CLASS = 31
+# 120 is capped by age of a person
+UNI_CLASS = 120
 
 # maximum iteration allowed for the algorithm
 MAX_ITER = 1024

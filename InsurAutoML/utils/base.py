@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:42:56 am
+Last Modified: Thursday, 5th September 2024 6:49:39 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from typing import List, Union, Callable, Any, Dict
 import logging
@@ -117,7 +116,7 @@ def random_list(vlist: list, seed: int = None) -> np.ndarray:
 # rule = 'any' will consider the column as date type as long as one value is date type,
 # rule = 'all' will consider the column as date type only when all values
 # are date type.
-def is_date(df: pd.DataFrame, rule: str = "any") -> List[bool]:
+def is_date(df: pd.Series, rule: str = "all") -> List[bool]:
     def _is_date(string, fuzzy=False):
         try:
             parse(string, fuzzy=fuzzy)
@@ -128,7 +127,7 @@ def is_date(df: pd.DataFrame, rule: str = "any") -> List[bool]:
 
     _check = []
     for item in df.values:
-        _check.append(_is_date(str(item[0])))
+        _check.append(_is_date(str(item)))
     if rule == "any":
         return any(_check)
     elif rule == "all":
