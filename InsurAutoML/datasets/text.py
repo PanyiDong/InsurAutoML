@@ -106,7 +106,6 @@ def WIKITEXT(train=True, test=False):
 
 
 def SQUAD(train=True, test=False, version=1):
-
     if version == 1:
         dataname = "squad"
     elif version == 2:
