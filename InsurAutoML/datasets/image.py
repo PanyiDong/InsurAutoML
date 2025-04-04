@@ -46,7 +46,6 @@ from datasets import load_dataset
 
 
 def CIFAR(train=True, test=False, version=10):
-
     if version == 10:
         dataname = "cifar10"
     elif version == 100:
@@ -79,15 +78,9 @@ def MNIST(train=True, test=False):
 
 def IMAGENET(train=True, test=False):
     if train and not test:
-        dataset = load_dataset(
-            "imagenet-1k",
-            use_auth_token=True,
-            split="train")
+        dataset = load_dataset("imagenet-1k", use_auth_token=True, split="train")
     elif test and not train:
-        dataset = load_dataset(
-            "imagenet-1k",
-            use_auth_token=True,
-            split="test")
+        dataset = load_dataset("imagenet-1k", use_auth_token=True, split="test")
     elif train and test:
         dataset = load_dataset("imagenet-1k", use_auth_token=True)
     else:
