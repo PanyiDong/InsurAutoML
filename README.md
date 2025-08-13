@@ -203,6 +203,24 @@ Other files in the repository:
 
 2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
 
+## Citation
+
+If you use `InsurAutoML` in your works, please cite it using the following BibTex entry:
+
+```
+@article{dongAutomatedMachineLearning2025,
+  title = {Automated Machine Learning in Insurance},
+  author = {Dong, Panyi and Quan, Zhiyu},
+  year = {2025},
+  month = jan,
+  journal = {Insurance: Mathematics and Economics},
+  volume = {120},
+  pages = {17--41},
+  issn = {0167-6687},
+  doi = {10.1016/j.insmatheco.2024.10.002}
+}
+```
+
 ## Future
 
 I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure NAS for NLP tasks (there's a workable algorithm for MLP NAS through nni and still in development of complete structure). Furthermore, explore the topics in explainability, fairness of ML models. But no schedules for such progress can be made.
