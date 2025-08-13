@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/stats.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 8:27:00 pm
+Last Modified: Wednesday, 13th August 2025 2:56:48 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -421,7 +421,7 @@ def ACCC(
 
     where R_{i} is the rank of the ith observation in Y, L_{i} is the number of j such that Y_{j}>=Y_{i}, N_{i} be the index of j such that X_{j} is nearest neighbor of X_{i} and M_{i} be the index of j such that (X_{j}, Z_{j}) is the farthest neighbor of (X_{i}, Z_{i}).
 
-    [1] Azadkia, A., & Chatterjee, S. (2015). A new correlation coefficient. Journal of Statistical Theory and Practice, 9(2), 107-118.
+    [1] Azadkia, A., & Chatterjee, S. (2021). A simple measure of conditional dependence. The Annals of Statistics, 49(6), 3070-3102.
     """
 
     # format data to dataframe
