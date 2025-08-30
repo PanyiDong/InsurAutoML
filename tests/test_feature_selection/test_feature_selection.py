@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /tests/test_feature_selection/test_feature_selection.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 5:33:31 pm
+Last Modified: Friday, 29th August 2025 3:50:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -134,6 +134,16 @@ def test_FeatureFilter():
     feature_selection = FeatureFilter(
         n_components=5,
         criteria="MI",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
+
+    feature_selection = FeatureFilter(
+        n_components=5,
+        criteria="CCC",
     )
     feature_selection.fit(X, y)
     _X = feature_selection.transform(X)

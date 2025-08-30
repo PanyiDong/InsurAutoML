@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/__init__.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 24th May 2023 11:12:27 pm
+Last Modified: Friday, 29th August 2025 1:49:10 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -70,6 +70,7 @@ from .stats import (
     MI,
     t_score,
     ANOVA,
+    CCC,
     ACCC,
 )
 

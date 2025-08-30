@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 13th August 2025 2:56:48 pm
+Last Modified: Friday, 29th August 2025 4:33:21 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -43,6 +43,8 @@ import warnings
 import numpy as np
 import pandas as pd
 import scipy.stats
+from scipy.spatial.distance import cdist
+from sklearn.neighbors import NearestNeighbors
 import copy
 
 # merge the mean of two datasets
@@ -403,13 +405,89 @@ def neg_f1(
     return -f1_score(y_true, y_pred)
 
 
+def rankdata_random(values, seed: int = None):
+    """
+    Return ranks of the data, with random tie breaking.
+    """
+
+    # set random seed permutation
+    np.random.seed(seed)
+    perm = np.random.permutation(len(values))
+    # set values to numpy array
+    values = np.asarray(values)
+    # apply rankdata to permuted values
+    ranks = scipy.stats.rankdata(values[perm], method="ordinal")
+    
+    out = np.empty_like(ranks)
+    out[perm] = ranks
+    return out
+
+    # return ranks[np.argsort(perm)]
+
+
+def CCC(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    seed: int = None,
+) -> float:
+    """_summary_
+    Empirical implementation of Chatterjee Correlation Coefficient (CCC) [1][2]
+
+    [1] https://rdrr.io/cran/XICOR/src/R/calculateXI.R
+    [2] Chatterjee, S. (2021). A new coefficient of correlation. Journal of the American Statistical Association, 116(536), 2009-2022.
+    """
+    # format data to np.ndarray
+    if not isinstance(X, np.ndarray):
+        X = np.asarray(X)
+    if not isinstance(y, np.ndarray):
+        y = np.asarray(y)
+
+    # check shape
+    if not len(X) == len(y):
+        raise ValueError(
+            "X and y must have the same length, but X has length %d and y has length %d"
+            % (len(X), len(y))
+        )
+
+    n = len(y)
+
+    # rank of X, random tie breaking
+    PI = rankdata_random(X, seed=seed)
+    ord = np.argsort(PI)
+    # rank of y and -y (numbers larger than y)
+    fr = scipy.stats.rankdata(y, method="max") / n
+    gr = scipy.stats.rankdata(-y, method="max") / n
+    # fr = rankdata_random(y, seed=seed) / n
+    # gr = rankdata_random(-y, seed=seed) / n
+
+    # rearrange fr by ord
+    fr = fr[ord]
+    # calculate the coefficient
+    A1 = np.sum(np.abs(fr[:-1] - fr[1:])) / (2 * n)
+    CU = np.mean(gr * (1 - gr))
+
+    return 1 - A1 / CU
+
+
+def randomNN(idx):
+    # index size
+    n = len(np.asarray(idx))
+    # sample n indices from [0, n-2]
+    x = np.random.randint(0, n - 1, size=n)
+    # shift the indices that are >= i by 1 to avoid index equals to position
+    x += (x >= np.arange(n))    
+
+    return idx[x]
+
+
 def ACCC(
     Z: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
     X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    mode: str = "T",
 ) -> float:
     """
-    Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1]
+    Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1][2]
 
     if X is None:   correlation between Y (response) and Z (features);
 
@@ -421,16 +499,27 @@ def ACCC(
 
     where R_{i} is the rank of the ith observation in Y, L_{i} is the number of j such that Y_{j}>=Y_{i}, N_{i} be the index of j such that X_{j} is nearest neighbor of X_{i} and M_{i} be the index of j such that (X_{j}, Z_{j}) is the farthest neighbor of (X_{i}, Z_{i}).
 
-    [1] Azadkia, A., & Chatterjee, S. (2021). A simple measure of conditional dependence. The Annals of Statistics, 49(6), 3070-3102.
+    [1] https://rdrr.io/cran/FOCI/src/R/codecInternal.R
+    [2] Azadkia, A., & Chatterjee, S. (2021). A simple measure of conditional dependence. The Annals of Statistics, 49(6), 3070-3102.
     """
 
-    # format data to dataframe
-    if not isinstance(Z, pd.DataFrame):
-        Z = pd.DataFrame(Z)
-    if not isinstance(y, pd.DataFrame):
-        y = pd.DataFrame(y)
-    if (X is not None) and not isinstance(X, pd.DataFrame):
-        X = pd.DataFrame(X)
+    def tie_helper(a):
+        dists = cdist([Z[a]], np.delete(Z, a, axis=0), metric="euclidean")
+        min_dist = np.min(dists)
+        id = np.where(dists[0] == min_dist)[0]
+        choice = np.random.choice(id)
+        return choice + (choice >= a)  # shift index if needed
+
+    # format data to numpy array
+    Z = np.asarray(Z)
+    y = np.asarray(y)
+    X = np.asarray(X) if not (X is None) else None
+
+    # make sure Z is 2-D
+    if len(Z.shape) == 1:
+        Z = Z.reshape(-1, 1)
+    # shape of features
+    n, p = Z.shape
 
     # check shape
     if not len(Z) == len(y):
@@ -444,66 +533,146 @@ def ACCC(
             % (len(X), len(y))
         )
 
-    from sklearn.neighbors import KNeighborsRegressor
+    # fit 3-NN on Z to get distance and index
+    nn = NearestNeighbors(n_neighbors=3, p=2, metric="minkowski")
+    nn.fit(Z)
+    distance, ind = nn.kneighbors(Z)
 
-    # rank of response variable
-    y_rank = np.argsort(y.values.reshape(1, -1)[0])
+    # nearest neighbor index of Z
+    nn_index_Z = ind[:, 1]  # get second closest since the closest will be itself
+    # repeated points (distance = 0)
+    repeat_data = np.where(distance[:, 1] == 0)[0]
 
-    # shape of features
-    n, p = Z.shape
+    # handle repeated points by random repeated points
+    df_X = pd.DataFrame(
+        {
+            "id": repeat_data,
+            "group": ind[repeat_data, 0],
+        }
+    )
+    df_X["rnn"] = df_X.groupby("group")["id"].transform(lambda x: randomNN(x.values))
+    nn_index_Z[repeat_data] = df_X["rnn"].values
+
+    # nearest neighbor with tie
+    ties = np.where(distance[:, 1] == distance[:, 2])[0]
+    ties = np.setdiff1d(ties, repeat_data)  # remove repeated points
+
+    for idx in ties:
+        nn_index_Z[idx] = tie_helper(idx)
 
     if X is None:
-        # KNN for the ranking
-        # only need rank of y corresponding nearest neighbor of Z
-        knn_M = KNeighborsRegressor(
-            n_neighbors=2, p=2, metric="minkowski"
-        )  # standard Euclidean distance
-        knn_M.fit(Z, y_rank)
-        _, ind = knn_M.kneighbors(Z)
-        ind = ind[:, -1]  # get second closest since the closest will be itself
-        L = [(y >= item).sum().values for item in y.values]
-        L = np.concatenate(L).ravel()
+        # estimate cc
+        R_Y = scipy.stats.rankdata(y, method="max")
+        L_Y = scipy.stats.rankdata(-y, method="max")
+        S_n = np.sum(L_Y * (n - L_Y)) / (n**3)
+        Q_n = np.sum(np.minimum(R_Y, R_Y[nn_index_Z]) - L_Y**2 / n) / (n**2)
 
-        nume = np.sum(
-            [
-                n * min(_y_rank, y_rank[_i]) - L[idx] ** 2
-                for idx, (_y_rank, _i) in enumerate(zip(y_rank, ind))
-            ]
-        )
-        denom = np.sum([L[i] * (n - L[i]) for i in range(n)])
-
-        return nume / denom
     else:
-        # kNN for the ranking
-        # need rank of y corresponding nearest neighbor of Z and nearest
-        # neighbor of (X, Z)
-        knn_M = KNeighborsRegressor(
-            n_neighbors=2, p=2, metric="minkowski"
-        )  # standard Euclidean distance
-        knn_M.fit(pd.concat([X, Z], axis=1, ignore_index=True), y_rank)
-        _, ind_M = knn_M.kneighbors(pd.concat([X, Z], axis=1, ignore_index=True))
-        # get second closest since the closest will be itself
-        ind_M = ind_M[:, -1]
+        W = np.hstack((X, Z))
+        # fit 3-NN on (X, Z) to get distance and index
+        nn_W = NearestNeighbors(n_neighbors=3, p=2, metric="minkowski")
+        nn_W.fit(W)
+        distance_W, ind_W = nn_W.kneighbors(W)
 
-        knn_N = KNeighborsRegressor(
-            n_neighbors=2, p=2, metric="minkowski"
-        )  # standard Euclidean distance
-        knn_N.fit(X, y_rank)
-        _, ind_N = knn_N.kneighbors(X)
-        # get second closest since the closest will be itself
-        ind_N = ind_N[:, -1]
-
-        nume = np.sum(
-            [
-                min(_y_rank, y_rank[_ind_M]) - min(_y_rank, y_rank[_ind_N])
-                for _y_rank, _ind_M, _ind_N in zip(y_rank, ind_M, ind_N)
-            ]
+        # handle repeat points
+        nn_index_W = ind_W[:, 1]  # get second closest since the closest will be itself
+        repeat_data_W = np.where(distance_W[:, 1] == 0)[0]
+        df_W = pd.DataFrame(
+            {
+                "id": repeat_data_W,
+                "group": ind_W[repeat_data_W, 0],
+            }
         )
-        denom = np.sum(
-            [
-                _y_rank - min(_y_rank, y_rank[_ind_N])
-                for _y_rank, _ind_N in zip(y_rank, ind_N)
-            ]
+        df_W["rnn"] = df_W.groupby("group")["id"].transform(
+            lambda x: randomNN(x.values)
         )
+        nn_index_W[repeat_data_W] = df_W["rnn"].values
 
-        return nume / denom
+        # handle ties
+        ties_W = np.where(distance_W[:, 1] == distance_W[:, 2])[0]
+        ties_W = np.setdiff1d(ties_W, repeat_data_W)
+        for idx in ties_W:
+            nn_index_W[idx] = tie_helper(idx)
+
+        # estimate ccc
+        R_Y = scipy.stats.rankdata(y, method="max")
+        L_Y = scipy.stats.rankdata(-y, method="max")
+        S_n = np.sum(R_Y - np.minimum(R_Y, R_Y[nn_index_Z])) / (n**2)
+        Q_n = np.sum(
+            np.minimum(R_Y, R_Y[nn_index_W]) - np.minimum(R_Y, R_Y[nn_index_W])
+        ) / (n**2)
+
+    if mode == "T":
+        return Q_n / S_n if S_n != 0 else 1
+    elif mode == "Q":
+        return Q_n
+
+    # # rank of response variable
+    # y_rank = np.argsort(y.reshape(1, -1)[0])
+
+    # if X is None:
+    #     # KNN for the ranking
+    #     # only need rank of y corresponding nearest neighbor of Z
+    #     knn_M = KNeighborsRegressor(
+    #         n_neighbors=2, p=2, metric="minkowski"
+    #     )  # standard Euclidean distance
+    #     knn_M.fit(Z, y_rank)
+    #     _, ind = knn_M.kneighbors(Z)
+    #     ind = ind[:, -1]  # get second closest since the closest will be itself
+    #     L = [(y >= item).sum().values for item in y.values]
+    #     L = np.concatenate(L).ravel()
+
+    #     nume = np.sum(
+    #         [
+    #             n * min(_y_rank, y_rank[_i]) - L[idx] ** 2
+    #             for idx, (_y_rank, _i) in enumerate(zip(y_rank, ind))
+    #         ]
+    #     )
+    #     denom = np.sum([L[i] * (n - L[i]) for i in range(n)])
+
+    #     return nume / denom
+    # else:
+    #     # kNN for the ranking
+    #     # need rank of y corresponding nearest neighbor of Z and nearest
+    #     # neighbor of (X, Z)
+    #     knn_M = KNeighborsRegressor(
+    #         n_neighbors=2, p=2, metric="minkowski"
+    #     )  # standard Euclidean distance
+    #     knn_M.fit(pd.concat([X, Z], axis=1, ignore_index=True), y_rank)
+    #     _, ind_M = knn_M.kneighbors(pd.concat([X, Z], axis=1, ignore_index=True))
+    #     # get second closest since the closest will be itself
+    #     ind_M = ind_M[:, -1]
+
+    #     knn_N = KNeighborsRegressor(
+    #         n_neighbors=2, p=2, metric="minkowski"
+    #     )  # standard Euclidean distance
+    #     knn_N.fit(X, y_rank)
+    #     _, ind_N = knn_N.kneighbors(X)
+    #     # get second closest since the closest will be itself
+    #     ind_N = ind_N[:, -1]
+
+    #     nume = np.sum(
+    #         [
+    #             min(_y_rank, y_rank[_ind_M]) - min(_y_rank, y_rank[_ind_N])
+    #             for _y_rank, _ind_M, _ind_N in zip(y_rank, ind_M, ind_N)
+    #         ]
+    #     )
+    #     denom = np.sum(
+    #         [
+    #             _y_rank - min(_y_rank, y_rank[_ind_N])
+    #             for _y_rank, _ind_N in zip(y_rank, ind_N)
+    #         ]
+    #     )
+
+    #     return nume / denom
+
+
+def CCWrapper(CC: callable, folds: int = 10, **args) -> float:
+    """
+    Wrap for CCC/ACCC. Run multiple times to reduce the randomness in tie breaking.
+    """
+
+    results = []
+    for _ in range(folds):  # run multiple times
+        results.append(CC(**args))
+    return np.mean(results)

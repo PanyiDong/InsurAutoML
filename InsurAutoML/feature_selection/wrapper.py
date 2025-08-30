@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/feature_selection/wrapper.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 11:15:34 pm
+Last Modified: Friday, 29th August 2025 1:51:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -66,7 +66,6 @@ from .base import BaseFeatureSelection
 
 
 class ExhaustiveFS(BaseFeatureSelection):
-
     """
     Exhaustive Feature Selection
 
@@ -156,7 +155,6 @@ class ExhaustiveFS(BaseFeatureSelection):
 
 # Sequential Feature Selection (SFS)
 class SFS(BaseFeatureSelection):
-
     """
     Use Sequential Forward Selection/SFS to select subset of features.
 
@@ -295,7 +293,6 @@ class SFS(BaseFeatureSelection):
 # Sequential Floating Forward Selection (SFFS)
 # Adapative Sequential Forward Floating Selection (ASFFS)
 class ASFFS(BaseFeatureSelection):
-
     """
     Adaptive Sequential Forward Floating Selection (ASFFS)
     Mostly, ASFFS performs the same as Sequential Floating Forward Selection (SFFS),
