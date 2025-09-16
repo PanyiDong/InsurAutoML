@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th August 2025 4:50:09 pm
+Last Modified: Wednesday, 3rd September 2025 3:28:49 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -161,7 +161,7 @@ class FeatureFilter(BaseFeatureSelection):
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X, columns=self.features)
 
-        return X.iloc[:, self.select_features]
+        return X.loc[:, self.select_features]
 
 
 class mRMR(BaseFeatureSelection):
@@ -285,10 +285,12 @@ class FOCI(BaseFeatureSelection):
         self,
         num_features: int = None,
         standardize: str = None,
+        conditional: bool = False,
     ):
         super().__init__()
         self.num_features = num_features
         self.standardize = standardize
+        self.conditional = conditional
         self._fitted = False
 
     def fit(
@@ -332,11 +334,18 @@ class FOCI(BaseFeatureSelection):
         return self
     
     @staticmethod
-    def compute_acc(feature, X, y, selected_features):
+    def compute_accc(feature, X, y, selected_features):
         if len(selected_features) == 0:
             return ACCC(X[[feature]], y, mode="Q")
         else:
             return ACCC(X[selected_features + [feature]], y, mode="Q")
+        
+    @staticmethod
+    def compute_conditional_accc(feature, X, y, selected_features):
+        if len(selected_features) == 0:
+            return ACCC(X[[feature]], y, mode="Q")
+        else:
+            return ACCC(X[[feature]], y, X[selected_features], mode="Q")
 
     def _fit(self, X, y) -> FOCI:
 
@@ -348,7 +357,15 @@ class FOCI(BaseFeatureSelection):
         )  # copy of features, do not interfere with original features
         
         # parallel computation of ACCC
-        func = partial(self.compute_acc, X=X, y=y, selected_features=selected_features)
+        # if conditional, use conditional accc (given selected features)
+        if self.conditional :
+            func = partial(
+                self.compute_conditional_accc, X=X, y=y, selected_features=selected_features
+            )
+        else:
+            func = partial(
+                self.compute_accc, X=X, y=y, selected_features=selected_features
+            )
 
         for idx in range(self.num_features):
             with ProcessPoolExecutor() as executor:
@@ -357,7 +374,11 @@ class FOCI(BaseFeatureSelection):
             tmp_feature = unselected_features[np.argmax(tmp_ACCC_list)]
             Q.append(tmp_ACCC_list[np.argmax(tmp_ACCC_list)])
             # check stopping criteria
-            condition = Q[0] > 0 if idx == 0 else Q[idx] > Q[idx - 1]
+            # if conditional, check if current feature improves (conditional) ACCC
+            if self.conditional:
+                condition = Q[idx] > 0
+            else:
+                condition = Q[0] > 0 if idx == 0 else Q[idx] > Q[idx - 1]
 
             if condition:
                 selected_features.append(tmp_feature)
