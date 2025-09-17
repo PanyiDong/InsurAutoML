@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.6
+Latest Version: 0.2.7
 Relative Path: /InsurAutoML/utils/stats.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 4th September 2025 2:43:12 pm
+Last Modified: Tuesday, 16th September 2025 9:06:41 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -417,15 +417,15 @@ def rankdata_random(values, seed: int = None):
     values = np.asarray(values)
     # apply rankdata to permuted values
     ranks = scipy.stats.rankdata(values[perm], method="ordinal")
-    
+
     out = np.empty_like(ranks)
     out[perm] = ranks
     return out
 
     # return ranks[np.argsort(perm)]
-    
-def _rankdata(values, ties_method: str = "average", seed: int = None) -> np.ndarray :
-    
+
+
+def _rankdata(values, ties_method: str = "average", seed: int = None) -> np.ndarray:
     """
     Wrap for scipy.stats.rankdata with different ties breaking method
 
@@ -449,6 +449,31 @@ def _rankdata(values, ties_method: str = "average", seed: int = None) -> np.ndar
         return rankdata_random(values, seed=seed)
     else:
         return scipy.stats.rankdata(values, method=ties_method)
+
+
+def randomNN(idx):
+    # index size
+    n = len(np.asarray(idx))
+    # sample n indices from [0, n-2]
+    x = np.random.randint(0, n - 1, size=n)
+    # shift the indices that are >= i by 1 to avoid index equals to position
+    x += x >= np.arange(n)
+
+    return idx[x]
+
+
+def _NN(idx, ties_method: str = "random"):
+    """
+    A list of methods to deal with identical nearest neighbors.
+    """
+    if ties_method == "random":
+        return randomNN(idx)
+    elif ties_method == "first":
+        return idx[0] * np.ones(len(idx), dtype=int)
+    elif ties_method == "last":
+        return idx[-1] * np.ones(len(idx), dtype=int)
+    elif ties_method == "ordinal":
+        return idx
 
 
 def _CCC(
@@ -494,48 +519,6 @@ def _CCC(
 
     return 1 - A1 / CU
 
-def CCC(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    X_ties_method: str = "random",
-    y_ties_method: str = "ordinal",
-    fold: int = 20,
-    seed: int = None,
-) -> float:
-    """
-    Compute CCC in case of random tie breaking (multiple folds).
-    """
-    # fix random seed
-    np.random.seed(seed)
-    if "random" in [X_ties_method, y_ties_method]:
-        return np.mean([_CCC(X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method) for _ in range(fold)])
-    else :
-        return _CCC(X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method)
-
-
-def randomNN(idx):
-    # index size
-    n = len(np.asarray(idx))
-    # sample n indices from [0, n-2]
-    x = np.random.randint(0, n - 1, size=n)
-    # shift the indices that are >= i by 1 to avoid index equals to position
-    x += (x >= np.arange(n))    
-
-    return idx[x]
-
-def _NN(idx, ties_method: str = "random") :
-    """
-    A list of methods to deal with identical nearest neighbors.
-    """
-    if ties_method == "random":
-        return randomNN(idx)
-    elif ties_method == "first":
-        return idx[0] * np.ones(len(idx), dtype=int)
-    elif ties_method == "last" :
-        return idx[-1] * np.ones(len(idx), dtype=int)
-    elif ties_method == "ordinal":
-        return idx
-
 
 def _ACCC(
     Z: Union[pd.DataFrame, pd.Series, np.ndarray],
@@ -562,7 +545,7 @@ def _ACCC(
 
     [1] https://rdrr.io/cran/FOCI/src/R/codecInternal.R
     [2] Azadkia, A., & Chatterjee, S. (2021). A simple measure of conditional dependence. The Annals of Statistics, 49(6), 3070-3102.
-    
+
     parameters
     ----------
     Z_ties_method: str = "random"
@@ -605,7 +588,7 @@ def _ACCC(
             "X and y must have the same length, but X has length %d and y has length %d"
             % (len(X), len(y))
         )
-        
+
     if X is None:
 
         # fit 3-NN on Z to get distance and index
@@ -644,17 +627,17 @@ def _ACCC(
 
     else:
         W = np.hstack((X, Z))
-        
+
         # fit 3-NN on X to get distance and index
         nn = NearestNeighbors(n_neighbors=3, p=2, metric="minkowski")
         nn.fit(X)
         distance_X, ind_X = nn.kneighbors(X)
-        
+
         # nearest neighbor index of X
         nn_index_X = ind_X[:, 1]  # get second closest since the closest will be itself
         # repeated points (distance = 0)
         repeat_data_X = np.where(distance_X[:, 1] == 0)[0]
-        
+
         # handle repeated points by random repeated points
         df_X = pd.DataFrame(
             {
@@ -666,7 +649,7 @@ def _ACCC(
             lambda x: _NN(x.values, ties_method=X_ties_method)
         )
         nn_index_X[repeat_data_X] = df_X["rnn"].values
-        
+
         # nearest neighbor with tie
         ties_X = np.where(distance_X[:, 1] == distance_X[:, 2])[0]
         ties_X = np.setdiff1d(ties_X, repeat_data_X)  # remove repeated points
@@ -711,64 +694,36 @@ def _ACCC(
     elif mode == "Q":
         return Q_n
 
-    # # rank of response variable
-    # y_rank = np.argsort(y.reshape(1, -1)[0])
 
-    # if X is None:
-    #     # KNN for the ranking
-    #     # only need rank of y corresponding nearest neighbor of Z
-    #     knn_M = KNeighborsRegressor(
-    #         n_neighbors=2, p=2, metric="minkowski"
-    #     )  # standard Euclidean distance
-    #     knn_M.fit(Z, y_rank)
-    #     _, ind = knn_M.kneighbors(Z)
-    #     ind = ind[:, -1]  # get second closest since the closest will be itself
-    #     L = [(y >= item).sum().values for item in y.values]
-    #     L = np.concatenate(L).ravel()
+"""
+NOTE: Sep. 16, 2025
+CCC and ACCC are subject to tie-breaking in identical values. And randomness may be introduced in the results.
+By default, only one time tie-breaking is performed. If you want to have more stable results, please set fold > 1 as it repeats the calculation multiple times and takes the average.
+"""
 
-    #     nume = np.sum(
-    #         [
-    #             n * min(_y_rank, y_rank[_i]) - L[idx] ** 2
-    #             for idx, (_y_rank, _i) in enumerate(zip(y_rank, ind))
-    #         ]
-    #     )
-    #     denom = np.sum([L[i] * (n - L[i]) for i in range(n)])
 
-    #     return nume / denom
-    # else:
-    #     # kNN for the ranking
-    #     # need rank of y corresponding nearest neighbor of Z and nearest
-    #     # neighbor of (X, Z)
-    #     knn_M = KNeighborsRegressor(
-    #         n_neighbors=2, p=2, metric="minkowski"
-    #     )  # standard Euclidean distance
-    #     knn_M.fit(pd.concat([X, Z], axis=1, ignore_index=True), y_rank)
-    #     _, ind_M = knn_M.kneighbors(pd.concat([X, Z], axis=1, ignore_index=True))
-    #     # get second closest since the closest will be itself
-    #     ind_M = ind_M[:, -1]
-
-    #     knn_N = KNeighborsRegressor(
-    #         n_neighbors=2, p=2, metric="minkowski"
-    #     )  # standard Euclidean distance
-    #     knn_N.fit(X, y_rank)
-    #     _, ind_N = knn_N.kneighbors(X)
-    #     # get second closest since the closest will be itself
-    #     ind_N = ind_N[:, -1]
-
-    #     nume = np.sum(
-    #         [
-    #             min(_y_rank, y_rank[_ind_M]) - min(_y_rank, y_rank[_ind_N])
-    #             for _y_rank, _ind_M, _ind_N in zip(y_rank, ind_M, ind_N)
-    #         ]
-    #     )
-    #     denom = np.sum(
-    #         [
-    #             _y_rank - min(_y_rank, y_rank[_ind_N])
-    #             for _y_rank, _ind_N in zip(y_rank, ind_N)
-    #         ]
-    #     )
-
-    #     return nume / denom
+def CCC(
+    X: Union[pd.DataFrame, pd.Series, np.ndarray],
+    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X_ties_method: str = "random",
+    y_ties_method: str = "ordinal",
+    fold: int = 1,
+    seed: int = None,
+) -> float:
+    """
+    Compute CCC in case of random tie breaking (multiple folds).
+    """
+    # fix random seed
+    np.random.seed(seed)
+    if "random" in [X_ties_method, y_ties_method]:
+        return np.mean(
+            [
+                _CCC(X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method)
+                for _ in range(fold)
+            ]
+        )
+    else:
+        return _CCC(X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method)
 
 
 def ACCC(
@@ -779,8 +734,8 @@ def ACCC(
     y_ties_method: str = "ordinal",
     X_ties_method: str = "random",
     mode: str = "T",
-    fold: int = 20,
-    seed: int = 42
+    fold: int = 1,
+    seed: int = 42,
 ) -> float:
     """
     Compute the ACCC with multiple folds.
@@ -788,6 +743,11 @@ def ACCC(
     # fix random seed
     np.random.seed(seed)
     if "random" in [Z_ties_method, y_ties_method, X_ties_method]:
-        return np.mean([_ACCC(Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode = mode) for _ in range(fold)])
-    else :
-        return _ACCC(Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode = mode)
+        return np.mean(
+            [
+                _ACCC(Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode=mode)
+                for _ in range(fold)
+            ]
+        )
+    else:
+        return _ACCC(Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode=mode)

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.6
+Latest Version: 0.2.7
 Relative Path: /InsurAutoML/constant.py
 File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 24th April 2024 2:57:57 pm
+Last Modified: Tuesday, 16th September 2025 9:00:33 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -143,6 +143,9 @@ FEATURE_SELECTION = [
     "select_rates_classification",
     "select_rates_regression",
     "truncatedSVD",
+    "mRMR",
+    "CBFS",
+    "FOCI",
 ]
 
 # classifiers

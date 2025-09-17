@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.7
 Relative Path: /InsurAutoML/feature_selection/__init__.py
 File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:27:12 am
+Last Modified: Tuesday, 16th September 2025 9:03:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -42,7 +42,7 @@ from ..base import no_processing
 from .filter import (
     FeatureFilter,
     mRMR,
-    # FOCI,
+    FOCI,  # NOTE: FOCI may subject to identical values
 )
 from .wrapper import (
     # ExhaustiveFS,
@@ -98,7 +98,7 @@ feature_selections = {
     # "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
-    # "FOCI": FOCI,
+    "FOCI": FOCI,
 }
 
 
@@ -146,17 +146,17 @@ feature_selections = {
 # else:
 
 # from autosklearn
-feature_selections[
-    "extra_trees_preproc_for_classification"
-] = extra_trees_preproc_for_classification
-feature_selections[
-    "extra_trees_preproc_for_regression"
-] = extra_trees_preproc_for_regression
+feature_selections["extra_trees_preproc_for_classification"] = (
+    extra_trees_preproc_for_classification
+)
+feature_selections["extra_trees_preproc_for_regression"] = (
+    extra_trees_preproc_for_regression
+)
 feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
 # feature_selections["polynomial"] = polynomial
-feature_selections[
-    "select_percentile_classification"
-] = select_percentile_classification
+feature_selections["select_percentile_classification"] = (
+    select_percentile_classification
+)
 feature_selections["select_percentile_regression"] = select_percentile_regression
 feature_selections["select_rates_classification"] = select_rates_classification
 feature_selections["select_rates_regression"] = select_rates_regression
