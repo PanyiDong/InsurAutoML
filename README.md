@@ -24,7 +24,11 @@ System Requirements:
 
 ## Installation
 
+![demo](https://github.com/PanyiDong/InsurAutoML/tree/master/doc/demo.gif)
+
 ### 1. Install from `pip`
+
+> pip may not be the up-to-date version.
 
 Open a command terminal.
 
