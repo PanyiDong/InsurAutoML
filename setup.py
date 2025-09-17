@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 2:46:28 pm
+Last Modified: Tuesday, 16th September 2025 8:49:40 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from pathlib import Path
 import os
@@ -268,13 +267,15 @@ if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
     EXTRA_DICT["extended"].append("rpy2")
     EXTRA_DICT["nn"].append("rpy2")
 
-DATA_LIST = ["Appendix/*", "example/*"]
+DATA_LIST = ["data/*", "example/*"]
 
 EXCLUDE_LIST = [
     "tests",
+    "Dockerfiles",
     "example",
+    "experiments",
     "archive",
-    "Appendix",
+    "data",
     "docs",
     ".github",
     "build",
