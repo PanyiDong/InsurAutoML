@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/optimize.py
 File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th December 2023 1:03:27 am
+Last Modified: Thursday, 18th September 2025 10:33:21 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -452,7 +452,7 @@ def _optuna_get_hyperparameter_space(
         )
 
     import optuna
-    from ray.tune.suggest.optuna import OptunaSearch
+    from ray.tune.search.optuna import OptunaSearch
 
     # config space
     # encoding space
@@ -690,11 +690,11 @@ def _converted_get_hyperparameter_space(
     #     )
 
     if search_algo == "Nevergrad":
-        from ray.tune.suggest.nevergrad import NevergradSearch
+        from ray.tune.search.nevergrad import NevergradSearch
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from ray.tune.suggest.flaml import BlendSearch
+        from ray.tune.search.flaml import BlendSearch
 
         searcher = BlendSearch
 
@@ -744,10 +744,14 @@ def _converted_get_hyperparameter_space(
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        balancings_hyperparameters[all_balancings.index(_balancing)][
-            "balancing"
-        ] = tune.choice(
-            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
+        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = (
+            tune.choice(
+                [
+                    balancings_hyperparameters[all_balancings.index(_balancing)][
+                        "balancing"
+                    ]
+                ]
+            )
         )
         _balancing_hyperparameter.append(
             searcher.convert_search_space(
@@ -870,7 +874,7 @@ def _converted_get_hyperparameter_space(
 #             Command to install: pip install scikit-optimize"
 #         )
 
-#     from ray.tune.suggest.skopt import SkOptSearch
+#     from ray.tune.search.skopt import SkOptSearch
 
 #     # encoding space
 #     # get all method names in hyperparameter space
@@ -1101,7 +1105,7 @@ def _get_hyperparameter_space(
 def get_algo(search_algo: str) -> Callable:
     if search_algo == "RandomSearch" or search_algo == "GridSearch":
         # Random Search and Grid Search
-        from ray.tune.suggest.basic_variant import BasicVariantGenerator
+        from ray.tune.search.basic_variant import BasicVariantGenerator
 
         algo = BasicVariantGenerator
     # Update: Nov. 9, 2022
@@ -1123,7 +1127,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Bayesian Search
-    #     from ray.tune.suggest.bayesopt import BayesOptSearch
+    #     from ray.tune.search.bayesopt import BayesOptSearch
 
     #     algo = BayesOptSearch
     # elif search_algo == "AxSearch":
@@ -1138,7 +1142,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Ax Search
-    #     from ray.tune.suggest.ax import AxSearch
+    #     from ray.tune.search.ax import AxSearch
 
     #     algo = AxSearch
     # elif search_algo == "BOHB":
@@ -1153,7 +1157,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Bayesian Optimization HyperBand/BOHB
-    #     from ray.tune.suggest.bohb import TuneBOHB
+    #     from ray.tune.search.bohb import TuneBOHB
 
     #     algo = TuneBOHB
     # elif search_algo == "BlendSearch":
@@ -1166,7 +1170,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Blend Search
-    #     from ray.tune.suggest.flaml import BlendSearch
+    #     from ray.tune.search.flaml import BlendSearch
 
     #     algo = BlendSearch
     elif search_algo == "CFO":
@@ -1178,7 +1182,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # Blend Search
-        from ray.tune.suggest.flaml import CFO
+        from ray.tune.search.flaml import CFO
 
         algo = CFO
     # elif search_algo == "DragonflySearch":
@@ -1192,7 +1196,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Dragonfly Search
-    #     from ray.tune.suggest.dragonfly import DragonflySearch
+    #     from ray.tune.search.dragonfly import DragonflySearch
 
     #     algo = DragonflySearch
     # elif search_algo == "HEBO":
@@ -1206,7 +1210,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Heteroscedastic Evolutionary Bayesian Optimization/HEBO
-    #     from ray.tune.suggest.hebo import HEBOSearch
+    #     from ray.tune.search.hebo import HEBOSearch
 
     #     algo = HEBOSearch
     elif search_algo == "HyperOpt":
@@ -1218,7 +1222,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # HyperOpt Search
-        from ray.tune.suggest.hyperopt import HyperOptSearch
+        from ray.tune.search.hyperopt import HyperOptSearch
 
         algo = HyperOptSearch
     elif search_algo == "Nevergrad":
@@ -1230,7 +1234,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # Nevergrad Search
-        from ray.tune.suggest.nevergrad import NevergradSearch
+        from ray.tune.search.nevergrad import NevergradSearch
 
         algo = NevergradSearch
     # default hyeprparameter space can not be easily converted
@@ -1243,7 +1247,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # Optuna Search
-        from ray.tune.suggest.optuna import OptunaSearch
+        from ray.tune.search.optuna import OptunaSearch
 
         algo = OptunaSearch
     # elif search_algo == "SigOpt":
@@ -1258,7 +1262,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # SigOpt Search
-    #     from ray.tune.suggest.sigopt import SigOptSearch
+    #     from ray.tune.search.sigopt import SigOptSearch
 
     #     algo = SigOptSearch
     # Update: Nov. 9, 2022
@@ -1274,7 +1278,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Scikit-Optimize Search
-    #     from ray.tune.suggest.skopt import SkOptSearch
+    #     from ray.tune.search.skopt import SkOptSearch
 
     #     algo = SkOptSearch
     # elif search_algo == "ZOOpt":
@@ -1288,17 +1292,17 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # ZOOpt Search
-    #     from ray.tune.suggest.zoopt import ZOOptSearch
+    #     from ray.tune.search.zoopt import ZOOptSearch
 
     #     algo = ZOOptSearch
     elif search_algo == "Repeater":
         # Repeated Evaluations
-        from ray.tune.suggest import Repeater
+        from ray.tune.search import Repeater
 
         algo = Repeater
     elif search_algo == "ConcurrencyLimiter":
         # ConcurrencyLimiter
-        from ray.tune.suggest import ConcurrencyLimiter
+        from ray.tune.search import ConcurrencyLimiter
 
         algo = ConcurrencyLimiter
     else:
@@ -1499,7 +1503,6 @@ def get_logger(logger: List) -> List[Callable]:
 
 
 class TimePlateauStopper(Stopper):
-
     """
     Combination of TimeoutStopper and TrialPlateauStopper
     """
