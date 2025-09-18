@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/ray/classifier_hyperparameter.py
 File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 3rd December 2023 11:24:12 pm
+Last Modified: Thursday, 18th September 2025 4:12:06 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -56,7 +56,7 @@ ADABOOSTCLASSIFIER = {
     "model": "AdaboostClassifier",
     "n_estimators": tune.qlograndint(10, 500, 1),
     "learning_rate": tune.uniform(0.01, 2),
-    "algorithm": tune.choice(["SAMME", "SAMME.R"]),
+    "algorithm": tune.choice(["SAMME"]),
     # for base_estimator of Decision Tree
     "max_depth": tune.qrandint(1, 10, 1),
 }

@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hpo/utils.py
 File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 7:19:48 pm
+Last Modified: Thursday, 18th September 2025 5:11:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -440,43 +440,6 @@ class TabularObjective(tune.Trainable):
 
         self._logger.info("[INFO] Objective starting...")
 
-        # Update: Dec. 2, 2023
-        # split data has been moved to AutoTabular methods for consistent splitting
-        # if self.validation == "KFold":
-        #     kf = KFold(
-        #         n_splits=int(1 / self.valid_size), shuffle=True, random_state=self.seed
-        #     )
-        #     _data_split = [
-        #         [
-        #             (self._X.loc[_train_idx, :], self._y.loc[_train_idx, :]),
-        #             (self._X.loc[_test_idx, :], self._y.loc[_test_idx, :]),
-        #         ]
-        #         for idx, (_train_idx, _test_idx) in enumerate(
-        #             kf.split(self._X, self._y)
-        #         )
-        #     ]
-        # elif self.validation:
-        #     # only perform train_test_split when validation
-        #     # train test split so the performance of model selection and
-        #     # hyperparameter optimization can be evaluated
-        #     X_train, X_test, y_train, y_test = train_test_split(
-        #         self._X, self._y, test_perc=self.valid_size, seed=self.seed
-        #     )
-        #     _data_split = [[(X_train, y_train), (X_test, y_test)]]
-        # else:
-        #     # if no validation, use all data for training
-        #     _data_split = [[(self._X, self._y), (self._X, self._y)]]
-
-        # if self.reset_index:
-        #     # reset index to avoid indexing order error
-        #     _data_split = [
-        #         [
-        #             (X_train.reset_index(drop=True), y_train.reset_index(drop=True)),
-        #             (X_test.reset_index(drop=True), y_test.reset_index(drop=True)),
-        #         ]
-        #         for (X_train, y_train), (X_test, y_test) in _data_split
-        #     ]
-
         # fit & predict
         _loss_list = []
         for idx, (_train, _test) in enumerate(self.data_split):
@@ -514,10 +477,15 @@ class TabularObjective(tune.Trainable):
             )
 
         # save the fitted model objects
+        path = os.getcwd()
+        raise NotImplementedError(path)
         save_methods(
             self.model_name,
             [self.enc, self.imp, self.blc, self.scl, self.fts, self.mol],
         )
+        assert os.path.exists(
+            self.model_name
+        ), "Fitted model not saved correctly!"
 
         self._logger.info(
             "[INFO] Loss from objective function is: {:.6f} calculated by (negative) {}.".format(

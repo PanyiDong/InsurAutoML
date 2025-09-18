@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/data.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:43:06 am
+Last Modified: Thursday, 18th September 2025 4:55:36 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -588,7 +588,7 @@ def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> Li
 
     _sample = sample.values
     features = list(table.columns)
-    _table = table.copy(deep=True)
+    _table = table.astype(_sample.dtype).copy(deep=True)
     _linktable = []
 
     for sample_point in _sample:

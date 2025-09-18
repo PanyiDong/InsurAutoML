@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 2:46:28 pm
+Last Modified: Thursday, 18th September 2025 5:22:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -94,7 +94,7 @@ INSTALL_LIST = [
     "setuptools",
     "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
-    "numpy<1.24.0",
+    "numpy",
     "pandas",
     "scipy",
     "pyarrow",
@@ -102,7 +102,7 @@ INSTALL_LIST = [
     "func-timeout",
     "matplotlib",
     "seaborn>=0.11.0",
-    "ray<2.0.0",
+    "ray",
     "gensim",
     "ray[tune]",
     # "ray[rllib]",
