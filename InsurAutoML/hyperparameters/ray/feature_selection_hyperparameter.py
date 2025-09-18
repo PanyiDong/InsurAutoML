@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/ray/feature_selection_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 8th June 2023 10:02:35 am
+Last Modified: Thursday, 18th September 2025 10:29:19 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -257,7 +257,7 @@ feature_selection_hyperparameter = [
     SFS,
     MRMR,
     CBFS,
-    # FOCI, # tend to get no feature selected
+    FOCI,
 ]
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
