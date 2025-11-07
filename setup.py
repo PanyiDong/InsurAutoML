@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 6th November 2025 8:09:52 pm
+Last Modified: Thursday, 6th November 2025 8:19:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -96,6 +96,7 @@ INSTALL_LIST = [
     "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
     "nanoflann",
+    "pybind11",
     "numpy<1.24.0",
     "pandas",
     "scipy",
@@ -428,7 +429,7 @@ if sys.platform == "darwin":
     include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
     library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
     libraries += ["omp"]
-if sys.platform != "win32":
+elif sys.platform != "win32":
     extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
     extra_link_args_ext += ["-fopenmp"]
 
@@ -466,7 +467,7 @@ if sys.platform == "darwin":
     include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
     library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
     libraries += ["omp"]
-if sys.platform != "win32":
+elif sys.platform != "win32":
     extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
     extra_link_args_ext += ["-fopenmp"]
 
