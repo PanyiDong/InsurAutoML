@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 6th November 2025 8:19:35 pm
+Last Modified: Thursday, 6th November 2025 9:03:04 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -83,35 +83,6 @@ def _pybind11_includes():
         return [pybind11.get_include(), pybind11.get_include(user=True)]
     except Exception:
         return []
-
-
-def _nanoflann_includes():
-    """Return a list of candidate include directories where nanoflann.hpp may be found.
-
-    This probes common locations and honors a conda environment via CONDA_PREFIX so
-    CI setups that install nanoflann from conda-forge are picked up automatically.
-    """
-    candidates = []
-    # If conda is active, include its include dir
-    conda_prefix = os.environ.get("CONDA_PREFIX") or os.environ.get("MINICONDA_PREFIX")
-    if conda_prefix:
-        candidates.append(os.path.join(conda_prefix, "include"))
-
-    # Include the current Python prefix (useful for some installs)
-    try:
-        candidates.append(os.path.join(sys.prefix, "include"))
-    except Exception:
-        pass
-
-    # Common system include paths
-    candidates.extend(["/usr/include", "/usr/local/include"])
-
-    # Repository-local fallback location (optional vendor path)
-    repo_vendor = os.path.join(os.path.dirname(__file__), "third_party", "nanoflann")
-    candidates.append(repo_vendor)
-
-    # Filter to existing directories only
-    return [p for p in candidates if p and os.path.isdir(p)]
 
 
 # Automatically get release version
@@ -464,9 +435,7 @@ extra_compile_args_ext = []
 extra_link_args_ext = []
 library_dirs = []
 libraries = []
-include_dirs_ext = _pybind11_includes() + _nanoflann_includes() + [
-    os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")
-]
+include_dirs_ext = _pybind11_includes() + [os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")]
 if sys.platform == "darwin":
     extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
     extra_link_args += ["-lomp"]
@@ -504,9 +473,7 @@ extra_compile_args_ext = []
 extra_link_args_ext = []
 library_dirs = []
 libraries = []
-include_dirs_ext = _pybind11_includes() + _nanoflann_includes() + [
-    os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")
-]
+include_dirs_ext = _pybind11_includes() + [os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")]
 if sys.platform == "darwin":
     extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
     extra_link_args += ["-lomp"]
