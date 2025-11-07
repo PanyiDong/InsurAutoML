@@ -22,6 +22,7 @@ jobs:
           auto-update-conda: true
       - name: Install C/C++ headers and build tools
         run: |
+          sudo apt install libnanoflann-dev
           conda install -y -c conda-forge nanoflann pybind11 cmake ninja
           python -m pip install --upgrade pip
           python -m pip install cmake pybind11
