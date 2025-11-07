@@ -19,7 +19,7 @@ jobs:
       - name: Setup environment
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pybind11
+          pip install pytest pybind11 nanoflann
       - name: "run builds (without neural network)"
         run: |
           git describe --tags

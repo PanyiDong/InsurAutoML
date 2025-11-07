@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine cython auditwheel patchelf>=0.14 pybind11
+          pip install setuptools wheel twine cython auditwheel patchelf>=0.14 pybind11 nanoflann
           # sudo apt-get install patchelf
       - name: Build # and publish
         # env:
@@ -62,7 +62,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install setuptools wheel twine cython pybind11
+          pip install setuptools wheel twine cython pybind11 nanoflann
       - name: Build # and publish
         # env:
         #   TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
