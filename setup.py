@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 24th November 2023 2:46:28 pm
+Last Modified: Thursday, 6th November 2025 8:09:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -47,6 +47,7 @@ import json
 import logging
 import importlib
 import subprocess
+import pybind11
 from typing import Optional
 
 from setuptools import setup, find_packages, Extension
@@ -94,6 +95,7 @@ INSTALL_LIST = [
     "setuptools",
     "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
+    "nanoflann",
     "numpy<1.24.0",
     "pandas",
     "scipy",
@@ -409,6 +411,83 @@ def build_cython_extensions():
     # SETUP_ARGS["cmdclass"] = {"build_ext": postp_cython_build_ext}
 
     return cython_extensions
+
+
+# --- External native extensions: suppsplit (pybind11) and twinning (pybind11) ---
+# try:
+# SuppsPlit (pybind11) extension
+extra_compile_args_ext = []
+extra_link_args_ext = []
+library_dirs = []
+libraries = []
+include_dirs_ext = [pybind11.get_include(), pybind11.get_include(user=True), os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")]
+if sys.platform == "darwin":
+    extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
+    extra_link_args += ["-lomp"]
+    # Homebrew paths (adjust if needed)
+    include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
+    library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
+    libraries += ["omp"]
+if sys.platform != "win32":
+    extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
+    extra_link_args_ext += ["-fopenmp"]
+
+suppsplit_ext = Extension(
+    "InsurAutoML.ext.suppsplit.suppsplit_cpp",
+    sources=[
+        os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sp.cpp"),
+        os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sPlit.cpp"),
+        os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "bindings.cpp"),
+    ],
+    include_dirs=include_dirs_ext,
+    language="c++",
+    extra_compile_args=extra_compile_args_ext,
+    extra_link_args=extra_link_args_ext,
+    library_dirs=library_dirs,
+    libraries=libraries,
+)
+
+SETUP_ARGS["ext_modules"].append(suppsplit_ext)
+SETUP_REQUIRES.append("pybind11")
+# except Exception:
+#     log.warning("Could not configure suppsplit extension; continuing without it.")
+
+# try:
+# SuppsPlit (pybind11) extension
+extra_compile_args_ext = []
+extra_link_args_ext = []
+library_dirs = []
+libraries = []
+include_dirs_ext = [pybind11.get_include(), pybind11.get_include(user=True), os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")]
+if sys.platform == "darwin":
+    extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
+    extra_link_args += ["-lomp"]
+    # Homebrew paths (adjust if needed)
+    include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
+    library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
+    libraries += ["omp"]
+if sys.platform != "win32":
+    extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
+    extra_link_args_ext += ["-fopenmp"]
+
+twinning_ext = Extension(
+    "InsurAutoML.ext.twinreduction.twinning_cpp",
+    sources=[
+        os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp", "twinning.cpp"),
+        os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp", "bindings.cpp"),
+    ],
+    include_dirs=include_dirs_ext,
+    language="c++",
+    extra_compile_args=extra_compile_args_ext,
+    extra_link_args=extra_link_args_ext,
+    library_dirs=library_dirs,
+    libraries=libraries,
+)
+
+SETUP_ARGS["ext_modules"].append(twinning_ext)
+SETUP_REQUIRES.append("pybind11")
+# except Exception:
+#     log.warning("Could not configure twinning extension; continuing without it.")
 
 
 # prepare for package.json file
