@@ -47,7 +47,6 @@ import json
 import logging
 import importlib
 import subprocess
-import pybind11
 from typing import Optional
 
 from setuptools import setup, find_packages, Extension
@@ -69,6 +68,21 @@ except ImportError:
         from Cython.Build import cythonize
 
         return cythonize(*args, **kwargs)
+
+
+def _pybind11_includes():
+    """Return a list of pybind11 include dirs if pybind11 is importable, else empty list.
+
+    This defers importing pybind11 until build-time so that import-time
+    execution of setup.py does not fail when pybind11 is not present in the
+    build isolation environment.
+    """
+    try:
+        import pybind11
+
+        return [pybind11.get_include(), pybind11.get_include(user=True)]
+    except Exception:
+        return []
 
 
 # Automatically get release version
@@ -421,7 +435,7 @@ extra_compile_args_ext = []
 extra_link_args_ext = []
 library_dirs = []
 libraries = []
-include_dirs_ext = [pybind11.get_include(), pybind11.get_include(user=True), os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")]
+include_dirs_ext = _pybind11_includes() + [os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")]
 if sys.platform == "darwin":
     extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
     extra_link_args += ["-lomp"]
@@ -459,7 +473,7 @@ extra_compile_args_ext = []
 extra_link_args_ext = []
 library_dirs = []
 libraries = []
-include_dirs_ext = [pybind11.get_include(), pybind11.get_include(user=True), os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")]
+include_dirs_ext = _pybind11_includes() + [os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")]
 if sys.platform == "darwin":
     extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
     extra_link_args += ["-lomp"]
