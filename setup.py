@@ -11,7 +11,7 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 6th November 2025 9:23:10 pm
+Last Modified: Wednesday, 12th November 2025 11:21:57 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -271,18 +271,18 @@ def get_r_home() -> Optional[str]:
     return r_home
 
 
-# get R Home environment variable
-# if found, install rpy2
-# otherwise, do not install rpy2
-R_HOME = get_r_home()
-if not R_HOME:
-    log.info("""The R home directory could not be determined.""")
+# # get R Home environment variable
+# # if found, install rpy2
+# # otherwise, do not install rpy2
+# R_HOME = get_r_home()
+# if not R_HOME:
+#     log.info("""The R home directory could not be determined.""")
 
-# only install for Linux
-if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
-    os.environ["R_HOME"] = R_HOME
-    EXTRA_DICT["extended"].append("rpy2")
-    EXTRA_DICT["nn"].append("rpy2")
+# # only install for Linux
+# if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
+#     os.environ["R_HOME"] = R_HOME
+#     EXTRA_DICT["extended"].append("rpy2")
+#     EXTRA_DICT["nn"].append("rpy2")
 
 DATA_LIST = ["Appendix/*", "example/*"]
 
