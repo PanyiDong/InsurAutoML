@@ -11,13 +11,13 @@ File Created: Thursday, 6th November 2025 5:56:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 6th November 2025 8:02:14 pm
+Last Modified: Wednesday, 19th November 2025 3:45:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2025 - 2025, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -103,7 +103,7 @@ def TwinReduction(data, missing_idx, r: int = 10, u1: int = None, leaf_size: int
 	data : ndarray
 		Input data used to compute twin blocks
 	missing_idx : array_like
-		Boolean 1-D mask of length n*p (flattened) indicating missing positions
+		Boolean 1-D mask of length n indicating missing samples (True for missing, False for observed)
 	r, u1, leaf_size : as in :func:`twin`
 
 	Returns
@@ -116,11 +116,14 @@ def TwinReduction(data, missing_idx, r: int = 10, u1: int = None, leaf_size: int
 	# Get twin indices (list of 1-D numpy arrays)
 	twin_idx = twin(data, r, u1, leaf_size)
 	# Vectorized mapping: get boolean mask for twin positions referenced by missing_idx
-	# Sum along axis 1 to get a boolean mask for each twin block
-	twin_missing = missing_idx[twin_idx].sum(axis = 1)
-	# If the twin block have both missing and observed, remove entire block
-	idx_reduced = np.array([twin_idx[i] for i in range(len(twin_idx)) if twin_missing[i] == 0 or twin_missing[i] == len(twin_idx[i])]).flatten()
-	
+	twin_missing = missing_idx[twin_idx]
+	# If the twin block have both missing and observed, retain only observed
+	# Otherwise, retain all
+	idx_reduced = np.concatenate([
+    	twin_idx[i] if sum(twin_missing[i]) == 0 or sum(twin_missing[i]) == len(twin_idx[i]) else twin_idx[i][~twin_missing[i]] 
+    	for i in range(len(twin_idx)) 
+    ]).flatten()
+ 
 	return data[idx_reduced, :]
 
 
