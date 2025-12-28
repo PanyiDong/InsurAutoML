@@ -1,23 +1,23 @@
 """
-File Name: ensemble.py
+File Name: informed_ensemble.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.6
-Relative Path: /InsurAutoML/hpo/ensemble.py
-File Created: Friday, 1st December 2023 6:43:44 pm
+Relative Path: /InsurAutoML/hpo/informed/informed_ensemble.py
+File Created: Thursday, 4th December 2025 10:09:32 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 8th December 2025 1:00:53 pm
+Last Modified: Friday, 19th December 2025 3:12:07 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2023 - 2025, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -45,12 +45,12 @@ import logging
 import pandas as pd
 import numpy as np
 
-from ..utils.data import formatting
+from ...utils.data import formatting
 
 logger = logging.getLogger(__name__)
 
 
-class Pipeline:
+class InformedPipeline:
     """ "
     A pipeline of entire AutoML process.
     """
@@ -58,63 +58,39 @@ class Pipeline:
     def __init__(
         self,
         encoder: Callable = None,
-        imputer: Callable = None,
-        balancing: Callable = None,
-        scaling: Callable = None,
-        feature_selection: Callable = None,
-        model: Callable = None,
+        complete_prep: Callable = None,
+        missing_prep: Callable = None,
+        model_complete: Callable = None,
+        model_missing: Callable = None,
     ) -> None:
         self.encoder = encoder
-        self.imputer = imputer
-        self.balancing = balancing
-        self.scaling = scaling
-        self.feature_selection = feature_selection
-        self.model = model
+        self.complete_prep = complete_prep
+        self.missing_prep = missing_prep
+        self.model_complete = model_complete
+        self.model_missing = model_missing
 
         self._fitted = False  # whether the pipeline is fitted
 
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series] = None
-    ) -> Pipeline:
+    ) -> InformedPipeline:
         # loop all components, make sure they are fitted
-        # if they are not fitted, fit them
-        if self.encoder is not None:
-            if self.encoder._fitted:
-                pass
-            else:
-                X = self.encoder.fit(X)
-        if self.imputer is not None:
-            if self.imputer._fitted:
-                pass
-            else:
-                X = self.imputer.fill(X)
-        if self.balancing is not None:
-            if self.balancing._fitted:
-                pass
-            else:
-                X, y = self.balancing.fit_transform(X, y)
-        if self.scaling is not None:
-            if self.scaling._fitted:
-                pass
-            else:
-                self.scaling.fit(X, y)
-                X = self.scaling.transform(X)
-        if self.feature_selection is not None:
-            if self.feature_selection._fitted:
-                pass
-            else:
-                self.feature_selection.fit(X, y)
-                X = self.feature_selection.transform(X)
+        if self.encoder is not None and not self.encoder._fitted:
+            raise ValueError("encoder is not fitted!")
+
+        if self.complete_prep is not None and not self.complete_prep._fitted:
+            raise ValueError("complete_prep is not fitted!")
+
+        if self.missing_prep is not None and not self.missing_prep._fitted:
+            raise ValueError("missing_prep is not fitted!")
 
         if scipy.sparse.issparse(X):  # check if returns sparse matrix
             X = X.toarray()
 
-        if self.model is None:
-            raise ValueError("model is not defined!")
-        if self.model._fitted:
-            pass
-        else:
-            self.model.fit(X, y)
+        if self.model_complete is None or self.model_missing is None:
+            raise ValueError("model_complete or model_missing is not defined!")
+        if not self.model_complete._fitted or not self.model_missing._fitted:
+            raise ValueError("model_complete or model_missing is not fitted!")
 
         self._fitted = True
 
@@ -126,21 +102,24 @@ class Pipeline:
 
         if self.encoder is not None:
             X = self.encoder.refit(X)
-        if self.imputer is not None:
-            X = self.imputer.fill(X)
-        # no need for balancing
-        if self.scaling is not None:
-            X = self.scaling.transform(X)
 
-        # unify the features order
-        if hasattr(self.feature_selection, "feature_names_in_"):
-            if not (self.feature_selection.feature_names_in_ == X.columns).all():
-                X = X[self.feature_selection.feature_names_in_]
+        # transform the data
+        X_complete, _ = self.complete_prep.transform(X, None)
+        X_missing, _ = self.missing_prep.transform(X, None)
+        # get the predictions
+        y_pred_complete = self.model_complete.predict(X_complete)
+        y_pred_missing = self.model_missing.predict(X_missing)
+        # prediction resets index, thus set to original index
+        complete_index = [
+            i for i, idx in enumerate(X_missing.index) if idx in X_complete.index
+        ]
+        # use y_pred_missing as base predictions and use y_pred_complete to update the complete cases
+        y_pred = y_pred_missing.copy()
+        y_pred[complete_index] += y_pred_complete
+        # average the two predictions for complete cases
+        y_pred[complete_index] /= 2
 
-        if self.feature_selection is not None:
-            X = self.feature_selection.transform(X)
-
-        return self.model.predict(X)
+        return y_pred
 
     def predict_proba(
         self, X: pd.DataFrame
@@ -150,24 +129,30 @@ class Pipeline:
 
         if self.encoder is not None:
             X = self.encoder.refit(X)
-        if self.imputer is not None:
-            X = self.imputer.fill(X)
-        # no need for balancing
-        if self.scaling is not None:
-            X = self.scaling.transform(X)
 
-        # unify the features order
-        if hasattr(self.feature_selection, "feature_names_in_"):
-            if not (self.feature_selection.feature_names_in_ == X.columns).all():
-                X = X[self.feature_selection.feature_names_in_]
+        # transform the data
+        X_complete, _ = self.complete_prep.transform(X, None)
+        X_missing, _ = self.missing_prep.transform(X, None)
 
-        if self.feature_selection is not None:
-            X = self.feature_selection.transform(X)
-
-        if not hasattr(self.model, "predict_proba"):
+        if not hasattr(self.model_complete, "predict_proba") or not hasattr(
+            self.model_missing, "predict_proba"
+        ):
             logger.error("model does not have predict_proba method!")
 
-        return self.model.predict_proba(X)
+        # get the probabilities
+        y_pred_complete = self.model_complete.predict_proba(X_complete)
+        y_pred_missing = self.model_missing.predict_proba(X_missing)
+        # prediction resets index, thus set to original index
+        complete_index = [
+            i for i, idx in enumerate(X_missing.index) if idx in X_complete.index
+        ]
+        # use y_pred_missing as base predictions and use y_pred_complete to update the complete cases
+        y_pred = y_pred_missing.copy()
+        y_pred[complete_index] += y_pred_complete
+        # average the two predictions for complete cases
+        y_pred[complete_index] /= 2
+
+        return y_pred
 
 
 # ensemble methods:
@@ -176,14 +161,14 @@ class Pipeline:
 # 3. Bagging Ensemble
 
 
-class ClassifierEnsemble(formatting):
+class InformedClassifierEnsemble(formatting):
     """
     Ensemble of classifiers for classification.
     """
 
     def __init__(
         self,
-        estimators: List[Tuple[str, Pipeline]],
+        estimators: List[Tuple[str, InformedPipeline]],
         voting: str = "hard",
         weights: List[float] = None,
         features: List[str] = [],
@@ -196,7 +181,7 @@ class ClassifierEnsemble(formatting):
         self.strategy = strategy
 
         # initialize the formatting
-        super(ClassifierEnsemble, self).__init__(
+        super(InformedClassifierEnsemble, self).__init__(
             inplace=False,
         )
 
@@ -204,7 +189,7 @@ class ClassifierEnsemble(formatting):
 
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> ClassifierEnsemble:
+    ) -> InformedClassifierEnsemble:
         # check for voting type
         if self.voting not in ["hard", "soft"]:
             raise ValueError("voting must be either 'hard' or 'soft'")
@@ -235,7 +220,7 @@ class ClassifierEnsemble(formatting):
             self._response = ["response"]
 
         # remember all unique labels
-        super(ClassifierEnsemble, self).fit(y)
+        super(InformedClassifierEnsemble, self).fit(y)
 
         # check for estimators type
         if not isinstance(self.estimators, list):
@@ -243,7 +228,7 @@ class ClassifierEnsemble(formatting):
         for item, feature_subset in zip(self.estimators, self.features):
             if not isinstance(item, tuple):
                 raise TypeError("estimators must be a list of tuples.")
-            if not isinstance(item[1], Pipeline):
+            if not isinstance(item[1], InformedPipeline):
                 raise TypeError(
                     "estimators must be a list of tuples of (name, Pipeline)."
                 )
@@ -262,9 +247,10 @@ class ClassifierEnsemble(formatting):
 
         if self.voting == "hard":
             # calculate predictions for all pipelines
+            # round predictions to nearest integers
             pred_list = np.asarray(
                 [
-                    pipeline.predict(X[feature_subset])
+                    pipeline.predict(X[feature_subset]).round().astype(int)
                     for (name, pipeline), feature_subset in zip(
                         self.estimators, self.features
                     )
@@ -309,10 +295,10 @@ class ClassifierEnsemble(formatting):
 
         # make sure all predictions are seen
         if isinstance(pred, pd.DataFrame):
-            return super(ClassifierEnsemble, self).refit(pred)
+            return super(InformedClassifierEnsemble, self).refit(pred)
         # if not dataframe, convert to dataframe for formatting
         else:
-            return super(ClassifierEnsemble, self).refit(
+            return super(InformedClassifierEnsemble, self).refit(
                 pd.DataFrame(pred, columns=self._response)
             )
 
@@ -350,14 +336,14 @@ class ClassifierEnsemble(formatting):
             )
 
 
-class RegressorEnsemble(formatting):
+class InformedRegressorEnsemble(formatting):
     """
     Ensemble of regressors for regression.
     """
 
     def __init__(
         self,
-        estimators: List[Tuple[str, Pipeline]],
+        estimators: List[Tuple[str, InformedPipeline]],
         voting: str = "mean",
         weights: List[float] = None,
         features: List[str] = [],
@@ -370,7 +356,7 @@ class RegressorEnsemble(formatting):
         self.strategy = strategy
 
         # initialize the formatting
-        super(RegressorEnsemble, self).__init__(
+        super(InformedRegressorEnsemble, self).__init__(
             inplace=False,
         )
 
@@ -385,7 +371,7 @@ class RegressorEnsemble(formatting):
 
     def fit(
         self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
-    ) -> RegressorEnsemble:
+    ) -> InformedRegressorEnsemble:
         # check for voting type
         if self.voting in ["mean", "median", "max", "min"]:
             self.voting = self._voting_methods[self.voting]
@@ -427,7 +413,7 @@ class RegressorEnsemble(formatting):
         for item, feature_subset in zip(self.estimators, self.features):
             if not isinstance(item, tuple):
                 raise TypeError("estimators must be a list of tuples.")
-            if not isinstance(item[1], Pipeline):
+            if not isinstance(item[1], InformedPipeline):
                 raise TypeError(
                     "estimators must be a list of tuples of (name, Pipeline)."
                 )

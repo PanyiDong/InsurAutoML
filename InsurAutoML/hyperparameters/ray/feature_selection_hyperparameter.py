@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/ray/feature_selection_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 8th June 2023 10:02:35 am
+Last Modified: Monday, 1st December 2025 1:32:14 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -224,6 +224,10 @@ CBFS = {
     "copula": tune.choice(["empirical"]),
     "n_prop": tune.uniform(0, 1),
 }
+CCCFilter= {
+    "feature_selection": "CCCFilter",
+    "threshold": tune.quniform(0.01, 0.10, 0.01),
+}
 FOCI = {
     "feature_selection": "FOCI",
 }
@@ -257,7 +261,8 @@ feature_selection_hyperparameter = [
     SFS,
     MRMR,
     CBFS,
-    # FOCI, # tend to get no feature selected
+    CCCFilter,
+    FOCI, # tend to get no feature selected
 ]
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class

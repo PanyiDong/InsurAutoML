@@ -11,7 +11,7 @@ File Created: Thursday, 6th November 2025 5:56:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 19th November 2025 3:45:30 pm
+Last Modified: Monday, 1st December 2025 11:26:26 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -46,7 +46,8 @@ from ...twinreduction.twinning_cpp import twin_cpp
 def _data_format(data):
     const_cols = np.all(data == data[0, :], axis=0)
     data = data[:, np.invert(const_cols)]
-    data = (data - data.mean(axis=0)) / data.std(axis=0)
+    # add small value to std to avoid division by zero
+    data = (data - data.mean(axis=0)) / (data.std(axis=0) + 1e-8)
 
     if data.data.c_contiguous:
         return data
@@ -92,17 +93,18 @@ def twin(data, r: int = 10, u1: int = None, leaf_size: int = 8):
 	# twin_cpp now returns a list of numpy arrays, each containing indices for a twin block.
 	groups = twin_cpp(data, r, u1, leaf_size)
 	# normalize dtype and memory layout for each group's array
-	return np.array([np.asarray(g) for g in groups])
+    # Update for ragged array deprecation: return a LIST of arrays
+	return [np.asarray(g) for g in groups]
 
 
-def TwinReduction(data, missing_idx, r: int = 10, u1: int = None, leaf_size: int = 8):
+def TwinReduction(data, missing_mask, r: int = 10, u1: int = None, leaf_size: int = 8, return_indices: bool = False):
 	"""Use missing indices to perform data reduction via twinning.
 
 	Parameters
 	----------
 	data : ndarray
 		Input data used to compute twin blocks
-	missing_idx : array_like
+	missing_idx : array_like (bool), (n_samples,)
 		Boolean 1-D mask of length n indicating missing samples (True for missing, False for observed)
 	r, u1, leaf_size : as in :func:`twin`
 
@@ -115,8 +117,8 @@ def TwinReduction(data, missing_idx, r: int = 10, u1: int = None, leaf_size: int
 	data = np.array(data) if not isinstance(data, np.ndarray) else data
 	# Get twin indices (list of 1-D numpy arrays)
 	twin_idx = twin(data, r, u1, leaf_size)
-	# Vectorized mapping: get boolean mask for twin positions referenced by missing_idx
-	twin_missing = missing_idx[twin_idx]
+	# Vectorized mapping: get boolean mask for twin positions referenced by missing_mask
+	twin_missing = [missing_mask[idx] for idx in twin_idx]
 	# If the twin block have both missing and observed, retain only observed
 	# Otherwise, retain all
 	idx_reduced = np.concatenate([
@@ -124,6 +126,6 @@ def TwinReduction(data, missing_idx, r: int = 10, u1: int = None, leaf_size: int
     	for i in range(len(twin_idx)) 
     ]).flatten()
  
-	return data[idx_reduced, :]
+	return data[idx_reduced, :], idx_reduced if return_indices else data[idx_reduced, :]
 
 

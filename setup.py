@@ -11,13 +11,13 @@ File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 12th November 2025 11:21:57 am
+Last Modified: Sunday, 28th December 2025 9:59:38 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -37,7 +37,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
-
 
 from pathlib import Path
 import os
@@ -83,6 +82,7 @@ def _pybind11_includes():
         return [pybind11.get_include(), pybind11.get_include(user=True)]
     except Exception:
         return []
+
 
 # Automatically get release version
 InsurAutoML_version = (
@@ -144,6 +144,7 @@ EXTRA_DICT = {
         # "rpy2;platform_system=='Linux'",
         "mlflow",
         "lightgbm",
+        "catboost",
         "xgboost",
         "pygam",
         "flaml",
@@ -152,6 +153,16 @@ EXTRA_DICT = {
         "bayesian_optimization==1.4.0",
         "colorama==0.4.4",
         "nevergrad",
+        "hyperopt",
+        "optuna",
+    ],
+    "informed": [
+        "missforest",
+        "mlflow",
+        "lightgbm",
+        "catboost",
+        "xgboost",
+        "pygam",
         "hyperopt",
         "optuna",
     ],
@@ -452,9 +463,7 @@ if sys.platform != "win32":
     suppsplit_ext = Extension(
         "InsurAutoML.ext.suppsplit.suppsplit_cpp",
         sources=[
-            os.path.join(
-                "InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sp.cpp"
-            ),
+            os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sp.cpp"),
             os.path.join(
                 "InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sPlit.cpp"
             ),

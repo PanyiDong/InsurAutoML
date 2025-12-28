@@ -11,13 +11,13 @@ File Created: Thursday, 11th September 2025 3:07:38 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 6th November 2025 8:02:30 pm
+Last Modified: Thursday, 4th December 2025 2:30:30 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2025 - 2025, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -125,7 +125,7 @@ def SPlit(
     kappa=None,
     max_iterations=500,
     tolerance=1e-10,
-    n_threads=None,
+    n_threads=1,  # use only one thread by default to allow AutoML parallelism
 ):
     if not (0 < split_ratio < 1):
         raise ValueError("split_ratio must be in (0, 1).")

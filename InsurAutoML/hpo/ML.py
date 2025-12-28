@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 12th November 2025 2:05:15 pm
+Last Modified: Wednesday, 3rd December 2025 1:52:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, Callable, Dict
+from typing import Union, List, Callable, Dict, Optional
 import numpy as np
 import pandas as pd
 
@@ -48,7 +48,6 @@ from ..utils.base import type_of_task
 
 
 class AutoTabularRegressor(AutoTabularBase):
-
     """ "
     AutoTabular for regression tasks build on top of AutoTabularBase.
 
@@ -292,7 +291,6 @@ class AutoTabularRegressor(AutoTabularBase):
 
 
 class AutoTabularClassifier(AutoTabularBase):
-
     """ "
     AutoTabular for classification tasks build on top of AutoTabularBase
 
@@ -537,7 +535,6 @@ class AutoTabularClassifier(AutoTabularBase):
 
 
 class AutoTabular(AutoTabularBase):
-
     """
     AutoTabular that automatically assign to AutoTabularClassifier or AutoTabularRegressor
 
@@ -774,7 +771,11 @@ class AutoTabular(AutoTabularBase):
             )
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
+        self,
+        X: pd.DataFrame,
+        y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+        X_valid: Optional[pd.DataFrame] = None,
+        y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabular:
         if isinstance(y, (pd.DataFrame, pd.Series, np.ndarray)):
             self._type = type_of_task(y)
@@ -820,7 +821,7 @@ class AutoTabular(AutoTabularBase):
             seed=self.seed,
         )
 
-        super(AutoTabular, self).fit(X, y)
+        super(AutoTabular, self).fit(X, y, X_valid, y_valid)
 
         return self
 

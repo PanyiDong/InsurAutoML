@@ -2,22 +2,22 @@
 File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
 Latest Version: 0.2.6
-Relative Path: /InsurAutoML/hpo/__init__.py
-File Created: Monday, 24th October 2022 11:56:57 pm
+Relative Path: /InsurAutoML/hpo/informed/__init__.py
+File Created: Thursday, 4th December 2025 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 4th December 2025 1:14:13 pm
+Last Modified: Thursday, 4th December 2025 1:13:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2025, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,23 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# from ._base import AutoTabularBase
-from .ML import AutoTabular, AutoTabularClassifier, AutoTabularRegressor
-from .informed import (
+from .ML import (
     InformedAutoTabular,
     InformedAutoTabularRegressor,
     InformedAutoTabularClassifier,
 )
-from .DL import AutoTextClassifier, AutoNextWordPrediction
-
-
-__all__ = [
-    "AutoTabular",
-    "AutoTabularClassifier",
-    "AutoTabularRegressor",
-    "InformedAutoTabular",
-    "InformedAutoTabularRegressor",
-    "InformedAutoTabularClassifier",
-    "AutoTextClassifier",
-    "AutoNextWordPrediction",
-]

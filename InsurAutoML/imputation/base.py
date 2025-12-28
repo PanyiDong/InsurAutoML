@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/imputation/base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 12th July 2023 8:19:18 pm
+Last Modified: Tuesday, 16th December 2025 3:09:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -58,7 +58,6 @@ class BaseImputer:
 
 
 class SimpleImputer(BaseImputer):
-
     """
     Simple Imputer to fill nan values
 
@@ -109,8 +108,34 @@ class SimpleImputer(BaseImputer):
         return X
 
 
-class DummyImputer(BaseImputer):
+class MeanModeImputer(BaseImputer):
+    def __init__(self) -> None:
+        super().__init__()
+        self._fitted = False
 
+    @staticmethod
+    def mean_mode_impute(X: pd.DataFrame) -> pd.DataFrame:
+        # Impute numerical columns with mean and categorical columns with mode
+        # iterate through each column
+        for col in X.columns:
+            if pd.api.types.is_numeric_dtype(X[col]):
+                mean_val = X[col].mean()
+                X[col] = X[col].fillna(mean_val)
+            else:
+                modes = X[col].mode(dropna=True)
+                if not modes.empty:
+                    mode_val = modes[0]
+                    X[col] = X[col].fillna(mode_val)
+        return X
+
+    def fill(self, X: pd.DataFrame) -> pd.DataFrame:
+        _X = X.copy()
+
+        self._fitted = True
+        return self.mean_mode_impute(_X)
+
+
+class DummyImputer(BaseImputer):
     """
     Create dummy variable for nan values and fill the original feature with 0
     The idea is that there are possibilities that the nan values are critically related to response, create dummy
@@ -186,7 +211,6 @@ class DummyImputer(BaseImputer):
 
 
 class JointImputer(BaseImputer):
-
     """
     Impute the missing values assume a joint distribution, default as multivariate Gaussian distribution
     """
@@ -233,9 +257,9 @@ class JointImputer(BaseImputer):
         """
 
         _mis_column = np.argwhere(X.loc[row_index, :].isnull().values).T[0]
-        _obs_column = [i for i in range(len(list(X.columns)))]
-        for item in _mis_column:
-            _obs_column.remove(item)
+        _obs_column = list(
+            set([i for i in range(len(list(X.columns)))]) - set(_mis_column)
+        )
 
         _mu_1 = np.nanmean(X.iloc[:, _mis_column], axis=0).T.reshape(
             len(_mis_column), 1
@@ -257,11 +281,12 @@ class JointImputer(BaseImputer):
             len(_obs_column), 1
         )
         _mu = _mu_1 + _sigma_12 @ np.linalg.inv(_sigma_22) @ (_a - _mu_2)
-        _mu = _mu[0]  # multivariate_normal only accept 1 dimension mean
+        _mu = (
+            _mu.ravel() if len(_mu.shape) > 1 else _mu
+        )  # multivariate_normal only accept 1 dimension mean
         _sigma = _sigma_11 - _sigma_12 @ np.linalg.inv(_sigma_22) @ _sigma_21
-
         X.loc[row_index, X.loc[row_index, :].isnull()] = np.random.multivariate_normal(
-            mean=_mu, cov=_sigma, size=(X.loc[row_index, :].isnull().values.sum(), 1)
+            mean=_mu, cov=_sigma, size=1
         )
 
         return X.loc[row_index, :]
