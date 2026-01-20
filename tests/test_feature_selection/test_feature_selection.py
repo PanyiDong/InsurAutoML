@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /tests/test_feature_selection/test_feature_selection.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 5:33:31 pm
+Last Modified: Tuesday, 20th January 2026 12:24:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ def test_feature_selection():
     for method_name, method in zip(
         feature_selections.keys(), feature_selections.values()
     ):
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
+        data = pd.read_csv("data/Medicalpremium.csv")
         X = data.iloc[:, :-1]
         y = data.iloc[:, -1]
 
@@ -103,7 +103,7 @@ def test_feature_selection():
             "truncatedSVD": truncatedSVD,
         }
         for method_name, method in zip(methods.keys(), methods.values()):
-            data = pd.read_csv("Appendix/Medicalpremium.csv")
+            data = pd.read_csv("data/Medicalpremium.csv")
             X = data.iloc[:, :-1]
             y = data.iloc[:, -1]
 
@@ -117,7 +117,7 @@ def test_feature_selection():
 def test_FeatureFilter():
     from InsurAutoML.feature_selection import FeatureFilter
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -141,11 +141,21 @@ def test_FeatureFilter():
     assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
 
+    feature_selection = FeatureFilter(
+        n_components=5,
+        criteria="CCC",
+    )
+    feature_selection.fit(X, y)
+    _X = feature_selection.transform(X)
+
+    assert feature_selection._fitted, "Fitted should be True"
+    assert _X.shape[1] <= X.shape[1], "Feature selection method FeatureFilter failed"
+
 
 def test_ASFFS():
     from InsurAutoML.feature_selection import ASFFS
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -181,7 +191,7 @@ def test_GA():
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.feature_selection import GeneticAlgorithm
 
-    data = pd.read_csv("Appendix/heart.csv")
+    data = pd.read_csv("data/heart.csv")
     formatter = DataEncoding()
 
     # to numerical
@@ -234,7 +244,7 @@ def test_GA():
 def test_FOCI():
     from InsurAutoML.feature_selection.filter import FOCI
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -250,7 +260,7 @@ def test_ExhaustiveFS():
     from InsurAutoML.feature_selection.wrapper import ExhaustiveFS
     from sklearn.linear_model import Ridge
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 

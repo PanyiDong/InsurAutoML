@@ -11,13 +11,13 @@ File: _constant.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 24th April 2024 2:57:57 pm
+Last Modified: Tuesday, 16th December 2025 8:20:52 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -143,6 +143,9 @@ FEATURE_SELECTION = [
     "select_rates_classification",
     "select_rates_regression",
     "truncatedSVD",
+    "mRMR",
+    "CBFS",
+    "FOCI",
 ]
 
 # classifiers
@@ -229,7 +232,7 @@ LIGHTGBM_REGRESSION = [
     "poisson",
     "quantile",
     "mape",
-    "gamma",
+    # "gamma",
     "tweedie",
 ]
 
@@ -277,6 +280,8 @@ REGRESSION_CRITERIA = [
 # methods corresponding process must have
 METHOD_MAPPING = {
     "encoder": ["fit", "refit"],
+    "complete_prep": ["fit", "transform"],
+    "missing_prep": ["fit", "transform"],
     "imputer": ["fill"],
     "balancing": ["fit_transform"],
     "scaling": ["fit", "transform", "fit_transform"],

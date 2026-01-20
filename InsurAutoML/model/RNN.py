@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/model/RNN.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th September 2023 2:39:52 pm
+Last Modified: Thursday, 4th December 2025 2:36:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -66,7 +66,6 @@ if pytorch_spec is not None:
 
 
 class RNN_Net(nn.Module):
-
     """
     Recurrent Neural Network (RNN) model structure
 
@@ -190,7 +189,6 @@ class RNN_Net(nn.Module):
 
 
 class RNN_Base:
-
     """
     Recurrent Neural Network (RNN) models for classification tasks, training/evaluation
 
@@ -380,7 +378,6 @@ class RNN_Base:
 
 
 class RNN_Classifier(RNN_Base, BaseModel):
-
     """
     RNN Classifier
 
@@ -467,12 +464,14 @@ class RNN_Classifier(RNN_Base, BaseModel):
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
             X = torch.as_tensor(
-                X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+                X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
+                dtype=torch.float,
             )
             X.unsqueeze_(-1)  # expand to 3d tensor
         if not isinstance(y, torch.Tensor):
             y = torch.as_tensor(
-                y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
+                y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
+                dtype=torch.long,
             )
 
         super(RNN_Classifier, self).__init__(
@@ -508,7 +507,6 @@ class RNN_Classifier(RNN_Base, BaseModel):
 
 
 class RNN_Regressor(RNN_Base, BaseModel):
-
     """
     RNN Classifier
 
@@ -595,12 +593,14 @@ class RNN_Regressor(RNN_Base, BaseModel):
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
             X = torch.as_tensor(
-                X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+                X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
+                dtype=torch.float,
             )
             X.unsqueeze_(-1)  # expand to 3d tensor
         if not isinstance(y, torch.Tensor):
             y = torch.as_tensor(
-                y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.float
+                y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
+                dtype=torch.float,
             )
 
         super(RNN_Regressor, self).__init__(

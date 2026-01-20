@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/__init__.py
 File Created: Wednesday, 16th November 2022 7:23:10 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 25th May 2023 11:04:19 am
+Last Modified: Thursday, 4th December 2025 1:14:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,13 +38,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 from .version import _get_version
 from .base import no_processing, load_data, set_seed
 from .hpo import (
     AutoTabular,
     AutoTabularClassifier,
     AutoTabularRegressor,
+    InformedAutoTabular,
+    InformedAutoTabularRegressor,
+    InformedAutoTabularClassifier,
     # AutoTextClassifier,
     # AutoNextWordPrediction,
 )
@@ -257,6 +259,9 @@ __all__ = [
     "AutoTabular",  # _model_selection
     "AutoTabularClassifier",
     "AutoTabularRegressor",
+    "InformedAutoTabular",
+    "InformedAutoTabularRegressor",
+    "InformedAutoTabularClassifier",
     "AutoTextClassifier",
     "AutoNextWordPrediction",
 ]

@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hpo/utils.py
 File: _utils.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 7:19:48 pm
+Last Modified: Tuesday, 16th December 2025 1:38:11 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -300,7 +300,8 @@ class TabularObjective(tune.Trainable):
     ]:
         # encoding
         start_time = time.time()
-        _X_train_obj = self.enc.fit(_X_train_obj)
+        self.enc.fit(pd.concat([_X_train_obj, _X_test_obj]))
+        _X_train_obj = self.enc.refit(_X_train_obj)
         if not refit:
             _X_test_obj = self.enc.refit(_X_test_obj)
         end_time = time.time()

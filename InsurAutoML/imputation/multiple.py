@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/imputation/multiple.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:40:03 am
+Last Modified: Tuesday, 23rd December 2025 10:35:51 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,6 +44,7 @@ from typing import Union, List
 import numpy as np
 import pandas as pd
 import warnings
+from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
 from ..constant import UNI_CLASS
 from ..utils import random_index, random_list
@@ -51,7 +52,6 @@ from .base import SimpleImputer, BaseImputer
 
 
 class ExpectationMaximization(BaseImputer):
-
     """
     Use Expectation Maximization (EM) to impute missing data[1]
 
@@ -95,23 +95,15 @@ class ExpectationMaximization(BaseImputer):
         features = list(X.columns)
         np.random.seed(self.seed)
 
-        _missing_feature = []  # features contains missing values
-        _missing_vector = []  # vector with missing values, to mark the missing index
+        self._missing_table = pd.DataFrame()  # dataframe to mark the missing index
         # create _missing_table with _missing_feature
         # missing index will be 1, existed index will be 0
-
         for _column in features:
             if X[_column].isnull().values.any():
-                _missing_feature.append(_column)
-                _missing_vector.append(
-                    X[_column].loc[X[_column].isnull()].index.astype(int)
-                )
-
-        _missing_vector = np.array(_missing_vector).T
-        self._missing_table = pd.DataFrame(_missing_vector, columns=_missing_feature)
+                self._missing_table[_column] = X[_column].isnull().astype(int)
 
         for _column in list(self._missing_table.columns):
-            for _index in self._missing_table[_column]:
+            for _index in np.where(self._missing_table[_column] == 1)[0]:
                 X.loc[_index, _column] = self._EM_iter(X, _index, _column)
 
         return X
@@ -131,7 +123,6 @@ class ExpectationMaximization(BaseImputer):
 
 
 class KNNImputer(BaseImputer):
-
     """
     Use KNN to impute the missing values, further update: use cross validation to select best k [1]
 
@@ -292,146 +283,260 @@ class KNNImputer(BaseImputer):
 
 
 class MissForestImputer(BaseImputer):
-
     """
-    Run Random Forest to impute the missing values [1]
-
-    [1] Stekhoven, D.J. and Bühlmann, P., 2012. MissForest—non-parametric missing
-    value imputation for mixed-type data. Bioinformatics, 28(1), pp.112-118.
+    MissForest imputer for mixed data types (numerical and categorical).
 
     Parameters
     ----------
-    threshold: threshold to terminate iterations, default = 0
-    At default, if difference between iterations increases, the iteration stops
-
-    method: initial imputation method for missing values, default = 'mean'
-
-    uni_class: column with unique classes less than uni_class will be considered as categorical, default = 31
+    max_iter : int, default=10
+        Maximum number of imputation iterations.
+    n_estimators : int, default=100
+        Number of trees in the random forest models.
+    random_state : int, default=None
+        Random seed for reproducibility.
+    categorical_threshold : int, default=UNI_CLASS
+        Maximum number of unique values for a feature to be treated as categorical.
     """
 
     def __init__(
-        self, threshold: float = 0, method: str = "mean", uni_class: int = UNI_CLASS
+        self,
+        max_iter: int = 10,
+        n_estimators: int = 100,
+        random_state: int = None,
+        categorical_threshold: int = UNI_CLASS,
     ) -> None:
-        self.threshold = threshold
-        self.method = method
-        self.uni_class = uni_class
+
+        self.max_iter = max_iter
+        self.n_estimators = n_estimators
+        self.random_state = random_state
+        self.categorical_threshold = categorical_threshold
+        self._fitted = False
+        self.feature_types_ = {}
 
         super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
-    def _RFImputer(self, X: pd.DataFrame) -> pd.DataFrame:
-        from sklearn.ensemble import RandomForestRegressor
+    def _identify_feature_types(self, X: pd.DataFrame) -> None:
+        """Identify numerical and categorical features."""
+        numerical_features = []
+        categorical_features = []
 
-        _delta = []  # criteria of termination
+        for column in X.columns:
+            if X[column].isna().all():
+                continue
 
-        while True:
-            for _column in list(self._missing_table.columns):
-                X_old = X.copy(deep=True)
-                _subfeature = list(X_old.columns)
-                _subfeature.remove(str(_column))
-                _missing_index = self._missing_table[_column].tolist()
-                RegModel = RandomForestRegressor()
-                RegModel.fit(
-                    X.loc[~X.index.astype(int).isin(_missing_index), _subfeature],
-                    X.loc[~X.index.astype(int).isin(_missing_index), _column],
-                )
-                _tmp_column = RegModel.predict(
-                    X.loc[X.index.astype(int).isin(_missing_index), _subfeature]
-                )
-                X.loc[X.index.astype(int).isin(_missing_index), _column] = _tmp_column
-                _delta.append(self._delta_cal(X, X_old))
-                if len(_delta) >= 2 and _delta[-1] > _delta[-2]:
-                    break
-            if len(_delta) >= 2 and _delta[-1] > _delta[-2]:
-                break
+            non_null = X[column].dropna()
+            if len(non_null) == 0:
+                continue
 
-        return X
+            n_unique = non_null.nunique()
 
-    # calcualte the difference between data newly imputed and before imputation
-    def _delta_cal(self, X_new: pd.DataFrame, X_old: pd.DataFrame) -> float:
-        if (X_new.shape[0] != X_old.shape[0]) or (X_new.shape[1] != X_old.shape[1]):
-            raise ValueError("New and old data must have same size, get different!")
-
-        _numerical_features = []
-        _categorical_features = []
-        for _column in list(self._missing_table.columns):
-            if len(X_old[_column].unique()) <= self.uni_class:
-                _categorical_features.append(_column)
+            if (
+                non_null.dtype == "object"
+                or non_null.dtype.name == "category"
+                or n_unique <= self.categorical_threshold
+            ):
+                categorical_features.append(column)
             else:
-                _numerical_features.append(_column)
+                numerical_features.append(column)
 
-        _N_nume = 0
-        _N_deno = 0
-        _F_nume = 0
-        _F_deno = 0
+        self.feature_types_ = {
+            "numerical": numerical_features,
+            "categorical": categorical_features,
+        }
 
-        if len(_numerical_features) > 0:
-            for _column in _numerical_features:
-                _N_nume += ((X_new[_column] - X_old[_column]) ** 2).sum()
-                _N_deno += (X_new[_column] ** 2).sum()
+    def _initial_imputation(self, X: pd.DataFrame) -> pd.DataFrame:
+        """Perform initial simple imputation."""
+        X_imputed = X.copy()
 
-        if len(_categorical_features) > 0:
-            for _column in _categorical_features:
-                _F_nume += (X_new[_column] != X_old[_column]).astype(int).sum()
-                _F_deno += len(self._missing_table[_column])
+        # Numerical
+        if self.feature_types_["numerical"]:
+            num_data = X_imputed[self.feature_types_["numerical"]]
+            if num_data.isna().any().any():
+                num_imputer = SimpleImputer(method="mean")
+                X_imputed[self.feature_types_["numerical"]] = num_imputer.fill(num_data)
 
-        if len(_numerical_features) > 0 and len(_categorical_features) > 0:
-            return _N_nume / _N_deno + _F_nume / _F_deno
-        elif len(_numerical_features) > 0:
-            return _N_nume / _N_deno
-        elif len(_categorical_features) > 0:
-            return _F_nume / _F_deno
+        # Categorical
+        if self.feature_types_["categorical"]:
+            cat_data = X_imputed[self.feature_types_["categorical"]]
+            if cat_data.isna().any().any():
+                cat_imputer = SimpleImputer(method="most frequent")
+                X_imputed[self.feature_types_["categorical"]] = cat_imputer.fill(
+                    cat_data
+                )
+
+        return X_imputed
+
+    def _get_missing_info(self, X: pd.DataFrame):
+        """Identify missing features and their missing row indices."""
+        missing_features = []
+        missing_indices = {}
+
+        for col in X.columns:
+            mask = X[col].isna()
+            if mask.any():
+                missing_features.append(col)
+                missing_indices[col] = X[mask].index.tolist()
+
+        missing_features_sorted = sorted(
+            missing_features, key=lambda col: X[col].isna().sum()
+        )
+
+        return missing_features_sorted, missing_indices
+
+    def _calculate_delta(
+        self, X_new: pd.DataFrame, X_old: pd.DataFrame, missing_features: list
+    ) -> float:
+        """Compute iteration difference for convergence checking."""
+        num_error = 0
+        cat_error = 0
+
+        for col in missing_features:
+            mask = ~X_new[col].isna() & ~X_old[col].isna()
+
+            # Numerical
+            if col in self.feature_types_["numerical"]:
+                if mask.any():
+                    diff = (X_new.loc[mask, col] - X_old.loc[mask, col]) ** 2
+                    var = X_new.loc[mask, col].var()
+                    if var > 0:
+                        num_error += diff.sum() / var
+
+            # Categorical
+            else:
+                if mask.any():
+                    misclassified = (X_new.loc[mask, col] != X_old.loc[mask, col]).sum()
+                    cat_error += misclassified / mask.sum()
+
+        return num_error + cat_error
 
     def fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=True)
-        if _X.isnull().values.any():
-            _X = self._fill(_X)
-        else:
-            warnings.warn("No nan values found, no change.")
+        """Fit the MissForest imputer and return the imputed DataFrame."""
+        if X.isnull().sum().sum() == 0:
+            warnings.warn("No missing values found. Returning the original dataset.")
+            self._fitted = True
+            return X
+
+        self._identify_feature_types(X)
+        missing_features, missing_indices = self._get_missing_info(X)
+
+        X_imputed = self._initial_imputation(X)
+        _dtypes = X.dtypes
+        prev_error = float("inf")
+
+        self.models_ = {}
+
+        for iter in range(self.max_iter):
+            X_old = X_imputed.copy()
+
+            for col in missing_features:
+                if col not in missing_indices or not missing_indices[col]:
+                    continue
+
+                missing_idx = missing_indices[col]
+                other_cols = [c for c in X.columns if c != col]
+
+                # Model selection
+                if col in self.feature_types_["numerical"]:
+                    model = RandomForestRegressor(
+                        n_estimators=self.n_estimators, random_state=self.random_state
+                    )
+                else:
+                    model = RandomForestClassifier(
+                        n_estimators=self.n_estimators, random_state=self.random_state
+                    )
+
+                train_mask = ~X_imputed.index.isin(missing_idx)
+
+                if train_mask.sum() > 0:
+                    X_train = X_imputed.loc[train_mask, other_cols]
+                    y_train = X_imputed.loc[train_mask, col]
+
+                    try:
+                        model.fit(X_train, y_train)
+                        self.models_[col + "_iter_" + str(iter)] = model
+                        X_missing = X_imputed.loc[missing_idx, other_cols]
+
+                        if not X_missing.empty:
+                            predictions = model.predict(X_missing)
+                            X_imputed.loc[missing_idx, col] = predictions
+
+                    except Exception as e:
+                        warnings.warn(f"Error imputing '{col}': {e}")
+                        continue
+
+            # Restore original data types
+            X_imputed = X_imputed.astype(_dtypes)
+
+            # Convergence checking
+            current_error = self._calculate_delta(X_imputed, X_old, missing_features)
+
+            if current_error > prev_error or current_error < 1e-6:
+                break
+
+            prev_error = current_error
 
         self._fitted = True
+        return X_imputed
 
-        return _X
+    def refill(self, X: pd.DataFrame) -> pd.DataFrame:
+        """
+        Refill missing values in new data using the fitted MissForest imputer.
 
-    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        features = list(X.columns)
+        Parameters
+        ----------
+        X : pd.DataFrame
+            New data with missing values to be imputed.
 
-        for _column in features:
-            if (X[_column].dtype == object) or (str(X[_column].dtype) == "category"):
-                raise ValueError(
-                    "MICE can only handle numerical filling, run encoding first!"
-                )
+        Returns
+        -------
+        pd.DataFrame
+            DataFrame with missing values imputed.
+        """
+        if not self._fitted:
+            raise RuntimeError("The imputer must be fitted before calling refill.")
 
-        _missing_feature = []  # features contains missing values
-        _missing_vector = []  # vector with missing values, to mark the missing index
-        # create _missing_table with _missing_feature
-        # missing index will be 1, existed index will be 0
-        _missing_count = []  # counts for missing values
+        missing_features, missing_indices = self._get_missing_info(X)
+        X_imputed = self._initial_imputation(X)
+        _dtypes = X.dtypes
+        prev_error = float("inf")
 
-        for _column in features:
-            if X[_column].isnull().values.any():
-                _missing_feature.append(_column)
-                _missing_vector.append(X.loc[X[_column].isnull()].index.astype(int))
-                _missing_count.append(X[_column].isnull().astype(int).sum())
+        for iter in range(self.max_iter):
+            X_old = X_imputed.copy()
 
-        # reorder the missing features by missing counts increasing
-        _order = np.array(_missing_count).argsort().tolist()
-        _missing_count = np.array(_missing_count)[_order].tolist()
-        _missing_feature = np.array(_missing_feature)[_order].tolist()
-        _missing_vector = np.array(_missing_vector)[_order].T.tolist()
+            for col in missing_features:
+                if col not in missing_indices or not missing_indices[col]:
+                    continue
 
-        self._missing_table = pd.DataFrame(_missing_vector, columns=_missing_feature)
+                missing_idx = missing_indices[col]
+                other_cols = [c for c in X.columns if c != col]
 
-        X = SimpleImputer(method=self.method).fill(
-            X
-        )  # initial filling for missing values
-        X = self._RFImputer(X)
+                model_key = col + "_iter_" + str(iter)
+                if model_key not in self.models_:
+                    continue
 
-        return X
+                model = self.models_[model_key]
+                X_missing = X_imputed.loc[missing_idx, other_cols]
+
+                if not X_missing.empty:
+                    predictions = model.predict(X_missing)
+                    X_imputed.loc[missing_idx, col] = predictions
+
+            # Restore original data types
+            X_imputed = X_imputed.astype(_dtypes)
+
+            # Convergence checking
+            current_error = self._calculate_delta(X_imputed, X_old, missing_features)
+
+            if current_error > prev_error or current_error < 1e-6:
+                break
+
+            prev_error = current_error
+
+        return X_imputed
 
 
 class MICE(BaseImputer):
-
     """
     Multiple Imputation by chained equations (MICE)
     using single imputation to initialize the imputation step, and iteratively build regression/
@@ -489,23 +594,13 @@ class MICE(BaseImputer):
                 )
 
         self._missing_feature = []  # features contains missing values
-        self._missing_vector = (
-            []
-        )  # vector with missing values, to mark the missing index
+        self._missing_table = pd.DataFrame()  # dataframe to mark the missing index
         # create _missing_table with _missing_feature
         # missing index will be 1, existed index will be 0
-
         for _column in features:
             if X[_column].isnull().values.any():
+                self._missing_table[_column] = X[_column].isnull().astype(int)
                 self._missing_feature.append(_column)
-                self._missing_vector.append(
-                    X.loc[X[_column].isnull()].index.astype(int)
-                )
-
-        self._missing_vector = np.array(self._missing_vector).T
-        self._missing_table = pd.DataFrame(
-            self._missing_vector, columns=self._missing_feature
-        )
 
         X = SimpleImputer(method=self.method).fill(
             X
@@ -528,10 +623,9 @@ class MICE(BaseImputer):
         features = list(X.columns)
 
         for _column in random_features:
-            _subfeature = features
+            _subfeature = features.copy()
             _subfeature.remove(_column)
-            _missing_index = self._missing_table[_column].tolist()
-            X.loc[X.index.astype(int).isin(_missing_index), _column] = np.nan
+            X.loc[self._missing_table[_column] == 1, _column] = np.nan
             if len(X[_column].unique()) == 2:
                 fit_model = LogisticRegression()
             elif len(features) <= 15:

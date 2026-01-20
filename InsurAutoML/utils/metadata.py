@@ -11,13 +11,13 @@ File: _metadata.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 5th September 2024 6:35:35 pm
+Last Modified: Monday, 15th December 2025 11:35:38 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -44,7 +44,7 @@ import os
 import numpy as np
 import pandas as pd
 import warnings
-from typing import Any, Dict, Tuple, List
+from typing import Any, Dict, Tuple, List, Union
 from itertools import compress
 
 from ..constant import UNI_CLASS, UNIQUE_FULLTYPE
@@ -80,7 +80,7 @@ class get_details:
         self.type = type
         self.subtype = subtype
 
-    def get(self, data: pd.Series) -> Dict[Tuple, List] or dict:
+    def get(self, data: pd.Series) -> Union[Dict[Tuple, List], Dict]:
         if self.type == "Float" or self.subtype == "Numerical":
             return self._get_details_numerical(data)
         elif self.subtype == "Categorical":
@@ -88,7 +88,7 @@ class get_details:
         elif self.type in ["Datetime", "Path"] or self.subtype == "Text":
             return {}
 
-    def merge(self, data: pd.Series) -> Dict[Tuple, List] or dict:
+    def merge(self, data: pd.Series) -> Union[Dict[Tuple, List], Dict]:
         if self.type == "Float" or self.subtype == "Numerical":
             return self._merge_details_numerical(data)
         elif self.subtype == "Categorical":
@@ -195,7 +195,7 @@ class MetaData:
         if not hasattr(self, "metadata"):
             raise AttributeError("Metadata not generated yet. Please use get() first.")
 
-    def get(self, data: Any) -> Dict[Tuple, List] or dict:
+    def get(self, data: Any) -> Union[Dict[Tuple, List], Dict]:
         if isinstance(data, pd.DataFrame):
             return self.get_from_df(data)
         else:
@@ -203,7 +203,7 @@ class MetaData:
 
     def update(
         self, data: pd.DataFrame, names: List[str] = None
-    ) -> Dict[Tuple, List] or dict:
+    ) -> Union[Dict[Tuple, List], Dict]:
         # check whether metadata generated
         self._check_metadata()
 
@@ -235,7 +235,7 @@ class MetaData:
 
     def merge(
         self, data: pd.DataFrame, names: List[str] = None
-    ) -> Dict[Tuple, List] or dict:
+    ) -> Union[Dict[Tuple, List], Dict]:
         # check whether metadata generated
         self._check_metadata()
 
@@ -268,8 +268,8 @@ class MetaData:
         return self.metadata
 
     def force_update(
-        self, names: List[str] or str, fulltypes: List[Tuple[str, str]] or str
-    ) -> Dict[Tuple, List] or dict:
+        self, names: Union[List[str], str], fulltypes: Union[List[Tuple[str, str]], str]
+    ) -> Union[Dict[Tuple, List], Dict]:
         # check whether metadata generated
         self._check_metadata()
 
@@ -319,7 +319,7 @@ class MetaData:
         else:
             self.details[name] = {}
 
-    def _get_from_others(self, data: Any) -> Dict[Tuple, List] or dict:
+    def _get_from_others(self, data: Any) -> Union[Dict[Tuple, List], Dict]:
         # convert to dataframe
         try:
             data = pd.DataFrame(data)
@@ -364,10 +364,10 @@ class MetaData:
                         _column
                     )
                 )
-                data = data.astype(int)
+                _data = data.fillna(0).astype(int)
                 type = "Int"
                 # check is Int_Numerical or Int_Categorical
-                subtype = meta_map_int(data)
+                subtype = meta_map_int(_data)
 
             type = "Float"
             subtype = ""
@@ -378,9 +378,12 @@ class MetaData:
         # Object
         elif _dtype in ["object", "category"]:
             # check if is path
-            if os.path.isfile(data.iloc[0]):
-                type = "Path"
-                subtype = ""
+            try:
+                if os.path.isfile(data.iloc[0]):
+                    type = "Path"
+                    subtype = ""
+            except Exception:
+                pass
 
             type = "Object"
             subtype = meta_map_object(data)
@@ -393,7 +396,7 @@ class MetaData:
 
         return type, subtype
 
-    def get_from_df(self, data: pd.DataFrame) -> Dict[Tuple, List] or dict:
+    def get_from_df(self, data: pd.DataFrame) -> Union[Dict[Tuple, List], Dict]:
         # initialize the metadata
         self.metadata = {}
         # initialize the details

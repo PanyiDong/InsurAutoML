@@ -15,6 +15,16 @@ jobs:
         uses: actions/setup-python@master
         with:
           python-version: 3.9
+      - name: Setup conda and C++ build deps
+        uses: conda-incubator/setup-miniconda@v2
+        with:
+          python-version: 3.9
+          auto-update-conda: true
+      - name: Install C/C++ headers and build tools
+        run: |
+          conda install -y -c conda-forge nanoflann pybind11 cmake ninja
+          python -m pip install --upgrade pip
+          python -m pip install cmake pybind11
       - name: "run tests (without neural network)"
         run: |
           python -m pip install --upgrade pip

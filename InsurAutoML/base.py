@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/base.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Wednesday, 31st May 2023 1:49:15 pm
+Last Modified: Wednesday, 12th November 2025 11:21:01 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -49,14 +49,15 @@ import warnings
 # check if rpy2 available
 # if not, can not read R type data
 import importlib
-
-rpy2_spec = importlib.util.find_spec("rpy2")
-if rpy2_spec is not None:
-    import rpy2
-    import rpy2.robjects as ro
-    from rpy2.robjects import Formula, pandas2ri
-    from rpy2.robjects.conversion import localconverter
-    from rpy2.robjects.packages import importr
+# NOTE: Remove rda/rdata loading as rpy2 sometimes causes installation issues
+# Uncomment the following lines if R data loading is needed
+# rpy2_spec = importlib.util.find_spec("rpy2")
+# if rpy2_spec is not None:
+#     import rpy2
+#     import rpy2.robjects as ro
+#     from rpy2.robjects import Formula, pandas2ri
+#     from rpy2.robjects.conversion import localconverter
+#     from rpy2.robjects.packages import importr
 
 torch_spec = importlib.util.find_spec("torch")
 
@@ -211,59 +212,59 @@ class load_data:
                     _filename = os.path.split(_data_path)[-1]
                     self.database[_filename.split(".")[0]] = pd.read_csv(_data_path)
 
-        # load .rda/.rdata files in the path
-        # will not read any files if rpy2 is not available
-        if rpy2_spec is None:
-            if self.data_type == ".rda" or self.data_type == ".rdata":
-                raise ImportError("Require rpy2 package, package not found!")
-            if self.data_type == "all":
-                pass
-        else:
-            if (
-                self.data_type == ".rda"
-                or self.data_type == ".rdata"
-                or self.data_type == "all"
-            ):
-                if self.data_type == ".rda" or self.data_type == "all":
-                    if filename is None:
-                        _rda_files = glob.glob(path + "*.rda")
-                    elif isinstance(filename, list):
-                        _rda_files = []
-                        for _filename in filename:
-                            _rda_files += glob.glob(path + _filename + ".rda")
-                    else:
-                        _rda_files = glob.glob(path + filename + ".rda")
-                if self.data_type == ".rdata" or self.data_type == "all":
-                    if filename is None:
-                        _rdata_files = glob.glob(path + "*.rdata")
-                    elif isinstance(filename, list):
-                        _rdata_files = []
-                        for _filename in filename:
-                            _rdata_files += glob.glob(path + _filename + ".rdata")
-                    else:
-                        _rdata_files = glob.glob(path + filename + ".rdata")
+        # # load .rda/.rdata files in the path
+        # # will not read any files if rpy2 is not available
+        # if rpy2_spec is None:
+        #     if self.data_type == ".rda" or self.data_type == ".rdata":
+        #         raise ImportError("Require rpy2 package, package not found!")
+        #     if self.data_type == "all":
+        #         pass
+        # else:
+        #     if (
+        #         self.data_type == ".rda"
+        #         or self.data_type == ".rdata"
+        #         or self.data_type == "all"
+        #     ):
+        #         if self.data_type == ".rda" or self.data_type == "all":
+        #             if filename is None:
+        #                 _rda_files = glob.glob(path + "*.rda")
+        #             elif isinstance(filename, list):
+        #                 _rda_files = []
+        #                 for _filename in filename:
+        #                     _rda_files += glob.glob(path + _filename + ".rda")
+        #             else:
+        #                 _rda_files = glob.glob(path + filename + ".rda")
+        #         if self.data_type == ".rdata" or self.data_type == "all":
+        #             if filename is None:
+        #                 _rdata_files = glob.glob(path + "*.rdata")
+        #             elif isinstance(filename, list):
+        #                 _rdata_files = []
+        #                 for _filename in filename:
+        #                     _rdata_files += glob.glob(path + _filename + ".rdata")
+        #             else:
+        #                 _rdata_files = glob.glob(path + filename + ".rdata")
 
-                if not _rda_files and self.data_type == ".rda":
-                    warnings.warn("No .rda file found!")
-                elif not _rdata_files and self.data_type == ".rdata":
-                    warnings.warn("No .rdata file found!")
-                elif _rda_files + _rdata_files:
-                    for _data_path in _rda_files + _rdata_files:
-                        # in linux path, the path separator is '/'
-                        # in windows path, the path separator is '\\'
-                        # _filename = (
-                        #     _data_path.split("/")[-1]
-                        #     if "/" in _data_path
-                        #     else _data_path.split("\\")[-1]
-                        # )
-                        # use os.path.split for unify path separator
-                        _filename = os.path.split(_data_path)[-1]
-                        ro.r('load("' + _data_path + '")')
-                        ro.r("rdata = " + _filename.split(".")[0])
-                        with localconverter(ro.default_converter + pandas2ri.converter):
-                            self.database[
-                                _filename.split(".")[0]
-                            ] = ro.conversion.rpy2py(ro.r.rdata)
+        #         if not _rda_files and self.data_type == ".rda":
+        #             warnings.warn("No .rda file found!")
+        #         elif not _rdata_files and self.data_type == ".rdata":
+        #             warnings.warn("No .rdata file found!")
+        #         elif _rda_files + _rdata_files:
+        #             for _data_path in _rda_files + _rdata_files:
+        #                 # in linux path, the path separator is '/'
+        #                 # in windows path, the path separator is '\\'
+        #                 # _filename = (
+        #                 #     _data_path.split("/")[-1]
+        #                 #     if "/" in _data_path
+        #                 #     else _data_path.split("\\")[-1]
+        #                 # )
+        #                 # use os.path.split for unify path separator
+        #                 _filename = os.path.split(_data_path)[-1]
+        #                 ro.r('load("' + _data_path + '")')
+        #                 ro.r("rdata = " + _filename.split(".")[0])
+        #                 with localconverter(ro.default_converter + pandas2ri.converter):
+        #                     self.database[
+        #                         _filename.split(".")[0]
+        #                     ] = ro.conversion.rpy2py(ro.r.rdata)
 
         if self.data_type == "all" and not self.database:
             warnings.warn("No file found!")

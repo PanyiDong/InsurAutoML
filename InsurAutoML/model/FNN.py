@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/model/FNN.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 10th September 2023 2:39:32 pm
+Last Modified: Thursday, 4th December 2025 2:34:45 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -71,7 +71,6 @@ if pytorch_spec is not None:
 
 
 class MLP_Model(nn.Module):
-
     """
     Flexible Multi-Layer Perceptron model
 
@@ -150,7 +149,6 @@ class MLP_Model(nn.Module):
 
 # Multi-Layer Perceptron base model fit/predict (training/evaluation)
 class MLP_Base:
-
     """
     Multi-Layer Perceptron base model
 
@@ -305,7 +303,6 @@ class MLP_Base:
 
 # Multi-Layer Perceptron classifier
 class MLP_Classifier(MLP_Base, BaseModel):
-
     """
     Multi-Layer Perceptron classification model
 
@@ -393,10 +390,12 @@ class MLP_Classifier(MLP_Base, BaseModel):
 
         # convert to tensors
         X = torch.as_tensor(
-            X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+            X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
+            dtype=torch.float,
         )
         y = torch.as_tensor(
-            y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.long
+            y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
+            dtype=torch.long,
         )
 
         self._fitted = True
@@ -415,7 +414,6 @@ class MLP_Classifier(MLP_Base, BaseModel):
 
 # Multi-Layer Perceptron regressor
 class MLP_Regressor(MLP_Base, BaseModel):
-
     """
     Multi-Layer Perceptron regression model
 
@@ -503,10 +501,12 @@ class MLP_Regressor(MLP_Base, BaseModel):
 
         # convert to tensors
         X = torch.as_tensor(
-            X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
+            X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
+            dtype=torch.float,
         )
         y = torch.as_tensor(
-            y.values if isinstance(y, pd.DataFrame) else y, dtype=torch.float
+            y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
+            dtype=torch.float,
         )
 
         self._fitted = True

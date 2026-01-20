@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/model/__init__.py
 File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 2nd February 2023 6:54:25 pm
+Last Modified: Wednesday, 17th December 2025 7:15:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -247,6 +247,15 @@ if xgboost_spec is not None:
 
     regressors["XGBoost_Regressor"] = XGBoost_Regressor
 
+# check whether catboost installed
+catboost_spec = importlib.util.find_spec("catboost")
+if catboost_spec is not None:
+    from .catboost import CatBoost_Classifier, CatBoost_Regressor
+
+    classifiers["CatBoost_Classifier"] = CatBoost_Classifier
+
+    regressors["CatBoost_Regressor"] = CatBoost_Regressor
+
 # check whether pygam installed
 pygam_spec = importlib.util.find_spec("pygam")
 if pygam_spec is not None:
@@ -311,6 +320,8 @@ __all__ = [
     "LightGBM_Regressor",
     "XGBoost_Classifier",
     "XGBoost_Regressor",
+    "CatBoost_Classifier",
+    "CatBoost_Regressor",
     "GAM_Classifier",
     "GAM_Regressor",
     "MLP_Classifier",

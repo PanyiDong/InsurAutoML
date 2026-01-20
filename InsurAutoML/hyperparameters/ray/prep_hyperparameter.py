@@ -1,23 +1,23 @@
 """
-File: __init__.py
+File Name: prep_hyperparameter.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_hyperopt/__init__.py
-File Created: Thursday, 7th April 2022 3:55:35 pm
+Project: InsurAutoML
+Latest Version: 0.2.6
+Relative Path: /InsurAutoML/hyperparameters/ray/prep_hyperparameter.py
+File Created: Wednesday, 3rd December 2025 7:04:54 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:22:25 pm
+Last Modified: Monday, 15th December 2025 11:23:50 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,10 +38,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from ._encoder_hyperparameter import encoder_hyperparameter
-from ._imputer_hyperparameter import imputer_hyperparameter
-from ._balancing_hyperparameter import balancing_hyperparameter
-from ._scaling_hyperparameter import scaling_hyperparameter
-from ._feature_selection_hyperparameter import feature_selection_hyperparameter
-from ._classifier_hyperparameter import classifier_hyperparameter
-from ._regressor_hyperparameter import regressor_hyperparameter
+from ray import tune
+from ...utils.base import format_hyper_dict
+
+CompletePrepPipeline = {
+    "complete_prep": "CompletePrepPipeline",
+    "missing_threshold": tune.uniform(0.5, 0.9),
+    "cc_threshold": tune.uniform(0.01, 0.99),
+}
+
+MissingPrepPipeline = {
+    "missing_prep": "MissingPrepPipeline",
+    "missing_threshold": tune.uniform(0.5, 0.9),
+    "twin_r": tune.qrandint(5, 100, 1),
+    "imputation_max_iter": tune.qrandint(1, 20, 1),
+    "imputation_n_estimators": tune.qrandint(10, 100, 1),
+    "cc_threshold": tune.uniform(0.01, 0.99),
+}
+
+complete_prep_hyperparameter = [
+    CompletePrepPipeline,
+]
+
+missing_prep_hyperparameter = [
+    MissingPrepPipeline,
+]
+
+if __name__ == "__main__":
+    pass

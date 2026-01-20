@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.6
 Relative Path: /tests/test_imputer/test_imputer.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:21:10 pm
+Last Modified: Tuesday, 20th January 2026 12:24:35 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -88,7 +88,7 @@ def test_imputer():
     for method_name, method_object in zip(imputers.keys(), imputers.values()):
         imputer = method_object()
         if method_name != "KNNImputer":
-            data = pd.read_csv("Appendix/healthcare-dataset-stroke-data.csv")
+            data = pd.read_csv("data/healthcare-dataset-stroke-data.csv")
 
             encoder = formatting()
             encoder.fit(data)
