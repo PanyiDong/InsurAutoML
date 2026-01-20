@@ -203,7 +203,7 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 
 Other files in the repository:
 
-1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
+1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `data` provides test datasets in the report.
 
 2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
 

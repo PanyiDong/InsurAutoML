@@ -11,13 +11,13 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 29th August 2025 3:50:06 pm
+Last Modified: Tuesday, 20th January 2026 12:24:29 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ def test_feature_selection():
     for method_name, method in zip(
         feature_selections.keys(), feature_selections.values()
     ):
-        data = pd.read_csv("Appendix/Medicalpremium.csv")
+        data = pd.read_csv("data/Medicalpremium.csv")
         X = data.iloc[:, :-1]
         y = data.iloc[:, -1]
 
@@ -103,7 +103,7 @@ def test_feature_selection():
             "truncatedSVD": truncatedSVD,
         }
         for method_name, method in zip(methods.keys(), methods.values()):
-            data = pd.read_csv("Appendix/Medicalpremium.csv")
+            data = pd.read_csv("data/Medicalpremium.csv")
             X = data.iloc[:, :-1]
             y = data.iloc[:, -1]
 
@@ -117,7 +117,7 @@ def test_feature_selection():
 def test_FeatureFilter():
     from InsurAutoML.feature_selection import FeatureFilter
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -155,7 +155,7 @@ def test_FeatureFilter():
 def test_ASFFS():
     from InsurAutoML.feature_selection import ASFFS
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -191,7 +191,7 @@ def test_GA():
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML.feature_selection import GeneticAlgorithm
 
-    data = pd.read_csv("Appendix/heart.csv")
+    data = pd.read_csv("data/heart.csv")
     formatter = DataEncoding()
 
     # to numerical
@@ -244,7 +244,7 @@ def test_GA():
 def test_FOCI():
     from InsurAutoML.feature_selection.filter import FOCI
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -260,7 +260,7 @@ def test_ExhaustiveFS():
     from InsurAutoML.feature_selection.wrapper import ExhaustiveFS
     from sklearn.linear_model import Ridge
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
