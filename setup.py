@@ -5,13 +5,13 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.6
+Latest Version: 0.2.7
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th December 2025 9:59:38 am
+Last Modified: Thursday, 18th September 2025 9:42:58 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -295,13 +295,15 @@ def get_r_home() -> Optional[str]:
 #     EXTRA_DICT["extended"].append("rpy2")
 #     EXTRA_DICT["nn"].append("rpy2")
 
-DATA_LIST = ["Appendix/*", "example/*"]
+DATA_LIST = ["data/*", "example/*"]
 
 EXCLUDE_LIST = [
     "tests",
+    "Dockerfiles",
     "example",
+    "experiments",
     "archive",
-    "Appendix",
+    "data",
     "docs",
     ".github",
     "build",
@@ -343,7 +345,7 @@ def setup_package():
         package_dir={"InsurAutoML": "InsurAutoML"},
         include_package_data=True,
         package_data={"InsurAutoML": DATA_LIST},
-        platforms=["Linux", "Windows", "MacOS"],
+        platforms=["Linux", "Windows"],
         long_description=long_description,
         long_description_content_type="text/markdown",
         python_requires=">=3.7",

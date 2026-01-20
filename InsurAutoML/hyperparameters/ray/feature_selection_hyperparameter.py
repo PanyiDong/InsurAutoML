@@ -11,7 +11,7 @@ File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 1st December 2025 1:32:14 pm
+Last Modified: Thursday, 18th September 2025 10:29:19 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
@@ -261,8 +261,7 @@ feature_selection_hyperparameter = [
     SFS,
     MRMR,
     CBFS,
-    CCCFilter,
-    FOCI, # tend to get no feature selected
+    FOCI,
 ]
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class
