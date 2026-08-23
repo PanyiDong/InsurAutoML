@@ -1,8 +1,8 @@
-# Project for Auto Machine Learning in Insurance (InsurAutoML)
+# Auto Machine Learning in Insurance (InsurAutoML)
 
 [![Linux](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build.yml) [![Windows](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml/badge.svg)](https://github.com/PanyiDong/InsurAutoML/actions/workflows/build-windows.yml) [![release](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML)](https://img.shields.io/github/v/release/PanyiDong/InsurAutoML) [![codecov](https://codecov.io/gh/PanyiDong/InsurAutoML/branch/master/graph/badge.svg?token=S12Q35HH2Y)](https://codecov.io/gh/PanyiDong/InsurAutoML)
 
-[IRisk Lab](https://asrm.illinois.edu/illinois-risk-lab/illinois-risk-lab-home) Project, UIUC, Fall 2021. Now a personally-maintained project.
+[IRisk Lab](https://asrm.illinois.edu/illinois-risk-lab/illinois-risk-lab-home) Project, UIUC, Fall 2021. It's fully developed and maintained by me.
 
 The project aims to create a AutoML package with special focus on insurance data (with some imbalance in nature). The pipeline is now workable with encoding, imputation, balancing, scaling, feature selection, models (regression, classification models) as pipeline components and model selection/hyperparameter optimization (HPO) process as it's core of connection among all components for tuning. I welcome anyone interested in ML, AI, and AutoML, especially in their intersection with insurance, to explore this project and share ideas or improvements!
 
@@ -85,9 +85,25 @@ model.fit(train_X, train_y)
 model.predict(test_X)
 ```
 
-~~By default, progress reporter `CLIReporter` is prepared for terminal/command-like report, when using jupyter notebook, call by `AutoTabular(progress_reporter = "JupyterNotebookReporter")` for overwriting previous outputs. ~~ Now, the pipeline can identify whether console terminal/Jupyter Notebook environment is used, don't need to worry about it.
-
 One important issue I find now is that, `ray.tune` does not force to stop running trials but only stop generating new trials. So, if setting `timeout` too low, it's common the fitting does not end in time (long running trials are expected not to finish in short time). However, if the pipeline is used as normal cases, which the `timeout` and `max_evals` both should be set to a rather large number, this case should not be as significant as very short time limit. I think that force trial runtime to stop can be a solution, but with few tryouts, I haven't found anything useful yet.
+
+#### UPDATE: We have now introduced `InformedAutoML`
+
+`InformedAutoML` proposes more efficient pipeline, Informed Data Preparation Pipeline (IDPP), to _correctly_ perform data preprocessing by utilizing several statistically informed algorithms.
+
+![IDPP](https://github.com/PanyiDong/InsurAutoML/blob/master/doc/IDPP.png)
+
+For more efficient deployment,
+
+```python
+from InsurAutoML.hpo.informed.fixed import InformedAutoTabular
+model = InformedAutoTabular()
+model.fit(train_X, train_y)
+
+model.predict(test_X)
+```
+
+In the setting, IDPP hyperparameters are fixed, which already provides better predictive capability while achieves significant improvement in computational efficiency. However, users may prefer full tuning, utilizing `InsurAutoML.InformedAutoML`. The `InformedAutoML` shares the same set of arguments as `InsurAutoML`.
 
 ### 2. Command Line Interface
 
@@ -203,13 +219,13 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 
 Other files in the repository:
 
-1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `Appendix` provides test datasets in the report.
+1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `data` provides test datasets in the report.
 
 2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
 
 ## Citation
 
-If you use `InsurAutoML` in your works, please cite our paper using the following BibTex entry:
+If you use `InsurAutoML` or `InformedAutoML` in your works, please cite our paper using the following BibTex entry:
 
 ```
 @article{dongAutomatedMachineLearning2025,
@@ -223,8 +239,21 @@ If you use `InsurAutoML` in your works, please cite our paper using the followin
   issn = {0167-6687},
   doi = {10.1016/j.insmatheco.2024.10.002}
 }
+
+@misc{guoStartingWrongFoot2026,
+  title = {Starting {{Off}} on the {{Wrong Foot}}: {{Pitfalls}} in {{Data Preparation}}},
+  shorttitle = {Starting {{Off}} on the {{Wrong Foot}}},
+  author = {Guo, Jiayi and Dong, Panyi and Quan, Zhiyu},
+  year = 2026,
+  month = mar,
+  number = {arXiv:2603.18190},
+  eprint = {2603.18190},
+  primaryclass = {stat},
+  publisher = {arXiv},
+  doi = {10.48550/arXiv.2603.18190},
+}
 ```
 
 ## Future
 
-I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure NAS for NLP tasks (there's a workable algorithm for MLP NAS through nni and still in development of complete structure). Some portions of the code are not written in the most efficient or readable way, as they were developed during my early learning phase with OOP. Due to time constraints, however, a complete code rewrite cannot be promised. Furthermore, I wish to explore the topics in explainability, fairness within the AutoML framework. But no schedules for such progress can be made.
+I'm still interested to expand current AutoML package, and have plans to add MLP/RNN structure NAS for NLP tasks (I have a workable algorithm for NAS through nni and it's still in development). I'm aware that some of the code are not written in the most efficient or readable way, as they were developed during my early learning phase with OOP. Due to time constraints, however, a complete code rewrite cannot be promised. Furthermore, I wish to explore the topics in explainability, fairness within the AutoML framework. But no schedules for such progress can be made.
