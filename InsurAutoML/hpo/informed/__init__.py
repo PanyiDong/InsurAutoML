@@ -1,23 +1,23 @@
 """
-File: _encoder_hyperparameter.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_hyperopt/_encoder_hyperparameter.py
-File Created: Tuesday, 5th April 2022 11:02:03 pm
+Project: InsurAutoML
+Latest Version: 0.2.6
+Relative Path: /InsurAutoML/hpo/informed/__init__.py
+File Created: Thursday, 4th December 2025 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:22:47 pm
+Last Modified: Thursday, 4th December 2025 1:13:46 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,5 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-# encoder
-encoder_hyperparameter = [{"encoder": "DataEncoding"}]
+from .ML import (
+    InformedAutoTabular,
+    InformedAutoTabularRegressor,
+    InformedAutoTabularClassifier,
+)

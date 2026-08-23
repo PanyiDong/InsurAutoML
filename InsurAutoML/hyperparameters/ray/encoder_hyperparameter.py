@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/ray/encoder_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:37:39 am
+Last Modified: Sunday, 28th December 2025 10:12:32 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,15 +41,21 @@ SOFTWARE.
 from ray import tune
 from ...utils.base import format_hyper_dict
 
+NOECODING = {
+    "encoder": "NoEncoding",
+}
+
 DATAENCODING = {
     "encoder": "DataEncoding",
     "dummy_coding": tune.choice([True, False]),
+    # "dummy_coding": tune.choice([False]),
 }
 
 # encoder
 # initialize the hyperparameter dictionary
 encoder_hyperparameter = [
     DATAENCODING,
+    NOECODING,
 ]
 
 # deprecated, add custom hyperparameter construction by search algorithm in AutoTabularBase class

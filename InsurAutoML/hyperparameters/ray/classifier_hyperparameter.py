@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/ray/classifier_hyperparameter.py
 File: _classifier_hyperparameter.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 3rd December 2023 11:24:12 pm
+Last Modified: Wednesday, 17th December 2025 7:22:02 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -295,6 +295,19 @@ LIGHTGBMCLASSIFIER = {
     "max_bin": tune.qlograndint(3, 1024, 1),
     "feature_fraction": tune.uniform(0.1, 1),
 }
+CATBOOSTCLASSIFIER = {
+    "model": "CatBoost_Classifier",
+    "loss_function": tune.choice(
+        ["Logloss", "CrossEntropy", "F1", "BalancedAccuracy", "AUC", "Accuracy"]
+    ),
+    "iterations": tune.qlograndint(100, 1000, 1),
+    "learning_rate": tune.loguniform(1e-4, 1),
+    "depth": tune.qrandint(1, 16, 1),
+    "l2_leaf_reg": tune.loguniform(1e-5, 10),
+    "bagging_temperature": tune.loguniform(0.01, 10),
+    # "max_leaves": tune.qrandint(31, 255, 1),
+    "random_strength": tune.loguniform(1e-5, 10),
+}
 XGBOOSTCLASSIFIER = {
     "model": "XGBoost_Classifier",
     "eta": tune.uniform(0, 1),
@@ -339,6 +352,7 @@ classifier_hyperparameter = [
     MLP_CLASSIFIER,
     RNN_CLASSIFIER,
     LIGHTGBMCLASSIFIER,
+    CATBOOSTCLASSIFIER,
     XGBOOSTCLASSIFIER,
     GAMCLASSIFIER,
 ]

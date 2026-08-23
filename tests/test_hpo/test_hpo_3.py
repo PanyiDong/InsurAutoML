@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /tests/test_hpo/test_hpo_3.py
 File: test_hpo_3.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 8:20:21 pm
+Last Modified: Tuesday, 20th January 2026 12:24:32 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,7 +38,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-
 import os
 import pytest
 import InsurAutoML
@@ -47,7 +46,7 @@ from InsurAutoML import load_data
 # def test_stroke():
 
 #     os.system(
-#         "python main.py --data_folder Appendix --train_data healthcare-dataset-stroke-data --response stroke"
+#         "python main.py --data_folder data --train_data healthcare-dataset-stroke-data --response stroke"
 #     )
 
 #     assert (
@@ -148,7 +147,7 @@ def test_insurance_R2():
 
 def test_stroke_import_version():
     # test load_data here
-    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = load_data().load("data", "healthcare-dataset-stroke-data")
     data = data["healthcare-dataset-stroke-data"]
 
     features = list(data.columns)
@@ -187,7 +186,7 @@ def test_stroke_import_version():
 # def test_stroke_loading():
 
 #     # test load_data here
-#     data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+#     data = load_data().load("data", "healthcare-dataset-stroke-data")
 #     data = data["healthcare-dataset-stroke-data"]
 
 #     features = list(data.columns)
@@ -205,7 +204,7 @@ def test_stroke_import_version():
 
 def test_stroke_with_limit():
     # test load_data here
-    data = load_data().load("Appendix", "healthcare-dataset-stroke-data")
+    data = load_data().load("data", "healthcare-dataset-stroke-data")
     data = data["healthcare-dataset-stroke-data"]
 
     features = list(data.columns)

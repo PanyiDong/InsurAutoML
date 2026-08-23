@@ -1,23 +1,23 @@
 """
-File: _scaling_hyperparameter.py
+File Name: __init__.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
-Project: My_AutoML
-Latest Version: 0.2.0
-Relative Path: /My_AutoML/_hyperparameters/_hyperopt/_scaling_hyperparameter.py
-File Created: Tuesday, 5th April 2022 11:03:34 pm
+Project: InsurAutoML
+Latest Version: 0.2.6
+Relative Path: /InsurAutoML/ext/twinreduction/twinreduction/__init__.py
+File Created: Thursday, 6th November 2025 5:56:27 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 8th April 2022 10:23:16 pm
+Last Modified: Thursday, 6th November 2025 7:59:58 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2025 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,18 +38,5 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import numpy as np
-from hyperopt import hp
-from hyperopt.pyll import scope
 
-# scaling
-scaling_hyperparameter = [
-    {"scaling": "NoScaling"},
-    {"scaling": "Standardize"},
-    {"scaling": "Normalize"},
-    {"scaling": "RobustScale"},
-    {"scaling": "MinMaxScale"},
-    {"scaling": "Winsorization"},
-    {"scaling": "Feature_Manipulation"},
-    {"scaling": "Feature_Truncation"},
-]
+from .twinreduction import TwinReduction

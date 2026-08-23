@@ -11,4 +11,4 @@
 **/*.rdata     linguist-vendored=true
 **/*.json      linguist-vendored=true
 **/*.asc       linguist-vendored=true
-Appendix/*.asc linguist-vendored=true
+data/*.asc linguist-vendored=true

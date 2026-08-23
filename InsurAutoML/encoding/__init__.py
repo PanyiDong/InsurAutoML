@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/encoding/__init__.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:39:39 pm
+Last Modified: Saturday, 27th December 2025 2:06:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,8 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from .base import NoEncoding
 from .encoding import DataEncoding
 
-encoders = {"DataEncoding": DataEncoding}
+encoders = {
+    "DataEncoding": DataEncoding,
+    # "NoEncoding": NoEncoding,
+}
 
-__all__ = ["DataEncoding"]
+__all__ = ["DataEncoding", "NoEncoding"]

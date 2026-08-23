@@ -17,7 +17,7 @@ Modified By: Panyi Dong (panyid2@illinois.edu)
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -223,6 +223,10 @@ CBFS = {
     "feature_selection": "CBFS",
     "copula": tune.choice(["empirical"]),
     "n_prop": tune.uniform(0, 1),
+}
+CCCFilter= {
+    "feature_selection": "CCCFilter",
+    "threshold": tune.quniform(0.01, 0.10, 0.01),
 }
 FOCI = {
     "feature_selection": "FOCI",

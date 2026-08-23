@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hpo/ensemble.py
 File Created: Friday, 1st December 2023 6:43:44 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 7:42:26 pm
+Last Modified: Monday, 8th December 2025 1:00:53 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2023 - 2023, Panyi Dong
+Copyright (c) 2023 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,9 +40,6 @@ SOFTWARE.
 
 from __future__ import annotations
 from typing import Callable, Union, List, Tuple
-import json
-import os
-import time
 import scipy
 import logging
 import pandas as pd
@@ -54,7 +51,6 @@ logger = logging.getLogger(__name__)
 
 
 class Pipeline:
-
     """ "
     A pipeline of entire AutoML process.
     """
@@ -181,7 +177,6 @@ class Pipeline:
 
 
 class ClassifierEnsemble(formatting):
-
     """
     Ensemble of classifiers for classification.
     """
@@ -356,7 +351,6 @@ class ClassifierEnsemble(formatting):
 
 
 class RegressorEnsemble(formatting):
-
     """
     Ensemble of regressors for regression.
     """

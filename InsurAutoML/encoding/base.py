@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/encoding/base.py
 File Created: Monday, 29th May 2023 2:13:01 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 29th May 2023 2:38:22 pm
+Last Modified: Tuesday, 16th December 2025 1:23:31 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2023 - 2023, Panyi Dong
+Copyright (c) 2023 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,7 +40,6 @@ SOFTWARE.
 
 
 class BaseEncoder:
-
     """
     Base class for encoders
     """
@@ -53,3 +52,20 @@ class BaseEncoder:
 
     def refit(self, X):
         raise NotImplementedError
+
+
+class NoEncoding(BaseEncoder):
+    """
+    No encoding, return the data as is
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self._fitted = False
+
+    def fit(self, X):
+        self._fitted = True
+        return X
+
+    def refit(self, X):
+        return X
