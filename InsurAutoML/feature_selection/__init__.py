@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/feature_selection/__init__.py
 File: __init__.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:27:12 am
+Last Modified: Monday, 1st December 2025 1:40:18 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -42,7 +42,8 @@ from ..base import no_processing
 from .filter import (
     FeatureFilter,
     mRMR,
-    # FOCI,
+    CCCFilter,
+    FOCI,  # NOTE: FOCI may subject to identical values
 )
 from .wrapper import (
     # ExhaustiveFS,
@@ -98,7 +99,7 @@ feature_selections = {
     # "SFS": SFS,
     "mRMR": mRMR,
     "CBFS": CBFS,
-    # "FOCI": FOCI,
+    "FOCI": FOCI,
 }
 
 
@@ -146,17 +147,17 @@ feature_selections = {
 # else:
 
 # from autosklearn
-feature_selections[
-    "extra_trees_preproc_for_classification"
-] = extra_trees_preproc_for_classification
-feature_selections[
-    "extra_trees_preproc_for_regression"
-] = extra_trees_preproc_for_regression
+feature_selections["extra_trees_preproc_for_classification"] = (
+    extra_trees_preproc_for_classification
+)
+feature_selections["extra_trees_preproc_for_regression"] = (
+    extra_trees_preproc_for_regression
+)
 feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
 # feature_selections["polynomial"] = polynomial
-feature_selections[
-    "select_percentile_classification"
-] = select_percentile_classification
+feature_selections["select_percentile_classification"] = (
+    select_percentile_classification
+)
 feature_selections["select_percentile_regression"] = select_percentile_regression
 feature_selections["select_rates_classification"] = select_rates_classification
 feature_selections["select_rates_regression"] = select_rates_regression
@@ -166,6 +167,8 @@ feature_selections["truncatedSVD"] = truncatedSVD
 __all__ = [
     "no_processing",
     "FeatureFilter",
+    "CCCFilter",
+    "FOCI",
     "mRMR",
     "SFS",
     "ASFFS",

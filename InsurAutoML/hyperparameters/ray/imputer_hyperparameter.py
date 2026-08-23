@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/ray/imputer_hyperparameter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:38:05 am
+Last Modified: Monday, 1st December 2025 1:35:57 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -59,8 +59,8 @@ KNNIMPUTER = {
 }
 MISSFORESTIMPUTER = {
     "imputer": "MissForestImputer",
-    "threshold": tune.loguniform(1e-5, 10),
-    "method": tune.choice(["mean", "zero", "median", "most frequent"]),
+    "max_iter": tune.qrandint(1, 32, 1),
+    "n_estimators": tune.qrandint(10, 200, 10),
 }
 MICE = {
     "imputer": "MICE",

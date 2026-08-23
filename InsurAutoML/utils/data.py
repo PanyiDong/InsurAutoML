@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/data.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 9:43:06 am
+Last Modified: Monday, 22nd December 2025 8:48:22 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -588,13 +588,12 @@ def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> Li
 
     _sample = sample.values
     features = list(table.columns)
-    _table = table.copy(deep=True)
+    _table = table.copy(deep=True).astype(float)
     _linktable = []
 
     for sample_point in _sample:
         for i in range(len(features)):
             if norm == "l2":
-                # print(sample[_column], sample[_column][0])
                 _table.iloc[:, i] = (_table.iloc[:, i] - sample_point[i]) ** 2
             if norm == "l1":
                 _table.iloc[:, i] = np.abs(_table.iloc[:, i] - sample_point[i])

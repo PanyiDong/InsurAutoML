@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/feature_selection/filter.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 1st June 2023 11:14:33 pm
+Last Modified: Monday, 8th December 2025 1:43:25 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -41,7 +41,9 @@ SOFTWARE.
 from __future__ import annotations
 
 from typing import Union, List
+from functools import partial
 from itertools import combinations
+from concurrent.futures import ProcessPoolExecutor
 import warnings
 import numpy as np
 import pandas as pd
@@ -50,20 +52,20 @@ from ..utils import (
     maxloc,
     Pearson_Corr,
     MI,
+    CCC,
     ACCC,
 )
 from .base import BaseFeatureSelection
 
 
 class FeatureFilter(BaseFeatureSelection):
-
     """
     Use certain criteria to score each feature and select most relevent ones
 
     Parameters
     ----------
     criteria: use what criteria to score features, default = 'Pearson'
-    supported {'Pearson', 'MI'}
+    supported {'Pearson', 'MI', 'CCC'}
     'Pearson': Pearson Correlation Coefficient
     'MI': 'Mutual Information'
 
@@ -74,6 +76,12 @@ class FeatureFilter(BaseFeatureSelection):
     proprotion of features to select, if None, no limit
     n_components have higher priority than n_prop
     """
+
+    criteria_mapping = {
+        "Pearson": Pearson_Corr,
+        "MI": MI,
+        "CCC": CCC,
+    }
 
     def __init__(
         self,
@@ -95,6 +103,10 @@ class FeatureFilter(BaseFeatureSelection):
     ) -> FeatureFilter:
         # get feature names
         self._check_feature_names(X)
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X)
+
+        self.features = list(X.columns)  # list of features
 
         # check whether y is empty
         if isinstance(y, pd.DataFrame):
@@ -109,10 +121,33 @@ class FeatureFilter(BaseFeatureSelection):
         if _empty:
             raise ValueError("Must have response!")
 
+        # check X and y have same lengths
+        if len(X) != len(y):
+            raise ValueError("X and y must have the same number of samples")
+
+        # check features
+        # check whether n_components/n_prop is valid
+        if self.n_components is None and self.n_prop is None:
+            self.n_components = X.shape[1]
+        elif self.n_components is not None:
+            self.n_components = min(self.n_components, X.shape[1])
+        # make sure selected features is at least 1
+        elif self.n_prop is not None:
+            self.n_components = max(1, int(self.n_prop * X.shape[1]))
+
+        # apply criteria on each column
         if self.criteria == "Pearson":
-            self._score = Pearson_Corr(X, y)
+            self._score = np.abs(Pearson_Corr(X, y))
         elif self.criteria == "MI":
             self._score = MI(X, y)
+        elif self.criteria == "CCC":
+            self._score = [CCC(X.loc[:, feature], y) for feature in self.features]
+        else:
+            raise ValueError(f"Unsupported criteria: {self.criteria}")
+
+        self.select_features = np.array(self.features)[
+            np.argsort(self._score)[-self.n_components :]
+        ]
 
         self._fitted = True
 
@@ -123,24 +158,12 @@ class FeatureFilter(BaseFeatureSelection):
     ) -> Union[pd.DataFrame, np.ndarray]:
         # check if input is a dataframe
         if not isinstance(X, pd.DataFrame):
-            X = pd.DataFrame(X)
+            X = pd.DataFrame(X, columns=self.features)
 
-        # check whether n_components/n_prop is valid
-        if self.n_components is None and self.n_prop is None:
-            self.n_components = X.shape[1]
-        elif self.n_components is not None:
-            self.n_components = min(self.n_components, X.shape[1])
-        # make sure selected features is at least 1
-        elif self.n_prop is not None:
-            self.n_components = max(1, int(self.n_prop * X.shape[1]))
-
-        _columns = np.argsort(self._score)[: self.n_components]
-
-        return X.iloc[:, _columns]
+        return X.loc[:, self.select_features]
 
 
 class mRMR(BaseFeatureSelection):
-
     """
     mRMR [1] minimal-redundancy-maximal-relevance as criteria for filter-based
     feature selection
@@ -247,20 +270,80 @@ class mRMR(BaseFeatureSelection):
         return X.iloc[:, self.select_features]
 
 
-class FOCI(BaseFeatureSelection):
-
+class CCCFilter(BaseFeatureSelection):
     """
-    Implementation of Feature Ordering by Conditional Independence (FOCI) introduced in [1].
+    Chatterjee Correlation-Based Feature Selector
+
+    Selects features based on Chatterjee correlation ξ(X, y),
+    which measures functional dependence between X and y.
+
+    ξ ∈ [0, 1]:
+        0 → independent
+        1 → perfect functional relation
+
+    Parameters
+    ----------
+    threshold : float, default=0.05
+        Minimum CCC required to keep a feature.
+    seed : int, default=42
+        Random seed for reproducibility.
+    """
+
+    def __init__(self, threshold=0.05, seed: int = 42):
+        self.threshold = threshold
+        self.seed = seed
+
+        super().__init__()
+        self._fitted = False
+
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> CCCFilter:
+        # Compute CCC for each feature
+        scores = {}
+        for col in X.columns:
+            try:
+                scores[col] = CCC(X[col], y, seed=self.seed)
+            except Exception:
+                # if something fails (e.g., constant column)
+                scores[col] = 0.0
+
+        self.ccc_scores_ = pd.Series(scores).sort_values(ascending=False)
+
+        # threshold selection
+        self.selected_features_ = self.ccc_scores_[
+            self.ccc_scores_ >= self.threshold
+        ].index.tolist()
+
+        self._fitted = True
+
+        return self
+
+    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+        if not self._fitted:
+            raise ValueError("CCCFilter must be fitted before transform().")
+
+        return df[self.selected_features_]
+
+
+class FOCI(BaseFeatureSelection):
+    """
+    Implementation of Feature Ordering by Conditional Independence (FOCI) introduced in [1][2].
     Nonparametric feature selection method.
 
-    [1] Azadkia, M., & Chatterjee, S. (2021). A simple measure of conditional dependence.
+    [1] https://rdrr.io/cran/FOCI/src/R/foci.R
+    [2] Azadkia, M., & Chatterjee, S. (2021). A simple measure of conditional dependence.
     The Annals of Statistics, 49(6), 3070-3102.
     """
 
     def __init__(
         self,
+        num_features: int = None,
+        standardize: str = None,
+        conditional: bool = False,
     ):
         super().__init__()
+        self.num_features = num_features
+        self.standardize = standardize
+        self.conditional = conditional
         self._fitted = False
 
     def fit(
@@ -275,28 +358,85 @@ class FOCI(BaseFeatureSelection):
         if not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
 
-        features = list(X.columns)  # list of features
+        self.features = list(X.columns)  # list of features
+
+        self.num_features = (
+            len(self.features) if self.num_features is None else self.num_features
+        )
+
+        # standardize the data if needed
+        if self.standardize == "standardize":
+            from sklearn.preprocessing import StandardScaler
+
+            self.scaler = StandardScaler()
+            X = pd.DataFrame(self.scaler.fit_transform(X), columns=self.features)
+        elif self.standardize == "minmax":
+            from sklearn.preprocessing import MinMaxScaler
+
+            self.scaler = MinMaxScaler()
+            X = pd.DataFrame(self.scaler.fit_transform(X), columns=self.features)
+        elif self.standardize is None:
+            from ..base import no_processing
+
+            self.scaler = no_processing()
+            self.scaler.fit(X)
+
+        # fit the model
+        self._fit(X, y)
+
+        return self
+
+    @staticmethod
+    def compute_accc(feature, X, y, selected_features):
+        if len(selected_features) == 0:
+            return ACCC(X[[feature]], y, mode="Q")
+        else:
+            return ACCC(X[selected_features + [feature]], y, mode="Q")
+
+    @staticmethod
+    def compute_conditional_accc(feature, X, y, selected_features):
+        if len(selected_features) == 0:
+            return ACCC(X[[feature]], y, mode="Q")
+        else:
+            return ACCC(X[[feature]], y, X[selected_features], mode="Q")
+
+    def _fit(self, X, y) -> FOCI:
 
         # initialize the selected/unselected features
+        Q = []
         selected_features = []
         unselected_features = (
-            features.copy()
+            self.features.copy()
         )  # copy of features, do not interfere with original features
 
-        while True:
-            tmp_ACCC_list = []  # CC list
-            for feature in unselected_features:
-                # at start, use unconditional ACCC
-                if len(selected_features) == 0:
-                    tmp_ACCC_list.append(ACCC(X[[feature]], y))
-                # at following steps, use conditional ACCC
-                else:
-                    tmp_ACCC_list.append(ACCC(X[[feature]], y, X[selected_features]))
+        # parallel computation of ACCC
+        # if conditional, use conditional accc (given selected features)
+        if self.conditional:
+            func = partial(
+                self.compute_conditional_accc,
+                X=X,
+                y=y,
+                selected_features=selected_features,
+            )
+        else:
+            func = partial(
+                self.compute_accc, X=X, y=y, selected_features=selected_features
+            )
+
+        for idx in range(self.num_features):
+            with ProcessPoolExecutor() as executor:
+                tmp_ACCC_list = list(executor.map(func, unselected_features))
 
             tmp_feature = unselected_features[np.argmax(tmp_ACCC_list)]
-            tmp_max_ACCC = tmp_ACCC_list[np.argmax(tmp_ACCC_list)]
+            Q.append(tmp_ACCC_list[np.argmax(tmp_ACCC_list)])
+            # check stopping criteria
+            # if conditional, check if current feature improves (conditional) ACCC
+            if self.conditional:
+                condition = Q[idx] > 0
+            else:
+                condition = Q[0] > 0 if idx == 0 else Q[idx] > Q[idx - 1]
 
-            if tmp_max_ACCC > 0:
+            if condition:
                 selected_features.append(tmp_feature)
                 unselected_features.remove(tmp_feature)
             else:
@@ -307,9 +447,11 @@ class FOCI(BaseFeatureSelection):
 
         self._fitted = True
 
-        return self
-
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return X[self.select_features]
+        # standardize the data if needed
+        X = self.scaler.transform(X)
+        if not isinstance(X, pd.DataFrame):
+            X = pd.DataFrame(X, columns=self.features)
+        return X.loc[:, self.select_features]

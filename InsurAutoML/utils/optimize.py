@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/utils/optimize.py
 File: _optimize.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 12th December 2023 1:03:27 am
+Last Modified: Saturday, 27th December 2025 9:07:34 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -98,8 +98,6 @@ def time_limit(seconds):
 # create hyperparameter space using ray.tune.choice
 # the pipeline of AutoClassifier is [encoder, imputer, scaling, balancing, feature_selection, model]
 # only chosen ones will be added to hyperparameter space
-
-
 def _base_get_hyperparameter_space(
     X: pd.DataFrame,
     encoders_hyperparameters: Dict,
@@ -233,7 +231,7 @@ def _base_get_hyperparameter_space(
     }
 
 
-def _hyerpot_get_hyperparameter_space(
+def _hyeropt_get_hyperparameter_space(
     X: pd.DataFrame,
     encoders_hyperparameters: Dict,
     encoder: Dict,
@@ -744,10 +742,14 @@ def _converted_get_hyperparameter_space(
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        balancings_hyperparameters[all_balancings.index(_balancing)][
-            "balancing"
-        ] = tune.choice(
-            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
+        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = (
+            tune.choice(
+                [
+                    balancings_hyperparameters[all_balancings.index(_balancing)][
+                        "balancing"
+                    ]
+                ]
+            )
         )
         _balancing_hyperparameter.append(
             searcher.convert_search_space(
@@ -1025,7 +1027,7 @@ def _get_hyperparameter_space(
             task_mode,
         )
     elif search_aglo in ["HyperOpt"]:
-        return _hyerpot_get_hyperparameter_space(
+        return _hyeropt_get_hyperparameter_space(
             X,
             encoders_hyperparameters,
             encoder,
@@ -1095,6 +1097,593 @@ def _get_hyperparameter_space(
     #         models,
     #         task_mode,
     #     )
+
+
+def _base_get_informed_hyperparameter_space(
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    complete_prep_hyperparameters: Dict,
+    complete_prep: Dict,
+    missing_prep_hyperparameters: Dict,
+    missing_prep: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Dict:
+    # encoding space
+    # get all method names in hyperparameter space
+    all_encoders = [item["encoder"] for item in encoders_hyperparameters]
+    _encoding_hyperparameter = []
+    for _encoder in [*encoder]:
+        _encoding_hyperparameter.append(
+            encoders_hyperparameters[all_encoders.index(_encoder)]
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_encoding_hyperparameter) == 0:
+        raise ValueError(
+            "No encoding hyperparameters are found. Please check your encoders."
+        )
+
+    _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
+
+    # complete prep space
+    # get all method names in hyperparameter space
+    all_complete_prep = [
+        item["complete_prep"] for item in complete_prep_hyperparameters
+    ]
+    _complete_prep_hyperparameter = []
+    for _complete_prep in [*complete_prep]:
+        _complete_prep_hyperparameter.append(
+            complete_prep_hyperparameters[all_complete_prep.index(_complete_prep)]
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_complete_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No complete prep hyperparameters are found. Please check your encoders."
+        )
+
+    _complete_prep_hyperparameter = tune.choice(_complete_prep_hyperparameter)
+
+    # missing prep space
+    # get all method names in hyperparameter space
+    all_missing_prep = [item["missing_prep"] for item in missing_prep_hyperparameters]
+    _missing_prep_hyperparameter = []
+    for _missing_prep in [*missing_prep]:
+        _missing_prep_hyperparameter.append(
+            missing_prep_hyperparameters[all_missing_prep.index(_missing_prep)]
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_missing_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No missing prep hyperparameters are found. Please check your encoders."
+        )
+
+    _missing_prep_hyperparameter = tune.choice(_missing_prep_hyperparameter)
+
+    # model space
+    # get all method names in hyperparameter space
+    all_models = [item["model"] for item in models_hyperparameters]
+    _model_hyperparameter = []
+    for _model in [*models]:
+        _model_hyperparameter.append(models_hyperparameters[all_models.index(_model)])
+
+    # raise error if no encoding hyperparameters are found
+    if len(_model_hyperparameter) == 0:
+        raise ValueError(
+            "No model hyperparameters are found. Please check your encoders."
+        )
+
+    _model_hyperparameter = tune.choice(_model_hyperparameter)
+
+    # the pipeline search space
+    # select one of the method/hyperparameter setting from each part
+    return {
+        "task_type": "tabular_" + task_mode,
+        "encoder": _encoding_hyperparameter,
+        "complete_prep": _complete_prep_hyperparameter,
+        "missing_prep": _missing_prep_hyperparameter,
+        "model": _model_hyperparameter,
+    }
+
+
+def _hyperopt_get_informed_hyperparameter_space(
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    complete_prep_hyperparameters: Dict,
+    complete_prep: Dict,
+    missing_prep_hyperparameters: Dict,
+    missing_prep: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Dict:
+    # encoding space
+    _encoding_hyperparameter = []
+    for _encoder in [*encoder]:
+        for item in encoders_hyperparameters:  # search the encoders' hyperparameters
+            # find encoder key
+            for _key in item.keys():
+                if "encoder_" in _key:
+                    _encoder_key = _key
+                    break
+            if item[_encoder_key] == _encoder:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
+                # convert string to tune.choice
+                _item[_encoder_key] = tune.choice([_item[_encoder_key]])
+                _encoding_hyperparameter.append(_item)
+                break
+
+    # raise error if no encoding hyperparameters are found
+    if len(_encoding_hyperparameter) == 0:
+        raise ValueError(
+            "No encoding hyperparameters are found. Please check your encoders."
+        )
+
+    _encoding_hyperparameter = tune.choice(_encoding_hyperparameter)
+
+    # complete prep space
+    _complete_prep_hyperparameter = []
+    for _complete_prep in [*complete_prep]:
+        for (
+            item
+        ) in (
+            complete_prep_hyperparameters
+        ):  # search the complete preps' hyperparameters
+            # find complete prep key
+            for _key in item.keys():
+                if "complete_prep_" in _key:
+                    _complete_prep_key = _key
+                    break
+            if item[_complete_prep_key] == _complete_prep:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
+                # convert string to tune.choice
+                _item[_complete_prep_key] = tune.choice([_item[_complete_prep_key]])
+                _complete_prep_hyperparameter.append(_item)
+                break
+
+    # raise error if no complete prep hyperparameters are found
+    if len(_complete_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No complete prep hyperparameters are found. Please check your complete preps."
+        )
+
+    _complete_prep_hyperparameter = tune.choice(_complete_prep_hyperparameter)
+
+    # missing prep space
+    _missing_prep_hyperparameter = []
+    for _missing_prep in [*missing_prep]:
+        for (
+            item
+        ) in missing_prep_hyperparameters:  # search the missing preps' hyperparameters
+            # find missing prep key
+            for _key in item.keys():
+                if "missing_prep_" in _key:
+                    _missing_prep_key = _key
+                    break
+            if item[_missing_prep_key] == _missing_prep:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
+                # convert string to tune.choice
+                _item[_missing_prep_key] = tune.choice([_item[_missing_prep_key]])
+                _missing_prep_hyperparameter.append(_item)
+                break
+
+    # raise error if no missing prep hyperparameters are found
+    if len(_missing_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No missing prep hyperparameters are found. Please check your missing preps."
+        )
+
+    _missing_prep_hyperparameter = tune.choice(_missing_prep_hyperparameter)
+
+    # model selection and hyperparameter optimization space
+    _model_hyperparameter = []
+    for _model in [*models]:
+        # checked before at models that all models are in default space
+        for item in models_hyperparameters:  # search the models' hyperparameters
+            # find model key
+            for _key in item.keys():
+                if "model_" in _key:
+                    _model_key = _key
+                    break
+            if item[_model_key] == _model:
+                # create a copy of hyperparameters, avoid changes on original
+                _item = copy.deepcopy(item)
+                # convert string to tune.choice
+                _item[_model_key] = tune.choice([_item[_model_key]])
+                _model_hyperparameter.append(_item)
+                break
+
+    # raise error if no model hyperparameters are found
+    if len(_model_hyperparameter) == 0:
+        raise ValueError(
+            "No model hyperparameters are found. Please check your models."
+        )
+
+    _model_hyperparameter = tune.choice(_model_hyperparameter)
+
+    # the pipeline search space
+    # select one of the method/hyperparameter setting from each part
+    return {
+        "task_type": "tabular_" + task_mode,
+        "encoder": _encoding_hyperparameter,
+        "complete_prep": _complete_prep_hyperparameter,
+        "missing_prep": _missing_prep_hyperparameter,
+        "model": _model_hyperparameter,
+    }
+
+
+def _optuna_get_informed_hyperparameter_space(
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    complete_prep_hyperparameters: Dict,
+    complete_prep: Dict,
+    missing_prep_hyperparameters: Dict,
+    missing_prep: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+) -> Callable:
+    # check installation of optuna
+    optuna_spec = importlib.util.find_spec("optuna")
+    if optuna_spec is None:
+        raise ImportError(
+            "optuna not installed. Please install it first to use Optuna. \
+            Command to install: pip install optuna"
+        )
+
+    import optuna
+    from ray.tune.suggest.optuna import OptunaSearch
+
+    # config space
+    # encoding space
+    # get all method names in hyperparameter space
+    all_encoders = [item["encoder"] for item in encoders_hyperparameters]
+    _encoding_hyperparameter = []
+    for _encoder in [*encoder]:
+        _encoding_hyperparameter.append(
+            OptunaSearch.convert_search_space(
+                encoders_hyperparameters[all_encoders.index(_encoder)]
+            )
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_encoding_hyperparameter) == 0:
+        raise ValueError(
+            "No encoding hyperparameters are found. Please check your encoders."
+        )
+
+    # complete prep space
+    # get all method names in hyperparameter space
+    all_complete_preps = [
+        item["complete_prep"] for item in complete_prep_hyperparameters
+    ]
+    _complete_prep_hyperparameter = []
+    for _complete_prep in [*complete_prep]:
+        _complete_prep_hyperparameter.append(
+            OptunaSearch.convert_search_space(
+                complete_prep_hyperparameters[all_complete_preps.index(_complete_prep)]
+            )
+        )
+
+    # raise error if no complete prep hyperparameters are found
+    if len(_complete_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No complete prep hyperparameters are found. Please check your encoders."
+        )
+
+    # missing prep space
+    # get all method names in hyperparameter space
+    all_missing_preps = [item["missing_prep"] for item in missing_prep_hyperparameters]
+    _missing_prep_hyperparameter = []
+    for _missing_prep in [*missing_prep]:
+        _missing_prep_hyperparameter.append(
+            OptunaSearch.convert_search_space(
+                missing_prep_hyperparameters[all_missing_preps.index(_missing_prep)]
+            )
+        )
+
+    # raise error if no missing prep hyperparameters are found
+    if len(_missing_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No missing prep hyperparameters are found. Please check your encoders."
+        )
+
+    # model space
+    # get all method names in hyperparameter space
+    all_models = [item["model"] for item in models_hyperparameters]
+    _model_hyperparameter = []
+    for _model in [*models]:
+        _model_hyperparameter.append(
+            OptunaSearch.convert_search_space(
+                models_hyperparameters[all_models.index(_model)]
+            )
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_model_hyperparameter) == 0:
+        raise ValueError(
+            "No model hyperparameters are found. Please check your encoders."
+        )
+
+    def search_space(
+        trial: optuna.Trial,
+        _encoder,
+        _complete_prep,
+        _missing_prep,
+        _models,
+        _encoding_hyperparameter,
+        _complete_prep_hyperparameter,
+        _missing_prep_hyperparameter,
+        _model_hyperparameter,
+        task_mode,
+    ):
+        encoder = trial.suggest_categorical("encoder", _encoder)
+        complete_prep = trial.suggest_categorical("complete_prep", _complete_prep)
+        missing_prep = trial.suggest_categorical("missing_prep", _missing_prep)
+        model = trial.suggest_categorical("model", _models)
+
+        # the pipeline search space
+        # select one of the method/hyperparameter setting from each part
+        encoder_hyper = {}
+        encoder_hyper["encoder"] = encoder
+        for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
+            encoder_hyper[key] = distribution_to_suggest(
+                trial, encoder, key, value, algo="Optuna"
+            )
+
+        complete_prep_hyper = {}
+        complete_prep_hyper["complete_prep"] = complete_prep
+        for key, value in _complete_prep_hyperparameter[
+            [*_complete_prep].index(complete_prep)
+        ].items():
+            complete_prep_hyper[key] = distribution_to_suggest(
+                trial, complete_prep, key, value, algo="Optuna"
+            )
+
+        missing_prep_hyper = {}
+        missing_prep_hyper["missing_prep"] = missing_prep
+        for key, value in _missing_prep_hyperparameter[
+            [*_missing_prep].index(missing_prep)
+        ].items():
+            missing_prep_hyper[key] = distribution_to_suggest(
+                trial, missing_prep, key, value, algo="Optuna"
+            )
+
+        model_hyper = {}
+        model_hyper["model"] = model
+        for key, value in _model_hyperparameter[[*_models].index(model)].items():
+            model_hyper[key] = distribution_to_suggest(
+                trial, model, key, value, algo="Optuna"
+            )
+
+        return {
+            "task_type": "tabular_" + task_mode,
+            "encoder": encoder_hyper,
+            "complete_prep": complete_prep_hyper,
+            "missing_prep": missing_prep_hyper,
+            "model": model_hyper,
+        }
+
+    return partial(
+        search_space,
+        _encoder=encoder,
+        _complete_prep=complete_prep,
+        _missing_prep=missing_prep,
+        _models=models,
+        _encoding_hyperparameter=_encoding_hyperparameter,
+        _complete_prep_hyperparameter=_complete_prep_hyperparameter,
+        _missing_prep_hyperparameter=_missing_prep_hyperparameter,
+        _model_hyperparameter=_model_hyperparameter,
+        task_mode=task_mode,
+    )
+
+
+def _converted_get_informed_hyperparameter_space(
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    complete_prep_hyperparameters: Dict,
+    complete_prep: Dict,
+    missing_prep_hyperparameters: Dict,
+    missing_prep: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+    search_algo: str = "Nevergrad",
+) -> Dict:
+    if search_algo == "Nevergrad":
+        from ray.tune.suggest.nevergrad import NevergradSearch
+
+        searcher = NevergradSearch
+    elif search_algo == "BlendSearch":
+        from ray.tune.suggest.flaml import BlendSearch
+
+        searcher = BlendSearch
+
+    # encoding space
+    # get all method names in hyperparameter space
+    all_encoders = [item["encoder"] for item in encoders_hyperparameters]
+    _encoding_hyperparameter = []
+    for _encoder in [*encoder]:
+        # need a layer of hyperparameter space to retain it
+        encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"] = tune.choice(
+            [encoders_hyperparameters[all_encoders.index(_encoder)]["encoder"]]
+        )
+        _encoding_hyperparameter.append(
+            searcher.convert_search_space(
+                encoders_hyperparameters[all_encoders.index(_encoder)]
+            )
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_encoding_hyperparameter) == 0:
+        raise ValueError(
+            "No encoding hyperparameters are found. Please check your encoders."
+        )
+
+    # complete prep space
+    # get all method names in hyperparameter space
+    all_complete_preps = [
+        item["complete_prep"] for item in complete_prep_hyperparameters
+    ]
+    _complete_prep_hyperparameter = []
+    for _complete_prep in [*complete_prep]:
+        complete_prep_hyperparameters[all_complete_preps.index(_complete_prep)][
+            "complete_prep"
+        ] = tune.choice(
+            [
+                complete_prep_hyperparameters[all_complete_preps.index(_complete_prep)][
+                    "complete_prep"
+                ]
+            ]
+        )
+        _complete_prep_hyperparameter.append(
+            searcher.convert_search_space(
+                complete_prep_hyperparameters[all_complete_preps.index(_complete_prep)]
+            )
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_complete_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No complete prep hyperparameters are found. Please check your encoders."
+        )
+
+    # missing prep space
+    # get all method names in hyperparameter space
+    all_missing_preps = [item["missing_prep"] for item in missing_prep_hyperparameters]
+    _missing_prep_hyperparameter = []
+    for _missing_prep in [*missing_prep]:
+        missing_prep_hyperparameters[all_missing_preps.index(_missing_prep)][
+            "missing_prep"
+        ] = tune.choice(
+            [
+                missing_prep_hyperparameters[all_missing_preps.index(_missing_prep)][
+                    "missing_prep"
+                ]
+            ]
+        )
+        _missing_prep_hyperparameter.append(
+            searcher.convert_search_space(
+                missing_prep_hyperparameters[all_missing_preps.index(_missing_prep)]
+            )
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_missing_prep_hyperparameter) == 0:
+        raise ValueError(
+            "No missing prep hyperparameters are found. Please check your encoders."
+        )
+
+    # model space
+    # get all method names in hyperparameter space
+    all_models = [item["model"] for item in models_hyperparameters]
+    _model_hyperparameter = []
+    for _model in [*models]:
+        models_hyperparameters[all_models.index(_model)]["model"] = tune.choice(
+            [models_hyperparameters[all_models.index(_model)]["model"]]
+        )
+        _model_hyperparameter.append(
+            searcher.convert_search_space(
+                models_hyperparameters[all_models.index(_model)]
+            )
+        )
+
+    # raise error if no encoding hyperparameters are found
+    if len(_model_hyperparameter) == 0:
+        raise ValueError(
+            "No model hyperparameters are found. Please check your encoders."
+        )
+
+    # the pipeline search space
+    # select one of the method/hyperparameter setting from each part
+    return {
+        "task_type": "tabular_" + task_mode,
+        "encoder": tune.choice(_encoding_hyperparameter),
+        "complete_prep": tune.choice(_complete_prep_hyperparameter),
+        "missing_prep": tune.choice(_missing_prep_hyperparameter),
+        "model": tune.choice(_model_hyperparameter),
+    }
+
+
+def _get_informed_hyperparameter_space(
+    X: pd.DataFrame,
+    encoders_hyperparameters: Dict,
+    encoder: Dict,
+    complete_prep_hyperparameters: Dict,
+    complete_prep: Dict,
+    missing_prep_hyperparameters: Dict,
+    missing_prep: Dict,
+    models_hyperparameters: Dict,
+    models: Dict,
+    task_mode: str,
+    search_aglo: str,
+) -> Union[Dict, Callable]:
+    if search_aglo in ["RandomSearch", "GridSearch", "CFO"]:
+        # BlendSearch can start from iter #2
+        return _base_get_informed_hyperparameter_space(
+            X,
+            encoders_hyperparameters,
+            encoder,
+            complete_prep_hyperparameters,
+            complete_prep,
+            missing_prep_hyperparameters,
+            missing_prep,
+            models_hyperparameters,
+            models,
+            task_mode,
+        )
+    elif search_aglo in ["HyperOpt"]:
+        return _hyperopt_get_informed_hyperparameter_space(
+            X,
+            encoders_hyperparameters,
+            encoder,
+            complete_prep_hyperparameters,
+            complete_prep,
+            missing_prep_hyperparameters,
+            missing_prep,
+            models_hyperparameters,
+            models,
+            task_mode,
+        )
+    elif search_aglo in ["Optuna"]:
+        with DisableLogger():
+            return _optuna_get_informed_hyperparameter_space(
+                X,
+                encoders_hyperparameters,
+                encoder,
+                complete_prep_hyperparameters,
+                complete_prep,
+                missing_prep_hyperparameters,
+                missing_prep,
+                models_hyperparameters,
+                models,
+                task_mode,
+            )
+    elif search_aglo in ["Nevergrad"]:
+        with DisableLogger():
+            return _converted_get_informed_hyperparameter_space(
+                X,
+                encoders_hyperparameters,
+                encoder,
+                complete_prep_hyperparameters,
+                complete_prep,
+                missing_prep_hyperparameters,
+                missing_prep,
+                models_hyperparameters,
+                models,
+                task_mode,
+                search_algo=search_aglo,
+            )
 
 
 # get the hyperparameter optimization algorithm based on string input
@@ -1499,7 +2088,6 @@ def get_logger(logger: List) -> List[Callable]:
 
 
 class TimePlateauStopper(Stopper):
-
     """
     Combination of TimeoutStopper and TrialPlateauStopper
     """
@@ -1559,7 +2147,7 @@ class TimePlateauStopper(Stopper):
         self._iter[trial_id] += 1  # record trial results and iteration
 
         # If max iteration reached, stop current trial
-        if self._iter[trial_id] >= int(MAX_ITER / 4):
+        if self._iter[trial_id] >= int(MAX_ITER / 32):
             return True
 
         # If still in grace period, do not stop yet
@@ -1606,6 +2194,74 @@ class TimePlateauStopper(Stopper):
                 "TimePlateauStopper: Time limit {} seconds reached.".format(
                     self.timeout
                 )
+            )
+            return True
+
+        return False
+
+
+class InformedStopper(Stopper):
+    """
+    Stopper based on time limit and max iteration
+    """
+
+    def __init__(
+        self,
+        timeout: int = 360,
+        metric: str = "loss",
+        std_ratio: float = 0.01,
+        num_results: int = 4,
+        grace_period: int = 4,
+        metric_threshold: float = None,
+        mode: str = "min",
+    ) -> None:
+        self._stored_start = None
+        self._trial_start = None
+        self._trial_taken = timeout
+        self.timeout = timeout
+        self._budget = timeout
+
+        self._metric = metric
+        self._mode = mode
+
+        self._std_ratio = std_ratio
+        self._num_results = num_results
+        self._grace_period = grace_period
+        self._metric_threshold = metric_threshold
+
+        self._iter = defaultdict(lambda: 0)
+        self._trial_results = defaultdict(lambda: deque(maxlen=self._num_results))
+
+    def __call__(self, trial_id: str, result: Any) -> bool:
+        # Result plateau stop
+        metric_result = result.get(self._metric)  # get metric from result
+        # If metric is inf (timeout), stop current trial
+        if metric_result == np.inf:
+            return True
+        self._trial_results[trial_id].append(metric_result)
+        self._iter[trial_id] += 1  # record trial results and iteration
+
+        # If max iteration reached, stop current trial
+        if self._iter[trial_id] >= int(MAX_ITER / 4):
+            return True
+
+        # If still in grace period, do not stop yet
+        # If not enough results yet, do not stop yet
+        if self._iter[trial_id] < min(self._grace_period, self._num_results):
+            return False
+
+        return True
+
+    def stop_all(self) -> bool:
+        if self._stored_start:
+            self._taken = time.time() - self._stored_start
+            self._budget -= self._taken
+
+        self._stored_start = time.time()
+
+        if self._budget <= 0:
+            logger.info(
+                "InformedStopper: Time limit {} seconds reached.".format(self.timeout)
             )
             return True
 
@@ -1778,8 +2434,6 @@ class ray_status:
 
 
 # check if an object has a method
-
-
 def check_func(obj: Callable, ref: str) -> None:
     for _func in METHOD_MAPPING[ref]:
         if not callable(getattr(obj, _func, None)):
@@ -1789,8 +2443,6 @@ def check_func(obj: Callable, ref: str) -> None:
 
 
 # check hyperparameter space
-
-
 def check_status(
     methods: Dict,
     hyperparameter_space: List[Dict],

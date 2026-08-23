@@ -11,13 +11,13 @@ File Created: Friday, 12th May 2023 10:11:52 am
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Tuesday, 30th April 2024 8:00:54 pm
+Last Modified: Monday, 22nd December 2025 9:30:40 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2023 - 2023, Panyi Dong
+Copyright (c) 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, Callable, Dict, Tuple
+from typing import Union, List, Callable, Dict, Tuple, Optional
 import os
 import warnings
 import importlib
@@ -88,7 +88,7 @@ from .ensemble import (
 # warnings.filterwarnings(
 #     "ignore", message="The TensorboardX logger cannot be instantiated"
 # )
-# Update: Nov 15, 2022
+# NOTE: Nov 15, 2022
 # autosklearn decrypted, sklearn new versions supported
 # I wish to use sklearn v1.0 for new features
 # but there's conflicts between autosklearn models and sklearn models
@@ -206,7 +206,7 @@ class AutoTabularBase:
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
+    search_algo: search algorithm used for hyperparameter optimization, default = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -241,8 +241,8 @@ class AutoTabularBase:
     use_gpu: whether to use gpu, default = None
     if None, will use gpu if available, otherwise False (not to use gpu)
 
-    reset_index: whether to reset index during traning, default = True
-    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    reset_index: whether to reset index during training, default = True
+    there are methods that are index independent (ignore index, reset, e.g. GAIN)
     if you wish to use these methods and set reset_index = False, please make sure
     all input index are ordered and starting from 0
 
@@ -865,7 +865,7 @@ class AutoTabularBase:
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(
         self, idx: int, optimal_point: Dict, best_path: str
-    ) -> Tuple(str, Pipeline):
+    ) -> Tuple[str, Pipeline]:
         # get optimal encoder & hyperparameters
         optimal_encoder, optimal_encoder_hyperparameters = self._get_optimal_hyper(
             optimal_point, "encoder"
@@ -1072,7 +1072,7 @@ class AutoTabularBase:
             )
 
         # make sure n_estimators is a integer smaller than max_evals
-        # Oct. 11, 2022 updates:
+        # NOTE: Oct. 11, 2022
         # if do not limit max_evals (=-1), then set n_estimators to pre-defined
         # one
         if self.max_evals > 0:
@@ -1162,7 +1162,11 @@ class AutoTabularBase:
             self.search_algo_settings = {"optimizer": ng.optimizers.OnePlusOne}
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+        self,
+        X: pd.DataFrame,
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X_valid: Optional[pd.DataFrame] = None,
+        y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabularBase:
         # initialize settings
         self._init_fit()
@@ -1194,6 +1198,32 @@ class AutoTabularBase:
                 self._logger.error(
                     "Cannot convert y to dataframe, get {}".format(type(y))
                 )
+        if X_valid is not None and not isinstance(X_valid, pd.DataFrame):
+            try:
+                X_valid = pd.DataFrame(X_valid)
+                self._logger.info(
+                    "[INFO] {} Experiment: {}. Status: X_valid is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
+                    )
+                )
+            except BaseException:
+                self._logger.error(
+                    "Cannot convert X_valid to dataframe, get {}".format(type(X_valid))
+                )
+        if y_valid is not None and not isinstance(y_valid, pd.DataFrame):
+            try:
+                y_valid = pd.DataFrame(y_valid)
+                self._logger.info(
+                    "[INFO] {} Experiment: {}. Status: y_valid is not a dataframe, converted to dataframe.".format(
+                        datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                        self.model_name,
+                    )
+                )
+            except BaseException:
+                self._logger.error(
+                    "Cannot convert y_valid to dataframe, get {}".format(type(y_valid))
+                )
 
         # get features and response names
         if isinstance(X, pd.DataFrame):  # expect multiple features
@@ -1219,7 +1249,7 @@ class AutoTabularBase:
         # if datetime ,recommend to remove
         if ("Datetime", "") in self.metadata.keys():
             self._logger.warning(
-                "Found datatime data type columns {}, it's better to remove those columns".format(
+                "Found datetime data type columns {}, it's better to remove those columns".format(
                     *self.metadata[("Datetime", "")]
                 )
             )
@@ -1244,8 +1274,6 @@ class AutoTabularBase:
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
             )
         )
-
-        # print([item.sample() for key, item in hyperparameter_space.items() if key != "task_type"])
 
         # if the model is already trained, read the setting
         if os.path.exists(self.model_name):
@@ -1331,6 +1359,9 @@ class AutoTabularBase:
                 ]
                 for idx, (_train_idx, _test_idx) in enumerate(kf.split(_X, _y))
             ]
+        elif self.validation == "STAT":
+            # train/test split on later stage
+            data_split = [[(_X, _y), (X_valid, y_valid)]]
         elif self.validation:
             # only perform train_test_split when validation
             # train test split so the performance of model selection and
@@ -1362,7 +1393,6 @@ class AutoTabularBase:
         # ensemble settings
         if self.n_estimators == 1:
             self._logger.warning("Set n_estimators to 1, no ensemble will be used.")
-            # warnings.warn("Set n_estimators to 1, no ensemble will be used.")
 
             # get progress reporter
             progress_reporter = get_progress_reporter(
@@ -1797,6 +1827,7 @@ class AutoTabularBase:
 
         # Boosting ensemble
         elif self.ensemble_strategy == "boosting":
+            _y_pred = None
             # loop through n_estimators
             for _n in range(self.n_estimators):
                 sub_n_trials = (
@@ -1805,21 +1836,35 @@ class AutoTabularBase:
                     else (self.max_evals // self.n_estimators)
                 )
 
-                try:
+                if _y_pred is not None:
                     # if fitted before, use pred for residuals
+                    # else, use original data
                     data_split = [
                         [
-                            (X_train, y_train - _y_train_pred),
-                            (X_test, y_test - _y_test_pred),
+                            (
+                                X_train,
+                                y_train
+                                - pd.DataFrame(
+                                    _y_train_pred,
+                                    index=y_train.index,
+                                    columns=y_train.columns,
+                                ),
+                            ),
+                            (
+                                X_test,
+                                y_test
+                                - pd.DataFrame(
+                                    _y_test_pred,
+                                    index=y_test.index,
+                                    columns=y_test.columns,
+                                ),
+                            ),
                         ]
                         for ((X_train, y_train), (X_test, y_test)), (
                             _y_train_pred,
                             _y_test_pred,
                         ) in zip(data_split, _y_pred)
                     ]
-                except:
-                    # if not, use y as residuals
-                    pass
 
                 # get progress reporter
                 progress_reporter = get_progress_reporter(
@@ -2007,7 +2052,7 @@ class AutoTabularBase:
         if not (self.features == _X.columns).all():
             _X = _X[self.features]
 
-        # since pipeline is converted to ensemble, no need to predict on each component
+        # NOTE: since pipeline is converted to ensemble, no need to predict on each component
         # may need preprocessing for test data, the preprocessing should be the same as in fit part
         # Encoding
         # # convert string types to numerical type

@@ -21,6 +21,7 @@ jobs:
           python-version: 3.9
       - name: Install dependencies
         run: |
+          sudo apt install libnanoflann-dev
           python -m pip install --upgrade pip
           pip install setuptools wheel twine cython auditwheel patchelf>=0.14
       - name: Build wheel

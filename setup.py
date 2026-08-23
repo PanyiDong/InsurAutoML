@@ -17,7 +17,7 @@ Modified By: Panyi Dong (panyid2@illinois.edu)
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -69,6 +69,21 @@ except ImportError:
         return cythonize(*args, **kwargs)
 
 
+def _pybind11_includes():
+    """Return a list of pybind11 include dirs if pybind11 is importable, else empty list.
+
+    This defers importing pybind11 until build-time so that import-time
+    execution of setup.py does not fail when pybind11 is not present in the
+    build isolation environment.
+    """
+    try:
+        import pybind11
+
+        return [pybind11.get_include(), pybind11.get_include(user=True)]
+    except Exception:
+        return []
+
+
 # Automatically get release version
 InsurAutoML_version = (
     subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE)
@@ -93,6 +108,8 @@ INSTALL_LIST = [
     "setuptools",
     "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
     "cython",
+    "nanoflann",
+    "pybind11",
     "numpy<1.24.0",
     "pandas",
     "scipy",
@@ -127,6 +144,7 @@ EXTRA_DICT = {
         # "rpy2;platform_system=='Linux'",
         "mlflow",
         "lightgbm",
+        "catboost",
         "xgboost",
         "pygam",
         "flaml",
@@ -135,6 +153,16 @@ EXTRA_DICT = {
         "bayesian_optimization==1.4.0",
         "colorama==0.4.4",
         "nevergrad",
+        "hyperopt",
+        "optuna",
+    ],
+    "informed": [
+        "missforest",
+        "mlflow",
+        "lightgbm",
+        "catboost",
+        "xgboost",
+        "pygam",
         "hyperopt",
         "optuna",
     ],
@@ -254,18 +282,18 @@ def get_r_home() -> Optional[str]:
     return r_home
 
 
-# get R Home environment variable
-# if found, install rpy2
-# otherwise, do not install rpy2
-R_HOME = get_r_home()
-if not R_HOME:
-    log.info("""The R home directory could not be determined.""")
+# # get R Home environment variable
+# # if found, install rpy2
+# # otherwise, do not install rpy2
+# R_HOME = get_r_home()
+# if not R_HOME:
+#     log.info("""The R home directory could not be determined.""")
 
-# only install for Linux
-if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
-    os.environ["R_HOME"] = R_HOME
-    EXTRA_DICT["extended"].append("rpy2")
-    EXTRA_DICT["nn"].append("rpy2")
+# # only install for Linux
+# if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
+#     os.environ["R_HOME"] = R_HOME
+#     EXTRA_DICT["extended"].append("rpy2")
+#     EXTRA_DICT["nn"].append("rpy2")
 
 DATA_LIST = ["data/*", "example/*"]
 
@@ -410,6 +438,97 @@ def build_cython_extensions():
     # SETUP_ARGS["cmdclass"] = {"build_ext": postp_cython_build_ext}
 
     return cython_extensions
+
+
+# --- External native extensions: suppsplit (pybind11) and twinning (pybind11) ---
+# try:
+# SuppsPlit (pybind11) extension
+if sys.platform != "win32":
+    extra_compile_args_ext = []
+    extra_link_args_ext = []
+    library_dirs = []
+    libraries = []
+    include_dirs_ext = _pybind11_includes() + [
+        os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")
+    ]
+    if sys.platform == "darwin":
+        extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
+        extra_link_args += ["-lomp"]
+        # Homebrew paths (adjust if needed)
+        include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
+        library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
+        libraries += ["omp"]
+    else:
+        extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
+        extra_link_args_ext += ["-fopenmp"]
+
+    suppsplit_ext = Extension(
+        "InsurAutoML.ext.suppsplit.suppsplit_cpp",
+        sources=[
+            os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sp.cpp"),
+            os.path.join(
+                "InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sPlit.cpp"
+            ),
+            os.path.join(
+                "InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "bindings.cpp"
+            ),
+        ],
+        include_dirs=include_dirs_ext,
+        language="c++",
+        extra_compile_args=extra_compile_args_ext,
+        extra_link_args=extra_link_args_ext,
+        library_dirs=library_dirs,
+        libraries=libraries,
+    )
+
+    SETUP_ARGS["ext_modules"].append(suppsplit_ext)
+    SETUP_REQUIRES.append("pybind11")
+# except Exception:
+#     log.warning("Could not configure suppsplit extension; continuing without it.")
+
+# try:
+# SuppsPlit (pybind11) extension
+if sys.platform != "win32":
+    extra_compile_args_ext = []
+    extra_link_args_ext = []
+    library_dirs = []
+    libraries = []
+    include_dirs_ext = _pybind11_includes() + [
+        os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")
+    ]
+    if sys.platform == "darwin":
+        extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
+        extra_link_args += ["-lomp"]
+        # Homebrew paths (adjust if needed)
+        include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
+        library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
+        libraries += ["omp"]
+    else:
+        extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
+        extra_link_args_ext += ["-fopenmp"]
+
+    twinning_ext = Extension(
+        "InsurAutoML.ext.twinreduction.twinning_cpp",
+        sources=[
+            os.path.join(
+                "InsurAutoML", "ext", "twinreduction", "twinning_cpp", "twinning.cpp"
+            ),
+            os.path.join(
+                "InsurAutoML", "ext", "twinreduction", "twinning_cpp", "bindings.cpp"
+            ),
+        ],
+        include_dirs=include_dirs_ext,
+        language="c++",
+        extra_compile_args=extra_compile_args_ext,
+        extra_link_args=extra_link_args_ext,
+        library_dirs=library_dirs,
+        libraries=libraries,
+    )
+
+    SETUP_ARGS["ext_modules"].append(twinning_ext)
+    SETUP_REQUIRES.append("pybind11")
+# except Exception:
+#     log.warning("Could not configure twinning extension; continuing without it.")
 
 
 # prepare for package.json file

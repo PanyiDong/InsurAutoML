@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /tests/test_feature_selection/test_feature_selection_wrapper.py
 File: test_feature_selection_wrapper.py
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 5:33:22 pm
+Last Modified: Tuesday, 20th January 2026 12:24:26 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +46,7 @@ from InsurAutoML.feature_selection import (
 
 
 def test_feature_selection_PCA_FeatureSelection():
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -89,7 +89,7 @@ def test_feature_selection_PCA_FeatureSelection():
 
 # def test_feature_selection_LDASelection():
 
-#     data = pd.read_csv("Appendix/Medicalpremium.csv")
+#     data = pd.read_csv("data/Medicalpremium.csv")
 #     X = data.iloc[:, :-1]
 #     y = data.iloc[:, -1]
 
@@ -100,7 +100,7 @@ def test_feature_selection_PCA_FeatureSelection():
 
 
 def test_feature_selection_RBFSampler():
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -117,7 +117,7 @@ def test_feature_selection_RBFSampler():
 def test_feature_selection_densifier():
     from InsurAutoML.feature_selection.sklearn import densifier
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -131,7 +131,7 @@ def test_feature_selection_densifier():
 def test_feature_selection_fast_ica():
     from InsurAutoML.feature_selection.sklearn import fast_ica
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -145,7 +145,7 @@ def test_feature_selection_fast_ica():
 def test_feature_selection_feature_agglomeration():
     from InsurAutoML.feature_selection.sklearn import feature_agglomeration
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -159,7 +159,7 @@ def test_feature_selection_feature_agglomeration():
 def test_feature_selection_kernel_pca():
     from InsurAutoML.feature_selection.sklearn import kernel_pca
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -173,7 +173,7 @@ def test_feature_selection_kernel_pca():
 def test_feature_selection_kitchen_sinks():
     from InsurAutoML.feature_selection.sklearn import kitchen_sinks
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -187,7 +187,7 @@ def test_feature_selection_kitchen_sinks():
 def test_feature_selection_nystroem_sampler():
     from InsurAutoML.feature_selection.sklearn import nystroem_sampler
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -201,7 +201,7 @@ def test_feature_selection_nystroem_sampler():
 def test_feature_selection_pca():
     from InsurAutoML.feature_selection.sklearn import pca
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 
@@ -215,7 +215,7 @@ def test_feature_selection_pca():
 def test_feature_selection_random_trees_embedding():
     from InsurAutoML.feature_selection.sklearn import random_trees_embedding
 
-    data = pd.read_csv("Appendix/Medicalpremium.csv")
+    data = pd.read_csv("data/Medicalpremium.csv")
     X = data.iloc[:, :-1]
     y = data.iloc[:, -1]
 

@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /tests/test_encoder/test_encoder.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Saturday, 16th December 2023 5:33:16 pm
+Last Modified: Tuesday, 20th January 2026 12:24:24 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +43,7 @@ def test_encoder_1():
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
-    database = load_data().load("Appendix", "Employee")
+    database = load_data().load("data", "Employee")
 
     encoder = DataEncoding(dummy_coding=True, transform=False)
     encoder.fit(database["Employee"])
@@ -57,7 +57,7 @@ def test_encoder_2():
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
-    database = load_data().load("Appendix", "Employee")
+    database = load_data().load("data", "Employee")
 
     encoder = DataEncoding(dummy_coding=False, transform="standardize")
     encoder.fit(database["Employee"])
@@ -71,7 +71,7 @@ def test_encoder_3():
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
-    database = load_data().load("Appendix", "Employee")
+    database = load_data().load("data", "Employee")
 
     encoder = DataEncoding(dummy_coding=False, transform="center")
     encoder.fit(database["Employee"])
@@ -85,7 +85,7 @@ def test_encoder_4():
     from InsurAutoML.encoding import DataEncoding
     from InsurAutoML import load_data
 
-    database = load_data().load("Appendix", "Employee")
+    database = load_data().load("data", "Employee")
 
     encoder = DataEncoding(dummy_coding=False, transform="log")
     encoder.fit(database["Employee"])

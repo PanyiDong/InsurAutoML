@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hyperparameters/__init__.py
 File Created: Tuesday, 5th April 2022 11:01:43 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Sunday, 28th May 2023 10:05:10 pm
+Last Modified: Wednesday, 3rd December 2025 7:27:37 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -47,6 +47,10 @@ from .ray.feature_selection_hyperparameter import (
 )
 from .ray.classifier_hyperparameter import classifier_hyperparameter
 from .ray.regressor_hyperparameter import regressor_hyperparameter
+from .ray.prep_hyperparameter import (
+    complete_prep_hyperparameter,
+    missing_prep_hyperparameter,
+)
 
 """
 Notice for designing hyperparameters space:
@@ -136,4 +140,6 @@ __all__ = [
     "feature_selection_hyperparameter",
     "classifier_hyperparameter",
     "regressor_hyperparameter",
+    "complete_prep_hyperparameter",
+    "missing_prep_hyperparameter",
 ]

@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.3
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/imputation/__init__.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Monday, 28th November 2022 11:43:39 pm
+Last Modified: Thursday, 18th December 2025 11:07:05 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 import importlib
-from .base import SimpleImputer, DummyImputer, JointImputer
+from .base import SimpleImputer, MeanModeImputer, DummyImputer, JointImputer
 from .multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
 
 # from .clustering import AAI_kNN, KMI, CMI, k_Prototype_NN
@@ -48,7 +48,7 @@ from .multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MI
 imputers = {
     "SimpleImputer": SimpleImputer,
     #    'DummyImputer' : DummyImputer,
-    "JointImputer": JointImputer,
+    # "JointImputer": JointImputer,
     "ExpectationMaximization": ExpectationMaximization,
     "KNNImputer": KNNImputer,
     "MissForestImputer": MissForestImputer,
@@ -72,6 +72,7 @@ if tensorflow_spec is not None or torch_spec is not None:
 
 __all__ = [
     "SimpleImputer",
+    "MeanModeImputer",
     "DummyImputer",
     "JointImputer",
     "ExpectationMaximization",

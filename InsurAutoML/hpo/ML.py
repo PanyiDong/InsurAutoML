@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.5
+Latest Version: 0.2.6
 Relative Path: /InsurAutoML/hpo/ML.py
 File Created: Monday, 24th October 2022 11:56:57 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 1st December 2023 6:43:25 pm
+Last Modified: Wednesday, 3rd December 2025 1:52:54 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2022, Panyi Dong
+Copyright (c) 2022 - 2025, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, Callable, Dict
+from typing import Union, List, Callable, Dict, Optional
 import numpy as np
 import pandas as pd
 
@@ -48,7 +48,6 @@ from ..utils.base import type_of_task
 
 
 class AutoTabularRegressor(AutoTabularBase):
-
     """ "
     AutoTabular for regression tasks build on top of AutoTabularBase.
 
@@ -133,7 +132,7 @@ class AutoTabularRegressor(AutoTabularBase):
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
+    search_algo: search algorithm used for hyperparameter optimization, default = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -167,8 +166,8 @@ class AutoTabularRegressor(AutoTabularBase):
     use_gpu: whether to use gpu, default = None
     if None, will use gpu if available, otherwise False (not to use gpu)
 
-    reset_index: whether to reset index during traning, default = True
-    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    reset_index: whether to reset index during training, default = True
+    there are methods that are index independent (ignore index, reset, e.g. GAIN)
     if you wish to use these methods and set reset_index = False, please make sure
     all input index are ordered and starting from 0
 
@@ -292,7 +291,6 @@ class AutoTabularRegressor(AutoTabularBase):
 
 
 class AutoTabularClassifier(AutoTabularBase):
-
     """ "
     AutoTabular for classification tasks build on top of AutoTabularBase
 
@@ -378,7 +376,7 @@ class AutoTabularClassifier(AutoTabularBase):
     objective: Objective function to test performance, default = 'accuracy'
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
+    search_algo: search algorithm used for hyperparameter optimization, default = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -412,8 +410,8 @@ class AutoTabularClassifier(AutoTabularBase):
     use_gpu: whether to use gpu, default = None
     if None, will use gpu if available, otherwise False (not to use gpu)
 
-    reset_index: whether to reset index during traning, default = True
-    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    reset_index: whether to reset index during training, default = True
+    there are methods that are index independent (ignore index, reset, e.g. GAIN)
     if you wish to use these methods and set reset_index = False, please make sure
     all input index are ordered and starting from 0
 
@@ -537,7 +535,6 @@ class AutoTabularClassifier(AutoTabularBase):
 
 
 class AutoTabular(AutoTabularBase):
-
     """
     AutoTabular that automatically assign to AutoTabularClassifier or AutoTabularRegressor
 
@@ -663,8 +660,8 @@ class AutoTabular(AutoTabularBase):
     use_gpu: whether to use gpu, default = None
     if None, will use gpu if available, otherwise False (not to use gpu)
 
-    reset_index: whether to reset index during traning, default = True
-    there are methods that are index independent (ignore index, resetted, e.g. GAIN)
+    reset_index: whether to reset index during training, default = True
+    there are methods that are index independent (ignore index, reset, e.g. GAIN)
     if you wish to use these methods and set reset_index = False, please make sure
     all input index are ordered and starting from 0
 
@@ -774,7 +771,11 @@ class AutoTabular(AutoTabularBase):
             )
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray] = None
+        self,
+        X: pd.DataFrame,
+        y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+        X_valid: Optional[pd.DataFrame] = None,
+        y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabular:
         if isinstance(y, (pd.DataFrame, pd.Series, np.ndarray)):
             self._type = type_of_task(y)
@@ -820,7 +821,7 @@ class AutoTabular(AutoTabularBase):
             seed=self.seed,
         )
 
-        super(AutoTabular, self).fit(X, y)
+        super(AutoTabular, self).fit(X, y, X_valid, y_valid)
 
         return self
 
