@@ -39,7 +39,9 @@ def test_missing_package(monkeypatch):
     monkeypatch.setattr(
         _optional.importlib.util,
         "find_spec",
-        lambda name, *args: None if name == "missforest" else real_find_spec(name, *args),
+        lambda name, *args: None
+        if name == "missforest"
+        else real_find_spec(name, *args),
     )
 
     assert "missforest" in missing_informed_components()
@@ -62,7 +64,9 @@ def test_missing_extensions(tmp_path, monkeypatch):
 
 
 def test_require_informed(monkeypatch):
-    monkeypatch.setattr(_optional, "missing_informed_components", lambda: ["missforest"])
+    monkeypatch.setattr(
+        _optional, "missing_informed_components", lambda: ["missforest"]
+    )
 
     with pytest.raises(InformedNotInstalledError) as error:
         require_informed("InformedAutoTabular")

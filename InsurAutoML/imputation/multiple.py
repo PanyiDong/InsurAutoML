@@ -304,7 +304,6 @@ class MissForestImputer(BaseImputer):
         random_state: int = None,
         categorical_threshold: int = UNI_CLASS,
     ) -> None:
-
         self.max_iter = max_iter
         self.n_estimators = n_estimators
         self.random_state = random_state
@@ -587,9 +586,7 @@ class MICE(BaseImputer):
         features = list(X.columns)
 
         for _column in features:
-            if is_text_dtype(X[_column].dtype) or (
-                str(X[_column].dtype) == "category"
-            ):
+            if is_text_dtype(X[_column].dtype) or (str(X[_column].dtype) == "category"):
                 raise ValueError(
                     "MICE can only handle numerical filling, run encoding first!"
                 )

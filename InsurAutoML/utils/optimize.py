@@ -471,9 +471,7 @@ def _optuna_search_space(
 
     balancing_hyper = {}
     balancing_hyper["balancing"] = balancing
-    for key, value in _balancing_hyperparameter[
-        [*_balancing].index(balancing)
-    ].items():
+    for key, value in _balancing_hyperparameter[[*_balancing].index(balancing)].items():
         balancing_hyper[key] = distribution_to_suggest(
             trial, balancing, key, value, algo="Optuna"
         )
@@ -746,14 +744,10 @@ def _converted_get_hyperparameter_space(
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = (
-            tune.choice(
-                [
-                    balancings_hyperparameters[all_balancings.index(_balancing)][
-                        "balancing"
-                    ]
-                ]
-            )
+        balancings_hyperparameters[all_balancings.index(_balancing)][
+            "balancing"
+        ] = tune.choice(
+            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
         )
         _balancing_hyperparameter.append(
             searcher.convert_search_space(

@@ -48,7 +48,6 @@ from ...utils.base import type_of_task
 
 
 class InformedAutoTabularRegressor(InformedAutoTabularBase):
-
     def __init__(
         self,
         n_estimators: int = 5,
@@ -148,7 +147,6 @@ class InformedAutoTabularRegressor(InformedAutoTabularBase):
 
 
 class InformedAutoTabularClassifier(InformedAutoTabularBase):
-
     def __init__(
         self,
         n_estimators: int = 5,
@@ -248,7 +246,6 @@ class InformedAutoTabularClassifier(InformedAutoTabularBase):
 
 
 class InformedAutoTabular(InformedAutoTabularBase):
-
     def __init__(
         self,
         n_estimators: int = 5,

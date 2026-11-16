@@ -89,8 +89,11 @@ def test_nan_cov_variants():
         np.testing.assert_allclose(cov[:, 0], ref[:2, 2])
 
     # y all missing -> covariance of X itself
-    for _y in [pd.Series([np.nan] * 30), pd.DataFrame({"y": [np.nan] * 30}),
-               np.full(30, np.nan)]:
+    for _y in [
+        pd.Series([np.nan] * 30),
+        pd.DataFrame({"y": [np.nan] * 30}),
+        np.full(30, np.nan),
+    ]:
         np.testing.assert_allclose(stats.nan_cov(X, _y), ref[:2, :2])
 
     # 1d X
@@ -191,7 +194,9 @@ def test_neg_metrics():
 
     assert stats.neg_R2(np.array([1.0, 2.0, 3.0]), np.array([1.0, 2.0, 3.0])) == -1
     # R2 below -1 -> inf
-    assert stats.neg_R2(np.array([1.0, 2.0, 3.0]), np.array([10.0, -5.0, 30.0])) == np.inf
+    assert (
+        stats.neg_R2(np.array([1.0, 2.0, 3.0]), np.array([10.0, -5.0, 30.0])) == np.inf
+    )
     assert stats.neg_accuracy(y_true, y_pred) == pytest.approx(-0.8)
     assert stats.neg_precision(y_true, y_pred) == pytest.approx(-1.0)
     assert stats.neg_f1(y_true, y_pred) == pytest.approx(-0.8)
@@ -263,8 +268,14 @@ def test_accc():
     t_cond = stats.ACCC(Z, y, X=X[:, 0], seed=0)
     assert t_cond > 0.5
     # y depends on X only -> Z adds little information given X
-    t_none = stats.ACCC(Z, X[:, 0] + 0.01 * rng.normal(size=n), X=X,
-                        Z_ties_method="ordinal", X_ties_method="first", seed=0)
+    t_none = stats.ACCC(
+        Z,
+        X[:, 0] + 0.01 * rng.normal(size=n),
+        X=X,
+        Z_ties_method="ordinal",
+        X_ties_method="first",
+        seed=0,
+    )
     assert t_none < t_cond
 
     # y constant -> S_n == 0 -> returns 1 for conditional measure

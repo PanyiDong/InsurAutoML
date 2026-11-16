@@ -262,8 +262,12 @@ def _check_xy(X, y, frame, target):
     np.testing.assert_array_equal(y.values, frame[target].values)
 
 
-@pytest.mark.parametrize("loader, target, fmt, dataname, to_dev", MM_LOADERS, ids=MM_IDS)
-def test_multimodal_single_split(loader, target, fmt, dataname, to_dev, remote, tmp_path):
+@pytest.mark.parametrize(
+    "loader, target, fmt, dataname, to_dev", MM_LOADERS, ids=MM_IDS
+)
+def test_multimodal_single_split(
+    loader, target, fmt, dataname, to_dev, remote, tmp_path
+):
     # put the response column in the middle so name-based selection matters
     frame = _fake_frame(target or "label")
     frame = frame[[frame.columns[0], frame.columns[2], frame.columns[1]]]
@@ -290,7 +294,9 @@ def test_multimodal_single_split(loader, target, fmt, dataname, to_dev, remote, 
     _check_xy(X2, y2, frame, target)
 
 
-@pytest.mark.parametrize("loader, target, fmt, dataname, to_dev", MM_LOADERS, ids=MM_IDS)
+@pytest.mark.parametrize(
+    "loader, target, fmt, dataname, to_dev", MM_LOADERS, ids=MM_IDS
+)
 def test_multimodal_list_split(loader, target, fmt, dataname, to_dev, remote, tmp_path):
     frame = _fake_frame(target or "label", seed=1)
     remote["frame"] = frame
@@ -319,7 +325,9 @@ def test_multimodal_list_split(loader, target, fmt, dataname, to_dev, remote, tm
         _check_xy(*result2[key], frame, target)
 
 
-@pytest.mark.parametrize("loader, target, fmt, dataname, to_dev", MM_LOADERS, ids=MM_IDS)
+@pytest.mark.parametrize(
+    "loader, target, fmt, dataname, to_dev", MM_LOADERS, ids=MM_IDS
+)
 def test_multimodal_no_save(loader, target, fmt, dataname, to_dev, remote, tmp_path):
     frame = _fake_frame(target or "label", seed=2)
     remote["frame"] = frame

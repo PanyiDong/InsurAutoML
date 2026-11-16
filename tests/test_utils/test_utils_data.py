@@ -65,7 +65,9 @@ def test_unify_nan():
 
     data = np.arange(15).reshape(5, 3)
     # object dtype, so missing indicators can be written into the columns
-    data = pd.DataFrame(data, columns=["column_1", "column_2", "column_3"]).astype(object)
+    data = pd.DataFrame(data, columns=["column_1", "column_2", "column_3"]).astype(
+        object
+    )
     data["column_3"] = data["column_3"].astype(int)
     data.loc[:, "column_1"] = "novalue"
     data.loc[3, "column_2"] = "None"

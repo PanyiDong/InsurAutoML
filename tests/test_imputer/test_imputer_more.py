@@ -93,9 +93,7 @@ def test_base_imputer_not_implemented():
     ],
 )
 def test_simple_imputer_methods(method, expected):
-    X = pd.DataFrame(
-        {"a": [1.0, 1.0, 4.0, np.nan], "b": [1.0, 2.0, 3.0, 4.0]}
-    )
+    X = pd.DataFrame({"a": [1.0, 1.0, 4.0, np.nan], "b": [1.0, 2.0, 3.0, 4.0]})
     imp = SimpleImputer(method=method)
     filled = imp.fill(X)
 
@@ -262,9 +260,7 @@ def test_knn_imputer_categorical_and_no_missing():
     assert imp._fitted
 
 
-@pytest.mark.parametrize(
-    "n_neighbors, n_expected", [(None, 10), (2, 1), ([1, 3], 2)]
-)
+@pytest.mark.parametrize("n_neighbors, n_expected", [(None, 10), (2, 1), ([1, 3], 2)])
 def test_knn_imputer_cross_validation(n_neighbors, n_expected):
     rng = np.random.default_rng(0)
     X = pd.DataFrame(rng.normal(size=(60, 3)), columns=list("abc"))
@@ -349,7 +345,10 @@ def test_missforest_string_column_and_all_missing_column():
         filled = imp.fill(Xm)
 
     assert "s" in imp.feature_types_["categorical"]
-    assert "allnan" not in imp.feature_types_["numerical"] + imp.feature_types_["categorical"]
+    assert (
+        "allnan"
+        not in imp.feature_types_["numerical"] + imp.feature_types_["categorical"]
+    )
     assert filled["s"].notnull().all()
     assert set(filled["s"]) <= {"u", "v"}
     assert filled[["x0", "x1", "k"]].notnull().all().all()

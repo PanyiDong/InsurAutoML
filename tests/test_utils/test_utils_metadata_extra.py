@@ -74,9 +74,14 @@ def test_meta_map_helpers():
     # few unique values -> categorical
     assert meta_map_object(pd.Series(["a", "b"] * 50)) == "Categorical"
     # many unique long strings -> text
-    assert meta_map_object(pd.Series(["w x y {}".format(i) for i in range(50)])) == "Text"
+    assert (
+        meta_map_object(pd.Series(["w x y {}".format(i) for i in range(50)])) == "Text"
+    )
     # many unique short strings -> categorical
-    assert meta_map_object(pd.Series(["w{}".format(i) for i in range(50)])) == "Categorical"
+    assert (
+        meta_map_object(pd.Series(["w{}".format(i) for i in range(50)]))
+        == "Categorical"
+    )
     # many unique non-string objects: str accessor fails -> categorical
     assert meta_map_object(pd.Series(list(range(50)), dtype=object)) == "Categorical"
 
@@ -249,7 +254,9 @@ def test_metadata_merge():
     assert meta.details["float"]["std"] == pytest.approx(np.std(full["float"]))
     assert meta.details["int_num"]["min"] == full["int_num"].min()
     assert meta.details["int_num"]["max"] == full["int_num"].max()
-    assert meta.details["obj_cat"]["unique_count"] == dict(full["obj_cat"].value_counts())
+    assert meta.details["obj_cat"]["unique_count"] == dict(
+        full["obj_cat"].value_counts()
+    )
 
     # type mismatch raises
     bad = df2.copy()
@@ -259,7 +266,9 @@ def test_metadata_merge():
 
 
 def test_chunk_metadata(tmp_path):
-    df = pd.concat([_frame(seed=0), _frame(seed=1), _frame(n=50, seed=2)], ignore_index=True)
+    df = pd.concat(
+        [_frame(seed=0), _frame(seed=1), _frame(n=50, seed=2)], ignore_index=True
+    )
     # make the int_num column numerical in every chunk
     df["int_num"] = np.arange(len(df))
     path = tmp_path / "data.csv"
@@ -275,4 +284,7 @@ def test_chunk_metadata(tmp_path):
         assert meta.details[col]["std"] == pytest.approx(ref.details[col]["std"])
         assert meta.details[col]["min"] == ref.details[col]["min"]
         assert meta.details[col]["max"] == ref.details[col]["max"]
-    assert meta.details["int_cat"]["unique_count"] == ref.details["int_cat"]["unique_count"]
+    assert (
+        meta.details["int_cat"]["unique_count"]
+        == ref.details["int_cat"]["unique_count"]
+    )

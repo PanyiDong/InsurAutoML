@@ -307,7 +307,9 @@ class InformedClassifierEnsemble(formatting):
 
         # make sure all predictions are seen (formatting is not inplace: returns a dataframe)
         if isinstance(pred, pd.DataFrame):
-            return cast(pd.DataFrame, super(InformedClassifierEnsemble, self).refit(pred))
+            return cast(
+                pd.DataFrame, super(InformedClassifierEnsemble, self).refit(pred)
+            )
         # if not dataframe, convert to dataframe for formatting
         else:
             return cast(
@@ -468,7 +470,9 @@ class InformedRegressorEnsemble(formatting):
         if self.strategy == "stacking" or self.strategy == "bagging":
             # if weights not included, not use weights
             try:
-                pred = cast(Callable, self.voting)(pred_list, axis=1, weights=self.weights)
+                pred = cast(Callable, self.voting)(
+                    pred_list, axis=1, weights=self.weights
+                )
             except BaseException:
                 # if weights included, but not available in voting function,
                 # warn users

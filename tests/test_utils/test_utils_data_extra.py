@@ -67,7 +67,9 @@ def test_str2list_str2dict():
 def test_train_test_split():
     X = pd.DataFrame({"a": np.arange(20)})
     y = pd.Series(np.arange(20) * 10)
-    X_train, X_test, y_train, y_test = udata.train_test_split(X, y, test_perc=0.25, seed=1)
+    X_train, X_test, y_train, y_test = udata.train_test_split(
+        X, y, test_perc=0.25, seed=1
+    )
 
     assert len(X_train) == 15 and len(X_test) == 5
     assert set(X_train["a"]).isdisjoint(set(X_test["a"]))
@@ -178,7 +180,9 @@ def test_remove_index_columns(tmp_path, monkeypatch):
         udata.remove_index_columns(base.copy(), threshold=[0.5])
 
     # rows, scalar threshold
-    out = udata.remove_index_columns(base.copy(), axis=0, threshold=0.9, reset_index=False)
+    out = udata.remove_index_columns(
+        base.copy(), axis=0, threshold=0.9, reset_index=False
+    )
     assert list(out.index) == [0, 1, 3]
 
     # rows given via columns (axis=0), threshold list, save removed rows
@@ -262,14 +266,18 @@ def test_plot_high_dim_cluster(tmp_path):
     y = np.repeat([0, 1], 20)
 
     path = tmp_path / "plots"
-    udata.plotHighDimCluster(X, y, plot=True, method="PCA", dim=2, save=True, path=str(path))
+    udata.plotHighDimCluster(
+        X, y, plot=True, method="PCA", dim=2, save=True, path=str(path)
+    )
     assert (path / "HighDim.png").exists()
 
     udata.plotHighDimCluster(X, y, plot=False, method="PCA", dim=3)
     udata.plotHighDimCluster(X, y, plot=False, method="TSNE", dim=2)
 
     X_big = rng.normal(size=(110, 101))
-    udata.plotHighDimCluster(X_big, np.arange(110) % 2, plot=False, method="TSNE", dim=2)
+    udata.plotHighDimCluster(
+        X_big, np.arange(110) % 2, plot=False, method="TSNE", dim=2
+    )
 
     with pytest.raises(ValueError, match="high dimensional"):
         udata.plotHighDimCluster(X[:, :3], y)
@@ -281,7 +289,9 @@ def test_feature_type():
     assert udata.feature_type(pd.Series([0, 1] * 50)) == "numerical_categorical"
     assert udata.feature_type(pd.Series(np.arange(100) * 1.5)) == "continuous"
     assert udata.feature_type(pd.Series(["a", "b"] * 50)) == "string_categorical"
-    assert udata.feature_type(pd.Series(["w {}".format(i) for i in range(100)])) == "text"
+    assert (
+        udata.feature_type(pd.Series(["w {}".format(i) for i in range(100)])) == "text"
+    )
 
 
 def test_text_preprocessing():
@@ -296,7 +306,8 @@ def test_text_preprocessing():
 @pytest.fixture
 def corpus():
     return pd.Series(
-        ["the cat sat on the mat", "the dog ate the cat", "a mat (old) for the dog"] * 4,
+        ["the cat sat on the mat", "the dog ate the cat", "a mat (old) for the dog"]
+        * 4,
         name="review",
     )
 
@@ -366,9 +377,17 @@ def test_text2vec_dataframe_input(corpus, monkeypatch):
     df = pd.DataFrame({"review": corpus, "title": other})
     out = udata.text2vec(df, **kwargs)
     assert out.shape == (len(df), 6)
-    assert list(out.columns) == ["review_0", "review_1", "review_2",
-                                 "title_0", "title_1", "title_2"]
-    pd.testing.assert_frame_equal(out[["review_0", "review_1", "review_2"]], from_series)
+    assert list(out.columns) == [
+        "review_0",
+        "review_1",
+        "review_2",
+        "title_0",
+        "title_1",
+        "title_2",
+    ]
+    pd.testing.assert_frame_equal(
+        out[["review_0", "review_1", "review_2"]], from_series
+    )
     np.testing.assert_allclose(out.iloc[0, 3:].values, kv["dog"] * 2)
 
     torch = pytest.importorskip("torch")

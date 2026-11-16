@@ -241,9 +241,7 @@ class Smote(BaseBalancing):
                 ):
                     _new_data = Smote._fit_transform(self, _data)
                     if len(_new_data) == len(_data):
-                        warnings.warn(
-                            "Smote can not reduce the imbalance further."
-                        )
+                        warnings.warn("Smote can not reduce the imbalance further.")
                         _data = _new_data
                         break
                     _data = _new_data

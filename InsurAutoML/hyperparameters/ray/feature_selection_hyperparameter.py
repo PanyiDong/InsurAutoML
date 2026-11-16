@@ -224,7 +224,7 @@ CBFS = {
     "copula": tune.choice(["empirical"]),
     "n_prop": tune.uniform(0, 1),
 }
-CCCFilter= {
+CCCFilter = {
     "feature_selection": "CCCFilter",
     "threshold": tune.quniform(0.01, 0.10, 0.01),
 }
