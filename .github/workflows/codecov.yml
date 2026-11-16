@@ -23,9 +23,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y libnanoflann-dev
           python -m pip install --upgrade pip
+      # CPU-only torch (much smaller than the default CUDA wheels) so the neural
+      # network models are tested and covered; installed first, the "nn" extra
+      # below then finds torch already satisfied
+      - name: Install torch (CPU)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: "generate report"
         run: |
-          INFORMEDAUTOML=1 pip install -e ".[informed]" pytest pytest-cov
+          INFORMEDAUTOML=1 pip install -e ".[informed,nn]" pytest pytest-cov
+          python -c "import torch; assert not torch.version.cuda, torch.version.cuda"
           python -c "from InsurAutoML._optional import missing_informed_components as m; assert not m(), m()"
           pytest tests/ --cov=InsurAutoML --cov-report=xml
       # codecov-action >= v4 needs an upload token, use GitHub OIDC (no secret needed)
