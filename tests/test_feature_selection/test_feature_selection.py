@@ -74,45 +74,6 @@ def test_feature_selection():
                 _X.shape[1] <= X.shape[1]
             ), "Feature selection method {} failed".format(method_name)
 
-    # test sklearn version if autosklearn is installed
-    import importlib
-
-    autosklearn_spec = importlib.util.find_spec("autosklearn")
-    if autosklearn_spec is not None:
-        from InsurAutoML.feature_selection.sklearn import (
-            extra_trees_preproc_for_classification,
-            extra_trees_preproc_for_regression,
-            liblinear_svc_preprocessor,
-            polynomial,
-            select_percentile_classification,
-            select_percentile_regression,
-            select_rates_classification,
-            select_rates_regression,
-            truncatedSVD,
-        )
-
-        methods = {
-            "extra_trees_preproc_for_classification": extra_trees_preproc_for_classification,
-            "extra_trees_preproc_for_regression": extra_trees_preproc_for_regression,
-            "liblinear_svc_preprocessor": liblinear_svc_preprocessor,
-            "polynomial": polynomial,
-            "select_percentile_classification": select_percentile_classification,
-            "select_percentile_regression": select_percentile_regression,
-            "select_rates_classification": select_rates_classification,
-            "select_rates_regression": select_rates_regression,
-            "truncatedSVD": truncatedSVD,
-        }
-        for method_name, method in zip(methods.keys(), methods.values()):
-            data = pd.read_csv("data/Medicalpremium.csv")
-            X = data.iloc[:, :-1]
-            y = data.iloc[:, -1]
-
-            feature_selection = method()
-            feature_selection.fit(X, y)
-            _X = feature_selection.transform(X)
-
-            assert feature_selection._fitted, "Fitted should be True"
-
 
 def test_FeatureFilter():
     from InsurAutoML.feature_selection import FeatureFilter

@@ -52,12 +52,59 @@ import numpy as np
 
 from ..base import set_seed
 from ..utils.file import save_methods
-from ..utils.optimize import setup_logger, get_metrics
+from ..utils.optimize import get_metrics
 
 logger = logging.getLogger(__name__)
 
 
-class TabularObjective(tune.Trainable):
+class TrialArtifactMixin:
+    """
+    Helpers for a ray.tune.Trainable to persist its artifacts (fitted pipeline,
+    logs, preprocessed data) into the trial directory of the experiment.
+
+    Since ray 2.7, trainables run in a temporary working directory under
+    /tmp/ray/session_*/artifacts instead of the trial directory, so relative
+    paths can no longer be used to store the fitted models. The trial directory
+    under RunConfig(storage_path) is read from the trial's storage context. When
+    the objective is used outside of Ray Tune, the current working directory is
+    used (the behavior before ray 2.x).
+    """
+
+    def _trial_dir(self) -> str:
+        storage = getattr(self, "_storage", None)
+        trial_dir = getattr(storage, "trial_fs_path", None) if storage else None
+        if trial_dir:
+            os.makedirs(trial_dir, exist_ok=True)
+            return trial_dir
+
+        return os.getcwd()
+
+    def _trial_path(self, file_name: str) -> str:
+        return os.path.join(self._trial_dir(), file_name)
+
+    def _setup_trial_logger(self) -> logging.Logger:
+        log_file = os.path.abspath(self._trial_path("stdout.log"))
+        _logger = logging.getLogger(type(self).__module__)
+
+        # when actors are reused, redirect logging to the new trial directory
+        _handler = getattr(self, "_log_handler", None)
+        if _handler is not None:
+            if _handler.baseFilename == log_file:
+                return _logger
+            _logger.removeHandler(_handler)
+            _handler.close()
+
+        self._log_handler = logging.FileHandler(log_file, mode="a")
+        self._log_handler.setFormatter(
+            logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+        )
+        _logger.setLevel(logging.INFO)
+        _logger.addHandler(self._log_handler)
+
+        return _logger
+
+
+class TabularObjective(TrialArtifactMixin, tune.Trainable):
     def setup(
         self,
         config: Dict,
@@ -101,7 +148,7 @@ class TabularObjective(tune.Trainable):
         elif isinstance(data_split[0][0][0], pd.DataFrame):
             self.dict2config(config)
 
-        self._logger = setup_logger(__name__, "stdout.log")
+        self._logger = self._setup_trial_logger()
 
     def step(self) -> Dict[str, Any]:
         try:
@@ -144,6 +191,8 @@ class TabularObjective(tune.Trainable):
 
     def reset_config(self, new_config: Dict) -> bool:
         self.dict2config(new_config)
+        # reused actor, log into the new trial directory
+        self._logger = self._setup_trial_logger()
 
         return True
 
@@ -382,10 +431,10 @@ class TabularObjective(tune.Trainable):
                     [pd.DataFrame(_X_train_obj), _y_train_obj],
                     axis=1,
                     ignore_index=True,
-                ).to_csv("train_preprocessed.csv", index=False)
+                ).to_csv(self._trial_path("train_preprocessed.csv"), index=False)
             elif isinstance(_X_train_obj, pd.DataFrame):
                 pd.concat([_X_train_obj, _y_train_obj], axis=1).to_csv(
-                    "train_preprocessed.csv", index=False
+                    self._trial_path("train_preprocessed.csv"), index=False
                 )
             else:
                 self._logger.error("Only accept numpy array or pandas dataframe!")
@@ -514,9 +563,10 @@ class TabularObjective(tune.Trainable):
                 )
             )
 
-        # save the fitted model objects
+        # save the fitted model objects to the trial directory
+        # AutoTabular loads them from Result.path after tuning
         save_methods(
-            self.model_name,
+            self._trial_path(self.model_name),
             [self.enc, self.imp, self.blc, self.scl, self.fts, self.mol],
         )
 

@@ -66,7 +66,7 @@ ADABOOSTREGRESSOR = {
 }
 ARDREGRESSION = {
     "model": "ARDRegression",
-    "n_iter": tune.choice([300]),
+    "max_iter": tune.choice([300]),
     "tol": tune.loguniform(1e-5, 1e-1),
     "alpha_1": tune.loguniform(1e-10, 1e-3),
     "alpha_2": tune.loguniform(1e-10, 1e-3),

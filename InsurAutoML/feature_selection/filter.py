@@ -235,6 +235,10 @@ class mRMR(BaseFeatureSelection):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
+        # response name must not collide with feature names (e.g. both 0 for
+        # ndarray inputs), otherwise MI can not group on the joint columns
+        if y.columns[0] in X.columns:
+            y = y.rename(columns={y.columns[0]: "__response__"})
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -441,6 +445,16 @@ class FOCI(BaseFeatureSelection):
                 unselected_features.remove(tmp_feature)
             else:
                 break
+
+        # an empty selection breaks the downstream model,
+        # keep the top ranked feature instead
+        if len(selected_features) == 0 and self.num_features > 0:
+            warnings.warn(
+                "FOCI selected no feature, keep the top ranked feature {}.".format(
+                    tmp_feature
+                )
+            )
+            selected_features.append(tmp_feature)
 
         # record selected features
         self.select_features = selected_features

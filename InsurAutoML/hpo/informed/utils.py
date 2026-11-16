@@ -51,10 +51,11 @@ from ray import tune
 
 from ..base import set_seed
 from ...utils.file import save_methods
-from ...utils.optimize import setup_logger, get_metrics
+from ...utils.optimize import get_metrics
+from ..utils import TrialArtifactMixin
 
 
-class InformedTabularObjective(tune.Trainable):
+class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
     def setup(
         self,
@@ -92,7 +93,7 @@ class InformedTabularObjective(tune.Trainable):
 
         self.dict2config(config)
 
-        self._logger = setup_logger(__name__, "stdout.log")
+        self._logger = self._setup_trial_logger()
 
     def step(self) -> Dict[str, Any]:
         try:
@@ -127,6 +128,8 @@ class InformedTabularObjective(tune.Trainable):
 
     def reset_config(self, new_config: Dict) -> bool:
         self.dict2config(new_config)
+        # reused actor, log into the new trial directory
+        self._logger = self._setup_trial_logger()
 
         return True
 
@@ -434,9 +437,10 @@ class InformedTabularObjective(tune.Trainable):
             "[INFO] Refit loss with all data is {:.6f}".format(_loss_refit)
         )
 
-        # save the fitted model objects
+        # save the fitted model objects to the trial directory
+        # InformedAutoTabular loads them from Result.path after tuning
         save_methods(
-            self.model_name,
+            self._trial_path(self.model_name),
             [
                 self.enc,
                 self.comp_prep,

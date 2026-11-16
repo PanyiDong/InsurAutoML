@@ -46,7 +46,7 @@ import json
 import numpy as np
 import pandas as pd
 
-from .base import random_index
+from .base import random_index, is_text_dtype
 from ..constant import UNI_CLASS
 
 # string list to list
@@ -245,7 +245,9 @@ class formatting:
             unique_map[item] = idx
 
         # mapping categorical to numerical
-        data = data.replace(unique_map)
+        # pandas>=3 no longer downcasts after replace (result stays object/str),
+        # infer_objects restores the numerical dtype
+        data = data.replace(unique_map).infer_objects()
 
         return data
 
@@ -365,9 +367,11 @@ def unify_nan(
     # unify the nan values
     for _column in columns:
         if replace:  # if replace, replace missing column with unified nan one
-            dataset[_column] = dataset[_column].replace(nas_dict)
+            dataset[_column] = dataset[_column].replace(nas_dict).infer_objects()
         else:
-            dataset[_column + "_useNA"] = dataset[_column].replace(nas_dict)
+            dataset[_column + "_useNA"] = dataset[_column].replace(
+                nas_dict
+            ).infer_objects()
 
     return dataset
 
@@ -471,7 +475,7 @@ def remove_index_columns(
                 "Removing_data(Limited_Information).csv", index=False
             )
         elif axis == 0:
-            data[remove_index].to_csv(
+            data.loc[remove_index].to_csv(
                 "Removing_data(Limited_Information).csv", index=False
             )
 
@@ -627,7 +631,7 @@ class ExtremeClass:
                     len(X.loc[X[_column] == _value, _column]) / len(X)
                     >= self.extreme_threshold
                 ):
-                    _X.remove(labels=_column, inplace=True)
+                    _X.drop(columns=_column, inplace=True)
                     break
         return _X
 
@@ -756,7 +760,7 @@ def string_categorical_text(df: pd.DataFrame) -> str:
 # distinguish numerical and categorical features
 # one column at a time
 def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
-    if not df.dtype == "object":
+    if not is_text_dtype(df.dtype):
         return numerical_categorical_continuous(df)
     else:
         return string_categorical_text(df)
@@ -785,11 +789,32 @@ def text2vec(
     how: str = "sum",
     return_type: str = "df",
 ):
-    # get prefix
+    # dataframe input: a single text column behaves like its Series,
+    # multiple text columns are vectorized column by column and concatenated
     if isinstance(df, pd.DataFrame):
-        prefix = df.columns[0]
-    elif isinstance(df, pd.Series):
-        prefix = df.name
+        if df.shape[1] == 1:
+            df = df.iloc[:, 0]
+        else:
+            results = [
+                text2vec(
+                    df[_column],
+                    method=method,
+                    pretrained=pretrained,
+                    dim=dim,
+                    how=how,
+                    return_type=return_type,
+                )
+                for _column in df.columns
+            ]
+            if return_type == "df":
+                return pd.concat(results, axis=1)
+            elif return_type == "pt":
+                import torch
+
+                return torch.cat(results, dim=1)
+
+    # get prefix
+    prefix = df.name
 
     # method to combine the word (in sentences/phrases) vectors
     how_dict = {

@@ -147,11 +147,12 @@ class GAIN_tf(formatting, MinMaxScale):
     def binary_sampler(self, p=0.5, size=(1, 1)):
         # allows only change row size with (n, )
         # cannot handle (, n)
+        size = list(size)
         try:
             if size[0] is None:
-                size[0] == 1
-            elif size[1] is None:
-                size[1] == 1
+                size[0] = 1
+            if size[1] is None:
+                size[1] = 1
         except IndexError:
             size = (size[0], 1)
 
@@ -162,11 +163,12 @@ class GAIN_tf(formatting, MinMaxScale):
     def uniform_sampler(self, low=0, high=1, size=(1, 1)):
         # allows only change row size with (n, )
         # cannot handle (, n)
+        size = list(size)
         try:
             if size[0] is None:
-                size[0] == 1
-            elif size[1] is None:
-                size[1] == 1
+                size[0] = 1
+            if size[1] is None:
+                size[1] = 1
         except IndexError:
             size = (size[0], 1)
 
@@ -214,12 +216,13 @@ class GAIN_tf(formatting, MinMaxScale):
 
         # convert categorical to numerical
         formatter = formatting(inplace=True)
-        formatter.fit(_X)
+        formatter.fit(_data)
 
         # if scaling, use MinMaxScale to scale the features
+        _data_scaled = _data
         if self.scaling:
             scaling = MinMaxScale()
-            _X = scaling.fit_transform(_X)
+            _data_scaled = scaling.fit_transform(_data_scaled)
 
         _data_scaled = _data_scaled.fillna(0)
 
@@ -270,10 +273,10 @@ class GAIN_tf(formatting, MinMaxScale):
 
         # GAIN solver
         _G_solver = tf.compat.v1.train.AdamOptimizer().minimize(
-            _D_loss, var_list=self.theta_G
+            _G_loss, var_list=self.theta_G
         )
         _D_solver = tf.compat.v1.train.AdamOptimizer().minimize(
-            _G_loss, var_list=self.theta_D
+            _D_loss, var_list=self.theta_D
         )
 
         # Iterations
@@ -326,10 +329,10 @@ class GAIN_tf(formatting, MinMaxScale):
 
         # if scaling, scale back
         if self.scaling:
-            _X = scaling.inverse_transform(_X)
+            _imputed_data = scaling.inverse_transform(_imputed_data)
 
         # convert numerical back to categorical
-        formatter.refit(_X)
+        formatter.refit(_imputed_data)
 
         return _imputed_data
 
@@ -538,19 +541,28 @@ class GAIN_torch(formatting, MinMaxScale):
 
         # GAIN imputation
 
+        # get mask matrix (before filling, so missing entries are recorded)
+        _M = get_missing_matrix(_X, missing=0)
+
         # initialization: fill missing with 0
         _X = _X.fillna(0)
 
         # divide dataframe to list of features and array of values
         _features = list(_X.columns)
         _X = _X.values
-        # get mask matrix
-        _M = get_missing_matrix(_X, missing=0)
 
         # if not fitted, train the networks
         if not self._fitted:
             # initialize Generator/Discriminator variables
             self._initialization(p, h_dim)
+
+            # initialize parameters to device (as leaf tensors, before optimizer)
+            self.theta_D = [
+                item.detach().to(device).requires_grad_(True) for item in self.theta_D
+            ]
+            self.theta_G = [
+                item.detach().to(device).requires_grad_(True) for item in self.theta_G
+            ]
 
             # network optimizer
             if self.optim == "Adam":
@@ -581,10 +593,6 @@ class GAIN_torch(formatting, MinMaxScale):
                     )
                 )
 
-            # initialize parameters to device
-            self.theta_D = [item.to(device) for item in self.theta_D]
-            self.theta_G = [item.to(device) for item in self.theta_G]
-
             # store the losses for early_stopping
             self.losses = []
 
@@ -614,13 +622,16 @@ class GAIN_torch(formatting, MinMaxScale):
 
                 # get the losses
                 # combine two losses as one
-                G_loss, D_loss = self.network_loss(_X_mb, _M_mb, _H_mb)
-                loss = G_loss + D_loss
+                # closure is required by LBFGS (accepted by all optimizers)
+                def closure():
+                    optimizer.zero_grad()
+                    G_loss, D_loss = self.network_loss(_X_mb, _M_mb, _H_mb)
+                    loss = G_loss + D_loss
+                    loss.backward()
+                    return loss
 
                 # optimization step
-                optimizer.zero_grad()
-                loss.backward()
-                optimizer.step()
+                loss = optimizer.step(closure)
 
                 # early_stopping
                 self.losses.append(loss.item())

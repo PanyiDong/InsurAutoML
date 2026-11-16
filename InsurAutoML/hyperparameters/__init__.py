@@ -78,7 +78,7 @@ method readable strings.
 
 """
 Classifiers/Hyperparameters from autosklearn:
-1. AdaBoost: n_estimators, learning_rate, algorithm, max_depth
+1. AdaBoost: n_estimators, learning_rate, max_depth
 2. Bernoulli naive Bayes: alpha, fit_prior
 3. Decision Tree: criterion, max_features, max_depth_factor, min_samples_split,
             min_samples_leaf, min_weight_fraction_leaf, max_leaf_nodes, min_impurity_decrease
@@ -107,7 +107,7 @@ Classifiers/Hyperparameters from autosklearn:
 """
 Regressors/Hyperparameters from sklearn:
 1. AdaBoost: n_estimators, learning_rate, loss, max_depth
-2. Ard regression: n_iter, tol, alpha_1, alpha_2, lambda_1, lambda_2,
+2. Ard regression: max_iter, tol, alpha_1, alpha_2, lambda_1, lambda_2,
             threshold_lambda, fit_intercept
 3. Decision tree: criterion, max_features, max_depth_factor,
             min_samples_split, min_samples_leaf, min_weight_fraction_leaf,

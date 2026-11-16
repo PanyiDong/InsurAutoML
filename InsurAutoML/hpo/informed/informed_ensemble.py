@@ -114,8 +114,9 @@ class InformedPipeline:
             i for i, idx in enumerate(X_missing.index) if idx in X_complete.index
         ]
         # use y_pred_missing as base predictions and use y_pred_complete to update the complete cases
-        y_pred = y_pred_missing.copy()
-        y_pred[complete_index] += y_pred_complete
+        # (float, class labels can be int/bool and can not hold the averages)
+        y_pred = np.array(y_pred_missing, dtype=float)
+        y_pred[complete_index] += np.asarray(y_pred_complete, dtype=float)
         # average the two predictions for complete cases
         y_pred[complete_index] /= 2
 
@@ -147,8 +148,9 @@ class InformedPipeline:
             i for i, idx in enumerate(X_missing.index) if idx in X_complete.index
         ]
         # use y_pred_missing as base predictions and use y_pred_complete to update the complete cases
-        y_pred = y_pred_missing.copy()
-        y_pred[complete_index] += y_pred_complete
+        # (float, class labels can be int/bool and can not hold the averages)
+        y_pred = np.array(y_pred_missing, dtype=float)
+        y_pred[complete_index] += np.asarray(y_pred_complete, dtype=float)
         # average the two predictions for complete cases
         y_pred[complete_index] /= 2
 

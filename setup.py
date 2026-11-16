@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.7
+Latest Version: 0.2.8
 Relative Path: /setup.py
 File Created: Wednesday, 16th November 2022 7:39:46 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Thursday, 18th September 2025 9:42:58 am
+Last Modified: Sunday, 15th November 2026 11:42:17 pm
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2022 - 2025, Panyi Dong
+Copyright (c) 2022 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -38,6 +38,18 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+"""
+Build script of InsurAutoML.
+
+The package metadata (name, dependencies, extras, package data, ...) is defined in
+pyproject.toml. This file handles the dynamic parts:
+- the version: written to InsurAutoML/VERSION from the latest git tag (vX.Y.Z), read
+  by pyproject.toml; kept as is when building from the sdist (no git checkout)
+- the optional C++ extension of the InformedAutoML version, built with
+  INFORMEDAUTOML=1 pip install "InsurAutoML[informed]"
+- requirements.txt, requirements_nn.txt and package.json, generated from pyproject.toml
+"""
+
 from pathlib import Path
 import os
 import sys
@@ -48,25 +60,31 @@ import importlib
 import subprocess
 from typing import Optional
 
-from setuptools import setup, find_packages, Extension
-from setuptools.command import build_ext
+from setuptools import setup, Extension
+
+if sys.version_info >= (3, 11):
+    import tomllib
+else:  # Python 3.10, tomli is a build requirement in pyproject.toml
+    import tomli as tomllib
 
 logging.basicConfig()
 log = logging.getLogger(__file__)
 
 torch_spec = importlib.util.find_spec("torch")
 
-if sys.version_info < (3, 7):
-    log.info("Python >= 3.7 is required for the pipeline!")
+if sys.version_info < (3, 10):
+    log.info("Python >= 3.10 is required for the pipeline!")
 
-try:
-    from Cython.Build import cythonize
-except ImportError:
-    # create closure for deferred import
-    def cythonize(*args, **kwargs):
-        from Cython.Build import cythonize
+ROOT = Path(__file__).resolve().parent
 
-        return cythonize(*args, **kwargs)
+# package metadata
+with open(ROOT / "pyproject.toml", "rb") as fh:
+    PROJECT = tomllib.load(fh)["project"]
+DEPENDENCIES = PROJECT["dependencies"]
+OPTIONAL_DEPENDENCIES = PROJECT["optional-dependencies"]
+
+EXT_MODULES = []
+CMDCLASS = {}
 
 
 def _pybind11_includes():
@@ -85,108 +103,30 @@ def _pybind11_includes():
 
 
 # Automatically get release version
-InsurAutoML_version = (
-    subprocess.run(["git", "describe", "--tags"], stdout=subprocess.PIPE)
-    .stdout.decode("utf-8")
-    .strip()[1:]  # remove the first character 'v'
-)
-# get only the version release number in case push is attached
-InsurAutoML_version = (
-    InsurAutoML_version.split("-")[0]
-    if "-" in InsurAutoML_version
-    else InsurAutoML_version
-)
+# from the git tag in a git checkout, otherwise (e.g. building from the sdist,
+# which has no .git) the InsurAutoML/VERSION file is used as it is
+def _git_version():
+    try:
+        version = subprocess.run(
+            ["git", "describe", "--tags"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            cwd=ROOT,
+        ).stdout.decode("utf-8")
+    except OSError:  # git not installed
+        return ""
+    # remove the first character 'v' and the commits after the tag (e.g. -2-g97af73b)
+    return version.strip()[1:].split("-")[0]
+
+
+VERSION_FILE = ROOT / "InsurAutoML" / "VERSION"
 
 # assert version file
-assert os.path.isfile("InsurAutoML/version.py")
-# write version to VERSION file
-with open("InsurAutoML/VERSION", "w", encoding="utf-8") as fh:
-    fh.write("%s\n" % InsurAutoML_version)
-
-# Constant variables
-INSTALL_LIST = [
-    "setuptools",
-    "threadpoolctl>2.2.0",  # lower version may cause import error on C codes
-    "cython",
-    "nanoflann",
-    "pybind11",
-    "numpy<1.24.0",
-    "pandas",
-    "scipy",
-    "pyarrow",
-    "fastparquet",
-    "func-timeout",
-    "matplotlib",
-    "seaborn>=0.11.0",
-    "ray<2.0.0",
-    "gensim",
-    "ray[tune]",
-    # "ray[rllib]",
-    "redis;platform_system=='Windows'",
-    "tqdm",
-    "tensorboardX",
-    # "auto-sklearn==0.14.6;platform_system=='Linux'",
-    # "scikit-learn==0.24.2;platform_system=='Linux'",
-    # "scikit-learn>1.0.0;platform_system=='Windows'",
-    # "scikit-learn>1.0.0;platform_system=='MacOS'",
-    "scikit-learn>=1.2.0",
-]
-
-EXTRA_DICT = {
-    "normal": [],
-    # "legacy": [
-    #     "tqdm==4.62.3",
-    #     "mlflow==1.21.0",
-    #     "tensorboardX",
-    #     "hyperopt==0.2.5",
-    # ],
-    "extended": [
-        # "rpy2;platform_system=='Linux'",
-        "mlflow",
-        "lightgbm",
-        "catboost",
-        "xgboost",
-        "pygam",
-        "flaml",
-        # UPDATE: Feb. 2, 2023
-        # https://github.com/facebookresearch/nevergrad/issues/1492
-        "bayesian_optimization==1.4.0",
-        "colorama==0.4.4",
-        "nevergrad",
-        "hyperopt",
-        "optuna",
-    ],
-    "informed": [
-        "missforest",
-        "mlflow",
-        "lightgbm",
-        "catboost",
-        "xgboost",
-        "pygam",
-        "hyperopt",
-        "optuna",
-    ],
-    "nn": [
-        # "rpy2;platform_system=='Linux'",
-        "gensim",
-        "torch",
-        # "transformers",
-        # "datasets",
-    ],
-    "dev": [
-        "mlflow",
-        "lightgbm",
-        "xgboost",
-        "pygam",
-        "flaml",
-        "bayesian_optimization==1.4.0",
-        "colorama==0.4.4",
-        "nevergrad",
-        "optuna",
-        "gensim",
-        "torch",
-    ],
-}
+assert (ROOT / "InsurAutoML" / "version.py").is_file()
+if _git_version():
+    # write version to VERSION file (read by pyproject.toml)
+    VERSION_FILE.write_text("%s\n" % _git_version(), encoding="utf-8")
+InsurAutoML_version = VERSION_FILE.read_text(encoding="utf-8").strip()
 
 # check R installation
 
@@ -292,71 +232,62 @@ def get_r_home() -> Optional[str]:
 # # only install for Linux
 # if R_HOME and not os.environ.get("R_HOME") and sys.platform == "linux":
 #     os.environ["R_HOME"] = R_HOME
-#     EXTRA_DICT["extended"].append("rpy2")
-#     EXTRA_DICT["nn"].append("rpy2")
+#     OPTIONAL_DEPENDENCIES["informed"].append("rpy2")
+#     OPTIONAL_DEPENDENCIES["nn"].append("rpy2")
 
-DATA_LIST = ["data/*", "example/*"]
-
-EXCLUDE_LIST = [
-    "tests",
-    "Dockerfiles",
-    "example",
-    "experiments",
-    "archive",
-    "data",
-    "docs",
-    ".github",
-    "build",
-    "dist",
-]
-
-SETUP_REQUIRES = [
-    "setuptools",
-    "cython",
-    "numpy",
-]
-
-SETUP_ARGS = {
-    "name": "InsurAutoML",
-    "version": InsurAutoML_version,
-    "author": "Panyi Dong",
-    "url": "https://github.com/PanyiDong/InsurAutoML",
-    "author_email": "panyid2@illinois.edu",
-    "description": "Automated Machine Learning/AutoML pipeline.",
-    "license": "MIT",
-    # "cmdclass": {"build_ext": build_ext},
-    "ext_modules": [],
-}
-EXT_MODULES = []
-
-# get long description
-
-this_directory = Path(__file__).parent
-long_description = (this_directory / "README.md").read_text()
+# --- External native extension: suppsplit (pybind11) ---
+# only built for the informed installation: INFORMEDAUTOML=1 pip install ...
+INFORMED = os.environ.get("INFORMEDAUTOML", "").strip().lower() in (
+    "1",
+    "true",
+    "yes",
+    "on",
+)
 
 
-def setup_package():
-    # global dep_list
+def build_informed_extensions():
+    """C++ extensions (pybind11) used by the informed pipelines."""
+    if sys.platform == "win32":
+        log.warning("The informed C++ extensions are not supported on Windows.")
+        return []
 
-    setup(
-        packages=find_packages(
-            exclude=EXCLUDE_LIST,
-        ),
-        package_dir={"InsurAutoML": "InsurAutoML"},
-        include_package_data=True,
-        package_data={"InsurAutoML": DATA_LIST},
-        platforms=["Linux", "Windows"],
-        long_description=long_description,
-        long_description_content_type="text/markdown",
-        python_requires=">=3.7",
-        install_requires=INSTALL_LIST,
-        extras_require=EXTRA_DICT,
-        zip_safe=False,
-        setup_requires=SETUP_REQUIRES,
-        **SETUP_ARGS,
-    )
+    extra_compile_args = []
+    extra_link_args = []
+    include_dirs = []
+    library_dirs = []
+    libraries = []
+    if sys.platform == "darwin":
+        extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
+        extra_link_args += ["-lomp"]
+        # Homebrew paths (adjust if needed)
+        include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
+        library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
+        libraries += ["omp"]
+    else:
+        extra_compile_args += ["-O3", "-std=c++14", "-fopenmp"]
+        extra_link_args += ["-fopenmp"]
 
-    # dep_list = setup.install_requires + setup.extras_require
+    def _extension(name, folder, sources):
+        path = os.path.join("InsurAutoML", "ext", name, folder)
+        return Extension(
+            "InsurAutoML.ext.{}.{}".format(name, folder),
+            sources=[os.path.join(path, source) for source in sources],
+            include_dirs=_pybind11_includes() + [path] + include_dirs,
+            language="c++",
+            extra_compile_args=extra_compile_args,
+            extra_link_args=extra_link_args,
+            library_dirs=library_dirs,
+            libraries=libraries,
+        )
+
+    return [
+        # SuppsPlit
+        _extension("suppsplit", "suppsplit_cpp", ["sp.cpp", "sPlit.cpp", "bindings.cpp"]),
+    ]
+
+
+if INFORMED:
+    EXT_MODULES += build_informed_extensions()
 
 
 # torch extensions build (not used at this moment)
@@ -377,178 +308,26 @@ def build_torch_extensions():
             )
         )
 
-    SETUP_ARGS["cmdclass"] = {"build_ext": BuildExtension}
+    CMDCLASS["build_ext"] = BuildExtension
 
     return torch_extensions
-
-
-# factory function
-def postp_cython_build_ext(pars):
-    # import delayed:
-
-    # include_dirs adjusted:
-    class _build_ext(build_ext):
-        def finalize_options(self):
-            build_ext.finalize_options(self)
-            # Prevent numpy from thinking it is still in its setup process:
-            __builtins__.__NUMPY_SETUP__ = False
-            import numpy
-
-            self.include_dirs.append(numpy.get_include())
-
-    # object returned:
-    return _build_ext(pars)
-
-
-class CythonExt(Extension):
-    def init(self, *args, **kwargs):
-        self._include = []
-        super().init(*args, **kwargs)
-
-    @property
-    def include_dirs(self):
-        # defer import of numpy
-        import numpy
-
-        return self._include + [numpy.get_include()]
-
-    @include_dirs.setter
-    def include_dirs(self, dirs):
-        self._include = dirs
-
-
-# cython extension build
-def build_cython_extensions():
-    # import numpy
-
-    c_ext = "pyx"  # if USING_CYTHON else "c"
-    sources = glob.glob("**/*.{}".format(c_ext), recursive=True)
-
-    cython_extensions = [
-        CythonExt(
-            name=source.split(".")[0].replace(os.path.sep, "."),
-            sources=[source],
-            # include_dirs=[numpy.get_include()],
-            language="c",
-        )
-        for source in sources
-    ]
-
-    # SETUP_ARGS["directives"] = {"linetrace": False, "language_level": 3}
-    # SETUP_ARGS["cmdclass"] = {"build_ext": postp_cython_build_ext}
-
-    return cython_extensions
-
-
-# --- External native extensions: suppsplit (pybind11) and twinning (pybind11) ---
-# try:
-# SuppsPlit (pybind11) extension
-if sys.platform != "win32":
-    extra_compile_args_ext = []
-    extra_link_args_ext = []
-    library_dirs = []
-    libraries = []
-    include_dirs_ext = _pybind11_includes() + [
-        os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp")
-    ]
-    if sys.platform == "darwin":
-        extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
-        extra_link_args += ["-lomp"]
-        # Homebrew paths (adjust if needed)
-        include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
-        library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
-        libraries += ["omp"]
-    else:
-        extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
-        extra_link_args_ext += ["-fopenmp"]
-
-    suppsplit_ext = Extension(
-        "InsurAutoML.ext.suppsplit.suppsplit_cpp",
-        sources=[
-            os.path.join("InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sp.cpp"),
-            os.path.join(
-                "InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "sPlit.cpp"
-            ),
-            os.path.join(
-                "InsurAutoML", "ext", "suppsplit", "suppsplit_cpp", "bindings.cpp"
-            ),
-        ],
-        include_dirs=include_dirs_ext,
-        language="c++",
-        extra_compile_args=extra_compile_args_ext,
-        extra_link_args=extra_link_args_ext,
-        library_dirs=library_dirs,
-        libraries=libraries,
-    )
-
-    SETUP_ARGS["ext_modules"].append(suppsplit_ext)
-    SETUP_REQUIRES.append("pybind11")
-# except Exception:
-#     log.warning("Could not configure suppsplit extension; continuing without it.")
-
-# try:
-# SuppsPlit (pybind11) extension
-if sys.platform != "win32":
-    extra_compile_args_ext = []
-    extra_link_args_ext = []
-    library_dirs = []
-    libraries = []
-    include_dirs_ext = _pybind11_includes() + [
-        os.path.join("InsurAutoML", "ext", "twinreduction", "twinning_cpp")
-    ]
-    if sys.platform == "darwin":
-        extra_compile_args += ["-Xpreprocessor", "-fopenmp"]
-        extra_link_args += ["-lomp"]
-        # Homebrew paths (adjust if needed)
-        include_dirs += ["/usr/local/include", "/opt/homebrew/include"]
-        library_dirs += ["/usr/local/lib", "/opt/homebrew/lib"]
-        libraries += ["omp"]
-    else:
-        extra_compile_args_ext += ["-O3", "-std=c++14", "-fopenmp"]
-        extra_link_args_ext += ["-fopenmp"]
-
-    twinning_ext = Extension(
-        "InsurAutoML.ext.twinreduction.twinning_cpp",
-        sources=[
-            os.path.join(
-                "InsurAutoML", "ext", "twinreduction", "twinning_cpp", "twinning.cpp"
-            ),
-            os.path.join(
-                "InsurAutoML", "ext", "twinreduction", "twinning_cpp", "bindings.cpp"
-            ),
-        ],
-        include_dirs=include_dirs_ext,
-        language="c++",
-        extra_compile_args=extra_compile_args_ext,
-        extra_link_args=extra_link_args_ext,
-        library_dirs=library_dirs,
-        libraries=libraries,
-    )
-
-    SETUP_ARGS["ext_modules"].append(twinning_ext)
-    SETUP_REQUIRES.append("pybind11")
-# except Exception:
-#     log.warning("Could not configure twinning extension; continuing without it.")
 
 
 # prepare for package.json file
 def get_package():
     result = {}
-    result["name"] = SETUP_ARGS["name"]
-    result["author"] = {
-        "name": SETUP_ARGS["author"],
-        "email": SETUP_ARGS["author_email"],
-    }
+    result["name"] = PROJECT["name"]
+    result["author"] = PROJECT["authors"][0]
     result["repository"] = {
         "type": "git",
-        "url": SETUP_ARGS["url"],
+        "url": PROJECT["urls"]["Repository"],
     }
     result["main"] = "main.py"
     result["private"] = False
-    result["version"] = SETUP_ARGS["version"]
-    result["description"] = SETUP_ARGS["description"]
-    result["install_requires"] = INSTALL_LIST
-    result["extras_require"] = EXTRA_DICT
+    result["version"] = InsurAutoML_version
+    result["description"] = PROJECT["description"]
+    result["install_requires"] = DEPENDENCIES
+    result["extras_require"] = OPTIONAL_DEPENDENCIES
 
     if os.path.exists("package.json"):
         os.remove("package.json")
@@ -557,43 +336,37 @@ def get_package():
         json.dump(result, f, indent=4)
 
 
+def _requirements(extra: str) -> list:
+    # dependencies + extra, without environment markers and self-references
+    items = DEPENDENCIES + OPTIONAL_DEPENDENCIES[extra]
+    items = [item.split(";")[0].strip() for item in items]
+    return sorted({item for item in items if not item.startswith(PROJECT["name"])})
+
+
 def get_requirements():
-    if os.path.exists("requirements.txt"):
-        os.remove("requirements.txt")
+    for file_name, extra in [
+        ("requirements.txt", "informed"),
+        ("requirements_nn.txt", "nn"),
+    ]:
+        with open(file_name, "w") as fp:
+            for item in _requirements(extra):
+                # write each item on a new line
+                fp.write("%s\n" % item)
 
-    with open(r"requirements.txt", "w") as fp:
-        dep_list = [
-            item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["extended"]
-        ]
-        dep_list = list(set(dep_list))
-        for item in dep_list:
-            # write each item on a new line
-            fp.write("%s\n" % item)
 
-    if os.path.exists("requirements_nn.txt"):
-        os.remove("requirements_nn.txt")
-
-    with open(r"requirements_nn.txt", "w") as fp:
-        dep_list = [item.split(";")[0] for item in INSTALL_LIST + EXTRA_DICT["nn"]]
-        dep_list = list(set(dep_list))
-        for item in dep_list:
-            # write each item on a new line
-            fp.write("%s\n" % item)
+def setup_package():
+    # metadata in pyproject.toml, only the optional extension is configured here
+    setup(ext_modules=EXT_MODULES, cmdclass=CMDCLASS)
 
 
 def main():
     # # check whether need to build pytorch extensions
-    # SETUP_ARGS["ext_modules"] += build_torch_extensions()
-
-    # add cython extensions
-    SETUP_ARGS["ext_modules"] += build_cython_extensions()
+    # EXT_MODULES += build_torch_extensions()
 
     # setup package
     setup_package()
     log.info(
-        "{}-{} installation succeeded.".format(
-            SETUP_ARGS["name"], SETUP_ARGS["version"]
-        )
+        "{}-{} installation succeeded.".format(PROJECT["name"], InsurAutoML_version)
     )
 
 

@@ -82,12 +82,12 @@ class AdaboostClassifier(sklearn.ensemble.AdaBoostClassifier, BaseModel):
         self,
         n_estimators: int = 50,
         learning_rate: float = 0.1,
-        algorithm: str = "SAMME.R",
         max_depth: int = 1,
     ) -> None:
+        # NOTE: `algorithm` removed, deprecated in scikit-learn 1.6 and removed in 1.9
+        # (only SAMME is supported)
         self.n_estimators = int(n_estimators)
         self.learning_rate = float(learning_rate)
-        self.algorithm = algorithm
         self.max_depth = int(max_depth)
 
         from sklearn.tree import DecisionTreeClassifier
@@ -96,7 +96,6 @@ class AdaboostClassifier(sklearn.ensemble.AdaBoostClassifier, BaseModel):
             estimator=DecisionTreeClassifier(max_depth=self.max_depth),
             n_estimators=self.n_estimators,
             learning_rate=self.learning_rate,
-            algorithm=self.algorithm,
         )
 
         self._fitted = False  # whether the model is fitted
@@ -350,7 +349,7 @@ class GaussianNB(sklearn.naive_bayes.GaussianNB, BaseModel):
 class HistGradientBoostingClassifier(BaseModel):
     def __init__(
         self,
-        loss: str = "auto",
+        loss: str = "log_loss",  # "auto" removed in scikit-learn 1.3
         learning_rate: float = 0.1,
         min_samples_leaf: int = 20,
         max_depth: Union[str, int] = "None",
@@ -1096,7 +1095,7 @@ class RandomForestClassifier(BaseModel):
 class SGDClassifier(BaseModel):
     def __init__(
         self,
-        loss: str = "log",
+        loss: str = "log_loss",  # "log" removed in scikit-learn 1.3
         penalty: str = "l2",
         alpha: float = 0.0001,
         fit_intercept: bool = True,
@@ -1281,7 +1280,7 @@ class GradientBoostingClassifier(
 ):
     def __init__(
         self,
-        loss: str = "deviance",
+        loss: str = "log_loss",  # "deviance" removed in scikit-learn 1.3
         learning_rate: float = 0.1,
         n_estimators: int = 100,
         subsample: float = 1.0,

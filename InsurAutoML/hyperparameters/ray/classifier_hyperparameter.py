@@ -56,7 +56,6 @@ ADABOOSTCLASSIFIER = {
     "model": "AdaboostClassifier",
     "n_estimators": tune.qlograndint(10, 500, 1),
     "learning_rate": tune.uniform(0.01, 2),
-    "algorithm": tune.choice(["SAMME", "SAMME.R"]),
     # for base_estimator of Decision Tree
     "max_depth": tune.qrandint(1, 10, 1),
 }
@@ -297,9 +296,8 @@ LIGHTGBMCLASSIFIER = {
 }
 CATBOOSTCLASSIFIER = {
     "model": "CatBoost_Classifier",
-    "loss_function": tune.choice(
-        ["Logloss", "CrossEntropy", "F1", "BalancedAccuracy", "AUC", "Accuracy"]
-    ),
+    # F1/BalancedAccuracy/AUC/Accuracy are evaluation metrics, not trainable losses
+    "loss_function": tune.choice(["Logloss", "CrossEntropy"]),
     "iterations": tune.qlograndint(100, 1000, 1),
     "learning_rate": tune.loguniform(1e-4, 1),
     "depth": tune.qrandint(1, 16, 1),

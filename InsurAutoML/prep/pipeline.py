@@ -5,19 +5,19 @@ GitHub: https://github.com/PanyiDong/
 Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
-Latest Version: 0.2.6
+Latest Version: 0.2.8
 Relative Path: /InsurAutoML/prep/pipeline.py
 File Created: Monday, 1st December 2025 1:07:34 pm
 Author: Panyi Dong (panyid2@illinois.edu)
 
 -----
-Last Modified: Friday, 26th December 2025 10:37:51 pm
+Last Modified: Monday, 16th November 2026 9:40:08 am
 Modified By: Panyi Dong (panyid2@illinois.edu)
 
 -----
 MIT License
 
-Copyright (c) 2025, Panyi Dong
+Copyright (c) 2025 - 2026, Panyi Dong
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -40,11 +40,11 @@ SOFTWARE.
 
 import numpy as np
 import pandas as pd
+from lightgbm import LGBMClassifier, LGBMRegressor
 from missforest import MissForest
 
-from ..ext import SPlit, TwinReduction
-from ..imputation import MeanModeImputer, MissForestImputer
-from ..feature_selection import CCCFilter, FeatureFilter
+from ..ext import SPlit
+from ..feature_selection import FeatureFilter
 from .utils import CompleteSet, MissingSet
 
 
@@ -197,13 +197,16 @@ class MissingPrepPipeline(PrepPipeline):
     This pipeline performs a series of data preprocessing steps including:
     - Enforcing missing cases
     - MeanMode imputation
-    - TwinReduction data reduction
     - MissForest imputation
     - CCC feature selection
     - SPlit data splitting
 
     Parameters
     ----------
+    n_jobs: number of threads of the LightGBM models used by MissForest, default = 1
+    the informed AutoML runs several trials in parallel (one CPU each), and LightGBM
+    using all cores in every trial oversubscribes the CPUs (orders of magnitude
+    slower); one thread is also the fastest for the small per-column models
     """
 
     def __init__(
@@ -214,6 +217,7 @@ class MissingPrepPipeline(PrepPipeline):
         imputation_n_estimators: int = 100,
         split_ratio: float = 0.1,
         cc_threshold: float = 0.9,
+        n_jobs: int = 1,
     ) -> None:
         self.missing_threshold = missing_threshold
         self.twin_r = twin_r
@@ -221,59 +225,10 @@ class MissingPrepPipeline(PrepPipeline):
         self.imputation_n_estimators = imputation_n_estimators
         self.split_ratio = split_ratio
         self.cc_threshold = cc_threshold
+        self.n_jobs = n_jobs
 
         self._fitted = False
         super().__init__()
-
-    # def fit(self, X: pd.DataFrame, y: pd.Series = None):
-    #     # normalize inputs
-    #     X, y = self._ensure_xy(X, y)
-    #     # X = standardization(X)
-    #     # X_prep, y_prep = self._ensure_xy(X, y)
-    #     # select missing subsets
-    #     self.selector = MissingSet(threshold=self.missing_threshold)
-    #     X_prep = self.selector.fit_transform(X, y)
-    #     # get missing mask of selected data
-    #     missing_mask = X_prep.isna().any(axis=1).to_numpy()
-    #     # initial imputation with MeanMode
-    #     self.imputer1 = MeanModeImputer()
-    #     X_pre_imputed = self.imputer1.fill(X_prep)
-    #     # TwinReduction data reduction on pre-imputed data
-    #     _, idx_reduced = TwinReduction(
-    #         X_pre_imputed, missing_mask, r=self.twin_r, u1=100, return_indices=True
-    #     )
-    #     # select reduced data
-    #     X_prep, y_prep = X_prep.iloc[idx_reduced], (
-    #         y[idx_reduced] if y is not None else None
-    #     )
-    #     # advanced imputation with MissForest
-    #     # self.imputer2 = MissForestImputer(
-    #     #     max_iter=self.imputation_max_iter,
-    #     #     n_estimators=self.imputation_n_estimators,
-    #     # )
-    #     self.imputer2 = MissForest(
-    #         max_iter=self.imputation_max_iter,
-    #     )
-    #     X_prep = self.imputer2.fit_transform(X_prep)
-    #     # CCC feature selection
-    #     # self.filter = CCCFilter(threshold=self.cc_threshold)
-    #     self.filter = FeatureFilter(criteria="CCC", n_prop=self.cc_threshold)
-    #     X_prep = self.filter.fit_transform(X_prep, y_prep)
-    #     # SPlit data splitting
-    #     test_idx = X_prep.index[np.array(SPlit(X_prep, split_ratio=self.split_ratio))]
-    #     train_idx = np.setdiff1d(X_prep.index, test_idx)
-
-    #     self._fitted = True
-
-    #     # subset y according to the selected X rows
-    #     if y_prep is not None:
-    #         return (
-    #             X_prep.loc[train_idx],
-    #             X_prep.loc[test_idx],
-    #             y_prep.loc[train_idx],
-    #             y_prep.loc[test_idx],
-    #         )
-    #     return X_prep.loc[train_idx], X_prep.loc[test_idx]
 
     def fit(self, X: pd.DataFrame, y: pd.Series = None):
         # normalize inputs
@@ -286,7 +241,10 @@ class MissingPrepPipeline(PrepPipeline):
         #     max_iter=self.imputation_max_iter,
         #     n_estimators=self.imputation_n_estimators,
         # )
+        # MissForest default models (linear_tree LightGBM) with limited threads
         self.imputer2 = MissForest(
+            clf=LGBMClassifier(verbosity=-1, linear_tree=True, n_jobs=self.n_jobs),
+            rgr=LGBMRegressor(verbosity=-1, linear_tree=True, n_jobs=self.n_jobs),
             max_iter=self.imputation_max_iter,
             verbose=0,
         )

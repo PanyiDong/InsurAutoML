@@ -47,6 +47,19 @@ import pandas as pd
 from dateutil.parser import parse
 from ..constant import UNI_CLASS, PROP_UNIQUE
 
+
+def is_text_dtype(dtype: Any) -> bool:
+    """
+    Whether the dtype holds text: numpy object dtype or pandas string dtype.
+
+    Since pandas 3.0, string columns are inferred as the pandas string dtype
+    ("str", StringDtype) instead of object. Categorical dtype is not included.
+    """
+    if isinstance(dtype, pd.CategoricalDtype):
+        return False
+
+    return dtype == object or isinstance(dtype, pd.StringDtype)
+
 # set response to [0, 1] class, random guess at 0.5
 
 
@@ -333,22 +346,21 @@ def format_hyper_dict(
 def _optuna_distribution_to_suggest(
     trial: Any, method: str, key: str, value: Any
 ) -> Any:
+    # optuna>=3.0: FloatDistribution/IntDistribution, the legacy Uniform/LogUniform/
+    # DiscreteUniform/IntUniform/IntLogUniform distributions are their subclasses
     import optuna.distributions as distributions
 
-    if isinstance(value, distributions.UniformDistribution):
-        return trial.suggest_uniform(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.LogUniformDistribution):
-        return trial.suggest_loguniform(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.DiscreteUniformDistribution):
-        return trial.suggest_discrete_uniform(
-            method + "_" + key, value.low, value.high, value.q
+    name = method + "_" + key
+    if isinstance(value, distributions.FloatDistribution):
+        return trial.suggest_float(
+            name, value.low, value.high, log=value.log, step=value.step
         )
-    elif isinstance(value, distributions.IntUniformDistribution):
-        return trial.suggest_int(method + "_" + key, value.low, value.high)
+    elif isinstance(value, distributions.IntDistribution):
+        return trial.suggest_int(
+            name, value.low, value.high, log=value.log, step=value.step
+        )
     elif isinstance(value, distributions.CategoricalDistribution):
-        return trial.suggest_categorical(method + "_" + key, value.choices)
-    elif isinstance(value, distributions.IntLogUniformDistribution):
-        return trial.suggest_int(method + "_" + key, value.low, value.high)
+        return trial.suggest_categorical(name, value.choices)
     else:
         raise TypeError("Distribution {} is not supported!".format(type(value)))
 

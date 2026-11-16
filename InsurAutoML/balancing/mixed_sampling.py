@@ -109,8 +109,10 @@ class Smote_TomekLink(Smote, TomekLink):
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
+            # keep the user threshold, __init__ below overwrites it
+            _threshold = self.imbalance_threshold
             super().__init__(
-                imbalance_threshold=(1.0 + self.imbalance_threshold) / 2,
+                imbalance_threshold=(1.0 + _threshold) / 2,
                 norm=self.norm,
                 all=self.all,
                 max_iter=self.max_iter,
@@ -121,13 +123,14 @@ class Smote_TomekLink(Smote, TomekLink):
             _data = super().fit_transform(_data)
 
             super(Smote, self).__init__(
-                imbalance_threshold=self.imbalance_threshold,
+                imbalance_threshold=_threshold,
                 norm=self.norm,
                 all=self.all,
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
             _data = super(Smote, self).fit_transform(_data)
+            self.imbalance_threshold = _threshold
 
         self._fitted = True
 
@@ -187,8 +190,10 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
+            # keep the user threshold, __init__ below overwrites it
+            _threshold = self.imbalance_threshold
             super().__init__(
-                imbalance_threshold=(1.0 + self.imbalance_threshold) / 2,
+                imbalance_threshold=(1.0 + _threshold) / 2,
                 norm=self.norm,
                 all=self.all,
                 max_iter=self.max_iter,
@@ -199,13 +204,14 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
             _data = super().fit_transform(_data)
 
             super(Smote, self).__init__(
-                imbalance_threshold=self.imbalance_threshold,
+                imbalance_threshold=_threshold,
                 all=self.all,
                 max_iter=self.max_iter,
                 seed=self.seed,
                 k=self.k,
             )
             _data = super(Smote, self).fit_transform(_data)
+            self.imbalance_threshold = _threshold
 
         self._fitted = True
 

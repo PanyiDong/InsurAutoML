@@ -26,15 +26,19 @@ System Requirements:
 
 ## Installation
 
-### 1. Install from `pip`
+> This section installs the InsurAutoML version. For the informed pipelines, see [Installation of InformedAutoML](#installation-of-informedautoml).
 
-> pip may not be the up-to-date version.
+### 1. Install from `pip` (recommended)
+
+> The pip version may not be the up-to-date version, use [build from source](#2-build-from-source) for the latest changes.
 
 Open a command terminal.
 
 ```console
 pip install InsurAutoML
 ```
+
+**Neural network support** (recommended for `CUDA` supported devices): `pip install "InsurAutoML[nn]"`.
 
 ### 2. Build from source
 
@@ -51,13 +55,13 @@ cd InsurAutoML
 
 #### install by `setup.py`
 
+This method uses `setup.py` to install the package in editable mode with its dependencies.
+
 ```console
 pip install -e .
 ```
 
-This method will use `setup.py` to install the dependencies, by default, if no GPU support, should install `normal` version. If you wish to use a extended version with more flexibilities, use `pip install -e .[extended]`; or, if GPU is supported, and you wish to test neural network related architectures, use `pip install -e .[nn]` for neural network installation.
-
-At this moment, `extended` contains few more ML packages and search algorithms that allows testing on a larger model/hyperparameter space with different search strategies. The differences may becomes larger for later versions.
+**Neural network support**: `pip install -e ".[nn]"`.
 
 #### install by `requirements.txt`
 
@@ -67,6 +71,8 @@ At this moment, `extended` contains few more ML packages and search algorithms t
 pip install -r requirements.txt
 ```
 
+`requirements.txt` contains the dependencies of the InformedAutoML version; it does not build the C++ extension of the informed pipelines, see [Installation of InformedAutoML](#installation-of-informedautoml) for that.
+
 For neural network related support (recommended for `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
 
 > NOTE: 1. The installation of `rpy2` is not straightforward, so it may not actually useable, but it's in-built here in `requirements.txt`. If user install through `setup.py`, it will not be included if R is not installed (through the environment variable `R_HOME`).
@@ -75,7 +81,7 @@ For neural network related support (recommended for `CUDA` supported devices), p
 
 ### 1. Native Python Interface
 
-Or, you can treat it like a package and follows the `scikit-learn` fit/predict workflow like jupyter notebooks in [examples](https://github.com/PanyiDong/InsurAutoML/tree/master/example).
+You can treat it like a package and follows the `scikit-learn` fit/predict workflow like jupyter notebooks in [examples](https://github.com/PanyiDong/InsurAutoML/tree/master/example).
 
 ```python
 from InsurAutoML import AutoTabular
@@ -104,6 +110,32 @@ model.predict(test_X)
 ```
 
 In the setting, IDPP hyperparameters are fixed, which already provides better predictive capability while achieves significant improvement in computational efficiency. However, users may prefer full tuning, utilizing `InsurAutoML.InformedAutoML`. The `InformedAutoML` shares the same set of arguments as `InsurAutoML`.
+
+##### Installation of InformedAutoML
+
+`InformedAutoML` requires the InformedAutoML version of the package. In addition to the InsurAutoML version, it contains the informed pipelines (`InformedAutoTabular`, `InformedAutoTabularClassifier`, `InformedAutoTabularRegressor`) for data with missing values, and more ML packages and search algorithms (LightGBM, XGBoost, CatBoost, GAM, Optuna, HyperOpt, Nevergrad, FLAML, ...) that allow testing on a larger model/hyperparameter space with different search strategies. Without it, `InsurAutoML` works normally, and using an informed pipeline raises an error showing the installation command.
+
+The informed pipelines need a compiled C++ extension (SPlit), which is only built when the environment variable `INFORMEDAUTOML=1` is set. It requires a C++ compiler with OpenMP and the [`nanoflann`](https://github.com/jlblancoc/nanoflann) headers (e.g. `sudo apt install libnanoflann-dev` or `conda install -c conda-forge nanoflann`), and is not supported on Windows.
+
+Install from `pip` (recommended):
+
+```console
+INFORMEDAUTOML=1 pip install "InsurAutoML[informed]"
+```
+
+If the InsurAutoML version is already installed, pip keeps it as it is ("Requirement already satisfied"), so also rebuild InsurAutoML with the C++ extension:
+
+```console
+INFORMEDAUTOML=1 pip install --force-reinstall --no-deps --no-cache-dir InsurAutoML
+```
+
+Or build from source, in the cloned repository (rebuilds the C++ extension every time it is run):
+
+```console
+INFORMEDAUTOML=1 pip install -e ".[informed]"
+```
+
+Neural network support can be combined as `"InsurAutoML[informed,nn]"`.
 
 ### 2. Command Line Interface
 

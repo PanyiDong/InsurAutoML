@@ -56,8 +56,12 @@ def jitter(x, factor: float = 1, amount: float = None):
 
 def compute_sp(n, p, dist_samp, num_subsamp, iter_max=500, tol=1e-10, n_threads=None):
     rnd_flg = num_subsamp < dist_samp.shape[0]
+    # n_threads caps the threads (SPlit uses 1 by default so parallel AutoML trials
+    # do not oversubscribe the CPUs), None uses all CPUs
     n_threads = (
-        max(n_threads, os.cpu_count()) if n_threads is not None else os.cpu_count()
+        max(1, min(n_threads, os.cpu_count()))
+        if n_threads is not None
+        else os.cpu_count()
     )
     wts = np.ones(dist_samp.shape[0])
     n0 = float(n * p)
@@ -101,7 +105,9 @@ def data_format(data):
 
     cols = []
     for col in data.columns:
-        if pd.api.types.is_categorical_dtype(data[col]) or data[col].dtype == "object":
+        if isinstance(data[col].dtype, (pd.CategoricalDtype, pd.StringDtype)) or (
+            data[col].dtype == "object"
+        ):
             enc = HelmertEncoding()
             trans = enc.fit_transform(data[[col]])
             cols.append(trans)

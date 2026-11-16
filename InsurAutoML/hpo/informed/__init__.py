@@ -38,8 +38,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .ML import (
-    InformedAutoTabular,
-    InformedAutoTabularRegressor,
-    InformedAutoTabularClassifier,
-)
+from ..._optional import informed_available, informed_not_installed_error
+
+# the informed pipelines are only imported with the optional informed installation
+# (compiled InsurAutoML.ext extensions + missforest), see InsurAutoML/_optional.py
+INFORMED_AVAILABLE = informed_available()
+
+if INFORMED_AVAILABLE:
+    from .ML import (
+        InformedAutoTabular,
+        InformedAutoTabularRegressor,
+        InformedAutoTabularClassifier,
+    )
+else:
+
+    def _not_installed(name: str) -> type:
+        # placeholder keeping the public name, raising when it is used
+        def __init__(self, *args, **kwargs) -> None:
+            raise informed_not_installed_error(name)
+
+        return type(name, (), {"__init__": __init__, "__doc__": "Not installed."})
+
+    InformedAutoTabular = _not_installed("InformedAutoTabular")
+    InformedAutoTabularRegressor = _not_installed("InformedAutoTabularRegressor")
+    InformedAutoTabularClassifier = _not_installed("InformedAutoTabularClassifier")

@@ -38,5 +38,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .suppsplit import SPlit
-from .twinreduction import TwinReduction
+from .._optional import INFORMED_EXTENSIONS, InformedNotInstalledError
+from .._optional import INFORMED_INSTALL_CMD, INFORMED_REINSTALL_CMD
+
+try:
+    from .suppsplit import SPlit
+except ImportError as error:
+    # compiled extensions are only built with the informed installation
+    raise InformedNotInstalledError(
+        "InsurAutoML.ext requires the compiled extension {}, built by the "
+        "InformedAutoML version installation:\n    {}\nIf InsurAutoML is already installed, "
+        "rebuild it with:\n    {}".format(
+            ", ".join(module for _, module in INFORMED_EXTENSIONS),
+            INFORMED_INSTALL_CMD,
+            INFORMED_REINSTALL_CMD,
+        )
+    ) from error

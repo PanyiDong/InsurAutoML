@@ -62,7 +62,6 @@ from ...utils.data import str2list
 from ...utils.file import (
     save_methods,
     load_methods,
-    find_exact_path,
 )
 from ...utils.metadata import MetaData
 from ...utils.optimize import (
@@ -72,6 +71,7 @@ from ...utils.optimize import (
     get_logger,
     get_progress_reporter,
     InformedStopper,
+    TrialDirnameCreator,
     ray_status,
     check_status,
 )
@@ -604,7 +604,11 @@ class InformedAutoTabularBase(AutoTabularBase):
         return ("pipe_" + str(idx + 1), InformedPipeline(**pip_setting))
 
     def _fit_ensemble(
-        self, trial_id: str, config: Dict, iter: int = None, features: List[str] = None
+        self,
+        trial_path: Union[str, List[str], pd.Series],
+        config: Union[Dict, List[Dict], pd.Series],
+        iter: int = None,
+        features: List[str] = None,
     ) -> None:
         # initialize ensemble list
         # if ensemble list exists, append to it
@@ -616,36 +620,20 @@ class InformedAutoTabularBase(AutoTabularBase):
             self.feature_list = []
 
         # if only one optimal input, need to convert to iterable
-        if not isinstance(trial_id, pd.Series) or not isinstance(config, pd.Series):
-            trial_id = [trial_id]
+        if isinstance(trial_path, str):
+            trial_path = [trial_path]
             config = [config]
 
-        # loop through all configs, trial_id, get model ensemble
-        for idx, (trial_id, config) in enumerate(zip(trial_id, config)):
-            # find the exact path
-            if iter is None:
-                _path = find_exact_path(
-                    os.path.join(self.sub_directory, self.model_name),
-                    "id_" + trial_id,
-                )
-                _path = os.path.join(_path, self.model_name)
+        # loop through all configs and trial directories, get model ensemble
+        # trial directory is given by tune results (Result.path)
+        for idx, (_trial_path, _config) in enumerate(zip(trial_path, config)):
+            _path = os.path.join(_trial_path, self.model_name)
 
-                self.ensemble_list.append(self._fit_optimal(idx, config, _path))
-            else:
-                _path = find_exact_path(
-                    os.path.join(
-                        self.sub_directory,
-                        self.model_name
-                        + "_"
-                        + self.ensemble_strategy
-                        + "_"
-                        + str(iter + 1),
-                    ),
-                    "id_" + trial_id,
+            self.ensemble_list.append(
+                self._fit_optimal(
+                    idx if iter is None else iter, copy.deepcopy(_config), _path
                 )
-                _path = os.path.join(_path, self.model_name)
-
-                self.ensemble_list.append(self._fit_optimal(iter, config, _path))
+            )
             if (
                 features is not None
             ):  # if feature subset is provided, save the feature subsets
@@ -827,10 +815,8 @@ class InformedAutoTabularBase(AutoTabularBase):
         )
 
         # trial directory name
-        def trial_str_creator(trial):
-            trialname = "iter_{}_id_{}".format(self._iter + 1, trial.trial_id)
-            self._iter += 1
-            return trialname
+        # (picklable, as it is stored in tuner.pkl for restoring)
+        trial_str_creator = TrialDirnameCreator(start=self._iter)
 
         # log starting of the experiment
         self._logger.info(
@@ -879,71 +865,23 @@ class InformedAutoTabularBase(AutoTabularBase):
             rayStatus.ray_init()
 
             # subtrial directory
-            self.sub_directory = self.temp_directory
+            self.sub_directory = os.path.abspath(self.temp_directory)
 
             # optimization process
             # partially activated objective function
-            # special treatment for optuna, embed search space in search
-            # algorithm
-            if self.search_algo in ["Optuna"]:
-                fit_analysis = tune.run(
-                    trainer,
-                    # config=hyperparameter_space,
-                    name=self.model_name,  # name of the tuning process, use model_name
-                    resume=self.resume,
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(
-                        space=hyperparameter_space,
-                        mode="min",  # always call a minimization process
-                        metric="loss",
-                        **self.search_algo_settings,
-                    ),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=self.max_evals,
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=("stdout.log", "stderr.log"),
-                )
-            else:
-                fit_analysis = tune.run(
-                    trainer,
-                    config=hyperparameter_space,
-                    name=self.model_name,  # name of the tuning process, use model_name
-                    resume=self.resume,
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(**self.search_algo_settings),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=self.max_evals,
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=("stdout.log", "stderr.log"),
-                )
+            # (Optuna embeds the search space in the search algorithm, see _run_tune)
+            fit_results = self._run_tune(
+                trainer,
+                hyperparameter_space,
+                name=self.model_name,
+                num_samples=self.max_evals,
+                algo=algo,
+                scheduler=scheduler,
+                callbacks=logger,
+                stopper=stopper,
+                progress_reporter=progress_reporter,
+                trial_dirname_creator=trial_str_creator,
+            )
 
             # shut down ray
             rayStatus.ray_shutdown()
@@ -956,16 +894,12 @@ class InformedAutoTabularBase(AutoTabularBase):
             )
 
             # check status of the trial analysis
-            self.check_analysis(fit_analysis)
+            self.check_analysis(fit_results)
             # get the best config settings
-            best_trial_id = str(
-                fit_analysis.get_best_trial(
-                    metric="loss", mode="min", scope="all"
-                ).trial_id
-            )
+            best_result = self._best_results(fit_results, 1).iloc[0]
 
             # select optimal settings and fit optimal pipeline
-            self._fit_ensemble(best_trial_id, fit_analysis.best_config)
+            self._fit_ensemble(best_result["path"], best_result["config"])
         # Stacking ensemble
         elif self.ensemble_strategy == "stacking":
             # get progress reporter
@@ -997,71 +931,23 @@ class InformedAutoTabularBase(AutoTabularBase):
             rayStatus.ray_init()
 
             # subtrial directory
-            self.sub_directory = self.temp_directory
+            self.sub_directory = os.path.abspath(self.temp_directory)
 
             # optimization process
             # partially activated objective function
-            # special treatment for optuna, embed search space in search
-            # algorithm
-            if self.search_algo in ["Optuna"]:
-                fit_analysis = tune.run(
-                    trainer,
-                    # config=hyperparameter_space,
-                    name=self.model_name,  # name of the tuning process, use model_name
-                    resume=self.resume,
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(
-                        space=hyperparameter_space,
-                        mode="min",  # always call a minimization process
-                        metric="loss",
-                        **self.search_algo_settings,
-                    ),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=self.max_evals,
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=("stdout.log", "stderr.log"),
-                )
-            else:
-                fit_analysis = tune.run(
-                    trainer,
-                    config=hyperparameter_space,
-                    name=self.model_name,  # name of the tuning process, use model_name
-                    resume=self.resume,
-                    checkpoint_freq=8,  # disable checkpoint
-                    checkpoint_at_end=True,
-                    keep_checkpoints_num=4,
-                    checkpoint_score_attr="loss",
-                    mode="min",  # always call a minimization process
-                    search_alg=algo(**self.search_algo_settings),
-                    scheduler=scheduler(**self.search_scheduler_settings),
-                    reuse_actors=True,
-                    raise_on_failed_trial=False,
-                    metric="loss",
-                    num_samples=self.max_evals,
-                    max_failures=self.max_error,
-                    stop=stopper,  # use stopper
-                    callbacks=logger,
-                    # time_budget_s=self.timeout,  # included in stopper
-                    progress_reporter=progress_reporter,
-                    verbose=self.verbose,
-                    trial_dirname_creator=trial_str_creator,
-                    local_dir=self.sub_directory,
-                    log_to_file=("stdout.log", "stderr.log"),
-                )
+            # (Optuna embeds the search space in the search algorithm, see _run_tune)
+            fit_results = self._run_tune(
+                trainer,
+                hyperparameter_space,
+                name=self.model_name,
+                num_samples=self.max_evals,
+                algo=algo,
+                scheduler=scheduler,
+                callbacks=logger,
+                stopper=stopper,
+                progress_reporter=progress_reporter,
+                trial_dirname_creator=trial_str_creator,
+            )
 
             # shut down ray
             rayStatus.ray_shutdown()
@@ -1074,20 +960,9 @@ class InformedAutoTabularBase(AutoTabularBase):
             )
 
             # check status of the trial analysis
-            self.check_analysis(fit_analysis)
-            # get all configs, trial_id
-            analysis_df = fit_analysis.dataframe(metric="loss", mode="min")
-
-            # reformat config to dict
-            analysis_df["config"] = analysis_df.apply(
-                lambda x: {
-                    "encoder": x["config/encoder"],
-                    "complete_prep": x["config/complete_prep"],
-                    "missing_prep": x["config/missing_prep"],
-                    "model": x["config/model"],
-                },
-                axis=1,
-            )
+            self.check_analysis(fit_results)
+            # get all configs and trial directories
+            analysis_df = fit_results
             # if not enough valid trials, raise warning
             if (analysis_df.training_status == "FITTED").sum() < self.n_estimators:
                 self._logger.warning(
@@ -1108,7 +983,7 @@ class InformedAutoTabularBase(AutoTabularBase):
             )
 
             # select optimal settings and create the ensemble of pipeline
-            self._fit_ensemble(analysis_df.trial_id, analysis_df.config)
+            self._fit_ensemble(analysis_df["path"], analysis_df["config"])
         # Bagging ensemble
         elif self.ensemble_strategy == "bagging":
             # create a list of feature subsets
@@ -1159,81 +1034,27 @@ class InformedAutoTabularBase(AutoTabularBase):
                 rayStatus.ray_init()
 
                 # subtrial directory
-                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
+                self.sub_directory = os.path.abspath(
+                    os.path.join(self.temp_directory, self.model_name)
+                )
 
                 # optimization process
                 # partially activated objective function
-                # special treatment for optuna, embed search space in search
-                # algorithm
-                if self.search_algo in ["Optuna"]:
-                    fit_analysis = tune.run(
-                        trainer,
-                        # config=hyperparameter_space,
-                        name=self.model_name
-                        + "_"
-                        + self.ensemble_strategy
-                        + "_"
-                        + str(_n + 1),
-                        # name of the tuning process, use model_name
-                        resume=self.resume,
-                        checkpoint_freq=8,  # disable checkpoint
-                        checkpoint_at_end=True,
-                        keep_checkpoints_num=4,
-                        checkpoint_score_attr="loss",
-                        mode="min",  # always call a minimization process
-                        search_alg=algo(
-                            space=hyperparameter_space,
-                            metric="loss",
-                            mode="min",  # always call a minimization process
-                            **self.search_algo_settings,
-                        ),
-                        scheduler=scheduler(**self.search_scheduler_settings),
-                        reuse_actors=True,
-                        raise_on_failed_trial=False,
-                        metric="loss",
-                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                        max_failures=self.max_error,
-                        stop=stopper,  # use stopper
-                        callbacks=logger,
-                        # time_budget_s=self.timeout,  # included in stopper
-                        progress_reporter=progress_reporter,
-                        verbose=self.verbose,
-                        trial_dirname_creator=trial_str_creator,
-                        local_dir=self.sub_directory,
-                        log_to_file=("stdout.log", "stderr.log"),
-                    )
-                else:
-                    fit_analysis = tune.run(
-                        trainer,
-                        config=hyperparameter_space,
-                        name=self.model_name
-                        + "_"
-                        + self.ensemble_strategy
-                        + "_"
-                        + str(_n + 1),
-                        # name of the tuning process, use model_name
-                        resume=self.resume,
-                        checkpoint_freq=8,  # disable checkpoint
-                        checkpoint_at_end=True,
-                        keep_checkpoints_num=4,
-                        checkpoint_score_attr="loss",
-                        mode="min",  # always call a minimization process
-                        search_alg=algo(**self.search_algo_settings),
-                        scheduler=scheduler(**self.search_scheduler_settings),
-                        reuse_actors=True,
-                        raise_on_failed_trial=False,
-                        metric="loss",
-                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                        max_failures=self.max_error,
-                        stop=stopper,  # use stopper
-                        callbacks=logger,
-                        # time_budget_s=self.timeout,  # included in stopper
-                        progress_reporter=progress_reporter,
-                        verbose=self.verbose,
-                        trial_dirname_creator=trial_str_creator,
-                        local_dir=self.sub_directory,
-                        log_to_file=("stdout.log", "stderr.log"),
-                    )
+                # (Optuna embeds the search space in the search algorithm, see _run_tune)
+                fit_results = self._run_tune(
+                    trainer,
+                    hyperparameter_space,
+                    name="{}_{}_{}".format(
+                        self.model_name, self.ensemble_strategy, _n + 1
+                    ),
+                    num_samples=sub_n_trials,
+                    algo=algo,
+                    scheduler=scheduler,
+                    callbacks=logger,
+                    stopper=stopper,
+                    progress_reporter=progress_reporter,
+                    trial_dirname_creator=trial_str_creator,
+                )
 
                 # shut down ray
                 rayStatus.ray_shutdown()
@@ -1246,20 +1067,16 @@ class InformedAutoTabularBase(AutoTabularBase):
                 )
 
                 # check status of the trial analysis
-                self.check_analysis(fit_analysis)
+                if self._stop_ensemble_early(fit_results, _n):
+                    break
+                self.check_analysis(fit_results)
                 # get the best config settings
-                best_trial_id = str(
-                    fit_analysis.get_best_trial(
-                        metric="loss", mode="min", scope="all"
-                    ).trial_id
-                )
+                best_result = self._best_results(fit_results, 1).iloc[0]
 
                 # select optimal settings and fit optimal pipeline
                 self._fit_ensemble(
-                    best_trial_id,
-                    fit_analysis.get_best_config(
-                        metric="loss", mode="min", scope="all"
-                    ),
+                    best_result["path"],
+                    best_result["config"],
                     iter=_n,
                     features=feature_subset,
                 )
@@ -1310,79 +1127,27 @@ class InformedAutoTabularBase(AutoTabularBase):
                 rayStatus.ray_init()
 
                 # subtrial directory
-                self.sub_directory = os.path.join(self.temp_directory, self.model_name)
+                self.sub_directory = os.path.abspath(
+                    os.path.join(self.temp_directory, self.model_name)
+                )
 
                 # optimization process
                 # partially activated objective function
-                if self.search_algo in ["Optuna"]:
-                    fit_analysis = tune.run(
-                        trainer,
-                        # config=hyperparameter_space,
-                        name=self.model_name
-                        + "_"
-                        + self.ensemble_strategy
-                        + "_"
-                        + str(_n + 1),
-                        # name of the tuning process, use model_name
-                        resume=self.resume,
-                        checkpoint_freq=8,  # disable checkpoint
-                        checkpoint_at_end=True,
-                        keep_checkpoints_num=4,
-                        checkpoint_score_attr="loss",
-                        # mode="min",  # always call a minimization process
-                        search_alg=algo(
-                            hyperparameter_space,
-                            metric="loss",
-                            mode="min",  # always call a minimization process
-                            **self.search_algo_settings,
-                        ),
-                        scheduler=scheduler(**self.search_scheduler_settings),
-                        reuse_actors=True,
-                        raise_on_failed_trial=False,
-                        # metric="loss",
-                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                        max_failures=self.max_error,
-                        stop=stopper,  # use stopper
-                        callbacks=logger,
-                        # time_budget_s=self.timeout,  # included in stopper
-                        progress_reporter=progress_reporter,
-                        verbose=self.verbose,
-                        trial_dirname_creator=trial_str_creator,
-                        local_dir=self.sub_directory,
-                        log_to_file=("stdout.log", "stderr.log"),
-                    )
-                else:
-                    fit_analysis = tune.run(
-                        trainer,
-                        config=hyperparameter_space,
-                        name=self.model_name
-                        + "_"
-                        + self.ensemble_strategy
-                        + "_"
-                        + str(_n + 1),
-                        # name of the tuning process, use model_name
-                        resume=self.resume,
-                        checkpoint_freq=8,  # disable checkpoint
-                        checkpoint_at_end=True,
-                        keep_checkpoints_num=4,
-                        checkpoint_score_attr="loss",
-                        mode="min",  # always call a minimization process
-                        search_alg=algo(**self.search_algo_settings),
-                        scheduler=scheduler(**self.search_scheduler_settings),
-                        reuse_actors=True,
-                        raise_on_failed_trial=False,
-                        metric="loss",
-                        num_samples=sub_n_trials,  # only use sub_n_trials for each of n_estimators
-                        max_failures=self.max_error,
-                        stop=stopper,  # use stopper
-                        callbacks=logger,
-                        # time_budget_s=self.timeout,  # included in stopper
-                        progress_reporter=progress_reporter,
-                        verbose=self.verbose,
-                        trial_dirname_creator=trial_str_creator,
-                        local_dir=self.sub_directory,
-                        log_to_file=("stdout.log", "stderr.log"),
-                    )
+                # (Optuna embeds the search space in the search algorithm, see _run_tune)
+                fit_results = self._run_tune(
+                    trainer,
+                    hyperparameter_space,
+                    name="{}_{}_{}".format(
+                        self.model_name, self.ensemble_strategy, _n + 1
+                    ),
+                    num_samples=sub_n_trials,
+                    algo=algo,
+                    scheduler=scheduler,
+                    callbacks=logger,
+                    stopper=stopper,
+                    progress_reporter=progress_reporter,
+                    trial_dirname_creator=trial_str_creator,
+                )
 
                 # shut down ray
                 rayStatus.ray_shutdown()
@@ -1395,20 +1160,16 @@ class InformedAutoTabularBase(AutoTabularBase):
                 )
 
                 # check status of the trial analysis
-                self.check_analysis(fit_analysis)
+                if self._stop_ensemble_early(fit_results, _n):
+                    break
+                self.check_analysis(fit_results)
                 # get the best config settings
-                best_trial_id = str(
-                    fit_analysis.get_best_trial(
-                        metric="loss", mode="min", scope="all"
-                    ).trial_id
-                )
+                best_result = self._best_results(fit_results, 1).iloc[0]
 
                 # select optimal settings and fit optimal pipeline
                 self._fit_ensemble(
-                    best_trial_id,
-                    fit_analysis.get_best_config(
-                        metric="loss", mode="min", scope="all"
-                    ),
+                    best_result["path"],
+                    best_result["config"],
                     iter=_n,
                 )
 

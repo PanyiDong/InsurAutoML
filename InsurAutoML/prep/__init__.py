@@ -38,4 +38,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from .pipeline import CompletePrepPipeline, MissingPrepPipeline
+from .._optional import require_informed
+
+# the preparation pipelines use the compiled InsurAutoML.ext extensions and missforest
+require_informed("InsurAutoML.prep")
+
+from .pipeline import CompletePrepPipeline, MissingPrepPipeline  # noqa: E402

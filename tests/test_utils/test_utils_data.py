@@ -64,7 +64,9 @@ def test_unify_nan():
     from InsurAutoML.utils.data import unify_nan
 
     data = np.arange(15).reshape(5, 3)
-    data = pd.DataFrame(data, columns=["column_1", "column_2", "column_3"])
+    # object dtype, so missing indicators can be written into the columns
+    data = pd.DataFrame(data, columns=["column_1", "column_2", "column_3"]).astype(object)
+    data["column_3"] = data["column_3"].astype(int)
     data.loc[:, "column_1"] = "novalue"
     data.loc[3, "column_2"] = "None"
 
@@ -78,11 +80,8 @@ def test_unify_nan():
         }
     )
 
-    assert (
-        (unify_nan(data).astype(str) == target_data.astype(str)).all().all()
-    ), "unify_nan should return target dataframe {}, get {}".format(
-        target_data, unify_nan(data)
-    )
+    # compare values (NaN == NaN), dtypes of text columns differ across pandas versions
+    pd.testing.assert_frame_equal(unify_nan(data), target_data, check_dtype=False)
 
 
 def test_remove_index_columns():

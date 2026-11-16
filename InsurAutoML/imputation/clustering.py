@@ -891,14 +891,17 @@ class k_Prototype_NN(formatting, MinMaxScale):
         # if get empty group_data, no return
         if not group_data.empty:
             # centroids for numerical columns are mean of the features
-            k_centroids[numerical_columns] = np.nanmean(
-                group_data[numerical_columns], axis=0
-            )
+            if numerical_columns:
+                k_centroids[numerical_columns] = np.nanmean(
+                    group_data[numerical_columns], axis=0
+                )
             # centroids for categorical columns are modes of the features
             # in case multiple modes occur, get the first one
-            k_centroids[categorical_columns] = (
-                group_data[categorical_columns].mode(dropna=True).values[0]
-            )
+            # (skip when no categorical columns, mode would be empty)
+            if categorical_columns:
+                k_centroids[categorical_columns] = (
+                    group_data[categorical_columns].mode(dropna=True).values[0]
+                )
 
         return k_centroids
 

@@ -221,10 +221,23 @@ class TomekLink(BaseBalancing):
             warnings.warn("The dataset is balanced, no change.")
         else:
             if self.all:
-                while is_imbalance(_data, self.imbalance_threshold):
-                    _data = self._fit_transform(_data)
+                # stop when a pass does not change the data (can not balance further)
+                _iter = 0
+                while (
+                    is_imbalance(_data, self.imbalance_threshold)
+                    and _iter < self.max_iter
+                ):
+                    _new_data = TomekLink._fit_transform(self, _data)
+                    if len(_new_data) == len(_data):
+                        warnings.warn(
+                            "TomekLink can not reduce the imbalance further."
+                        )
+                        _data = _new_data
+                        break
+                    _data = _new_data
+                    _iter += 1
             else:
-                _data = self._fit_transform(_data)
+                _data = TomekLink._fit_transform(self, _data)
 
         self._fitted = True
 
@@ -341,10 +354,23 @@ class EditedNearestNeighbor(BaseBalancing):
             warnings.warn("The dataset is balanced, no change.")
         else:
             if self.all:
-                while is_imbalance(_data, self.imbalance_threshold):
-                    _data = self._fit_transform(_data)
+                # stop when a pass does not change the data (can not balance further)
+                _iter = 0
+                while (
+                    is_imbalance(_data, self.imbalance_threshold)
+                    and _iter < self.max_iter
+                ):
+                    _new_data = EditedNearestNeighbor._fit_transform(self, _data)
+                    if len(_new_data) == len(_data):
+                        warnings.warn(
+                            "EditedNearestNeighbor can not reduce the imbalance further."
+                        )
+                        _data = _new_data
+                        break
+                    _data = _new_data
+                    _iter += 1
             else:
-                _data = self._fit_transform(_data)
+                _data = EditedNearestNeighbor._fit_transform(self, _data)
 
         self._fitted = True
 
@@ -462,10 +488,24 @@ class CondensedNearestNeighbor(BaseBalancing):
             warnings.warn("The dataset is balanced, no change.")
         else:
             if self.all:
-                while is_imbalance(_data, self.imbalance_threshold):
-                    _data = self._fit_transform(_data)
+                # CNN only removes samples, stop when a pass removes none
+                # (the remaining imbalance can not be reduced by CNN)
+                _iter = 0
+                while (
+                    is_imbalance(_data, self.imbalance_threshold)
+                    and _iter < self.max_iter
+                ):
+                    _new_data = CondensedNearestNeighbor._fit_transform(self, _data)
+                    if len(_new_data) == len(_data):
+                        warnings.warn(
+                            "CondensedNearestNeighbor can not reduce the imbalance further."
+                        )
+                        _data = _new_data
+                        break
+                    _data = _new_data
+                    _iter += 1
             else:
-                _data = self._fit_transform(_data)
+                _data = CondensedNearestNeighbor._fit_transform(self, _data)
 
         self._fitted = True
 
@@ -497,6 +537,9 @@ class CondensedNearestNeighbor(BaseBalancing):
             X, self.imbalance_threshold, value=True
         )
         ini_neigh = self._get_initial_neigh(X[_imbalanced_feature])
+        # unique index, rows are tracked by index labels below
+        X = X.reset_index(drop=True)
+        _features = X.columns != _imbalanced_feature
 
         _seed = self.seed
         _iter = 0
@@ -507,26 +550,29 @@ class CondensedNearestNeighbor(BaseBalancing):
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
-            _subset = pd.concat(
-                [_minority_class, _majority_class.sample(n=1, random_state=_seed)]
-            ).reset_index(drop=True)
+            # subset: all minority samples + one random majority sample
+            _sample = _majority_class.sample(n=1, random_state=_seed)
+            _subset = pd.concat([_minority_class, _sample])
+            # majority samples not in the subset, to be checked by 1-NN
+            _rest = _majority_class.drop(index=_sample.index)
+            if _rest.empty:
+                X = _subset.reset_index(drop=True)
+                break
+
             neigh = ini_neigh(n_neighbors=1)
             neigh.fit(
-                _subset.loc[:, _subset.columns != _imbalanced_feature],
+                _subset.loc[:, _features],
                 _subset[_imbalanced_feature],
             )
-            y_predict = neigh.predict(
-                X.loc[
-                    ~X.index.isin(list(_subset.index)), X.columns != _imbalanced_feature
-                ]
-            )
-            y_true = X.loc[
-                ~X.index.isin(list(_subset.index)), X.columns == _imbalanced_feature
-            ].values.T[0]
-            _not_matching_index = np.where((np.array(y_predict) != np.array(y_true)))[0]
-            X = pd.concat([_subset, X.iloc[_not_matching_index, :]]).reset_index(
-                drop=True
-            )
+            y_predict = neigh.predict(_rest.loc[:, _features])
+            # keep the misclassified samples (by labels, not positions)
+            _misclassified = _rest.loc[
+                np.asarray(y_predict) != _rest[_imbalanced_feature].values
+            ]
+            # no sample removed, condensed set reached
+            if len(_subset) + len(_misclassified) == len(X):
+                break
+            X = pd.concat([_subset, _misclassified]).reset_index(drop=True)
             _seed += 1
             _iter += 1
 
@@ -594,8 +640,10 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
+            # keep the user threshold, __init__ below overwrites it
+            _threshold = self.imbalance_threshold
             super().__init__(
-                imbalance_threshold=(1.0 + self.imbalance_threshold) / 2,
+                imbalance_threshold=(1.0 + _threshold) / 2,
                 norm=self.norm,
                 all=self.all,
                 max_iter=self.max_iter,
@@ -604,12 +652,13 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
             _data = super().fit_transform(_data)
 
             super(TomekLink, self).__init__(
-                imbalance_threshold=self.imbalance_threshold,
+                imbalance_threshold=_threshold,
                 all=self.all,
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
             _data = super(TomekLink, self).fit_transform(_data)
+            self.imbalance_threshold = _threshold
 
         self._fitted = True
 
@@ -680,8 +729,10 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
+            # keep the user threshold, __init__ below overwrites it
+            _threshold = self.imbalance_threshold
             super().__init__(
-                imbalance_threshold=(1.0 + self.imbalance_threshold) / 2,
+                imbalance_threshold=(1.0 + _threshold) / 2,
                 all=self.all,
                 max_iter=self.max_iter,
                 seed=self.seed,
@@ -689,13 +740,14 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
             _data = super().fit_transform(_data)
 
             super(CondensedNearestNeighbor, self).__init__(
-                imbalance_threshold=self.imbalance_threshold,
+                imbalance_threshold=_threshold,
                 norm=self.norm,
                 all=self.all,
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
             _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
+            self.imbalance_threshold = _threshold
 
         self._fitted = True
 

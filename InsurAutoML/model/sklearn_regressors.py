@@ -41,6 +41,7 @@ SOFTWARE.
 from __future__ import annotations
 
 from typing import Union
+import inspect
 import numpy as np
 import pandas as pd
 import scipy
@@ -122,10 +123,18 @@ class AdaboostRegressor(sklearn.ensemble.AdaBoostRegressor, BaseModel):
         raise NotImplementedError("predict_proba is not implemented for regression.")
 
 
+# scikit-learn 1.3 renamed ARDRegression n_iter to max_iter (n_iter removed in 1.5)
+_ARD_ITER = (
+    "max_iter"
+    if "max_iter" in inspect.signature(sklearn.linear_model.ARDRegression).parameters
+    else "n_iter"
+)
+
+
 class ARDRegression(sklearn.linear_model.ARDRegression, BaseModel):
     def __init__(
         self,
-        n_iter: int = 300,
+        max_iter: int = 300,
         tol: float = 1e-3,
         alpha_1: float = 1e-6,
         alpha_2: float = 1e-6,
@@ -134,7 +143,7 @@ class ARDRegression(sklearn.linear_model.ARDRegression, BaseModel):
         threshold_lambda: float = 1e4,
         fit_intercept: bool = True,
     ) -> None:
-        self.n_iter = int(n_iter)
+        self.max_iter = int(max_iter)
         self.tol = float(tol)
         self.alpha_1 = float(alpha_1)
         self.alpha_2 = float(alpha_2)
@@ -144,7 +153,7 @@ class ARDRegression(sklearn.linear_model.ARDRegression, BaseModel):
         self.fit_intercept = fit_intercept
 
         super().__init__(
-            n_iter=self.n_iter,
+            **{_ARD_ITER: self.max_iter},
             tol=self.tol,
             alpha_1=self.alpha_1,
             alpha_2=self.alpha_2,

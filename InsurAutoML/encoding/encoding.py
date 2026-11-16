@@ -44,7 +44,7 @@ import numpy as np
 import pandas as pd
 from sklearn import preprocessing
 
-from ..utils.base import is_date
+from ..utils.base import is_date, is_text_dtype
 from ..utils.data import formatting
 from .base import BaseEncoder
 from ..constant import UNI_CLASS
@@ -85,15 +85,20 @@ class DataEncoding(BaseEncoder, formatting):
         self.sigma_scaler = {}
         for column in features:
             if (
-                df[column].dtype == object
+                is_text_dtype(df[column].dtype)
                 and is_date(df[column])
                 and len(df[column].dropna().unique()) > UNI_CLASS
             ):
                 df[column] = pd.to_numeric(pd.to_datetime(df[column]))
-            elif (df[column].dtype == object) or (str(df[column].dtype) == "category"):
+            elif is_text_dtype(df[column].dtype) or (
+                str(df[column].dtype) == "category"
+            ):
                 # dummy coding for string categorical features
                 if str(df[column].dtype) == "category":
                     df[column] = df[column].astype(str)
+                # pandas>=3 str dtype cannot hold the integer codes, use object
+                if isinstance(df[column].dtype, pd.StringDtype):
+                    df[column] = df[column].astype(object)
                 if self.dummy_coding:
                     unique_value = np.sort(df[column].dropna().unique())
                     if self.category.empty:
@@ -118,9 +123,9 @@ class DataEncoding(BaseEncoder, formatting):
                         df.loc[df[column] == unique_value[i], column] = int(i)
                     df[column] = pd.to_numeric(df[column])
             else:
-                df.loc[~df[column].isnull(), column] = df.loc[
-                    ~df[column].isnull(), column
-                ].astype(float)
+                # convert the whole column, pandas>=3 does not upcast int columns
+                # when assigning floats through .loc (missing values stay NaN)
+                df[column] = df[column].astype(float)
                 # standardize numerical features
                 if self.transform == "standardize":
                     standard_scaler = preprocessing.StandardScaler().fit(
@@ -160,14 +165,17 @@ class DataEncoding(BaseEncoder, formatting):
         categorical_features = list(self.category.columns)
         for column in list(df.columns):
             if (
-                df[column].dtype == object
+                is_text_dtype(df[column].dtype)
                 and is_date(df[column])
                 and len(df[column].dropna().unique()) > UNI_CLASS
             ):
                 df[column] = pd.to_numeric(pd.to_datetime(df[column]))
-            elif df[column].dtype == object or str(df[column].dtype) == "category":
+            elif is_text_dtype(df[column].dtype) or str(df[column].dtype) == "category":
                 if str(df[column].dtype) == "category":
                     df[column] = df[column].astype(str)
+                # pandas>=3 str dtype cannot hold the integer codes, use object
+                if isinstance(df[column].dtype, pd.StringDtype):
+                    df[column] = df[column].astype(object)
                 if (
                     column in categorical_features
                 ):  # map categorical testdata based on category
@@ -186,14 +194,14 @@ class DataEncoding(BaseEncoder, formatting):
                     else:
                         # update, put notin in front of refit, so after refit,
                         # there will be no mistake
-                        df.loc[~df[column].isin(unique_values), column] = np.NaN
+                        df.loc[~df[column].isin(unique_values), column] = np.nan
                         for i in range(len(unique_values)):
                             df.loc[df[column] == unique_values[i], column] = i
                         df[column] = pd.to_numeric(df[column])
             else:
-                df.loc[~df[column].isnull(), column] = df.loc[
-                    ~df[column].isnull(), column
-                ].astype(float)
+                # convert the whole column, pandas>=3 does not upcast int columns
+                # when assigning floats through .loc (missing values stay NaN)
+                df[column] = df[column].astype(float)
                 # standardize numerical features
                 if self.transform == "standardize":
                     standard_scaler = preprocessing.StandardScaler().fit(
@@ -247,7 +255,7 @@ class CategoryShift(BaseEncoder):
         # Check data type
         columns = list(X.columns)
         for _column in columns:
-            if X[_column].dtype == object:
+            if is_text_dtype(X[_column].dtype):
                 raise ValueError("Cannot handle object type!")
             elif str(X[_column].dtype) == "category":
                 raise ValueError("Cannot handle categorical type!")
@@ -264,7 +272,7 @@ class CategoryShift(BaseEncoder):
         # Check data type
         columns = list(X.columns)
         for _column in columns:
-            if X[_column].dtype == object:
+            if is_text_dtype(X[_column].dtype):
                 raise ValueError("Cannot handle object type!")
             elif str(X[_column].dtype) == "category":
                 raise ValueError("Cannot handle categorical type!")

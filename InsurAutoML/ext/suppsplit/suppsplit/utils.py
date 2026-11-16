@@ -80,8 +80,10 @@ class HelmertEncoding:
     def fit(self, data):
         data = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
         for col in data.columns:
-            if data[col].dtype == "object" or str(data[col].dtype).startswith(
-                "category"
+            if (
+                data[col].dtype == "object"
+                or isinstance(data[col].dtype, pd.StringDtype)
+                or str(data[col].dtype).startswith("category")
             ):
                 self.fit_col(data[col])
         self.fitted = True
