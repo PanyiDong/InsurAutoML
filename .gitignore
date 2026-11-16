@@ -12,6 +12,8 @@ My_AutoML.egg-info/
 InsurAutoML.egg-info/
 .coverage
 htmlcov/*
+coverage.xml
+scripts/
 .ipynb_checkpoints/
 .pytest_cache/
 test.py

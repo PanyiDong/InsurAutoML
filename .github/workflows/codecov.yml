@@ -1,6 +1,9 @@
 name: CodeCov
+# The coverage run (neural network + InformedAutoML tests) is too slow for the
+# hosted runners: coverage is run and uploaded locally with scripts/coverage.sh.
+# This workflow is kept for manual runs only (Actions tab > CodeCov > Run workflow).
 on:
-  - pull_request
+  workflow_dispatch:
 permissions:
   contents: read
   id-token: write # OIDC authentication for the Codecov upload
