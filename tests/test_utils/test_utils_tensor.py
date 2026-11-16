@@ -121,9 +121,7 @@ def test_serial_tensor_dataset(tmp_path):
     labels = torch.tensor([0, 1, 2])
 
     # single tensor -> stored as a one-element list
-    single = SerialTensorDataset(
-        torch.eye(3), labels, path=str(tmp_path / "single")
-    )
+    single = SerialTensorDataset(torch.eye(3), labels, path=str(tmp_path / "single"))
     assert single._input_format == "list"
     assert len(single) == 3
     inp, lab = single[2]

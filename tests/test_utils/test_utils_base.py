@@ -111,7 +111,9 @@ def test_is_date():
     )
 
     # is_date checks one column (as used by DataEncoding on text columns)
-    assert is_date(test["col_2"], rule="all"), "The is_date method is not correctly done."
+    assert is_date(
+        test["col_2"], rule="all"
+    ), "The is_date method is not correctly done."
     assert is_date(test["col_2"], rule="any")
     assert not is_date(pd.Series(["Male", "Female", "2020-01-01"]), rule="all")
     assert is_date(pd.Series(["Male", "Female", "2020-01-01"]), rule="any")

@@ -111,7 +111,9 @@ def _assert_observed_kept(original, filled, mask):
                 original[col].values[observed].astype(float),
             )
         else:
-            assert (filled[col].values[observed] == original[col].values[observed]).all()
+            assert (
+                filled[col].values[observed] == original[col].values[observed]
+            ).all()
             # imputed categories must come from the observed categories
             assert set(filled[col]) <= set(original[col])
 

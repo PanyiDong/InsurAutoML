@@ -69,7 +69,8 @@ def _suggest(mol, space, n=3):
 
 @pytest.mark.parametrize("search_algo", SEARCH_ALGOS)
 @pytest.mark.parametrize(
-    "estimator, data", [(AutoTabularClassifier, "heart"), (AutoTabularRegressor, "insurance")]
+    "estimator, data",
+    [(AutoTabularClassifier, "heart"), (AutoTabularRegressor, "insurance")],
 )
 def test_search_space(search_algo, estimator, data, request, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
@@ -96,8 +97,22 @@ def test_search_space(search_algo, estimator, data, request, tmp_path, monkeypat
 
         # every component of the pipeline is constructed from the configuration
         for name, component in zip(
-            ["encoder", "imputer", "balancing", "scaling", "feature_selection", "models"],
-            [objective.enc, objective.imp, objective.blc, objective.scl, objective.fts, objective.mol],
+            [
+                "encoder",
+                "imputer",
+                "balancing",
+                "scaling",
+                "feature_selection",
+                "models",
+            ],
+            [
+                objective.enc,
+                objective.imp,
+                objective.blc,
+                objective.scl,
+                objective.fts,
+                objective.mol,
+            ],
         ):
             assert component is not None
         assert objective._model in components[-1]
@@ -112,9 +127,13 @@ def test_informed_search_space(search_algo, heart, tmp_path, monkeypatch):
     monkeypatch.chdir(tmp_path)
     X, y = heart
 
-    mol = InformedAutoTabularClassifier(search_algo=search_algo, model_name="space", seed=1)
+    mol = InformedAutoTabularClassifier(
+        search_algo=search_algo, model_name="space", seed=1
+    )
     mol._init_fit()
-    encoder, complete_prep, missing_prep, models, space = mol.get_hyperparameter_space(X, y)
+    encoder, complete_prep, missing_prep, models, space = mol.get_hyperparameter_space(
+        X, y
+    )
 
     for config in _suggest(mol, space):
         objective = InformedTabularObjective.__new__(InformedTabularObjective)

@@ -43,7 +43,6 @@ import numpy as np
 
 
 class HelmertEncoding:
-
     def __init__(self):
         self.unique_levels = {}
         self.helmert_matrices = {}

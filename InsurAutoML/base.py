@@ -49,6 +49,7 @@ import warnings
 # check if rpy2 available
 # if not, can not read R type data
 import importlib
+
 # NOTE: Remove rda/rdata loading as rpy2 sometimes causes installation issues
 # Uncomment the following lines if R data loading is needed
 # rpy2_spec = importlib.util.find_spec("rpy2")

@@ -155,10 +155,12 @@ class CompletePrepPipeline(PrepPipeline):
         super().__init__()
 
     @overload
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse: ...
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse:
+        ...
 
     @overload
-    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse: ...
+    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse:
+        ...
 
     def fit(
         self, X: pd.DataFrame, y: Optional[pd.Series] = None
@@ -249,10 +251,12 @@ class MissingPrepPipeline(PrepPipeline):
         super().__init__()
 
     @overload
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse: ...
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse:
+        ...
 
     @overload
-    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse: ...
+    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse:
+        ...
 
     def fit(
         self, X: pd.DataFrame, y: Optional[pd.Series] = None

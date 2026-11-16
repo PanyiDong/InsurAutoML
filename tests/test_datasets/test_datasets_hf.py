@@ -49,8 +49,17 @@ import types
 
 import pytest
 
-_HF_NAMES = ["IMDB", "GLUE", "AG_NEWS", "WIKITEXT", "SQUAD", "ADVERSARIAL_QA",
-             "CIFAR", "MNIST", "IMAGENET"]
+_HF_NAMES = [
+    "IMDB",
+    "GLUE",
+    "AG_NEWS",
+    "WIKITEXT",
+    "SQUAD",
+    "ADVERSARIAL_QA",
+    "CIFAR",
+    "MNIST",
+    "IMAGENET",
+]
 
 
 @pytest.fixture

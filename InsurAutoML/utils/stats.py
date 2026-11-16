@@ -590,7 +590,6 @@ def _ACCC(
         )
 
     if X is None:
-
         # fit 3-NN on Z to get distance and index
         nn = NearestNeighbors(n_neighbors=3, p=2, metric="minkowski")
         nn.fit(Z)

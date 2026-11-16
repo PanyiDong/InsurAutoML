@@ -42,7 +42,9 @@ from InsurAutoML.utils.optimize import (
 
 
 def test_time_plateau_stopper_trial_rules():
-    stopper = TimePlateauStopper(timeout=60, std_ratio=0.1, num_results=4, grace_period=4)
+    stopper = TimePlateauStopper(
+        timeout=60, std_ratio=0.1, num_results=4, grace_period=4
+    )
 
     # a timed out trial (infinite loss) is stopped immediately
     assert stopper("timeout", {"loss": np.inf})
@@ -54,7 +56,9 @@ def test_time_plateau_stopper_trial_rules():
     assert stopper("trial", {"loss": 1.0})
 
     # still improving with large variation: continue
-    improving = TimePlateauStopper(timeout=60, std_ratio=0.01, num_results=4, grace_period=4)
+    improving = TimePlateauStopper(
+        timeout=60, std_ratio=0.01, num_results=4, grace_period=4
+    )
     for loss in [10.0, 5.0, 2.0]:
         assert not improving("trial", {"loss": loss})
     assert not improving("trial", {"loss": 1.0})
@@ -180,7 +184,10 @@ def test_get_logger():
     assert len(default) == 1 and isinstance(default[0], LoggerCallback)
 
     loggers = get_logger(["Logger", "JSON", "CSV"])
-    assert [type(item) for item in loggers][1:] == [JsonLoggerCallback, CSVLoggerCallback]
+    assert [type(item) for item in loggers][1:] == [
+        JsonLoggerCallback,
+        CSVLoggerCallback,
+    ]
 
     with pytest.raises(TypeError):
         get_logger("CSV")
@@ -223,7 +230,9 @@ def test_get_metrics():
     assert get_metrics("f1")(y_true, y_pred) == pytest.approx(2 / 3)
     assert get_metrics("MAE")(np.array([1.0, 2.0]), np.array([2.0, 2.0])) == 0.5
     assert get_metrics("MAX")(np.array([1.0, 2.0]), np.array([4.0, 2.0])) == 3.0
-    assert get_metrics("R2")(np.array([1.0, 2.0, 3.0]), np.array([1.0, 2.0, 3.0])) == 1.0
+    assert (
+        get_metrics("R2")(np.array([1.0, 2.0, 3.0]), np.array([1.0, 2.0, 3.0])) == 1.0
+    )
     assert callable(get_metrics("hinge")) and callable(get_metrics("auc"))
 
     custom = lambda y, p: 0.0  # noqa: E731

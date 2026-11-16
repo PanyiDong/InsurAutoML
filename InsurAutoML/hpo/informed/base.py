@@ -554,13 +554,15 @@ class InformedAutoTabularBase(AutoTabularBase):
             optimal_point, "encoder"
         )
         # get optimal complete prep & hyperparameters
-        optimal_complete_prep, optimal_complete_prep_hyperparameters = (
-            self._get_optimal_hyper(optimal_point, "complete_prep")
-        )
+        (
+            optimal_complete_prep,
+            optimal_complete_prep_hyperparameters,
+        ) = self._get_optimal_hyper(optimal_point, "complete_prep")
         # get optimal missing prep & hyperparameters
-        optimal_missing_prep, optimal_missing_prep_hyperparameters = (
-            self._get_optimal_hyper(optimal_point, "missing_prep")
-        )
+        (
+            optimal_missing_prep,
+            optimal_missing_prep_hyperparameters,
+        ) = self._get_optimal_hyper(optimal_point, "missing_prep")
         # get optimal model & hyperparameters
         optimal_model, optimal_model_hyperparameters = self._get_optimal_hyper(
             optimal_point, "model"
@@ -677,7 +679,9 @@ class InformedAutoTabularBase(AutoTabularBase):
         # the informed pipelines create their own validation sets
         # (complete/missing data preparation)
         if X_valid is not None or y_valid is not None:
-            raise ValueError("X_valid/y_valid are not supported by the informed pipelines.")
+            raise ValueError(
+                "X_valid/y_valid are not supported by the informed pipelines."
+            )
 
         # initialize settings
         self._init_fit()
