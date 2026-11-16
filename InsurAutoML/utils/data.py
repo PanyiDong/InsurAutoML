@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Tuple, List, Union
+from typing import Any, Dict, Tuple, List, Union
 import os
 import re
 import ast
@@ -52,19 +52,30 @@ from ..constant import UNI_CLASS
 # string list to list
 
 
-def str2list(item: str) -> list:
+def str2list(item: Union[str, List]) -> List:
+    # list/tuple given directly
+    if not isinstance(item, str):
+        return list(item)
     try:
-        return ast.literal_eval(item)
-    except BaseException:
-        return item
+        value = ast.literal_eval(item)
+    except (ValueError, SyntaxError):
+        # a single name, e.g. "RandomForest"
+        return [item]
+    return list(value) if isinstance(value, (list, tuple)) else [value]
 
 
 # string dict to dict
-def str2dict(item: str) -> dict:
+def str2dict(item: Union[str, Dict]) -> Dict:
+    # dict given directly
+    if not isinstance(item, str):
+        return dict(item)
     try:
-        return json.loads(item)
-    except BaseException:
-        return item
+        value = json.loads(item)
+    except ValueError as error:
+        raise ValueError("Expect a dict or a JSON string, get {}.".format(item)) from error
+    if not isinstance(value, dict):
+        raise ValueError("Expect a dict or a JSON string, get {}.".format(item))
+    return value
 
 
 # Train test split using test set percentage
@@ -258,7 +269,7 @@ class formatting:
 
         return x
 
-    def fit(self, X: pd.DataFrame) -> None:
+    def fit(self, X: Union[pd.DataFrame, pd.Series, np.ndarray]) -> "formatting":
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
             try:
@@ -277,6 +288,8 @@ class formatting:
                     X[_column] = self.factorize(X[_column])
                 else:
                     self.factorize(X[_column])
+
+        return self
 
     def refit(self, X: pd.DataFrame) -> Union[None, pd.DataFrame]:
         for _column in self.columns:

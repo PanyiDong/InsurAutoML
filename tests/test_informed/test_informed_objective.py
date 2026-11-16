@@ -174,7 +174,9 @@ def test_reset_config_and_checkpoint(in_tmp_dir, insurance, tmp_path):
     # the checkpoint stores the last status
     checkpoint_dir = tmp_path / "checkpoint"
     checkpoint_dir.mkdir()
-    assert trainable.save_checkpoint(str(checkpoint_dir)) == str(checkpoint_dir)
+    # None: Ray Tune uses the content of the directory as the checkpoint
+    assert trainable.save_checkpoint(str(checkpoint_dir)) is None
+    assert (checkpoint_dir / "status.json").exists()
     trainable.status_dict = None
     trainable.load_checkpoint(str(checkpoint_dir))
     assert trainable.status_dict["loss"] == pytest.approx(result["loss"])

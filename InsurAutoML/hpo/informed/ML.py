@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, Callable, Dict
+from typing import Union, List, Callable, Dict, Optional
 import numpy as np
 import pandas as pd
 
@@ -56,7 +56,7 @@ class InformedAutoTabularRegressor(InformedAutoTabularBase):
         voting: str = "mean",
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -72,14 +72,14 @@ class InformedAutoTabularRegressor(InformedAutoTabularBase):
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
-        logger: Union[str, List[str]] = ["Logger"],
-        progress_reporter: str = None,
+        logger: List[str] = ["Logger"],
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -156,7 +156,7 @@ class InformedAutoTabularClassifier(InformedAutoTabularBase):
         voting="hard",
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -172,14 +172,14 @@ class InformedAutoTabularClassifier(InformedAutoTabularBase):
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
-        logger: Union[str, List[str]] = ["Logger"],
-        progress_reporter: str = None,
+        logger: List[str] = ["Logger"],
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -253,10 +253,10 @@ class InformedAutoTabular(InformedAutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
-        voting: str = None,
+        voting: Optional[str] = None,
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -272,14 +272,14 @@ class InformedAutoTabular(InformedAutoTabularBase):
         search_algo_settings: Dict = {},
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
-        logger: Union[str, List[str]] = ["Logger"],
-        progress_reporter: str = None,
+        logger: List[str] = ["Logger"],
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -342,7 +342,9 @@ class InformedAutoTabular(InformedAutoTabularBase):
     def fit(
         self,
         X: pd.DataFrame,
-        y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
+        X_valid: Optional[pd.DataFrame] = None,
+        y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> InformedAutoTabular:
         if isinstance(y, (pd.DataFrame, pd.Series, np.ndarray)):
             self._type = type_of_task(y)
@@ -382,7 +384,7 @@ class InformedAutoTabular(InformedAutoTabularBase):
             seed=self.seed,
         )
 
-        super(InformedAutoTabular, self).fit(X, y)
+        super(InformedAutoTabular, self).fit(X, y, X_valid, y_valid)
 
         return self
 

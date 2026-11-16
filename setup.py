@@ -56,7 +56,7 @@ import sys
 import glob
 import json
 import logging
-import importlib
+import importlib.util
 import subprocess
 from typing import Optional
 
@@ -153,10 +153,11 @@ def r_home_from_registry() -> Optional[str]:
     """Return the R home directory from the Windows Registry."""
     from packaging.version import Version
 
-    try:
-        import winreg  # type: ignore
-    except ImportError:
-        import _winreg as winreg  # type: ignore
+    # the registry only exists on Windows
+    if sys.platform != "win32":
+        return None
+
+    import winreg
     # There are two possible locations for RHOME in the registry
     # We prefer the user installation (which the user has more control
     # over). Thus, HKEY_CURRENT_USER is the first item in the list and
@@ -200,7 +201,7 @@ def r_home_from_registry() -> Optional[str]:
         # for-loop did not break - RHOME is unknown.
         log.error("Unable to determine R home.")
         r_home = None
-    return
+    return r_home
 
 
 def get_r_home() -> Optional[str]:
@@ -307,8 +308,7 @@ def build_torch_extensions():
                 language="c++",
             )
         )
-
-    CMDCLASS["build_ext"] = BuildExtension
+        CMDCLASS["build_ext"] = BuildExtension
 
     return torch_extensions
 

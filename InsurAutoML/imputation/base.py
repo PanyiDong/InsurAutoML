@@ -246,7 +246,7 @@ class JointImputer(BaseImputer):
     def _fill_row(
         self, row_index: Union[int, str], X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        """
+        r"""
         for x = (x_{mis}, x_{obs})^{T} with \mu = (\mu_{mis}, \mu_{obs}).T and \Sigma = ((Sigma_{mis, mis},
         Sigma_{mis, obs}), (Sigma_{obs, Sigma}, Sigma_{obs, obs})),
         Conditional distribution x_{mis}|x_{obs} = a is N(\bar(\mu), \bar(\Sigma))

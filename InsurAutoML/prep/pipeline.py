@@ -38,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Optional, Tuple, Union, cast, overload
+
 import numpy as np
 import pandas as pd
 from lightgbm import LGBMClassifier, LGBMRegressor
@@ -56,6 +58,11 @@ def standardization(X: pd.DataFrame) -> pd.DataFrame:
     return X_std
 
 
+# (X_train, X_valid, y_train, y_valid) with a response, (X_train, X_valid) without
+SplitWithResponse = Tuple[pd.DataFrame, pd.DataFrame, pd.Series, pd.Series]
+SplitWithoutResponse = Tuple[pd.DataFrame, pd.DataFrame]
+
+
 class PrepPipeline:
     """
     Base Data Preparation Pipeline.
@@ -70,18 +77,18 @@ class PrepPipeline:
     def __init__(self) -> None:
         self._fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         raise NotImplementedError(
             "PrepPipeline is an abstract base class. Implement fit() in subclasses."
         )
 
-    def transform(self, X: pd.DataFrame, y: pd.Series = None):
+    def transform(self, X: pd.DataFrame, y: Optional[pd.Series] = None):
         raise NotImplementedError(
             "PrepPipeline is an abstract base class. Implement transform() in subclasses."
         )
 
     @staticmethod
-    def _ensure_dataframe(X):
+    def _ensure_dataframe(X) -> pd.DataFrame:
         """Ensure X is a DataFrame."""
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -90,7 +97,7 @@ class PrepPipeline:
         return X
 
     @staticmethod
-    def _ensure_series(y):
+    def _ensure_series(y) -> pd.Series:
         """Ensure y is a Series."""
         # flatten if 2d array-like
         if len(y.shape) > 1:
@@ -101,7 +108,7 @@ class PrepPipeline:
         y = y.reset_index(drop=True)
         return y
 
-    def _ensure_xy(self, X, y=None):
+    def _ensure_xy(self, X, y=None) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
         """Ensure X is a DataFrame and y is a Series and reset their indexes.
 
         - Converts X to `pd.DataFrame` if needed.
@@ -147,7 +154,15 @@ class CompletePrepPipeline(PrepPipeline):
         self._fitted = False
         super().__init__()
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    @overload
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse: ...
+
+    @overload
+    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse: ...
+
+    def fit(
+        self, X: pd.DataFrame, y: Optional[pd.Series] = None
+    ) -> Union[SplitWithResponse, SplitWithoutResponse]:
         # normalize inputs
         X, y = self._ensure_xy(X, y)
         # X = standardization(X)
@@ -159,7 +174,8 @@ class CompletePrepPipeline(PrepPipeline):
         # CCC feature selection
         # self.filter = CCCFilter(threshold=self.cc_threshold)
         self.filter = FeatureFilter(criteria="CCC", n_prop=self.cc_threshold)
-        X_prep = self.filter.fit_transform(X_prep, y_prep)
+        # DataFrame input, DataFrame output
+        X_prep = cast(pd.DataFrame, self.filter.fit_transform(X_prep, y_prep))
         # SPlit data splitting
         test_idx = X_prep.index[np.array(SPlit(X_prep, split_ratio=self.split_ratio))]
         train_idx = np.setdiff1d(X_prep.index, test_idx)
@@ -176,7 +192,9 @@ class CompletePrepPipeline(PrepPipeline):
             )
         return X_prep.loc[train_idx], X_prep.loc[test_idx]
 
-    def transform(self, X: pd.DataFrame, y: pd.Series = None):
+    def transform(
+        self, X: pd.DataFrame, y: Optional[pd.Series] = None
+    ) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
         if not self._fitted:
             raise ValueError("CompletePrepPipeline must be fitted before transform().")
         # only apply selector and filter on test set
@@ -185,7 +203,7 @@ class CompletePrepPipeline(PrepPipeline):
         X_prep = self.selector.transform(X)
         # align y with transformed X
         y_prep = y[X_prep.index] if y is not None else None
-        X_prep = self.filter.transform(X_prep)
+        X_prep = cast(pd.DataFrame, self.filter.transform(X_prep))
 
         return X_prep, y_prep if y is not None else None
 
@@ -230,7 +248,15 @@ class MissingPrepPipeline(PrepPipeline):
         self._fitted = False
         super().__init__()
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None):
+    @overload
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse: ...
+
+    @overload
+    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse: ...
+
+    def fit(
+        self, X: pd.DataFrame, y: Optional[pd.Series] = None
+    ) -> Union[SplitWithResponse, SplitWithoutResponse]:
         # normalize inputs
         X_prep, y_prep = self._ensure_xy(X, y)
         # select missing subsets
@@ -252,7 +278,8 @@ class MissingPrepPipeline(PrepPipeline):
         # CCC feature selection
         # self.filter = CCCFilter(threshold=self.cc_threshold)
         self.filter = FeatureFilter(criteria="CCC", n_prop=self.cc_threshold)
-        X_prep = self.filter.fit_transform(X_prep, y_prep)
+        # DataFrame input, DataFrame output
+        X_prep = cast(pd.DataFrame, self.filter.fit_transform(X_prep, y_prep))
         # SPlit data splitting
         test_idx = X_prep.index[np.array(SPlit(X_prep, split_ratio=self.split_ratio))]
         train_idx = np.setdiff1d(X_prep.index, test_idx)
@@ -269,7 +296,9 @@ class MissingPrepPipeline(PrepPipeline):
             )
         return X_prep.loc[train_idx], X_prep.loc[test_idx]
 
-    def transform(self, X: pd.DataFrame, y: pd.Series = None):
+    def transform(
+        self, X: pd.DataFrame, y: Optional[pd.Series] = None
+    ) -> Tuple[pd.DataFrame, Optional[pd.Series]]:
         if not self._fitted:
             raise ValueError("MissingPrepPipeline must be fitted before transform().")
         # only apply selector, imputers, and filter on test set
@@ -278,6 +307,6 @@ class MissingPrepPipeline(PrepPipeline):
         X_prep, y = self._ensure_xy(X, y)
         X_prep = self.selector.transform(X_prep)
         X_prep = self.imputer2.transform(X_prep)
-        X_prep = self.filter.transform(X_prep)
+        X_prep = cast(pd.DataFrame, self.filter.transform(X_prep))
 
         return X_prep, y if y is not None else None

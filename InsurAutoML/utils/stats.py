@@ -530,7 +530,7 @@ def _ACCC(
     mode: str = "T",
     seed: int = None,
 ) -> float:
-    """
+    r"""
     Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1][2]
 
     if X is None:   correlation between Y (response) and Z (features);

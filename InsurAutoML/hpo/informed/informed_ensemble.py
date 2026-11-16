@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Callable, Union, List, Tuple
+from typing import Any, Callable, Optional, Union, List, Tuple, cast
 import scipy
 import logging
 import pandas as pd
@@ -57,11 +57,11 @@ class InformedPipeline:
 
     def __init__(
         self,
-        encoder: Callable = None,
-        complete_prep: Callable = None,
-        missing_prep: Callable = None,
-        model_complete: Callable = None,
-        model_missing: Callable = None,
+        encoder: Optional[Any] = None,
+        complete_prep: Optional[Any] = None,
+        missing_prep: Optional[Any] = None,
+        model_complete: Optional[Any] = None,
+        model_missing: Optional[Any] = None,
     ) -> None:
         self.encoder = encoder
         self.complete_prep = complete_prep
@@ -85,7 +85,7 @@ class InformedPipeline:
             raise ValueError("missing_prep is not fitted!")
 
         if scipy.sparse.issparse(X):  # check if returns sparse matrix
-            X = X.toarray()
+            X = cast(Any, X).toarray()
 
         if self.model_complete is None or self.model_missing is None:
             raise ValueError("model_complete or model_missing is not defined!")
@@ -189,9 +189,13 @@ class InformedClassifierEnsemble(formatting):
 
         self._fitted = False
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    def fit(  # y is required, default only for the formatting.fit signature
+        self,
+        X: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> InformedClassifierEnsemble:
+        if y is None:
+            raise ValueError("y is required to fit the ensemble.")
         # check for voting type
         if self.voting not in ["hard", "soft"]:
             raise ValueError("voting must be either 'hard' or 'soft'")
@@ -277,6 +281,8 @@ class InformedClassifierEnsemble(formatting):
                     axis=1,
                     arr=pred_list,
                 )
+            else:
+                raise ValueError("Unrecognized strategy {}.".format(self.strategy))
         elif self.voting == "soft":
             # calculate probabilities for all pipelines
             prob_list = []
@@ -294,14 +300,21 @@ class InformedClassifierEnsemble(formatting):
                 )
             elif self.strategy == "boosting":
                 pred = np.sum(np.average(prob_list, axis=0), axis=1)
+            else:
+                raise ValueError("Unrecognized strategy {}.".format(self.strategy))
+        else:
+            raise ValueError("Unrecognized voting {}.".format(self.voting))
 
-        # make sure all predictions are seen
+        # make sure all predictions are seen (formatting is not inplace: returns a dataframe)
         if isinstance(pred, pd.DataFrame):
-            return super(InformedClassifierEnsemble, self).refit(pred)
+            return cast(pd.DataFrame, super(InformedClassifierEnsemble, self).refit(pred))
         # if not dataframe, convert to dataframe for formatting
         else:
-            return super(InformedClassifierEnsemble, self).refit(
-                pd.DataFrame(pred, columns=self._response)
+            return cast(
+                pd.DataFrame,
+                super(InformedClassifierEnsemble, self).refit(
+                    pd.DataFrame(pred, columns=self._response)
+                ),
             )
 
     def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -346,7 +359,7 @@ class InformedRegressorEnsemble(formatting):
     def __init__(
         self,
         estimators: List[Tuple[str, InformedPipeline]],
-        voting: str = "mean",
+        voting: Union[str, Callable] = "mean",
         weights: List[float] = None,
         features: List[str] = [],
         strategy: str = "stacking",
@@ -371,9 +384,13 @@ class InformedRegressorEnsemble(formatting):
             "min": np.min,
         }
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    def fit(  # y is required, default only for the formatting.fit signature
+        self,
+        X: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> InformedRegressorEnsemble:
+        if y is None:
+            raise ValueError("y is required to fit the ensemble.")
         # check for voting type
         if self.voting in ["mean", "median", "max", "min"]:
             self.voting = self._voting_methods[self.voting]
@@ -451,16 +468,18 @@ class InformedRegressorEnsemble(formatting):
         if self.strategy == "stacking" or self.strategy == "bagging":
             # if weights not included, not use weights
             try:
-                pred = self.voting(pred_list, axis=1, weights=self.weights)
+                pred = cast(Callable, self.voting)(pred_list, axis=1, weights=self.weights)
             except BaseException:
                 # if weights included, but not available in voting function,
                 # warn users
                 if self.weights is not None:
                     logger.warning("weights are not used in voting method")
                     # warnings.warn("weights are not used in voting method")
-                pred = self.voting(pred_list, axis=1)
+                pred = cast(Callable, self.voting)(pred_list, axis=1)
         elif self.strategy == "boosting":
             pred = np.sum(pred_list, axis=1)
+        else:
+            raise ValueError("Unrecognized strategy {}.".format(self.strategy))
 
         return (
             pred

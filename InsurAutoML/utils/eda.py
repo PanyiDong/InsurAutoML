@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union
+from typing import Optional, Union
 import os
 import glob
 import warnings
@@ -53,7 +53,7 @@ from ..utils.data import feature_type
 
 def EDA(
     X: Union[pd.DataFrame, np.ndarray],
-    y: Union[pd.DataFrame, np.ndarray] = None,
+    y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray, list]] = None,
     plot: bool = True,
     save: bool = True,
     path: str = "tmp/EDA",
@@ -68,6 +68,10 @@ def EDA(
         for f in files:
             os.remove(f)
 
+    # array inputs are converted to dataframe/series (columns are used below)
+    if not isinstance(X, pd.DataFrame):
+        X = pd.DataFrame(X)
+
     # get column types
     data_type = {}
 
@@ -75,14 +79,15 @@ def EDA(
         data_type[column] = feature_type(X[column])
 
     # if y is not None, add it to the data_type
+    response = "response"
     if y is not None:
         if isinstance(y, pd.DataFrame):
             response = y.columns[0]
-            y = y.values
+            y = y.iloc[:, 0]
         elif isinstance(y, pd.Series):
             response = y.name
-        elif isinstance(y, list) or isinstance(y, np.ndarray):
-            response = "response"
+        else:
+            y = pd.Series(np.ravel(y), name=response)
         data_type[response] = feature_type(y)
 
     # print for examination
@@ -179,8 +184,8 @@ def EDA(
                 ax1.set_title("Histogram of Column {}".format(column))
                 ax2.scatter(X[column], y, color="blue")
                 linear_model = LinearRegression()
-                linear_model.fit(X[column].values.reshape(-1, 1), y)
-                y_pred = linear_model.predict(X[column].values.reshape(-1, 1))
+                linear_model.fit(X[[column]].to_numpy(), y)
+                y_pred = linear_model.predict(X[[column]].to_numpy())
                 ax2.plot(X[column], y_pred, color="red", label="linear interpolation")
                 ax2.set_xlabel("{}".format(column))
                 ax2.set_ylabel("{}".format(response))

@@ -99,7 +99,7 @@ class FeatureFilter(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> FeatureFilter:
         # get feature names
         self._check_feature_names(X)

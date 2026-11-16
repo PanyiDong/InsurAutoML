@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import os
+from typing import Any, Dict
 
 import numpy as np
 import pandas as pd
@@ -54,7 +55,7 @@ from InsurAutoML.hpo.informed.fixed import (
 
 # generous budget: MissForest imputation in every trial is slow on loaded machines,
 # the search still ends after max_evals trials
-SEARCH = dict(max_evals=4, timeout=300, timeout_per_trial=300, seed=1)
+SEARCH: Dict[str, Any] = dict(max_evals=4, timeout=300, timeout_per_trial=300, seed=1)
 
 
 def _check_outputs(model_name):

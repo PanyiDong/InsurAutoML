@@ -97,13 +97,6 @@ class InformedAutoTabular:
         X_train_complete, X_valid_complete, y_train_complete, y_valid_complete = (
             self.complete_prep.fit(X_enc, y)
         )
-        # skip if no missing data
-        if X_enc.isnull().sum().sum() != 0:
-            self.missing_prep = MissingPrepPipeline()
-
-            X_train_missing, X_valid_missing, y_train_missing, y_valid_missing = (
-                self.missing_prep.fit(X_enc, y)
-            )
 
         # initialize and fit AutoTabular on complete set
         if len(X_train_complete) > 0:
@@ -123,8 +116,13 @@ class InformedAutoTabular:
                 X_train_complete, y_train_complete, X_valid_complete, y_valid_complete
             )
 
-        # initialize and fit AutoTabular on missing set
-        if X_enc.isnull().sum().sum() != 0:
+        # initialize and fit AutoTabular on missing set (skip if no missing data)
+        if X_enc.isnull().values.any():
+            self.missing_prep = MissingPrepPipeline()
+            X_train_missing, X_valid_missing, y_train_missing, y_valid_missing = (
+                self.missing_prep.fit(X_enc, y)
+            )
+
             self.missing_model = AutoTabular(
                 model_name=self.model_name + "_missing",
                 max_evals=self.max_evals,
@@ -152,26 +150,24 @@ class InformedAutoTabular:
         X_enc = self.encoder.refit(X)
 
         X_complete, _ = self.complete_prep.transform(X_enc, y=None)
-        complete_idx = X_complete.index
-        if X_enc.isnull().sum().sum() != 0:
-            X_missing, _ = self.missing_prep.transform(X_enc, y=None)
-            missing_idx = X_missing.index
-
+        pred_complete = None
         if len(X_complete) > 0 and self.complete_model is not None:
-            pred_complete = self.complete_model.predict(X_complete)
-            pred_complete.index = complete_idx
+            pred_complete = pd.DataFrame(self.complete_model.predict(X_complete))
+            pred_complete.index = X_complete.index
 
-        if X_enc.isnull().sum().sum() != 0:
-            pred_missing = self.missing_model.predict(X_missing)
-            pred_missing.index = missing_idx
+        # no missing data: predictions of the complete-case model
+        if not X_enc.isnull().values.any():
+            return pred_complete
+
+        if self.missing_model is None:
+            raise ValueError("No model fitted on missing data, but X has missing values.")
+        X_missing, _ = self.missing_prep.transform(X_enc, y=None)
+        pred = pd.DataFrame(self.missing_model.predict(X_missing))
+        pred.index = X_missing.index
 
         # use averaging strategy to combine predictions
-        if X_enc.isnull().sum().sum() == 0:
-            return pred_complete
-        else:
-            pred = pred_missing.copy()
-            # if complete predictions exist, average them in
-            if len(X_complete) > 0 and self.complete_model is not None:
-                pred.loc[complete_idx, :] += pred_complete
-                pred.loc[complete_idx, :] /= 2
-            return pred
+        # if complete predictions exist, average them in
+        if pred_complete is not None:
+            pred.loc[X_complete.index, :] += pred_complete
+            pred.loc[X_complete.index, :] /= 2
+        return pred

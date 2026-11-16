@@ -129,6 +129,7 @@ def test_complete_prep_pipeline(numeric_missing):
 
     # transform applies the same column selection and keeps complete rows only
     X_new, y_new = prep.transform(X, y)
+    assert y_new is not None
     assert list(X_new.columns) == list(X_train.columns)
     assert not X_new.isna().any().any()
     assert list(X_new.index) == list(y_new.index)

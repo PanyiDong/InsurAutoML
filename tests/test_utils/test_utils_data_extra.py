@@ -51,9 +51,17 @@ from InsurAutoML.utils import data as udata
 
 def test_str2list_str2dict():
     assert udata.str2list("[1, 2, 'a']") == [1, 2, "a"]
-    assert udata.str2list("not a list(") == "not a list("
+    # a single name is a one-element list (not iterated character by character)
+    assert udata.str2list("RandomForest") == ["RandomForest"]
+    assert udata.str2list("not a list(") == ["not a list("]
+    assert udata.str2list(["A", "B"]) == ["A", "B"]
+    assert udata.str2list(("A",)) == ["A"]
     assert udata.str2dict('{"a": 1, "b": [1, 2]}') == {"a": 1, "b": [1, 2]}
-    assert udata.str2dict("{bad json}") == "{bad json}"
+    assert udata.str2dict({"a": 1}) == {"a": 1}
+    with pytest.raises(ValueError):
+        udata.str2dict("{bad json}")
+    with pytest.raises(ValueError):
+        udata.str2dict("[1, 2]")
 
 
 def test_train_test_split():

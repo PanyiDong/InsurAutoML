@@ -39,10 +39,10 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, List, Callable, Dict, Tuple, Optional
+from typing import Any, Union, List, Callable, Dict, Tuple, Optional, cast
 import os
 import warnings
-import importlib
+import importlib.util
 import shutil
 import copy
 import datetime
@@ -254,10 +254,10 @@ class AutoTabularBase:
         task_mode: str = "classification",
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
-        voting: str = None,
+        voting: Optional[str] = None,
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -280,13 +280,13 @@ class AutoTabularBase:
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
         logger: List[str] = ["Logger"],
-        progress_reporter: str = None,
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.task_mode = task_mode
         self.n_estimators = n_estimators
@@ -319,7 +319,7 @@ class AutoTabularBase:
         self.valid_size = valid_size
         self.objective = objective
         self.search_algo = search_algo
-        self.search_algo_settings = search_algo_settings
+        self.search_algo_settings: Dict[str, Any] = search_algo_settings
         self.search_scheduler = search_scheduler
         self.search_scheduler_settings = search_scheduler_settings
         self.logger = logger
@@ -338,8 +338,8 @@ class AutoTabularBase:
         set_seed(self.seed)
 
     def get_hyperparameter_space(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, np.ndarray]
-    ) -> Tuple[Dict]:
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> Tuple[Dict, Dict, Dict, Dict, Dict, Dict, Any]:
         # initialize default search options
         # and select the search options based on the input restrictions
         # use copy to allows multiple manipulation
@@ -588,6 +588,12 @@ class AutoTabularBase:
             _all_models = copy.deepcopy(regressors)
             # include additional regressors
             _all_models.update(add_regressors)
+        else:
+            raise ValueError(
+                'task_mode must be "classification" or "regression", get {}.'.format(
+                    self.task_mode
+                )
+            )
 
         # special treatment, remove SVM methods when observations are large
         # SVM suffers from the complexity o(n_samples^2 * n_features),
@@ -603,7 +609,7 @@ class AutoTabularBase:
         # Remove GAM methods if multi-class classification
         if (
             self.task_mode == "classification"
-            and len(pd.unique(y.to_numpy().flatten())) > 2
+            and len(pd.unique(np.asarray(y).flatten())) > 2
         ):
             del _all_models["GAM_Classifier"]
 
@@ -726,6 +732,12 @@ class AutoTabularBase:
             _all_models_hyperparameters = copy.deepcopy(regressor_hyperparameter)
             # include additional hyperparameters
             _all_models_hyperparameters += add_regressor_hyperparameter
+        else:
+            raise ValueError(
+                'task_mode must be "classification" or "regression", get {}.'.format(
+                    self.task_mode
+                )
+            )
 
         # special treatment, for LightGBM_Classifier
         # if binary classification, use LIGHTGBM_BINARY_CLASSIFICATION
@@ -735,7 +747,7 @@ class AutoTabularBase:
             for item in _all_models_hyperparameters:
                 if "LightGBM_Classifier" in item.values():
                     # flatten to 1d
-                    if len(pd.unique(y.to_numpy().flatten())) == 2:
+                    if len(pd.unique(np.asarray(y).flatten())) == 2:
                         from ..constant import LIGHTGBM_BINARY_CLASSIFICATION
 
                         item["objective"] = tune.choice(LIGHTGBM_BINARY_CLASSIFICATION)
@@ -891,8 +903,8 @@ class AutoTabularBase:
         scheduler: Callable,
         callbacks: List,
         stopper: tune.Stopper,
-        progress_reporter: Callable = None,
-        trial_dirname_creator: Callable = None,
+        progress_reporter: Optional[Any] = None,
+        trial_dirname_creator: Optional[Callable] = None,
     ) -> pd.DataFrame:
         """
         Run (or resume) one Ray Tune experiment under self.sub_directory/name.
@@ -1045,6 +1057,8 @@ class AutoTabularBase:
             if comp in _key:
                 key = _key
                 break
+        else:
+            raise KeyError("No {} method found in {}.".format(comp, optimal_hyperparameters))
         optimal_comp = optimal_hyperparameters[key]
         del optimal_hyperparameters[key]
         # remove indications
@@ -1058,7 +1072,7 @@ class AutoTabularBase:
     # select optimal settings and fit on optimal hyperparameters
     def _fit_optimal(
         self, idx: int, optimal_point: Dict, best_path: str
-    ) -> Tuple[str, Pipeline]:
+    ) -> Tuple[str, Any]:
         # get optimal encoder & hyperparameters
         optimal_encoder, optimal_encoder_hyperparameters = self._get_optimal_hyper(
             optimal_point, "encoder"
@@ -1148,8 +1162,8 @@ class AutoTabularBase:
         self,
         trial_path: Union[str, List[str], pd.Series],
         config: Union[Dict, List[Dict], pd.Series],
-        iter: int = None,
-        features: List[str] = None,
+        iter: Optional[int] = None,
+        features: Optional[Union[List[str], np.ndarray]] = None,
     ) -> None:
         # initialize ensemble list
         # if ensemble list exists, append to it
@@ -1408,6 +1422,10 @@ class AutoTabularBase:
                     "Cannot convert y_valid to dataframe, get {}".format(type(y_valid))
                 )
 
+        # X and y are converted to dataframes above
+        X = cast(pd.DataFrame, X)
+        y = cast(pd.DataFrame, y)
+
         # get features and response names
         if isinstance(X, pd.DataFrame):  # expect multiple features
             self.features = list(X.columns)
@@ -1415,7 +1433,7 @@ class AutoTabularBase:
         if isinstance(y, pd.DataFrame):  # for the case of dataframe
             self.response = list(y.columns)
         elif isinstance(y, pd.Series):  # for the case of series
-            self.response = list(y.name)
+            self.response = [y.name]
 
         _X = X.copy()
         _y = y.copy()
@@ -2003,7 +2021,7 @@ class AutoTabularBase:
         _X = X.copy()
 
         # check features consistency
-        if not (self.features == _X.columns).all():
+        if list(_X.columns) != list(self.features):
             _X = _X[self.features]
 
         # NOTE: since pipeline is converted to ensemble, no need to predict on each component

@@ -64,7 +64,7 @@ class _MissingPrep(_Fitted):
 
 
 class _ConstantModel(_Fitted):
-    def __init__(self, value, dtype=int, n_classes=None):
+    def __init__(self, value, dtype: type = int, n_classes: int = 2):
         self.value, self.dtype, self.n_classes = value, dtype, n_classes
 
     def predict(self, X):
@@ -118,7 +118,7 @@ def test_predict_proba_averages(X):
     assert proba.shape == (6, 2)
     np.testing.assert_allclose(proba[:4], 0.5)
     np.testing.assert_allclose(proba[4:], [[1.0, 0.0], [1.0, 0.0]])
-    np.testing.assert_allclose(proba.sum(axis=1), 1.0)
+    np.testing.assert_allclose(np.asarray(proba).sum(axis=1), 1.0)
 
 
 def test_predict_requires_fit(X):

@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, List, Callable, Dict, Tuple
+from typing import Any, List, Callable, Dict, Optional, Tuple, Union, cast
 import os
 import json
 import time
@@ -60,11 +60,11 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
     def setup(
         self,
         config: Dict,
-        data_split: List[Tuple[pd.DataFrame, pd.DataFrame]] = None,
-        encoder: Dict[str, Callable] = None,
-        complete_prep: Dict[str, Callable] = None,
-        missing_prep: Dict[str, Callable] = None,
-        models: Dict[str, Callable] = None,
+        data_split: Optional[Tuple[pd.DataFrame, pd.DataFrame]] = None,
+        encoder: Optional[Dict[str, Callable]] = None,
+        complete_prep: Optional[Dict[str, Callable]] = None,
+        missing_prep: Optional[Dict[str, Callable]] = None,
+        models: Optional[Dict[str, Callable]] = None,
         model_name: str = "model",
         task_mode: str = "classification",
         objective: str = "accuracy",
@@ -72,7 +72,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         reset_index: bool = True,
         timeout: int = 36,
         _iter: int = 1,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # assign hyperparameter arguments
         self.encoder = encoder
@@ -97,7 +97,9 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
     def step(self) -> Dict[str, Any]:
         try:
-            self.status_dict = func_timeout.func_timeout(self.timeout, self._objective)
+            self.status_dict = cast(
+                Dict[str, Any], func_timeout.func_timeout(self.timeout, self._objective)
+            )
         # except TimeoutError:
         except func_timeout.FunctionTimedOut:
             self._logger.error(
@@ -137,20 +139,15 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
     def _extract_hyper(params: Dict, comp: str) -> Tuple[str, Dict]:
         # get hyperparameter of component
         _hyper = params[comp].copy()
-        # find corresponding encoder key
-        try:
-            for key in _hyper.keys():
-                if "{}_".format(comp) in key:
-                    _key = key
-                    break
-            _comp = _hyper[_key]
-            del _hyper[_key]
+        # find the method key, e.g. "encoder_1" (method name injected into the space)
+        _key = next((key for key in _hyper.keys() if "{}_".format(comp) in key), None)
+        if _key is not None:
+            _comp = _hyper.pop(_key)
             # remove indications
-            _hyper = {k.replace(_comp + "_", ""): _hyper[k] for k in _hyper}
+            _hyper = {k.replace(_comp + "_", ""): v for k, v in _hyper.items()}
         # if not get above format, use default format
-        except BaseException:
-            _comp = _hyper[comp]
-            del _hyper[comp]
+        else:
+            _comp = _hyper.pop(comp)
 
         return _comp, _hyper
 
@@ -194,17 +191,18 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         self.mol_complete = copy.deepcopy(mol)
         self.mol_missing = copy.deepcopy(mol)
 
-    def save_checkpoint(self, tmp_checkpoint_dir: str) -> str:
-        checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
+    def save_checkpoint(self, checkpoint_dir: str) -> Optional[Dict]:
+        checkpoint_path = os.path.join(checkpoint_dir, "status.json")
 
         with open(checkpoint_path, "w") as out_f:
             json.dump(self.status_dict, out_f)
 
-        # need to return the path of checkpoints to be further processed
-        return tmp_checkpoint_dir
+        # None: the checkpoint is the content of checkpoint_dir
+        return None
 
-    def load_checkpoint(self, tmp_checkpoint_dir: str) -> None:
-        checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
+    def load_checkpoint(self, checkpoint: Union[str, Dict, None]) -> None:
+        # directory of the checkpoint (saved by save_checkpoint)
+        checkpoint_path = os.path.join(str(checkpoint), "status.json")
 
         with open(checkpoint_path, "r") as inp_f:
             self.status_dict = json.load(inp_f)
@@ -214,9 +212,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
         objective_str = (
-            self.objective.__name__
-            if hasattr(self.objective, "__name__")
-            else self.objective
+            getattr(self.objective, "__name__", self.objective)
         )
         if self.task_mode == "regression":
             # evaluation for predictions
@@ -226,12 +222,14 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
                 _objective = self.objective
             try:
                 _obj = get_metrics(_objective)
-            except:
-                self._logger.error(
+            except Exception as error:
+                message = (
                     'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
+                self._logger.error(message)
+                raise ValueError(message) from error
 
             self._logger.info("Objective: {} by {}".format(_obj, _objective))
         elif self.task_mode == "classification":
@@ -248,12 +246,21 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
                 _objective = self.objective
             try:
                 _obj = get_metrics(_objective)
-            except:
-                self._logger.error(
+            except Exception as error:
+                message = (
                     'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
+                self._logger.error(message)
+                raise ValueError(message) from error
+
+        else:
+            raise ValueError(
+                'task_mode must be "classification" or "regression", get {}.'.format(
+                    self.task_mode
+                )
+            )
 
         return _obj
 
@@ -268,6 +275,8 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         self._logger.info("[INFO] Objective starting...")
 
         # fit & predict
+        if self.data_split is None:
+            raise ValueError("data_split is not set, call setup with the data first.")
         X, y = self.data_split
         # data encoding
         start_time = time.time()
@@ -340,9 +349,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
         # get predictions for complete & missing set
         objective_str = (
-            self.objective.__name__
-            if hasattr(self.objective, "__name__")
-            else self.objective
+            getattr(self.objective, "__name__", self.objective)
         )
         if objective_str.lower() in ["auc"]:
             y_pred_complete = self.mol_complete.predict_proba(X_valid_complete)

@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Union, Callable, Any, Dict
+from typing import List, Optional, Union, Callable, Any, Dict, cast
 import logging
 import warnings
 import time
@@ -63,7 +63,7 @@ def is_text_dtype(dtype: Any) -> bool:
 # set response to [0, 1] class, random guess at 0.5
 
 
-def random_guess(number: float, seed: int = None) -> int:
+def random_guess(number: float, seed: Optional[int] = None) -> int:
     if seed is not None:
         np.random.seed(seed)
     if number > 0.5:
@@ -76,7 +76,9 @@ def random_guess(number: float, seed: int = None) -> int:
 
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-def random_index(n: int, total: int = None, seed: int = None) -> np.ndarray:
+def random_index(
+    n: int, total: Optional[int] = None, seed: Optional[int] = None
+) -> np.ndarray:
     if seed is not None:
         np.random.seed(seed)
     if total is None:
@@ -109,7 +111,7 @@ def random_index(n: int, total: int = None, seed: int = None) -> np.ndarray:
 
 
 # Return randomly shuffle of a list (unique values only)
-def random_list(vlist: list, seed: int = None) -> np.ndarray:
+def random_list(vlist: list, seed: Optional[int] = None) -> np.ndarray:
     if seed is not None:
         np.random.seed(seed)
 
@@ -129,7 +131,7 @@ def random_list(vlist: list, seed: int = None) -> np.ndarray:
 # rule = 'any' will consider the column as date type as long as one value is date type,
 # rule = 'all' will consider the column as date type only when all values
 # are date type.
-def is_date(df: pd.Series, rule: str = "all") -> List[bool]:
+def is_date(df: pd.Series, rule: str = "all") -> bool:
     def _is_date(string, fuzzy=False):
         try:
             parse(string, fuzzy=fuzzy)
@@ -145,6 +147,7 @@ def is_date(df: pd.Series, rule: str = "all") -> List[bool]:
         return any(_check)
     elif rule == "all":
         return all(_check)
+    raise ValueError('rule must be "any" or "all", get {}.'.format(rule))
 
 
 # Round data for categorical features (in case after
@@ -162,10 +165,9 @@ def feature_rounding(X: pd.DataFrame, uni_class: int = UNI_CLASS) -> pd.DataFram
 
 
 # Return location of minimum values
-def minloc(vlist: List) -> int:
+def minloc(vlist: Union[List, np.ndarray]) -> int:
     # make sure input is np.array
-    if not isinstance(vlist, np.ndarray):
-        vlist = np.array(vlist)
+    vlist = np.asarray(vlist)
 
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
@@ -188,14 +190,14 @@ def minloc(vlist: List) -> int:
                 "Input is multi-dimensional array, return min location of the first dimension."
             )
 
-        return np.argmin(vlist, axis=0)
+        # index of a 1-D list (an array of indices for multi-dimensional input)
+        return cast(int, np.argmin(vlist, axis=0))
 
 
 # Return location of maximum values
-def maxloc(vlist: List) -> int:
+def maxloc(vlist: Union[List, np.ndarray]) -> int:
     # make sure input is np.array
-    if not isinstance(vlist, np.ndarray):
-        vlist = np.array(vlist)
+    vlist = np.asarray(vlist)
 
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
@@ -218,7 +220,8 @@ def maxloc(vlist: List) -> int:
                 "Input is multi-dimensional array, return max location of the first dimension."
             )
 
-        return np.argmax(vlist, axis=0)
+        # index of a 1-D list (an array of indices for multi-dimensional input)
+        return cast(int, np.argmax(vlist, axis=0))
 
 
 # return the index of Boolean list or {0, 1} list
@@ -230,8 +233,8 @@ def True_index(X: List, _true: List = [True, 1]) -> List[int]:
 
 
 # determine the task types
-def type_of_task(y: Union[pd.DataFrame, np.ndarray]) -> str:
-    if isinstance(y, pd.DataFrame):
+def type_of_task(y: Union[pd.DataFrame, pd.Series, np.ndarray]) -> str:
+    if isinstance(y, (pd.DataFrame, pd.Series)):
         y = y.values
 
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
@@ -279,13 +282,17 @@ class Timer:
 # a jupyter notebook environment
 def type_of_script() -> str:
     try:
+        from IPython import get_ipython
+
         ipy_str = str(type(get_ipython()))
         if "zmqshell" in ipy_str:
             return "jupyter"
         if "terminal" in ipy_str:
             return "ipython"
     except BaseException:
-        return "terminal"
+        pass
+
+    return "terminal"
 
 
 # determine whether a method exists in a class

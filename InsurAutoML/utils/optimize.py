@@ -51,7 +51,7 @@ import time
 import copy
 from inspect import isclass
 import warnings
-from typing import Dict, Callable, Union, List, Any
+from typing import Dict, Callable, Union, List, Any, Optional
 import logging
 import signal
 from contextlib import contextmanager
@@ -101,17 +101,17 @@ def time_limit(seconds):
 # only chosen ones will be added to hyperparameter space
 def _base_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -234,17 +234,17 @@ def _base_get_hyperparameter_space(
 
 def _hyeropt_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -514,17 +514,17 @@ def _optuna_search_space(
 
 def _optuna_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Callable:
@@ -666,17 +666,17 @@ def _optuna_get_hyperparameter_space(
 
 def _converted_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_algo: str = "Nevergrad",
@@ -997,17 +997,17 @@ def _converted_get_hyperparameter_space(
 
 def _get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_aglo: str,
@@ -1105,13 +1105,13 @@ def _get_hyperparameter_space(
 
 def _base_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -1196,13 +1196,13 @@ def _base_get_informed_hyperparameter_space(
 
 def _hyperopt_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -1388,13 +1388,13 @@ def _optuna_informed_search_space(
 
 def _optuna_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Callable:
@@ -1496,13 +1496,13 @@ def _optuna_get_informed_hyperparameter_space(
 
 def _converted_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_algo: str = "Nevergrad",
@@ -1624,13 +1624,13 @@ def _converted_get_informed_hyperparameter_space(
 
 def _get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_aglo: str,
@@ -2476,7 +2476,7 @@ def get_metrics(metric_str: str) -> Callable:
 class ray_status:
     def __init__(
         self,
-        cpu_threads: int,
+        cpu_threads: Optional[int],
         gpu_count: int,
     ) -> None:
         self.cpu_threads = cpu_threads

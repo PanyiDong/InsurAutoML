@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Callable, Union, Tuple, Dict, Any, List
+from typing import Callable, Union, Tuple, Dict, Any, List, Optional, cast
 import json
 import os
 import time
@@ -55,6 +55,11 @@ from ..utils.file import save_methods
 from ..utils.optimize import get_metrics
 
 logger = logging.getLogger(__name__)
+
+
+def _densify(X: Any) -> Any:
+    """Dense array of a scipy sparse matrix (other inputs unchanged)."""
+    return X.toarray() if scipy.sparse.issparse(X) else X
 
 
 class TrialArtifactMixin:
@@ -108,13 +113,13 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
     def setup(
         self,
         config: Dict,
-        data_split: List[Tuple[pd.DataFrame, pd.DataFrame]] = None,
-        encoder: Dict[str, Callable] = None,
-        imputer: Dict[str, Callable] = None,
-        balancing: Dict[str, Callable] = None,
-        scaling: Dict[str, Callable] = None,
-        feature_selection: Dict[str, Callable] = None,
-        models: Dict[str, Callable] = None,
+        data_split: Optional[List[List[Tuple[pd.DataFrame, pd.DataFrame]]]] = None,
+        encoder: Optional[Dict[str, Callable]] = None,
+        imputer: Optional[Dict[str, Callable]] = None,
+        balancing: Optional[Dict[str, Callable]] = None,
+        scaling: Optional[Dict[str, Callable]] = None,
+        feature_selection: Optional[Dict[str, Callable]] = None,
+        models: Optional[Dict[str, Callable]] = None,
         model_name: str = "model",
         task_mode: str = "classification",
         objective: str = "accuracy",
@@ -122,7 +127,7 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         reset_index: bool = True,
         timeout: int = 36,
         _iter: int = 1,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # assign hyperparameter arguments
         self.encoder = encoder
@@ -156,7 +161,9 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
             # Signal/Multiprocessing timeout methods can be ignored by ctypes callback
             # Use func_timeout instead
             # self.status_dict = time_limit(self.timeout)(self._objective)()
-            self.status_dict = func_timeout.func_timeout(self.timeout, self._objective)
+            self.status_dict = cast(
+                Dict[str, Any], func_timeout.func_timeout(self.timeout, self._objective)
+            )
         # except TimeoutError:
         except func_timeout.FunctionTimedOut:
             self._logger.error(
@@ -207,20 +214,15 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
 
         # get hyperparameter of component
         _hyper = params[comp].copy()
-        # find corresponding encoder key
-        try:
-            for key in _hyper.keys():
-                if "{}_".format(comp) in key:
-                    _key = key
-                    break
-            _comp = _hyper[_key]
-            del _hyper[_key]
+        # find the method key, e.g. "encoder_1" (method name injected into the space)
+        _key = next((key for key in _hyper.keys() if "{}_".format(comp) in key), None)
+        if _key is not None:
+            _comp = _hyper.pop(_key)
             # remove indications
-            _hyper = {k.replace(_comp + "_", ""): _hyper[k] for k in _hyper}
+            _hyper = {k.replace(_comp + "_", ""): v for k, v in _hyper.items()}
         # if not get above format, use default format
-        except BaseException:
-            _comp = _hyper[comp]
-            del _hyper[comp]
+        else:
+            _comp = _hyper.pop(comp)
 
         return _comp, _hyper
 
@@ -274,17 +276,18 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
             **self._model_hyper
         )  # call the model using passed parameters
 
-    def save_checkpoint(self, tmp_checkpoint_dir: str) -> str:
-        checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
+    def save_checkpoint(self, checkpoint_dir: str) -> Optional[Dict]:
+        checkpoint_path = os.path.join(checkpoint_dir, "status.json")
 
         with open(checkpoint_path, "w") as out_f:
             json.dump(self.status_dict, out_f)
 
-        # need to return the path of checkpoints to be further processed
-        return tmp_checkpoint_dir
+        # None: the checkpoint is the content of checkpoint_dir
+        return None
 
-    def load_checkpoint(self, tmp_checkpoint_dir: str) -> None:
-        checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
+    def load_checkpoint(self, checkpoint: Union[str, Dict, None]) -> None:
+        # directory of the checkpoint (saved by save_checkpoint)
+        checkpoint_path = os.path.join(str(checkpoint), "status.json")
 
         with open(checkpoint_path, "r") as inp_f:
             self.status_dict = json.load(inp_f)
@@ -294,9 +297,7 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
         objective_str = (
-            self.objective.__name__
-            if hasattr(self.objective, "__name__")
-            else self.objective
+            getattr(self.objective, "__name__", self.objective)
         )
         if self.task_mode == "regression":
             # evaluation for predictions
@@ -306,12 +307,14 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
                 _objective = self.objective
             try:
                 _obj = get_metrics(_objective)
-            except:
-                self._logger.error(
+            except Exception as error:
+                message = (
                     'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
+                self._logger.error(message)
+                raise ValueError(message) from error
 
             self._logger.info("Objective: {} by {}".format(_obj, _objective))
         elif self.task_mode == "classification":
@@ -328,12 +331,21 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
                 _objective = self.objective
             try:
                 _obj = get_metrics(_objective)
-            except:
-                self._logger.error(
+            except Exception as error:
+                message = (
                     'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
                         self.task_mode, self.objective
                     )
                 )
+                self._logger.error(message)
+                raise ValueError(message) from error
+
+        else:
+            raise ValueError(
+                'task_mode must be "classification" or "regression", get {}.'.format(
+                    self.task_mode
+                )
+            )
 
         return _obj
 
@@ -341,8 +353,8 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         self,
         _X_train_obj: pd.DataFrame,
         _y_train_obj: pd.DataFrame,
-        _X_test_obj: pd.DataFrame = None,
-        _y_test_obj: pd.DataFrame = None,
+        _X_test_obj: Optional[pd.DataFrame] = None,
+        _y_test_obj: Optional[pd.DataFrame] = None,
         refit: bool = False,
     ) -> Union[
         Tuple[Union[np.ndarray, pd.DataFrame], Union[np.ndarray, pd.DataFrame]], None
@@ -416,13 +428,13 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
             self._logger.info(
                 "[INFO] Sparse train matrix detected, convert to dense array."
             )
-            _X_train_obj = _X_train_obj.toarray()
+            _X_train_obj = _densify(_X_train_obj)
         if not refit:
             if scipy.sparse.issparse(_X_test_obj):
                 self._logger.info(
                     "[INFO] Sparse test matrix detected, convert to dense array."
                 )
-                _X_test_obj = _X_test_obj.toarray()
+                _X_test_obj = _densify(_X_test_obj)
 
         # store the preprocessed train/test datasets when refit
         if refit:
@@ -463,9 +475,7 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         # UPDATE: Jul. 20, 2023
         # special case for auc and hinge
         objective_str = (
-            self.objective.__name__
-            if hasattr(self.objective, "__name__")
-            else self.objective
+            getattr(self.objective, "__name__", self.objective)
         )
         if objective_str.lower() in ["auc"]:
             y_pred = self.mol.predict_proba(_X_test_obj)
@@ -474,7 +484,7 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
 
         # UPDATE: Jul. 10, 2023
         # negative losses are handled by get_metrics earlier
-        _loss = _obj(_y_test_obj.values, y_pred)
+        _loss = _obj(np.asarray(_y_test_obj), y_pred)
         # register failed losses as np.inf
         _loss = _loss if isinstance(_loss, (int, float)) else np.inf
 
@@ -526,6 +536,9 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         #         ]
         #         for (X_train, y_train), (X_test, y_test) in _data_split
         #     ]
+
+        if self.data_split is None:
+            raise ValueError("data_split is not set, call setup with the data first.")
 
         # fit & predict
         _loss_list = []
