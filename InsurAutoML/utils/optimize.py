@@ -2045,6 +2045,18 @@ def get_progress_reporter(
     # 0 rows would make the error table of the reporter fail, use no limit (None)
     max_error_rows = max_error if max_error and max_error > 0 else None
 
+    # the JupyterNotebookReporter displays through IPython (always available in
+    # notebooks, not a dependency of the package): fall back to the CLIReporter
+    if progress_reporter == "JupyterNotebookReporter":
+        try:
+            import IPython.display  # noqa: F401
+        except ImportError:
+            warnings.warn(
+                "JupyterNotebookReporter requires IPython, which is not installed. "
+                "Using CLIReporter instead."
+            )
+            progress_reporter = "CLIReporter"
+
     if progress_reporter == "CLIReporter":
         from ray.tune.progress_reporter import CLIReporter
 
