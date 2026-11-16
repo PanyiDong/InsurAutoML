@@ -405,7 +405,6 @@ class FOCI(BaseFeatureSelection):
             return ACCC(X[[feature]], y, X[selected_features], mode="Q")
 
     def _fit(self, X, y) -> FOCI:
-
         # initialize the selected/unselected features
         Q = []
         selected_features = []

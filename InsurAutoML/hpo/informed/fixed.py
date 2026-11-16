@@ -94,9 +94,12 @@ class InformedAutoTabular:
         # prepare complete & missing datasets
         self.complete_prep = CompletePrepPipeline()
 
-        X_train_complete, X_valid_complete, y_train_complete, y_valid_complete = (
-            self.complete_prep.fit(X_enc, y)
-        )
+        (
+            X_train_complete,
+            X_valid_complete,
+            y_train_complete,
+            y_valid_complete,
+        ) = self.complete_prep.fit(X_enc, y)
 
         # initialize and fit AutoTabular on complete set
         if len(X_train_complete) > 0:
@@ -110,7 +113,7 @@ class InformedAutoTabular:
                 balancing=["no_processing"],
                 scaling=["no_processing"],
                 feature_selection=["no_processing"],
-                **self.auto_kwargs
+                **self.auto_kwargs,
             )
             self.complete_model.fit(
                 X_train_complete, y_train_complete, X_valid_complete, y_valid_complete
@@ -119,9 +122,12 @@ class InformedAutoTabular:
         # initialize and fit AutoTabular on missing set (skip if no missing data)
         if X_enc.isnull().values.any():
             self.missing_prep = MissingPrepPipeline()
-            X_train_missing, X_valid_missing, y_train_missing, y_valid_missing = (
-                self.missing_prep.fit(X_enc, y)
-            )
+            (
+                X_train_missing,
+                X_valid_missing,
+                y_train_missing,
+                y_valid_missing,
+            ) = self.missing_prep.fit(X_enc, y)
 
             self.missing_model = AutoTabular(
                 model_name=self.model_name + "_missing",
@@ -133,7 +139,7 @@ class InformedAutoTabular:
                 balancing=["no_processing"],
                 scaling=["no_processing"],
                 feature_selection=["no_processing"],
-                **self.auto_kwargs
+                **self.auto_kwargs,
             )
             self.missing_model.fit(
                 X_train_missing, y_train_missing, X_valid_missing, y_valid_missing
@@ -160,7 +166,9 @@ class InformedAutoTabular:
             return pred_complete
 
         if self.missing_model is None:
-            raise ValueError("No model fitted on missing data, but X has missing values.")
+            raise ValueError(
+                "No model fitted on missing data, but X has missing values."
+            )
         X_missing, _ = self.missing_prep.transform(X_enc, y=None)
         pred = pd.DataFrame(self.missing_model.predict(X_missing))
         pred.index = X_missing.index

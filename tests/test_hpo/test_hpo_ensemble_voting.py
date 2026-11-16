@@ -62,12 +62,17 @@ def _regressors():
 
 def test_pipeline_fits_all_components():
     X = pd.DataFrame(
-        {"num": [1.0, np.nan, 3.0, 4.0, 5.0, 6.0], "cat": ["a", "b", "a", "b", "a", "b"]}
+        {
+            "num": [1.0, np.nan, 3.0, 4.0, 5.0, 6.0],
+            "cat": ["a", "b", "a", "b", "a", "b"],
+        }
     )
     y = pd.DataFrame({"y": [1.0, 2.0, 3.0, 4.0, 5.0, 6.0]})
 
     pipeline = Pipeline(
-        encoder=DataEncoding(), imputer=SimpleImputer(method="mean"), model=LinearRegression()
+        encoder=DataEncoding(),
+        imputer=SimpleImputer(method="mean"),
+        model=LinearRegression(),
     ).fit(X, y)
 
     assert pipeline._fitted
@@ -92,7 +97,9 @@ def test_pipeline_errors(classification):
 @pytest.mark.parametrize("strategy", ["stacking", "bagging"])
 def test_classifier_voting(classification, voting, strategy):
     X, y = classification
-    features = [["a", "b"], ["a", "c"], ["a", "b", "c"]] if strategy == "bagging" else []
+    features = (
+        [["a", "b"], ["a", "c"], ["a", "b", "c"]] if strategy == "bagging" else []
+    )
 
     ensemble = ClassifierEnsemble(
         _classifiers(), voting=voting, features=features, strategy=strategy
@@ -184,14 +191,18 @@ def test_regressor_weights_and_strategies(regression):
     preds = None
 
     # weighted mean
-    weighted = RegressorEnsemble(estimators, voting="mean", weights=[3.0, 1.0]).fit(X, y)
+    weighted = RegressorEnsemble(estimators, voting="mean", weights=[3.0, 1.0]).fit(
+        X, y
+    )
     preds = np.column_stack([np.ravel(p.predict(X)) for _, p in estimators])
     np.testing.assert_allclose(
         weighted.predict(X)["y"].values, np.average(preds, axis=1, weights=[3.0, 1.0])
     )
 
     # median does not support weights: falls back to the unweighted median
-    median = RegressorEnsemble(estimators, voting="median", weights=[3.0, 1.0]).fit(X, y)
+    median = RegressorEnsemble(estimators, voting="median", weights=[3.0, 1.0]).fit(
+        X, y
+    )
     np.testing.assert_allclose(median.predict(X)["y"].values, np.median(preds, axis=1))
 
     # boosting: pipelines fitted on residuals, predictions are summed

@@ -72,7 +72,9 @@ def str2dict(item: Union[str, Dict]) -> Dict:
     try:
         value = json.loads(item)
     except ValueError as error:
-        raise ValueError("Expect a dict or a JSON string, get {}.".format(item)) from error
+        raise ValueError(
+            "Expect a dict or a JSON string, get {}.".format(item)
+        ) from error
     if not isinstance(value, dict):
         raise ValueError("Expect a dict or a JSON string, get {}.".format(item))
     return value
@@ -382,9 +384,9 @@ def unify_nan(
         if replace:  # if replace, replace missing column with unified nan one
             dataset[_column] = dataset[_column].replace(nas_dict).infer_objects()
         else:
-            dataset[_column + "_useNA"] = dataset[_column].replace(
-                nas_dict
-            ).infer_objects()
+            dataset[_column + "_useNA"] = (
+                dataset[_column].replace(nas_dict).infer_objects()
+            )
 
     return dataset
 

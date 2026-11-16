@@ -231,7 +231,11 @@ def test_foci_ndarray_and_static_helpers(thread_executor):
 
 def test_foci_keeps_top_feature_when_nothing_selected(thread_executor, monkeypatch):
     X, y = _regression_data(n=60, p=3)
-    monkeypatch.setattr(FOCI, "compute_accc", staticmethod(lambda feature, X, y, selected_features: -1.0))
+    monkeypatch.setattr(
+        FOCI,
+        "compute_accc",
+        staticmethod(lambda feature, X, y, selected_features: -1.0),
+    )
     with pytest.warns(UserWarning, match="selected no feature"):
         fs = FOCI().fit(X, y)
     assert len(fs.select_features) == 1
@@ -295,7 +299,12 @@ def test_sfs_regression_and_classification():
 
 @pytest.mark.parametrize(
     "y",
-    [None, pd.Series([np.nan] * 150), pd.DataFrame({"y": [np.nan] * 150}), np.full(150, np.nan)],
+    [
+        None,
+        pd.Series([np.nan] * 150),
+        pd.DataFrame({"y": [np.nan] * 150}),
+        np.full(150, np.nan),
+    ],
 )
 def test_sfs_requires_response(y):
     X, _ = _regression_data()
@@ -417,7 +426,9 @@ def test_ga_selection_helpers():
     assert sel == [1, 0, 0]
 
 
-@pytest.mark.parametrize("fitness_fit", ["Linear", "Decision Tree", "Random Forest", "SVM"])
+@pytest.mark.parametrize(
+    "fitness_fit", ["Linear", "Decision Tree", "Random Forest", "SVM"]
+)
 def test_ga_fitness_functions(fitness_fit):
     Xc, yc = _classification_data(n=80, p=3)
     # more unique responses than UNI_CLASS -> regression models
@@ -463,15 +474,23 @@ def test_ga_fit_random_and_methods():
     assert out.shape[1] == sum(ga.selection_)
 
     ga = GeneticAlgorithm(
-        n_prop=0.5, fs_method=["Entropy", "t_statistics"], n_generations=2,
-        n_pair=2, fitness_fit="Decision Tree", seed=1,
+        n_prop=0.5,
+        fs_method=["Entropy", "t_statistics"],
+        n_generations=2,
+        n_pair=2,
+        fitness_fit="Decision Tree",
+        seed=1,
     ).fit(X, y)
     assert ga.n_components == 3
     assert set(ga._feature_sel_methods) == {"Entropy", "t_statistics"}
 
     ga = GeneticAlgorithm(
-        n_components=2, fs_method="auto", n_generations=2, n_pair=2,
-        fitness_fit="Linear", seed=1,
+        n_components=2,
+        fs_method="auto",
+        n_generations=2,
+        n_pair=2,
+        fitness_fit="Linear",
+        seed=1,
     ).fit(X, y)
     assert set(ga._feature_sel_methods) == {"Entropy", "t_statistics"}
 
@@ -502,8 +521,14 @@ def test_ga_all_features_selected():
 )
 def test_ga_invalid_arguments(kwargs, match):
     X, y = _classification_data(n=60, p=4)
-    params = dict(n_components=2, n_generations=1, n_initial=2, n_pair=1,
-                  fitness_fit="Linear", seed=1)
+    params = dict(
+        n_components=2,
+        n_generations=1,
+        n_initial=2,
+        n_pair=1,
+        fitness_fit="Linear",
+        seed=1,
+    )
     params.update(kwargs)
     with pytest.raises(ValueError, match=match):
         GeneticAlgorithm(**params).fit(X, y)
@@ -581,7 +606,9 @@ def test_extra_trees_preprocessors_keep_informative_feature():
     assert fs.selector.get_support()[0]
 
     Xr, yr = _regression_data(n=150, p=5)
-    fs = fs_sk.extra_trees_preproc_for_regression(n_estimators=20, max_depth=5, max_leaf_nodes=20)
+    fs = fs_sk.extra_trees_preproc_for_regression(
+        n_estimators=20, max_depth=5, max_leaf_nodes=20
+    )
     out = fs.fit(Xr, yr).transform(Xr)
     assert 1 <= out.shape[1] < 5
     assert fs.selector.get_support()[0]
@@ -599,22 +626,32 @@ def test_decomposition_wrappers_shapes():
     X, y = _regression_data(n=60, p=5)
     Xpos = X.values - X.values.min()
 
-    assert fs_sk.fast_ica(n_components=3, whiten="unit-variance").fit(X, y).transform(X).shape == (60, 3)
+    assert fs_sk.fast_ica(n_components=3, whiten="unit-variance").fit(X, y).transform(
+        X
+    ).shape == (60, 3)
     # arguments take effect and n_clusters is clipped to the number of features
     fa = fs_sk.feature_agglomeration(n_clusters=10, pooling_func="max").fit(X, y)
     assert fa._fitted
     assert fa.n_clusters == 5
     assert fa.pooling_func is np.max
     assert fa.transform(X).shape == (60, 5)
-    fa = fs_sk.feature_agglomeration(n_clusters=3, linkage="average", metric="manhattan")
+    fa = fs_sk.feature_agglomeration(
+        n_clusters=3, linkage="average", metric="manhattan"
+    )
     assert (fa.n_clusters, fa.linkage, fa.metric) == (3, "average", "manhattan")
     assert fa.fit(X, y).transform(X).shape == (60, 3)
     assert fs_sk.feature_agglomeration().fit(X, y).transform(X).shape == (60, 5)
-    assert fs_sk.feature_agglomeration(n_clusters=2).fit(X, y).transform(X).shape == (60, 2)
+    assert fs_sk.feature_agglomeration(n_clusters=2).fit(X, y).transform(X).shape == (
+        60,
+        2,
+    )
     assert fs_sk.kernel_pca(n_components=3).fit(X, y).transform(X).shape == (60, 3)
     assert fs_sk.kitchen_sinks(n_components=7).fit(X, y).transform(X).shape == (60, 7)
     assert fs_sk.pca(keep_variance=0.99).fit(X, y).transform(X).shape[0] == 60
-    assert fs_sk.random_trees_embedding(n_estimators=3).fit(X, y).transform(X).shape[0] == 60
+    assert (
+        fs_sk.random_trees_embedding(n_estimators=3).fit(X, y).transform(X).shape[0]
+        == 60
+    )
     assert fs_sk.truncatedSVD(target_dim=10).fit(X, y).transform(X).shape == (60, 4)
 
     poly = fs_sk.polynomial(degree=2, include_bias=False).fit(X, y)
@@ -665,8 +702,9 @@ def test_select_regression_selectors(score_func):
     assert out.shape == (150, 1)
     assert fs.get_support()[0]
 
-    fs = fs_sk.select_rates_regression(alpha=0.01 if score_func == "f_regression" else 20,
-                                       score_func=score_func)
+    fs = fs_sk.select_rates_regression(
+        alpha=0.01 if score_func == "f_regression" else 20, score_func=score_func
+    )
     out = fs.fit(X, y).transform(X)
     assert fs.get_support()[0]
     assert out.shape[1] >= 1

@@ -52,7 +52,9 @@ STATUS_KEYS = {
 }
 
 
-def _objective(config, data, models, task_mode, objective, full_status=False, timeout=120):
+def _objective(
+    config, data, models, task_mode, objective, full_status=False, timeout=120
+):
     trainable = InformedTabularObjective.__new__(InformedTabularObjective)
     trainable.setup(
         dict(config),
@@ -100,7 +102,12 @@ def test_regression_objective(in_tmp_dir, insurance):
 def test_classification_objective_full_status(in_tmp_dir, heart, objective):
     config = {
         **PREP,
-        "model": {"model": "LogisticRegression", "penalty": "l2", "C": 1.0, "tol": 1e-4},
+        "model": {
+            "model": "LogisticRegression",
+            "penalty": "l2",
+            "C": 1.0,
+            "tol": 1e-4,
+        },
     }
     trainable = _objective(
         config,
@@ -154,7 +161,10 @@ def test_timeout(in_tmp_dir, insurance, monkeypatch):
 
 
 def test_reset_config_and_checkpoint(in_tmp_dir, insurance, tmp_path):
-    models = {"LinearRegression": LinearRegression, "LogisticRegression": LogisticRegression}
+    models = {
+        "LinearRegression": LinearRegression,
+        "LogisticRegression": LogisticRegression,
+    }
     trainable = _objective(
         {**PREP, "model": {"model": "LinearRegression"}},
         insurance,

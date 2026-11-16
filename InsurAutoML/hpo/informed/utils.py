@@ -56,7 +56,6 @@ from ..utils import TrialArtifactMixin
 
 
 class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
-
     def setup(
         self,
         config: Dict,
@@ -211,9 +210,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         # different evaluation metrics for classification and regression
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
-        objective_str = (
-            getattr(self.objective, "__name__", self.objective)
-        )
+        objective_str = getattr(self.objective, "__name__", self.objective)
         if self.task_mode == "regression":
             # evaluation for predictions
             if objective_str in ["R2"]:
@@ -223,10 +220,8 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
             try:
                 _obj = get_metrics(_objective)
             except Exception as error:
-                message = (
-                    'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
+                message = 'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
+                    self.task_mode, self.objective
                 )
                 self._logger.error(message)
                 raise ValueError(message) from error
@@ -247,10 +242,8 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
             try:
                 _obj = get_metrics(_objective)
             except Exception as error:
-                message = (
-                    'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
+                message = 'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
+                    self.task_mode, self.objective
                 )
                 self._logger.error(message)
                 raise ValueError(message) from error
@@ -289,9 +282,12 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
         # complete data preparation
         start_time = time.time()
-        X_train_complete, X_valid_complete, y_train_complete, y_valid_complete = (
-            self.comp_prep.fit(X_enc, y)
-        )
+        (
+            X_train_complete,
+            X_valid_complete,
+            y_train_complete,
+            y_valid_complete,
+        ) = self.comp_prep.fit(X_enc, y)
         end_time = time.time()
         self._logger.info(
             "[INFO] Complete data preparation takes: {:24.4f}s".format(
@@ -304,9 +300,12 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
         # missing data preparation
         start_time = time.time()
-        X_train_missing, X_valid_missing, y_train_missing, y_valid_missing = (
-            self.miss_prep.fit(X_enc, y)
-        )
+        (
+            X_train_missing,
+            X_valid_missing,
+            y_train_missing,
+            y_valid_missing,
+        ) = self.miss_prep.fit(X_enc, y)
         end_time = time.time()
         self._logger.info(
             "[INFO] Missing data preparation takes: {:24.4f}s".format(
@@ -348,9 +347,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         _obj = self._get_objective()
 
         # get predictions for complete & missing set
-        objective_str = (
-            getattr(self.objective, "__name__", self.objective)
-        )
+        objective_str = getattr(self.objective, "__name__", self.objective)
         if objective_str.lower() in ["auc"]:
             y_pred_complete = self.mol_complete.predict_proba(X_valid_complete)
             y_pred_missing = self.mol_missing.predict_proba(X_valid_missing)

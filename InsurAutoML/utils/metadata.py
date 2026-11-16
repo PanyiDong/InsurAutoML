@@ -89,9 +89,7 @@ class get_details:
         elif self.type in ["Datetime", "Path"] or self.subtype == "Text":
             return {}
 
-    def merge(
-        self, data: pd.Series, details: Dict
-    ) -> Union[Dict[Tuple, List], Dict]:
+    def merge(self, data: pd.Series, details: Dict) -> Union[Dict[Tuple, List], Dict]:
         if self.type == "Float" or self.subtype == "Numerical":
             return self._merge_details_numerical(data, details)
         elif self.subtype == "Categorical":
@@ -280,9 +278,7 @@ class MetaData:
         names = [names] if isinstance(names, str) else names
         # if fulltypes is a string, convert it to a list
         # a single fulltype tuple, e.g. ("Int", "Categorical"), is also wrapped
-        fulltypes = (
-            [fulltypes] if isinstance(fulltypes, (str, tuple)) else fulltypes
-        )
+        fulltypes = [fulltypes] if isinstance(fulltypes, (str, tuple)) else fulltypes
 
         # check length of names and fulltypes
         if len(names) != len(fulltypes):

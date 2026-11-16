@@ -932,9 +932,7 @@ class AutoTabularBase:
                 **self._restore_settings(),
             )
         else:
-            search_alg, param_space = self._get_search_alg(
-                algo, hyperparameter_space
-            )
+            search_alg, param_space = self._get_search_alg(algo, hyperparameter_space)
 
             tuner = tune.Tuner(
                 trainer,
@@ -1058,7 +1056,9 @@ class AutoTabularBase:
                 key = _key
                 break
         else:
-            raise KeyError("No {} method found in {}.".format(comp, optimal_hyperparameters))
+            raise KeyError(
+                "No {} method found in {}.".format(comp, optimal_hyperparameters)
+            )
         optimal_comp = optimal_hyperparameters[key]
         del optimal_hyperparameters[key]
         # remove indications

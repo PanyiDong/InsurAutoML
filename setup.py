@@ -158,6 +158,7 @@ def r_home_from_registry() -> Optional[str]:
         return None
 
     import winreg
+
     # There are two possible locations for RHOME in the registry
     # We prefer the user installation (which the user has more control
     # over). Thus, HKEY_CURRENT_USER is the first item in the list and
@@ -283,7 +284,9 @@ def build_informed_extensions():
 
     return [
         # SuppsPlit
-        _extension("suppsplit", "suppsplit_cpp", ["sp.cpp", "sPlit.cpp", "bindings.cpp"]),
+        _extension(
+            "suppsplit", "suppsplit_cpp", ["sp.cpp", "sPlit.cpp", "bindings.cpp"]
+        ),
     ]
 
 
