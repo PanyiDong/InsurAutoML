@@ -256,4 +256,6 @@ def test_GA_fitness_without_selected_features():
     rng = np.random.default_rng(0)
     X_reg = pd.DataFrame({"a": rng.normal(size=200), "b": rng.normal(size=200)})
     y_reg = pd.DataFrame({"y": rng.normal(size=200)})
-    assert selector._cal_fitness(X_reg, y_reg, [0, 0]) == pytest.approx(np.var(y_reg["y"]))
+    assert selector._cal_fitness(X_reg, y_reg, [0, 0]) == pytest.approx(
+        np.var(y_reg["y"])
+    )
