@@ -15,6 +15,7 @@ factories in InsurAutoML.utils.optimize.
 import copy
 import os
 import pickle
+import signal
 import time
 
 import numpy as np
@@ -156,12 +157,22 @@ def test_progress_reporter_error_rows():
     assert reporter._max_error_rows == 3
 
 
+@pytest.mark.skipif(
+    not hasattr(signal, "SIGALRM"), reason="SIGALRM is not available on Windows"
+)
 def test_time_limit():
     with time_limit(5):
         pass
     with pytest.raises(TimeoutError):
         with time_limit(1):
             time.sleep(3)
+
+
+@pytest.mark.skipif(hasattr(signal, "SIGALRM"), reason="SIGALRM is available")
+def test_time_limit_unsupported_platform():
+    with pytest.raises(NotImplementedError):
+        with time_limit(1):
+            pass
 
 
 # factories

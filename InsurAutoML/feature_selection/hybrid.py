@@ -483,9 +483,16 @@ class GeneticAlgorithm(BaseFeatureSelection):
                     )
                 )
 
-            # if none of the features are selected, use mean as prediction
+            # if none of the features are selected, use the mean (regression) or
+            # the most frequent class (classification) as prediction
             if (np.array(selection) == 0).all():
-                y_pred = [np.mean(y) for _ in range(len(y))]
+                _y = pd.Series(np.ravel(np.asarray(y)))
+                _const = (
+                    _y.mode().iloc[0]
+                    if metric.__name__ == "accuracy_score"
+                    else _y.mean()
+                )
+                y_pred = np.full(len(_y), _const)
             # otherwise, use selected features to fit a model and predict
             else:
                 model.fit(X.iloc[:, True_index(selection)].values, y.values.ravel())

@@ -106,6 +106,12 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
                     self.timeout
                 )
             )
+            # a previous step of this trial was fitted (and its pipeline saved):
+            # keep that result and stop the trial ("done") instead of discarding it
+            _last = getattr(self, "status_dict", None)
+            if isinstance(_last, dict) and _last.get("training_status") == "FITTED":
+                return {**_last, "done": True}
+
             self.status_dict = {
                 "training_status": "TIMEOUT",
                 "loss": np.inf,
@@ -129,6 +135,8 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
     def reset_config(self, new_config: Dict) -> bool:
         self.dict2config(new_config)
+        # reused actor: the status belongs to the previous trial
+        self.status_dict = None
         # reused actor, log into the new trial directory
         self._logger = self._setup_trial_logger()
 

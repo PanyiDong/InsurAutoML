@@ -39,9 +39,15 @@ SOFTWARE.
 """
 
 import os
+import sys
+
 import pytest
 import InsurAutoML
 from InsurAutoML import load_data
+
+# time budget of the experiments: the hosted Windows runners are much slower, a
+# sampled pipeline can take longer than a minute there (all trials time out)
+TIMEOUT = 180 if sys.platform == "win32" else 60
 
 # def test_stroke():
 
@@ -74,7 +80,7 @@ def test_heart():
         model_name="heart",
         search_algo="GridSearch",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
 
@@ -102,7 +108,7 @@ def test_insurance():
         model_name="insurance",
         objective="MAE",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
     y_pred = mol.predict(data[features])
@@ -132,7 +138,7 @@ def test_insurance_R2():
         task_mode="regression",
         objective="R2",
         max_evals=8,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
 
@@ -158,7 +164,7 @@ def test_stroke_import_version():
         model_name="stroke",
         objective="auc",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
 
@@ -174,7 +180,7 @@ def test_stroke_import_version():
     mol = InsurAutoML.AutoTabular(
         model_name="stroke",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
 
@@ -223,7 +229,7 @@ def test_stroke_with_limit():
         search_algo="GridSearch",
         objective="precision",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
 
@@ -244,7 +250,7 @@ def test_single():
         model_name="insurance_single",
         objective="MAE",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
     y_pred = mol.predict(data[features])
@@ -272,7 +278,7 @@ def test_stacking():
         model_name="insurance_stacking",
         objective="MAE",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
     y_pred = mol.predict(data[features])
@@ -300,7 +306,7 @@ def test_bagging():
         model_name="insurance_bagging",
         objective="MAE",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
     y_pred = mol.predict(data[features])
@@ -328,7 +334,7 @@ def test_boosting():
         model_name="insurance_boosting",
         objective="MAE",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol.fit(data[features], data[response])
     y_pred = mol.predict(data[features])
@@ -375,7 +381,7 @@ def test_search_Optuna():
         search_algo="Optuna",
         ensemble_strategy="bagging",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol_opt.fit(data[features], data[response])
 
@@ -394,7 +400,7 @@ def test_search_Optuna():
         search_algo="Optuna",
         ensemble_strategy="boosting",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol_opt.fit(data[features], data[response])
 
@@ -452,7 +458,7 @@ def test_search_CFO():
         search_algo="CFO",
         ensemble_strategy="stacking",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol_cfo.fit(data[features], data[response])
 
@@ -481,7 +487,7 @@ def test_search_HyperOpt():
         search_algo="HyperOpt",
         ensemble_strategy="stacking",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol_hyp.fit(data[features], data[response])
 
@@ -510,7 +516,7 @@ def test_search_Nevergrad():
         search_algo="Nevergrad",
         ensemble_strategy="stacking",
         max_evals=5,
-        timeout=60,
+        timeout=TIMEOUT,
     )
     mol_nev.fit(data[features], data[response])
 

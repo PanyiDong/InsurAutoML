@@ -174,19 +174,44 @@ def test_reset_config_and_checkpoint(in_tmp_dir, insurance, tmp_path):
     )
     result = trainable.step()
 
-    # reused actor: a new configuration replaces the pipeline components
-    assert trainable.reset_config(
-        {**PREP, "model": {"model": "LogisticRegression", "C": 0.5}}
-    )
-    assert trainable._model == "LogisticRegression"
-    assert trainable._model_hyper == {"C": 0.5}
-
     # the checkpoint stores the last status
     checkpoint_dir = tmp_path / "checkpoint"
     checkpoint_dir.mkdir()
     # None: Ray Tune uses the content of the directory as the checkpoint
     assert trainable.save_checkpoint(str(checkpoint_dir)) is None
     assert (checkpoint_dir / "status.json").exists()
-    trainable.status_dict = None
+
+    # reused actor: a new configuration replaces the pipeline components and
+    # clears the status of the previous trial
+    assert trainable.reset_config(
+        {**PREP, "model": {"model": "LogisticRegression", "C": 0.5}}
+    )
+    assert trainable._model == "LogisticRegression"
+    assert trainable._model_hyper == {"C": 0.5}
+    assert trainable.status_dict is None
+
     trainable.load_checkpoint(str(checkpoint_dir))
     assert trainable.status_dict["loss"] == pytest.approx(result["loss"])
+
+
+def test_timeout_after_fitted_step(in_tmp_dir, insurance, monkeypatch):
+    config = {**PREP, "model": {"model": "LinearRegression"}}
+    trainable = _objective(
+        config, insurance, {"LinearRegression": LinearRegression}, "regression", "MAE"
+    )
+    fitted = trainable.step()
+
+    def _timed_out(timeout, func, *args, **kwargs):
+        raise func_timeout.FunctionTimedOut()
+
+    monkeypatch.setattr(informed_utils.func_timeout, "func_timeout", _timed_out)
+
+    # the fitted result of the earlier step is kept, the trial is stopped
+    result = trainable.step()
+    assert result["training_status"] == "FITTED"
+    assert result["loss"] == fitted["loss"]
+    assert result["done"] is True
+
+    # reused actor: a new trial does not inherit the previous result
+    trainable.reset_config(config)
+    assert trainable.step()["training_status"] == "TIMEOUT"

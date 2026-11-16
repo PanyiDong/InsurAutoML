@@ -985,13 +985,9 @@ class InformedAutoTabularBase(AutoTabularBase):
                     )
                 )
 
-            # sort by loss and get top configs
-            analysis_df = analysis_df.sort_values(by=["loss"], ascending=True).head(
-                min(
-                    self.n_estimators,
-                    (analysis_df["training_status"] == "FITTED").sum(),
-                )
-            )
+            # top configs among the fitted trials only: timed-out/failed trials have
+            # no saved pipeline, and can tie with fitted trials of infinite loss
+            analysis_df = self._best_results(analysis_df, self.n_estimators)
 
             # select optimal settings and create the ensemble of pipeline
             self._fit_ensemble(analysis_df["path"], analysis_df["config"])

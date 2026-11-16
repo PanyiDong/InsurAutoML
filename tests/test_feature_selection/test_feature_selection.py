@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import numpy as np
+import pytest
 import pandas as pd
 from InsurAutoML.feature_selection import feature_selections
 
@@ -238,3 +239,21 @@ def test_ExhaustiveFS():
 
     assert feature_selection._fitted, "Fitted should be True"
     assert _X.shape[1] <= X.shape[1], "Feature selection method GeneticAlgorithm failed"
+
+
+def test_GA_fitness_without_selected_features():
+    # an empty (random) selection predicts a constant: the most frequent class for
+    # classification (accuracy cannot score a continuous mean), the mean otherwise
+    from InsurAutoML.feature_selection import GeneticAlgorithm
+
+    X = pd.DataFrame({"a": [0.1, 0.4, 0.2, 0.9], "b": [1.0, 0.0, 1.0, 0.0]})
+    selector = GeneticAlgorithm(n_components=1, fitness_fit="Linear", fitness_weight=1)
+
+    y_class = pd.DataFrame({"y": [1.0, 0.0, 1.0, 1.0]})
+    assert selector._cal_fitness(X, y_class, [0, 0]) == 0.75
+
+    # more unique values than UNI_CLASS: regression (fitness is the MSE of the mean)
+    rng = np.random.default_rng(0)
+    X_reg = pd.DataFrame({"a": rng.normal(size=200), "b": rng.normal(size=200)})
+    y_reg = pd.DataFrame({"y": rng.normal(size=200)})
+    assert selector._cal_fitness(X_reg, y_reg, [0, 0]) == pytest.approx(np.var(y_reg["y"]))

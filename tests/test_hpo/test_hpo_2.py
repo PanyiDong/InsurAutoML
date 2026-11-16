@@ -38,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import os
+
 from InsurAutoML import load_data
 
 
@@ -341,3 +343,93 @@ def test_objective_9():
     assert (
         "training_status" in result.keys()
     ), "Objective function should return training status."
+
+
+def test_best_results_only_fitted_trials():
+    # timed-out trials (no saved pipeline) can tie with fitted trials whose loss
+    # is infinite (e.g. a diverged model): only fitted trials may be selected
+    import numpy as np
+    import pandas as pd
+
+    from InsurAutoML.hpo.base import AutoTabularBase
+
+    fit_results = pd.DataFrame(
+        {
+            "training_status": ["TIMEOUT", "FITTED", "TIMEOUT", "FITTED", None],
+            "loss": [np.inf, np.inf, np.inf, -0.5, np.nan],
+            "path": ["timeout_1", "fitted_inf", "timeout_2", "fitted", "error"],
+        }
+    )
+
+    best = AutoTabularBase._best_results(fit_results, 5)
+
+    assert list(best["path"]) == ["fitted", "fitted_inf"]
+    assert list(AutoTabularBase._best_results(fit_results, 1)["path"]) == ["fitted"]
+
+
+def test_objective_timeout_keeps_fitted_result(tmp_path, monkeypatch):
+    # a later step of a trial timing out keeps the fitted result of the earlier
+    # step (its pipeline is saved) and stops the trial; a new trial on a reused
+    # actor does not inherit it
+    import func_timeout
+    import numpy as np
+
+    from InsurAutoML.base import no_processing
+    from InsurAutoML.encoding import DataEncoding
+    from InsurAutoML.hpo import utils as hpo_utils
+    from InsurAutoML.hpo.utils import TabularObjective
+    from InsurAutoML.imputation import SimpleImputer
+    from InsurAutoML.model import LinearRegression
+
+    monkeypatch.chdir(tmp_path)
+    data = load_data().load(
+        os.path.join(os.path.dirname(__file__), "..", "..", "example", "example_data"),
+        "insurance",
+    )["insurance"]
+    features = [col for col in data.columns if col != "expenses"]
+
+    params = {
+        "encoder": {"encoder_1": "DataEncoding"},
+        "imputer": {"imputer_1": "SimpleImputer", "SimpleImputer_method": "mean"},
+        "balancing": {"balancing_1": "no_processing"},
+        "scaling": {"scaling_1": "no_processing"},
+        "feature_selection": {"feature_selection_1": "no_processing"},
+        "model": {"model_1": "LinearRegression"},
+    }
+    trainable = TabularObjective.__new__(TabularObjective)
+    trainable.setup(
+        params,
+        data_split=[
+            [(data[features], data[["expenses"]]), (data[features], data[["expenses"]])]
+        ],
+        encoder={"DataEncoding": DataEncoding},
+        imputer={"SimpleImputer": SimpleImputer},
+        balancing={"no_processing": no_processing},
+        scaling={"no_processing": no_processing},
+        feature_selection={"no_processing": no_processing},
+        models={"LinearRegression": LinearRegression},
+        model_name="obj_timeout",
+        task_mode="regression",
+        objective="MAE",
+        seed=1,
+    )
+    fitted = trainable.step()
+    assert fitted["training_status"] == "FITTED"
+
+    def _timed_out(timeout, func, *args, **kwargs):
+        raise func_timeout.FunctionTimedOut()
+
+    monkeypatch.setattr(hpo_utils.func_timeout, "func_timeout", _timed_out)
+
+    result = trainable.step()
+    assert result["training_status"] == "FITTED"
+    assert result["loss"] == fitted["loss"]
+    assert result["done"] is True
+    assert (tmp_path / "obj_timeout").exists()
+
+    # reused actor: the next trial times out without a fitted step of its own
+    trainable.reset_config(params)
+    result = trainable.step()
+    assert result["training_status"] == "TIMEOUT"
+    assert result["loss"] == np.inf
+    assert "done" not in result

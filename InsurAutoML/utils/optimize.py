@@ -85,6 +85,17 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 @contextmanager
 def time_limit(seconds):
+    """
+    Raise TimeoutError if the block runs longer than seconds (main thread, POSIX
+    only: relies on SIGALRM, which does not exist on Windows). The trainables use
+    func_timeout, which works on all platforms.
+    """
+    if not hasattr(signal, "SIGALRM"):
+        raise NotImplementedError(
+            "time_limit relies on SIGALRM, which is not available on this platform. "
+            "Use func_timeout.func_timeout instead."
+        )
+
     def signal_handler(signum, frame):
         raise TimeoutError("Timed out!")
 
