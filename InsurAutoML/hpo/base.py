@@ -40,8 +40,10 @@ SOFTWARE.
 
 from __future__ import annotations
 from typing import Any, Union, List, Callable, Dict, Tuple, Optional, cast
+import html
 import os
 import warnings
+from contextlib import ExitStack
 import importlib.util
 import shutil
 import copy
@@ -54,7 +56,7 @@ from sklearn.model_selection import KFold
 
 from ..base import set_seed, no_processing
 from ..constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
-from ..utils.base import type_of_script, format_hyper_dict
+from ..utils.base import format_hyper_dict, type_of_script
 from ..utils.data import str2list, str2dict, train_test_split
 from ..utils.file import (
     save_methods,
@@ -71,9 +73,13 @@ from ..utils.optimize import (
     TimePlateauStopper,
     TrialDirnameCreator,
     legacy_progress_output,
+    quiet_ray_output,
     ray_status,
     check_status,
 )
+from ..dashboard import EVENTS_DIR, DashboardCallback, EventRecorder
+from ..dashboard.server import start_dashboard
+from ..dashboard.space import space_schema
 from .utils import TabularObjective
 from .ensemble import (
     Pipeline,
@@ -227,13 +233,17 @@ class AutoTabularBase:
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    automatically decide what progressbar to use
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard (<temp_directory>/<model_name>/dashboard) and the Ray Tune console
+    output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 
     verbose: display for output, default = 1
-    support (0, 1, 2, 3)
+    support (0, 1, 2, 3), Ray Tune output is suppressed with the "Dashboard"
+    progress reporter
 
     cpu_threads: number of cpu threads to use, default = None
     if None, get all available cpu threads
@@ -916,6 +926,61 @@ class AutoTabularBase:
         """
         experiment_path = os.path.join(self.sub_directory, name)
 
+        # record the round for the dashboard
+        dashboard_round = self._dashboard_round_start(name, num_samples)
+        callbacks = list(callbacks) if callbacks is not None else []
+        if dashboard_round is not None:
+            callbacks.append(DashboardCallback(self._dashboard, dashboard_round))
+
+        # the dashboard replaces the Ray Tune console output
+        # (from the creation of the search algorithm to the end of the tuning)
+        with ExitStack() as output_context:
+            if self._use_dashboard():
+                output_context.enter_context(quiet_ray_output())
+            else:
+                output_context.enter_context(
+                    legacy_progress_output(progress_reporter is not None)
+                )
+
+            try:
+                result_grid = self._fit_tuner(
+                    trainer,
+                    hyperparameter_space,
+                    name,
+                    num_samples,
+                    algo,
+                    scheduler,
+                    callbacks,
+                    stopper,
+                    progress_reporter,
+                    trial_dirname_creator,
+                    experiment_path,
+                )
+            finally:
+                if dashboard_round is not None:
+                    self._dashboard_emit("round_end", round=dashboard_round)
+
+        # record number of trials named
+        if isinstance(trial_dirname_creator, TrialDirnameCreator):
+            self._iter = trial_dirname_creator.count
+
+        return self._get_tune_results(result_grid)
+
+    def _fit_tuner(
+        self,
+        trainer: Callable,
+        hyperparameter_space: Dict,
+        name: str,
+        num_samples: int,
+        algo: Callable,
+        scheduler: Callable,
+        callbacks: List,
+        stopper: tune.Stopper,
+        progress_reporter: Optional[Any],
+        trial_dirname_creator: Optional[Callable],
+        experiment_path: str,
+    ) -> tune.ResultGrid:
+        """Create (or restore) the Ray Tune experiment and run it."""
         # resume from the last experiment state if exists
         # (replaces tune.run(resume="AUTO"))
         if self.resume and tune.Tuner.can_restore(experiment_path):
@@ -953,9 +1018,10 @@ class AutoTabularBase:
                     stop=stopper,  # use stopper
                     # fresh list per run: Tune appends its default logger callbacks
                     # (holding open result files) to the list it is given
-                    callbacks=list(callbacks) if callbacks is not None else None,
+                    callbacks=callbacks or None,
                     progress_reporter=progress_reporter,
-                    verbose=self.verbose,
+                    # the dashboard replaces the Ray Tune console output
+                    verbose=0 if self._use_dashboard() else self.verbose,
                     log_to_file=("stdout.log", "stderr.log"),
                     checkpoint_config=tune.CheckpointConfig(
                         checkpoint_frequency=8,
@@ -969,14 +1035,151 @@ class AutoTabularBase:
                 ),
             )
 
-        with legacy_progress_output(progress_reporter is not None):
-            result_grid = tuner.fit()
+        return tuner.fit()
 
-        # record number of trials named
-        if isinstance(trial_dirname_creator, TrialDirnameCreator):
-            self._iter = trial_dirname_creator.count
+    # ------------------------------------------------------------- dashboard
 
-        return self._get_tune_results(result_grid)
+    def _use_dashboard(self) -> bool:
+        return self.progress_reporter == "Dashboard"
+
+    def _dashboard_rounds(self) -> int:
+        # number of Ray Tune experiments of the fit
+        if self.n_estimators > 1 and self.ensemble_strategy in ["bagging", "boosting"]:
+            return int(self.n_estimators)
+        return 1
+
+    def _dashboard_emit(self, event_type: str, **fields: Any) -> None:
+        recorder = getattr(self, "_dashboard", None)
+        if recorder is None:
+            return
+        try:
+            recorder.emit(event_type, **fields)
+        except Exception as err:  # never fail the fit because of the dashboard
+            self._logger.warning("Dashboard: unable to record {}: {}".format(event_type, err))
+
+    def _dashboard_space(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> Optional[Dict]:
+        """
+        Search space of the dashboard map, described from the space in Ray Tune
+        format (whatever the search algorithm).
+        """
+        search_algo = self.search_algo
+        try:
+            self.search_algo = "RandomSearch"
+            space = self.get_hyperparameter_space(X, y)[-1]
+            return space_schema(space)
+        except Exception as err:  # the map is optional
+            self._logger.warning(
+                "Dashboard: unable to describe the search space: {}".format(err)
+            )
+            return None
+        finally:
+            self.search_algo = search_algo
+
+    def _dashboard_start(self) -> None:
+        """Start the event log of the dashboard (first tuning round of the fit)."""
+        directory = os.path.join(self.temp_directory, self.model_name, EVENTS_DIR)
+        try:
+            self._dashboard = EventRecorder(directory)
+        except OSError as err:
+            self._logger.warning("Dashboard: unable to create {}: {}".format(directory, err))
+            self._dashboard = None
+            return
+        self._dashboard_rounds_started = 0
+
+        self._dashboard_emit(
+            "run_start",
+            model_name=self.model_name,
+            task_mode=getattr(self, "task_mode", None),
+            objective=getattr(self, "objective", None),
+            search_algo=getattr(self, "search_algo", None),
+            search_scheduler=getattr(self, "search_scheduler", None),
+            timeout=getattr(self, "timeout", None),
+            max_evals=getattr(self, "max_evals", None),
+            timeout_per_trial=getattr(self, "timeout_per_trial", None),
+            ensemble_strategy=getattr(self, "ensemble_strategy", None),
+            n_estimators=getattr(self, "n_estimators", None),
+            rounds=self._dashboard_rounds(),
+            cpu_threads=getattr(self, "cpu_threads", None),
+            gpu_count=getattr(self, "gpu_count", None),
+            seed=getattr(self, "seed", None),
+        )
+        schema = getattr(self, "_dashboard_schema", None)
+        if schema is not None:
+            self._dashboard_emit("space", schema=schema)
+
+        # web dashboard of the process, switched to this run
+        self.dashboard_url = start_dashboard(self._dashboard.path)
+        if self.dashboard_url is not None:
+            self._dashboard_announce(
+                "Track the optimization of {} at".format(self.model_name),
+                self.dashboard_url,
+            )
+        else:
+            self._dashboard_announce(
+                "Optimization progress of {} is recorded in {} "
+                "(view with: python -m InsurAutoML.dashboard {})".format(
+                    self.model_name,
+                    self._dashboard.path,
+                    os.path.join(self.temp_directory, self.model_name),
+                )
+            )
+
+    @staticmethod
+    def _dashboard_announce(text: str, url: Optional[str] = None) -> None:
+        """
+        Show a message of the dashboard: a clickable link in notebooks, printed
+        otherwise.
+        """
+        if url is not None and type_of_script() == "jupyter":
+            try:
+                from IPython.display import HTML, display
+
+                display(
+                    HTML(
+                        '<b>[Dashboard]</b> {} <a href="{url}" target="_blank">'
+                        "{url}</a>".format(html.escape(text), url=html.escape(url))
+                    )
+                )
+                return
+            except ImportError:  # pragma: no cover - notebooks have IPython
+                pass
+        print(
+            "[Dashboard] {}".format(text) + (" {}".format(url) if url else ""),
+            flush=True,
+        )
+
+    def _dashboard_round_start(self, name: str, num_samples: int) -> Optional[int]:
+        """Record the start of a tuning round, returns its index (None: no dashboard)."""
+        if not self._use_dashboard():
+            return None
+        if getattr(self, "_dashboard", None) is None:
+            self._dashboard_start()
+            if self._dashboard is None:
+                return None
+
+        index = self._dashboard_rounds_started
+        self._dashboard_rounds_started += 1
+        self._dashboard_emit(
+            "round_start", round=index, name=name, num_samples=num_samples
+        )
+
+        return index
+
+    def _dashboard_finish(self) -> None:
+        """Record the end of the fit."""
+        if getattr(self, "_dashboard", None) is None:
+            return
+        self._dashboard_emit("run_end")
+        # the address again: still available after the fit
+        url = getattr(self, "dashboard_url", None)
+        if url is not None:
+            self._dashboard_announce(
+                "Optimization of {} finished, results available (until Python "
+                "exits) at".format(self.model_name),
+                url,
+            )
 
     @staticmethod
     def _get_tune_results(result_grid: tune.ResultGrid) -> pd.DataFrame:
@@ -1308,24 +1511,27 @@ class AutoTabularBase:
             else self.timeout_per_trial
         )
 
-        # get progress report from environment
-        # if specified, use specified progress report
+        # progress report: the web dashboard by default, Ray Tune console/notebook
+        # output if specified
         self.progress_reporter = (
-            (
-                "CLIReporter"
-                if type_of_script() == "terminal"
-                else "JupyterNotebookReporter"
-            )
-            if self.progress_reporter is None
-            else self.progress_reporter
+            "Dashboard" if self.progress_reporter is None else self.progress_reporter
         )
 
-        if self.progress_reporter not in ["CLIReporter", "JupyterNotebookReporter"]:
-            self._logger.error(
-                "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
-                    self.progress_reporter
-                )
+        if self.progress_reporter not in [
+            "Dashboard",
+            "CLIReporter",
+            "JupyterNotebookReporter",
+        ]:
+            raise ValueError(
+                "Progress reporter must be one of Dashboard, CLIReporter or "
+                "JupyterNotebookReporter, get {}.".format(self.progress_reporter)
             )
+
+        # event recorder of the dashboard, created with the first tuning round
+        self._dashboard: Optional[EventRecorder] = None
+        self._dashboard_schema: Optional[Dict] = None
+        # URL of the web dashboard (None: not started)
+        self.dashboard_url: Optional[str] = None
 
         # record K fold if validation == "KFold"
         if self.validation == "KFold":
@@ -1470,6 +1676,10 @@ class AutoTabularBase:
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
 
+        # search space of the dashboard map
+        if self._use_dashboard():
+            self._dashboard_schema = self._dashboard_space(_X, _y)
+
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
@@ -1587,6 +1797,7 @@ class AutoTabularBase:
         rayStatus = ray_status(
             cpu_threads=self.cpu_threads,
             gpu_count=self.gpu_count,
+            quiet=self._use_dashboard(),
         )
 
         # ensemble settings
@@ -1990,6 +2201,9 @@ class AutoTabularBase:
         # if need to save the ensemble
         if self.save:
             save_methods(self.model_name, [self.ensemble])
+
+        # end of the run for the dashboard
+        self._dashboard_finish()
 
         # whether to retain temp files
         if self.delete_temp_after_terminate:

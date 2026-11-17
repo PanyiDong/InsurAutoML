@@ -46,6 +46,7 @@ dependencies = [
     "tqdm",
     "tensorboardX",
     "scikit-learn>=1.2.0",
+    "plotly",                       # charts of the optimization dashboard (served offline)
 ]
 
 [project.optional-dependencies]
@@ -113,7 +114,14 @@ exclude = [
 [tool.setuptools.package-data]
 # VERSION and the C++ sources of the InformedAutoML extension are package data, so
 # they are included in the sdist (the extension is built from it with INFORMEDAUTOML=1)
-InsurAutoML = ["VERSION", "ext/suppsplit/suppsplit_cpp/*.cpp", "data/*", "example/*"]
+# the page of the optimization dashboard is package data as well
+InsurAutoML = [
+    "VERSION",
+    "ext/suppsplit/suppsplit_cpp/*.cpp",
+    "data/*",
+    "example/*",
+    "dashboard/static/*",
+]
 
 [tool.setuptools.dynamic]
 # written from the latest git tag by setup.py (kept as is when building from the sdist)

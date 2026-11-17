@@ -197,9 +197,10 @@ parser.add_argument(
 )
 parser.add_argument(
     "--progress_reporter",
-    default="CLIReporter",
+    default="Dashboard",
     type=str,
-    help="progress reporting manager",
+    help="progress reporting manager: Dashboard (local web dashboard), "
+    "CLIReporter or JupyterNotebookReporter (Ray Tune output)",
 )
 parser.add_argument(
     "--full_status",

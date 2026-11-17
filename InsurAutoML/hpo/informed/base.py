@@ -174,8 +174,10 @@ class InformedAutoTabularBase(AutoTabularBase):
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    automatically decide what progressbar to use
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard and the Ray Tune console output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 
@@ -760,6 +762,10 @@ class InformedAutoTabularBase(AutoTabularBase):
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
 
+        # search space of the dashboard map
+        if self._use_dashboard():
+            self._dashboard_schema = self._dashboard_space(_X, _y)
+
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
@@ -841,6 +847,7 @@ class InformedAutoTabularBase(AutoTabularBase):
         rayStatus = ray_status(
             cpu_threads=self.cpu_threads,
             gpu_count=self.gpu_count,
+            quiet=self._use_dashboard(),
         )
 
         # ensemble settings
@@ -1205,6 +1212,9 @@ class InformedAutoTabularBase(AutoTabularBase):
         # if need to save the ensemble
         if self.save:
             save_methods(self.model_name, [self.ensemble])
+
+        # end of the run for the dashboard
+        self._dashboard_finish()
 
         # whether to retain temp files
         if self.delete_temp_after_terminate:

@@ -153,7 +153,10 @@ class AutoTabularRegressor(AutoTabularBase):
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard and the Ray Tune console output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 
@@ -397,7 +400,10 @@ class AutoTabularClassifier(AutoTabularBase):
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard and the Ray Tune console output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 
@@ -647,7 +653,10 @@ class AutoTabular(AutoTabularBase):
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard and the Ray Tune console output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 

@@ -41,6 +41,7 @@ SOFTWARE.
 import importlib
 import os
 from ray.tune import Stopper
+from ray.tune.progress_reporter import ProgressReporter
 from ray import tune
 import ray
 import pandas as pd
@@ -2040,12 +2041,60 @@ def legacy_progress_output(enable: bool = True):
             os.environ["RAY_AIR_NEW_OUTPUT"] = _prev
 
 
+# loggers writing the Tune console output (status, warnings, trial errors), and
+# the search algorithms run by Tune
+RAY_TUNE_LOGGERS = ("ray.tune", "ray.train", "ray.air", "optuna")
+
+
+@contextmanager
+def quiet_ray_output(enable: bool = True):
+    """
+    Suppress the Ray Tune console output (used with the dashboard, which shows
+    the progress and the trial errors instead).
+
+    The legacy output engine prints nothing with verbose=0 (the new engine still
+    prints the experiment summary), and the Tune loggers are silenced.
+    """
+    if not enable:
+        yield
+        return
+
+    _levels = {name: logging.getLogger(name).level for name in RAY_TUNE_LOGGERS}
+    for name in RAY_TUNE_LOGGERS:
+        logging.getLogger(name).setLevel(logging.CRITICAL)
+    try:
+        with legacy_progress_output(True):
+            yield
+    finally:
+        for name, level in _levels.items():
+            logging.getLogger(name).setLevel(level)
+
+
+class SilentReporter(ProgressReporter):
+    """
+    Progress reporter without output (the dashboard shows the progress).
+
+    Passed explicitly: without a reporter, Ray Tune uses its default one, which in
+    notebooks clears the cell output (and the address of the dashboard).
+    """
+
+    def should_report(self, trials: List[Any], done: bool = False) -> bool:
+        return False
+
+    def report(self, trials: List[Any], done: bool, *sys_info: Dict) -> None:
+        pass
+
+
 # get progress reporter based on string input
 def get_progress_reporter(
-    progress_reporter: str,
+    progress_reporter: Optional[str],
     max_evals: int,
     max_error: int,
-) -> Callable:
+) -> Optional[Callable]:
+    # the web dashboard (default) replaces the Ray Tune console output
+    if progress_reporter in (None, "Dashboard"):
+        return SilentReporter()
+
     # max_error is the number of failures allowed, which can be 0
     # 0 rows would make the error table of the reporter fail, use no limit (None)
     max_error_rows = max_error if max_error and max_error > 0 else None
@@ -2495,9 +2544,13 @@ class ray_status:
         self,
         cpu_threads: Optional[int],
         gpu_count: int,
+        quiet: bool = False,
     ) -> None:
         self.cpu_threads = cpu_threads
         self.gpu_count = gpu_count
+        # quiet: no Ray startup messages and no output of the workers on the
+        # console (still in the Ray session logs)
+        self.quiet = quiet
 
     def ray_init(self) -> None:
         # initialize ray
@@ -2507,6 +2560,11 @@ class ray_status:
                 # local_mode=True,
                 num_cpus=self.cpu_threads,
                 num_gpus=self.gpu_count,
+                **(
+                    {"log_to_driver": False, "logging_level": logging.ERROR}
+                    if self.quiet
+                    else {}
+                ),
             )
         # check if ray is initialized
         assert ray.is_initialized(), "Ray is not initialized."

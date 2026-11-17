@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>InsurAutoML Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="/static/plotly.min.js" defer></script>
+  <script src="/static/app.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="title">
+      <span class="brand">InsurAutoML</span>
+      <h1 id="run-name">Optimization</h1>
+      <span id="run-status" class="badge">connecting…</span>
+    </div>
+    <div id="run-meta" class="meta"></div>
+  </header>
+
+  <main>
+    <section class="card progress-card" aria-label="Progress">
+      <div class="progress-grid">
+        <div class="bar-block">
+          <div class="bar-label"><span>Time budget</span><span id="time-text">–</span></div>
+          <div class="bar"><div id="time-bar" class="bar-fill"></div></div>
+        </div>
+        <div class="bar-block">
+          <div class="bar-label"><span>Trials</span><span id="trial-text">–</span></div>
+          <div class="bar"><div id="trial-bar" class="bar-fill"></div></div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Estimated time left</div>
+          <div id="eta" class="stat-value">–</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Round</div>
+          <div id="round" class="stat-value">–</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Best loss</div>
+          <div id="best-loss" class="stat-value">–</div>
+        </div>
+      </div>
+      <div id="counts" class="chips"></div>
+    </section>
+
+    <div class="grid-main">
+      <section class="card map-card" aria-label="Search space map">
+        <div class="card-head">
+          <h2>Search space map</h2>
+          <label class="control">Group by
+            <select id="emphasis"></select>
+          </label>
+        </div>
+        <p class="hint">Each faint dot is a sampled setting of the whole search space; nearby dots have similar settings.
+          Trials are drawn on top, <span class="warm">warm = better</span>, <span class="cold">cold = worse</span>
+          (rank of the loss); hover a trial for its number (details in the Trials table below). Areas near good trials are tinted. Use the lasso (toolbar) to see what the selected trials share.</p>
+        <div id="map" class="plot plot-map"></div>
+        <div id="map-status" class="status-line"></div>
+        <div id="selection" class="selection" hidden></div>
+      </section>
+
+      <aside class="side">
+        <section class="card" aria-label="Best trial">
+          <div class="card-head"><h2>Current best</h2><span id="best-meta" class="muted"></span></div>
+          <div id="best" class="pipeline muted">No fitted trial yet.</div>
+        </section>
+        <section class="card" aria-label="Running trials">
+          <div class="card-head"><h2>Running now</h2><span id="running-count" class="muted"></span></div>
+          <div id="running" class="running muted">No trial running.</div>
+        </section>
+      </aside>
+    </div>
+
+    <div class="grid-charts">
+      <section class="card" aria-label="Loss over trials">
+        <div class="card-head"><h2>Loss over trials</h2>
+          <label class="control"><input type="checkbox" id="log-scale"> log scale</label></div>
+        <div id="loss-chart" class="plot"></div>
+      </section>
+      <section class="card" aria-label="Loss by method">
+        <div class="card-head"><h2>Loss by method</h2>
+          <label class="control">Step <select id="method-step"></select></label></div>
+        <div id="method-chart" class="plot"></div>
+      </section>
+      <section class="card" aria-label="Trial durations">
+        <div class="card-head"><h2>Trial durations</h2><span id="duration-meta" class="muted"></span></div>
+        <div id="duration-chart" class="plot"></div>
+      </section>
+    </div>
+
+    <section class="card" aria-label="Trials">
+      <div class="card-head">
+        <h2>Trials</h2>
+        <input id="filter" type="search" placeholder="Filter (status, method, …)" aria-label="Filter trials">
+      </div>
+      <div class="table-wrap">
+        <table id="trials">
+          <thead>
+            <tr>
+              <th data-sort="number">#</th>
+              <th data-sort="round">Round</th>
+              <th data-sort="status">Status</th>
+              <th data-sort="loss">Loss</th>
+              <th data-sort="duration">Time</th>
+              <th data-sort="model">Model</th>
+              <th>Pipeline</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+    <p id="footer" class="footer muted"></p>
+  </main>
+  <div id="plotly-missing" class="banner" hidden>
+    Charts need the <code>plotly</code> package (<code>pip install plotly</code>); progress and trials are shown without it.
+  </div>
+</body>
+</html>

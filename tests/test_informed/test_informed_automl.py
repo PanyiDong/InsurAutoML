@@ -77,6 +77,17 @@ def test_informed_classifier_stacking(in_tmp_dir, heart_missing):
     assert mol._fitted
     _check_outputs("informed_clf")
 
+    # the dashboard records the informed search space and the trials
+    from InsurAutoML.dashboard import load_state
+
+    state = load_state(os.path.join("tmp", "informed_clf", "dashboard"))
+    assert state.finished
+    assert state.schema["steps"] == ["encoder", "complete_prep", "missing_prep", "model"]
+    assert all(
+        trial["config"]["model"]["method"] in state.schema["methods"]["model"]
+        for trial in state.trials.values()
+    )
+
     y_pred = np.asarray(mol.predict(X.copy())).ravel()
     assert len(y_pred) == len(X)
     assert set(np.unique(y_pred)) <= {0, 1}
