@@ -38,6 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Optional
+
 
 class AutoTextClassifier:
     """
@@ -46,7 +48,7 @@ class AutoTextClassifier:
 
     def __init__(
         self,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         self.seed = seed
 
@@ -68,7 +70,7 @@ class AutoNextWordPrediction:
 
     def __init__(
         self,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         self.seed = seed
 

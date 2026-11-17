@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional, Union, List, Tuple
+from typing import Any, Optional, Union, List, Tuple, cast
 import warnings
 import numpy as np
 import pandas as pd
@@ -79,7 +79,7 @@ def merge_dict(dict1, dict2):
 
 def nan_cov(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     axis: int = 0,
 ) -> np.ndarray:
     if isinstance(y, pd.DataFrame):
@@ -95,6 +95,8 @@ def nan_cov(
         y = copy.deepcopy(X)
     else:
         y = y
+    # not _empty implies y is not None
+    assert y is not None
 
     if axis == 0:
         if len(X) != len(y):
@@ -140,15 +142,15 @@ def nan_cov(
 
 # return class (unique in y) mean of X
 def class_means(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
-) -> List[float]:
+    X: pd.DataFrame,
+    y: Union[pd.DataFrame, pd.Series],
+) -> List[np.ndarray]:
     _class = np.unique(y)
     result = []
 
     for _cl in _class:
         data = X.loc[y.values == _cl]
-        result.append(np.mean(data, axis=0).values)
+        result.append(cast(pd.Series, np.mean(data, axis=0)).values)
 
     return result
 
@@ -168,7 +170,7 @@ def empirical_covariance(
     if assume_centered:
         covariance = np.dot(X.T, X) / X.shape[0]
     else:
-        covariance = np.cov(X.T, bias=1)
+        covariance = np.cov(X.T, bias=True)
 
     if covariance.ndim == 0:
         covariance = np.array([[covariance]])
@@ -185,7 +187,7 @@ def class_cov(
         X = pd.DataFrame(X)
 
     if not isinstance(y, pd.Series):
-        y = pd.Series(y)
+        y = pd.Series(cast(Any, y))
 
     _class = np.unique(y)
     cov = np.zeros(shape=(X.shape[1], X.shape[1]))
@@ -250,7 +252,8 @@ def MI(
         _H_y_X = -sum(
             _pro_val[i]
             * np.log(
-                _pro_val[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]].values[0]
+                _pro_val[i]
+                / _X_pro.loc[_X_pro.index == cast(Any, _pro.index[i])[0]].values[0]
             )
             for i in range(len(_pro))
         )
@@ -261,16 +264,16 @@ def MI(
 
 # return t-statistics of dataset, only two groups dataset are suitable
 def t_score(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X: pd.DataFrame,
+    y: Union[pd.DataFrame, pd.Series],
     fvalue: bool = True,
     pvalue: bool = False,
-) -> Union[float, Tuple[float, float]]:
+) -> Optional[Union[List[float], Tuple[List[float], List[float]]]]:
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
     features = list(X.columns)
-    if len(y.shape) > 1:
+    if isinstance(y, pd.DataFrame):  # len(y.shape) > 1
         y = y.iloc[:, 0]  # only accept one column of response
 
     _group = y.unique()
@@ -298,20 +301,21 @@ def t_score(
         return _f
     elif pvalue:
         return _p
+    return None
 
 
 # return ANOVA of dataset, more than two groups dataset are suitable
 def ANOVA(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X: pd.DataFrame,
+    y: Union[pd.DataFrame, pd.Series],
     fvalue: bool = True,
     pvalue: bool = False,
-) -> Union[float, Tuple[float, float]]:
+) -> Optional[Union[List[float], Tuple[List[float], List[float]]]]:
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
     features = list(X.columns)
-    if len(y.shape) > 1:
+    if isinstance(y, pd.DataFrame):  # len(y.shape) > 1
         y = y.iloc[:, 0]  # only accept one column of response
 
     _group = y.unique()
@@ -335,6 +339,7 @@ def ANOVA(
         return _f
     elif pvalue:
         return _p
+    return None
 
 
 # convert metrics to minimize the error (as a loss function)
@@ -370,7 +375,7 @@ def neg_precision(
 ) -> float:
     from sklearn.metrics import precision_score
 
-    return -precision_score(y_true, y_pred)
+    return -cast(float, precision_score(y_true, y_pred))
 
 
 def neg_auc(
@@ -402,7 +407,7 @@ def neg_f1(
 ) -> float:
     from sklearn.metrics import f1_score
 
-    return -f1_score(y_true, y_pred)
+    return -cast(float, f1_score(y_true, y_pred))
 
 
 def rankdata_random(values, seed: Optional[Union[int, np.random.Generator]] = None):
@@ -535,13 +540,13 @@ def _CCC(
 def _ACCC(
     Z: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    X: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     Z_ties_method: str = "random",
     y_ties_method: str = "ordinal",
     X_ties_method: str = "random",
     mode: str = "T",
     seed: Optional[Union[int, np.random.Generator]] = None,
-) -> float:
+) -> Optional[float]:
     r"""
     Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1][2]
 
@@ -708,6 +713,7 @@ def _ACCC(
         return Q_n / S_n if S_n != 0 else 1
     elif mode == "Q":
         return Q_n
+    return None
 
 
 """
@@ -755,7 +761,7 @@ def CCC(
 def ACCC(
     Z: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    X: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     Z_ties_method: str = "random",
     y_ties_method: str = "ordinal",
     X_ties_method: str = "random",
@@ -769,22 +775,37 @@ def ACCC(
     # local generator, shared by the folds
     rng = np.random.default_rng(seed)
     if "random" in [Z_ties_method, y_ties_method, X_ties_method]:
+        # None only for a mode other than "T"/"Q"
         return np.mean(
-            [
-                _ACCC(
-                    Z,
-                    y,
-                    X,
-                    Z_ties_method,
-                    y_ties_method,
-                    X_ties_method,
-                    mode=mode,
-                    seed=rng,
-                )
-                for _ in range(fold)
-            ]
+            cast(
+                List[float],
+                [
+                    _ACCC(
+                        Z,
+                        y,
+                        X,
+                        Z_ties_method,
+                        y_ties_method,
+                        X_ties_method,
+                        mode=mode,
+                        seed=rng,
+                    )
+                    for _ in range(fold)
+                ],
+            )
         )
     else:
-        return _ACCC(
-            Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode=mode, seed=rng
+        # None only for a mode other than "T"/"Q"
+        return cast(
+            float,
+            _ACCC(
+                Z,
+                y,
+                X,
+                Z_ties_method,
+                y_ties_method,
+                X_ties_method,
+                mode=mode,
+                seed=rng,
+            ),
         )

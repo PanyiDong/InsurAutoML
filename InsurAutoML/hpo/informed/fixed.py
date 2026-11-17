@@ -248,6 +248,7 @@ class InformedAutoTabular:
         # If encoder exists, refit/transform using same encoder
         X_enc = self.encoder.refit(X)
 
+        assert self.complete_prep is not None, "Fit the model first."
         X_complete, _ = self.complete_prep.transform(X_enc, y=None)
         pred_complete = None
         if len(X_complete) > 0 and self.complete_model is not None:
@@ -262,6 +263,7 @@ class InformedAutoTabular:
             raise ValueError(
                 "No model fitted on missing data, but X has missing values."
             )
+        assert self.missing_prep is not None, "Fit the model first."
         X_missing, _ = self.missing_prep.transform(X_enc, y=None)
         pred = pd.DataFrame(self.missing_model.predict(X_missing))
         pred.index = X_missing.index

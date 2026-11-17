@@ -59,7 +59,7 @@ import sys
 import threading
 import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple, cast
 from urllib.parse import parse_qs, urlparse
 
 from .events import EventTail
@@ -106,8 +106,6 @@ class _HTTPServer(ThreadingHTTPServer):
 
 
 class _Handler(BaseHTTPRequestHandler):
-    server: _HTTPServer
-
     def log_message(self, format: str, *args: Any) -> None:  # noqa: A002
         # no request log on the console
         pass
@@ -116,7 +114,7 @@ class _Handler(BaseHTTPRequestHandler):
         url = urlparse(self.path)
         query = {key: values[-1] for key, values in parse_qs(url.query).items()}
         route = url.path.rstrip("/") or "/"
-        dashboard = self.server.dashboard
+        dashboard = cast(_HTTPServer, self.server).dashboard
         try:
             if route in ("/", "/index.html"):
                 self._file(

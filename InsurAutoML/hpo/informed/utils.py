@@ -176,6 +176,14 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
     # convert dict hyperparameter to actual classes
     def dict2config(self, params: Dict) -> None:
+        # the method dictionaries are given in setup with the data
+        assert (
+            self.encoder is not None
+            and self.complete_prep is not None
+            and self.missing_prep is not None
+            and self.models is not None
+        ), "The method dictionaries are not set, call setup with them first."
+
         for key in list(params.keys()):
             if key not in [
                 "encoder",
@@ -287,7 +295,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         self,
     ) -> Dict[str, Any]:
         # set random seed
-        set_seed(self.seed)
+        set_seed(cast(int, self.seed))  # the seed is set by the hpo
 
         self._logger.info("[INFO] Objective starting...")
 

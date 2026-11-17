@@ -2,17 +2,19 @@
 
 This guide complements the [README](../README.md) (overview, installation and the Python interface):
 
-1. [Command Line Interface](#command-line-interface)
-2. [Optimization dashboard](#optimization-dashboard)
-3. [API Summary](#api-summary)
-   - [Required packages](#required-packages)
-   - [Components](#components)
-   - [The pipeline](#the-pipeline)
-   - [Customized methods](#customized-methods)
-   - [Save and load the models](#save-and-load-the-models)
-   - [Configuration](#configuration)
-   - [Development](#development)
-   - [Other files in the repository](#other-files-in-the-repository)
+- [InsurAutoML User Guide](#insurautoml-user-guide)
+  - [Command Line Interface](#command-line-interface)
+    - [Put train/test data in the folder](#put-traintest-data-in-the-folder)
+    - [Run experiments](#run-experiments)
+  - [Optimization dashboard](#optimization-dashboard)
+  - [API Summary](#api-summary)
+    - [Required packages](#required-packages)
+    - [Components](#components)
+    - [The pipeline](#the-pipeline)
+    - [Customized methods](#customized-methods)
+    - [Save and load the models](#save-and-load-the-models)
+    - [Configuration](#configuration)
+    - [Other files in the repository](#other-files-in-the-repository)
 
 ## Command Line Interface
 
@@ -173,14 +175,6 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 > 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
 >
 > 9. progress_reporter: `Dashboard` (default, local web dashboard, see [Optimization dashboard](#optimization-dashboard)), `CLIReporter` or `JupyterNotebookReporter` (Ray Tune output)
-
-### Development
-
-> 1. formatting and linting: `pip install pre-commit && pre-commit install` runs black and ruff before each commit (the "Format python code" workflow checks them on pull requests);
->
-> 2. tests: `pytest tests/` (the tests run in a temporary working directory); the long searches are marked `slow`, `pytest tests/ -m "not slow"` skips them;
->
-> 3. `requirements.txt`, `requirements_nn.txt` and `package.json` are generated from `pyproject.toml` with `python setup.py sync` (a build does not modify them).
 
 ### Other files in the repository
 

@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, List
+from typing import List, Optional, Union, cast
 import numpy as np
 import pandas as pd
 from ..utils.base import copy_frame
@@ -70,7 +70,7 @@ class ExpectationMaximization(BaseImputer):
     """
 
     def __init__(
-        self, iterations: int = 50, threshold: float = 0.01, seed: int = None
+        self, iterations: int = 50, threshold: float = 0.01, seed: Optional[int] = None
     ) -> None:
         self.iterations = iterations
         self.threshold = threshold
@@ -83,7 +83,7 @@ class ExpectationMaximization(BaseImputer):
         self.iterations = int(self.iterations)
         self.threshold = float(self.threshold)
 
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
         n = _X.shape[0]
 
         if _X.isnull().values.any():
@@ -101,7 +101,7 @@ class ExpectationMaximization(BaseImputer):
         # create _missing_table with _missing_feature
         # missing index will be 1, existed index will be 0
         for _column in features:
-            if X[_column].isnull().values.any():
+            if X[_column].isnull().to_numpy().any():
                 self._missing_table[_column] = X[_column].isnull().astype(int)
 
         for _column in list(self._missing_table.columns):
@@ -110,8 +110,11 @@ class ExpectationMaximization(BaseImputer):
 
         return X
 
-    def _EM_iter(self, X: pd.DataFrame, index: Union[int, str], column: str):
+    def _EM_iter(
+        self, X: pd.DataFrame, index: Union[int, str, np.integer], column: str
+    ):
         _mark = 1
+        _tmp = None
         for _ in range(self.iterations):
             _mu = np.nanmean(X.loc[:, column])
             _std = np.nanstd(X.loc[:, column])
@@ -121,6 +124,8 @@ class ExpectationMaximization(BaseImputer):
                 return _tmp
             X.loc[index, column] = _tmp
             _mark = _tmp
+        if _tmp is None:
+            raise ValueError("iterations must be at least 1 for EM imputation.")
         return _tmp
 
 
@@ -147,11 +152,11 @@ class KNNImputer(BaseImputer):
 
     def __init__(
         self,
-        n_neighbors: int = None,
+        n_neighbors: Optional[int] = None,
         method: str = "mean",
         fold: int = 10,
         uni_class: int = UNI_CLASS,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_neighbors = n_neighbors
         self.method = method
@@ -168,7 +173,7 @@ class KNNImputer(BaseImputer):
             if len(X[_column].unique()) <= min(0.1 * len(X), self.uni_class):
                 raise ValueError("KNN Imputation not supported for categorical data!")
 
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
         if _X.isnull().values.any():
             _X = self._fill(_X)
         else:
@@ -189,7 +194,7 @@ class KNNImputer(BaseImputer):
         # missing index will be 1, existed index will be 0
 
         for _column in features:
-            if X[_column].isnull().values.any():
+            if X[_column].isnull().to_numpy().any():
                 self._missing_feature.append(_column)
                 self._missing_vector.append(
                     X[_column].loc[X[_column].isnull()].index.astype(int)
@@ -231,7 +236,10 @@ class KNNImputer(BaseImputer):
         return X
 
     def _cross_validation_knn(
-        self, _train: pd.DataFrame, _test: pd.DataFrame, random_features: List[str]
+        self,
+        _train: pd.DataFrame,
+        _test: pd.DataFrame,
+        random_features: Union[List[str], np.ndarray],
     ) -> List[Union[float, np.ndarray]]:  # cross validation to return error
         from sklearn.neighbors import KNeighborsRegressor
 
@@ -244,11 +252,11 @@ class KNNImputer(BaseImputer):
                 else [self.n_neighbors]
             )
 
-        _test_mark = copy_frame(_test, deep=True)
+        _test_mark = cast(pd.DataFrame, copy_frame(_test, deep=True))
         _err = []
 
         for _k in n_neighbors:
-            _test = copy_frame(_test_mark, deep=True)
+            _test = cast(pd.DataFrame, copy_frame(_test_mark, deep=True))
             for _feature in random_features:
                 _subfeatures = list(_train.columns)
                 _subfeatures.remove(_feature)
@@ -261,7 +269,7 @@ class KNNImputer(BaseImputer):
         return _err
 
     def _knn_impute(
-        self, X: pd.DataFrame, random_features: List[str], k: int
+        self, X: pd.DataFrame, random_features: Union[List[str], np.ndarray], k: int
     ) -> pd.DataFrame:
         from sklearn.neighbors import KNeighborsRegressor
 
@@ -302,7 +310,7 @@ class MissForestImputer(BaseImputer):
         self,
         max_iter: int = 10,
         n_estimators: int = 100,
-        random_state: int = None,
+        random_state: Optional[int] = None,
         categorical_threshold: int = UNI_CLASS,
     ) -> None:
         self.max_iter = max_iter
@@ -561,7 +569,9 @@ class MICE(BaseImputer):
     every random draw from the minority class will increase the random seed by 1
     """
 
-    def __init__(self, cycle: int = 10, method: str = "mean", seed: int = None) -> None:
+    def __init__(
+        self, cycle: int = 10, method: str = "mean", seed: Optional[int] = None
+    ) -> None:
         self.method = method
         self.cycle = cycle
         self.seed = seed
@@ -572,7 +582,7 @@ class MICE(BaseImputer):
     def fill(self, X: pd.DataFrame) -> pd.DataFrame:
         self.cycle = int(self.cycle)
 
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
@@ -597,7 +607,7 @@ class MICE(BaseImputer):
         # create _missing_table with _missing_feature
         # missing index will be 1, existed index will be 0
         for _column in features:
-            if X[_column].isnull().values.any():
+            if X[_column].isnull().to_numpy().any():
                 self._missing_table[_column] = X[_column].isnull().astype(int)
                 self._missing_feature.append(_column)
 
@@ -615,7 +625,7 @@ class MICE(BaseImputer):
         return X
 
     def _cycle_impute(
-        self, X: pd.DataFrame, random_features: List[str]
+        self, X: pd.DataFrame, random_features: Union[List[str], np.ndarray]
     ) -> pd.DataFrame:
         from sklearn.linear_model import LinearRegression, LogisticRegression, LassoCV
 

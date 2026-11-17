@@ -282,7 +282,7 @@ class InformedAutoTabular(InformedAutoTabularBase):
         models: Union[str, List[str]] = "auto",
         exclude: Optional[Dict] = None,
         valid_size: float = 0.2,
-        objective: Union[str, Callable] = None,
+        objective: Optional[Union[str, Callable]] = None,
         search_algo: str = "RandomSearch",
         search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",

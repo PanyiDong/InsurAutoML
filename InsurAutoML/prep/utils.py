@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Optional, List
+from typing import Optional, List, cast
 import pandas as pd
 
 
@@ -62,17 +62,17 @@ class MissingSet:
 
         self._fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> MissingSet:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> MissingSet:
         # Calculate missing rate for each column
-        missing_series = X.isna().mean()
+        missing_series = cast(pd.Series, X.isna().mean())
 
         # Identify columns to drop (where missing rate > threshold)
-        self.dropped_features_ = missing_series[
-            missing_series > self.threshold
-        ].index.tolist()
-        self.kept_features_ = missing_series[
-            missing_series <= self.threshold
-        ].index.tolist()
+        self.dropped_features_ = cast(
+            pd.Series, missing_series[missing_series > self.threshold]
+        ).index.tolist()
+        self.kept_features_ = cast(
+            pd.Series, missing_series[missing_series <= self.threshold]
+        ).index.tolist()
 
         self._fitted = True
         return self
@@ -117,7 +117,7 @@ class CompleteSet:
         self.protected_cols = protected_cols if protected_cols is not None else []
         self._fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> CompleteSet:
+    def fit(self, X: pd.DataFrame, y: Optional[pd.Series] = None) -> CompleteSet:
         # Work on a copy of columns metadata to avoid modifying input
         # We only need to simulate the dropping process here.
         X_ = X.copy()

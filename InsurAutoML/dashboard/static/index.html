@@ -3,107 +3,177 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
   <title>InsurAutoML Dashboard</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232a78d6'/%3E%3Cpath d='M8 22l5-7 4 4 7-10' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="/static/style.css">
   <script src="/static/plotly.min.js" defer></script>
   <script src="/static/app.js" defer></script>
 </head>
 <body>
-  <header class="topbar">
-    <div class="title">
-      <span class="brand">InsurAutoML</span>
-      <h1 id="run-name">Optimization</h1>
-      <span id="run-status" class="badge">connecting…</span>
+  <header class="appbar">
+    <div class="appbar-inner">
+      <div class="brand">
+        <svg class="brand-mark" viewBox="0 0 32 32" aria-hidden="true">
+          <rect width="32" height="32" rx="7"></rect>
+          <path d="M8 22l5-7 4 4 7-10"></path>
+        </svg>
+        <span class="brand-name">InsurAutoML</span>
+        <span class="brand-sep" aria-hidden="true"></span>
+        <span class="brand-product">Optimization dashboard</span>
+      </div>
+      <div class="appbar-actions">
+        <button id="theme-toggle" class="icon-button" type="button" aria-label="Color theme: automatic">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.5M12 19v2.5M2.5 12H5M19 12h2.5M5.3 5.3l1.8 1.8M16.9 16.9l1.8 1.8M5.3 18.7l1.8-1.8M16.9 7.1l1.8-1.8"></path></svg>
+          <span id="theme-label">Auto</span>
+        </button>
+      </div>
     </div>
-    <div id="run-meta" class="meta"></div>
   </header>
 
-  <main>
-    <section class="card progress-card" aria-label="Progress">
-      <div class="progress-grid">
-        <div class="bar-block">
-          <div class="bar-label"><span>Time budget</span><span id="time-text">–</span></div>
-          <div class="bar"><div id="time-bar" class="bar-fill"></div></div>
-        </div>
-        <div class="bar-block">
-          <div class="bar-label"><span>Trials</span><span id="trial-text">–</span></div>
-          <div class="bar"><div id="trial-bar" class="bar-fill"></div></div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Estimated time left</div>
-          <div id="eta" class="stat-value">–</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Round</div>
-          <div id="round" class="stat-value">–</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Best loss</div>
-          <div id="best-loss" class="stat-value">–</div>
-        </div>
+  <main class="page">
+    <section class="run-header" aria-label="Run">
+      <div class="run-title">
+        <h1 id="run-name">Optimization</h1>
+        <span id="run-status" class="pill"><span class="pill-dot"></span><span class="pill-text">connecting…</span></span>
       </div>
-      <div id="counts" class="chips"></div>
+      <dl id="run-meta" class="run-meta"></dl>
     </section>
 
+    <section class="kpis" aria-label="Progress">
+      <div class="kpi">
+        <div class="kpi-label">Time budget</div>
+        <div class="kpi-value" id="time-text">–</div>
+        <div class="meter" aria-hidden="true"><div id="time-bar" class="meter-fill"></div></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Trials finished</div>
+        <div class="kpi-value" id="trial-text">–</div>
+        <div class="meter" aria-hidden="true"><div id="trial-bar" class="meter-fill"></div></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Estimated time left</div>
+        <div class="kpi-value" id="eta">–</div>
+        <div class="kpi-sub" id="eta-sub"></div>
+      </div>
+      <div class="kpi">
+        <div class="kpi-label">Ensemble round</div>
+        <div class="kpi-value" id="round">–</div>
+        <div class="kpi-sub" id="round-sub"></div>
+      </div>
+      <div class="kpi kpi-accent">
+        <div class="kpi-label">Best loss</div>
+        <div class="kpi-value" id="best-loss">–</div>
+        <div class="kpi-sub" id="best-sub"></div>
+      </div>
+    </section>
+
+    <div id="counts" class="status-row" aria-label="Trials by status"></div>
+
     <div class="grid-main">
-      <section class="card map-card" aria-label="Search space map">
-        <div class="card-head">
-          <h2>Search space map</h2>
-          <label class="control">Group by
+      <section class="card map-card" aria-labelledby="map-title">
+        <header class="card-head">
+          <div>
+            <h2 id="map-title">Search space map</h2>
+            <p class="card-sub">Similar settings sit close together. Trials are colored by loss rank; areas near good trials are tinted.</p>
+          </div>
+          <label class="field">
+            <span>Group by</span>
             <select id="emphasis"></select>
           </label>
-        </div>
-        <p class="hint">Each faint dot is a sampled setting of the whole search space; nearby dots have similar settings.
-          Trials are drawn on top, <span class="warm">warm = better</span>, <span class="cold">cold = worse</span>
-          (rank of the loss); hover a trial for its number (details in the Trials table below). Areas near good trials are tinted. Use the lasso (toolbar) to see what the selected trials share.</p>
+        </header>
         <div id="map" class="plot plot-map"></div>
-        <div id="map-status" class="status-line"></div>
+        <div class="map-foot">
+          <div class="legend" aria-label="Map legend">
+            <span class="legend-item"><span class="legend-ramp" aria-hidden="true"></span><span class="legend-ends"><span>worse</span><span>better</span></span></span>
+            <span class="legend-item"><svg class="legend-glyph" viewBox="0 0 16 16" aria-hidden="true"><path class="glyph-star" d="M8 1.5l1.9 4 4.4.5-3.3 3 .9 4.4L8 11.2 4.1 13.4l.9-4.4-3.3-3 4.4-.5z"></path></svg>best trial</span>
+            <span class="legend-item"><svg class="legend-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle class="glyph-ring" cx="8" cy="8" r="5.5"></circle></svg>running</span>
+            <span class="legend-item"><svg class="legend-glyph" viewBox="0 0 16 16" aria-hidden="true"><path class="glyph-cross" d="M4 4l8 8M12 4l-8 8"></path></svg>failed or timed out</span>
+            <span class="legend-item"><svg class="legend-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle class="glyph-dot" cx="8" cy="8" r="2.5"></circle></svg>not explored</span>
+          </div>
+          <div id="map-status" class="status-line"></div>
+        </div>
+        <p class="hint">Hover a trial for its number; use the lasso in the chart toolbar to summarize what the selected trials share.</p>
         <div id="selection" class="selection" hidden></div>
       </section>
 
       <aside class="side">
-        <section class="card" aria-label="Best trial">
-          <div class="card-head"><h2>Current best</h2><span id="best-meta" class="muted"></span></div>
-          <div id="best" class="pipeline muted">No fitted trial yet.</div>
+        <section class="card" aria-labelledby="best-title">
+          <header class="card-head">
+            <h2 id="best-title">Current best pipeline</h2>
+            <span id="best-meta" class="card-meta"></span>
+          </header>
+          <div id="best" class="pipeline empty">No fitted trial yet.</div>
         </section>
-        <section class="card" aria-label="Running trials">
-          <div class="card-head"><h2>Running now</h2><span id="running-count" class="muted"></span></div>
-          <div id="running" class="running muted">No trial running.</div>
+        <section class="card" aria-labelledby="running-title">
+          <header class="card-head">
+            <h2 id="running-title">Running now</h2>
+            <span id="running-count" class="count-badge" hidden></span>
+          </header>
+          <div id="running" class="running empty">No trial running.</div>
         </section>
       </aside>
     </div>
 
     <div class="grid-charts">
-      <section class="card" aria-label="Loss over trials">
-        <div class="card-head"><h2>Loss over trials</h2>
-          <label class="control"><input type="checkbox" id="log-scale"> log scale</label></div>
+      <section class="card" aria-labelledby="loss-title">
+        <header class="card-head">
+          <div>
+            <h2 id="loss-title">Loss over trials</h2>
+            <p class="card-sub">Lower is better</p>
+          </div>
+          <label class="field field-check"><input type="checkbox" id="log-scale"> <span>Log scale</span></label>
+        </header>
+        <div class="chart-legend" aria-hidden="true">
+          <span class="legend-item"><span class="key-dot"></span>fitted trial</span>
+          <span class="legend-item"><span class="key-line"></span>best so far</span>
+        </div>
         <div id="loss-chart" class="plot"></div>
       </section>
-      <section class="card" aria-label="Loss by method">
-        <div class="card-head"><h2>Loss by method</h2>
-          <label class="control">Step <select id="method-step"></select></label></div>
+      <section class="card" aria-labelledby="method-title">
+        <header class="card-head">
+          <div>
+            <h2 id="method-title">Loss by method</h2>
+            <p class="card-sub">Best method on top</p>
+          </div>
+          <label class="field">
+            <span>Step</span>
+            <select id="method-step"></select>
+          </label>
+        </header>
         <div id="method-chart" class="plot"></div>
       </section>
-      <section class="card" aria-label="Trial durations">
-        <div class="card-head"><h2>Trial durations</h2><span id="duration-meta" class="muted"></span></div>
+      <section class="card" aria-labelledby="duration-title">
+        <header class="card-head">
+          <div>
+            <h2 id="duration-title">Trial durations</h2>
+            <p class="card-sub" id="duration-meta">Finished trials</p>
+          </div>
+        </header>
         <div id="duration-chart" class="plot"></div>
       </section>
     </div>
 
-    <section class="card" aria-label="Trials">
-      <div class="card-head">
-        <h2>Trials</h2>
-        <input id="filter" type="search" placeholder="Filter (status, method, …)" aria-label="Filter trials">
-      </div>
+    <section class="card table-card" aria-labelledby="trials-title">
+      <header class="card-head">
+        <div>
+          <h2 id="trials-title">Trials</h2>
+          <p class="card-sub">Click a column to sort</p>
+        </div>
+        <label class="search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+          <input id="filter" type="search" placeholder="Filter by status, model, setting…" aria-label="Filter trials">
+        </label>
+      </header>
       <div class="table-wrap">
         <table id="trials">
           <thead>
             <tr>
-              <th data-sort="number">#</th>
-              <th data-sort="round">Round</th>
+              <th data-sort="number" class="num">#</th>
+              <th data-sort="round" class="num">Round</th>
               <th data-sort="status">Status</th>
-              <th data-sort="loss">Loss</th>
-              <th data-sort="duration">Time</th>
+              <th data-sort="loss" class="num">Loss</th>
+              <th data-sort="duration" class="num">Time</th>
               <th data-sort="model">Model</th>
               <th>Pipeline</th>
             </tr>
@@ -112,9 +182,14 @@
         </table>
       </div>
     </section>
-    <p id="footer" class="footer muted"></p>
+
+    <footer class="page-foot">
+      <span>InsurAutoML optimization dashboard</span>
+      <span id="footer" class="foot-path"></span>
+    </footer>
   </main>
-  <div id="plotly-missing" class="banner" hidden>
+
+  <div id="plotly-missing" class="banner" role="status" hidden>
     Charts need the <code>plotly</code> package (<code>pip install plotly</code>); progress and trials are shown without it.
   </div>
 </body>

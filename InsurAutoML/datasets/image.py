@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datasets import load_dataset
+from datasets import load_dataset  # type: ignore[attr-defined]  # optional HF "datasets"; pyright may resolve the local package
 
 ##########################################################################
 # Image Classification
@@ -49,6 +49,8 @@ def CIFAR(train=True, test=False, version=10):
         dataname = "cifar10"
     elif version == 100:
         dataname = "cifar100"
+    else:
+        raise ValueError("version must be 10 or 100, got {}.".format(version))
 
     if train and not test:
         dataset = load_dataset(dataname, split="train")

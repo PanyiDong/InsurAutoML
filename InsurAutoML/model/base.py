@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union, Callable
+from typing import Any, Optional, Union
 import numpy as np
 import pandas as pd
 
@@ -73,7 +73,7 @@ class BaseModel:
 class BaseClassificationWrapper:
     """Classification model wrapper"""
 
-    def __init__(self, estimator: Callable) -> None:
+    def __init__(self, estimator: Any) -> None:
         self.estimator = estimator
 
         self._fitted = False
@@ -81,7 +81,7 @@ class BaseClassificationWrapper:
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> BaseClassificationWrapper:
         self.estimator.fit(X, y)
 
@@ -109,7 +109,7 @@ class BaseClassificationWrapper:
 class BaseRegressionWrapper:
     """Regression model wrapper"""
 
-    def __init__(self, estimator: Callable) -> None:
+    def __init__(self, estimator: Any) -> None:
         self.estimator = estimator
 
         self._fitted = False
@@ -117,7 +117,7 @@ class BaseRegressionWrapper:
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> BaseRegressionWrapper:
         self.estimator.fit(X, y)
 

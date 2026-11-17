@@ -78,7 +78,7 @@ from .tabular import (
     DSSalary,
     CAHousePrice,
 )
-import importlib
+import importlib.util
 
 datasets_spec = importlib.util.find_spec("datasets")
 

@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import Any, List, Optional, Union, Tuple, cast
 import numpy as np
 import pandas as pd
 from ..utils.base import copy_frame
@@ -83,8 +83,8 @@ class SimpleRandomOverSampling(BaseBalancing):
         self,
         imbalance_threshold: float = 0.9,
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
@@ -95,25 +95,26 @@ class SimpleRandomOverSampling(BaseBalancing):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = copy_frame(data, deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -126,18 +127,20 @@ class SimpleRandomOverSampling(BaseBalancing):
         self._fitted = True
 
         if not _empty:  # return balanced X and y if y is also inputted
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
     def _fit_transform(
-        self, X: Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]
+        self, X: pd.DataFrame
     ) -> (
         pd.DataFrame
     ):  # using random over-sampling to balance the first imbalanced feature
         n, features = len(X), list(X.columns)
-        _imbalanced_feature, _majority = is_imbalance(
-            X, self.imbalance_threshold, value=True
+        _imbalanced_feature, _majority = cast(
+            Tuple[str, Any], is_imbalance(X, self.imbalance_threshold, value=True)
         )
         _minority_class = X.loc[X[_imbalanced_feature] != _majority]
 
@@ -156,7 +159,9 @@ class SimpleRandomOverSampling(BaseBalancing):
             ]
         )
         # shuffle the data
-        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
+        X = cast(
+            pd.DataFrame, sklearn.utils.shuffle(X.reset_index(drop=True))
+        ).reset_index(drop=True)
 
         return X
 
@@ -192,8 +197,8 @@ class Smote(BaseBalancing):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
         k: int = 5,
         generation: str = "mean",
     ) -> None:
@@ -209,25 +214,26 @@ class Smote(BaseBalancing):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = copy_frame(data, deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -251,14 +257,16 @@ class Smote(BaseBalancing):
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
         n, features = len(X), list(X.columns)
-        _imbalanced_feature, _majority = is_imbalance(
-            X, self.imbalance_threshold, value=True
+        _imbalanced_feature, _majority = cast(
+            Tuple[str, Any], is_imbalance(X, self.imbalance_threshold, value=True)
         )
         _minority_class = X.loc[X[_imbalanced_feature] != _majority]
 
@@ -281,7 +289,7 @@ class Smote(BaseBalancing):
                     ].mean(axis=0)
                 elif self.generation == "random":
                     X.loc[len(X), :] = X.loc[_sample.index, :] + np.random.rand() * (
-                        X.loc[X.index[_link], :] - X.lox[_sample.index, :]
+                        X.loc[X.index[_link], :] - X.loc[_sample.index, :]
                     )
                 else:
                     raise ValueError('Not recognizing generation method! Should be in \

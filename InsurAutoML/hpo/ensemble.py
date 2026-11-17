@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Callable, List, Optional, Tuple, Union
+from typing import Any, Callable, List, Optional, Tuple, Union, cast
 import scipy
 import logging
 import pandas as pd
@@ -57,12 +57,12 @@ class Pipeline:
 
     def __init__(
         self,
-        encoder: Callable = None,
-        imputer: Callable = None,
-        balancing: Callable = None,
-        scaling: Callable = None,
-        feature_selection: Callable = None,
-        model: Callable = None,
+        encoder: Any = None,
+        imputer: Any = None,
+        balancing: Any = None,
+        scaling: Any = None,
+        feature_selection: Any = None,
+        model: Any = None,
     ) -> None:
         self.encoder = encoder
         self.imputer = imputer
@@ -74,7 +74,7 @@ class Pipeline:
         self._fitted = False  # whether the pipeline is fitted
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series] = None
+        self, X: pd.DataFrame, y: Optional[Union[pd.DataFrame, pd.Series]] = None
     ) -> Pipeline:
         # loop all components, make sure they are fitted
         # if they are not fitted, fit them
@@ -107,7 +107,7 @@ class Pipeline:
                 X = self.feature_selection.transform(X)
 
         if scipy.sparse.issparse(X):  # check if returns sparse matrix
-            X = X.toarray()
+            X = cast(Any, X).toarray()
 
         if self.model is None:
             raise ValueError("model is not defined!")
@@ -135,7 +135,7 @@ class Pipeline:
         # unify the features order
         if hasattr(self.feature_selection, "feature_names_in_"):
             if not (self.feature_selection.feature_names_in_ == X.columns).all():
-                X = X[self.feature_selection.feature_names_in_]
+                X = cast(pd.DataFrame, X[self.feature_selection.feature_names_in_])
 
         if self.feature_selection is not None:
             X = self.feature_selection.transform(X)
@@ -159,7 +159,7 @@ class Pipeline:
         # unify the features order
         if hasattr(self.feature_selection, "feature_names_in_"):
             if not (self.feature_selection.feature_names_in_ == X.columns).all():
-                X = X[self.feature_selection.feature_names_in_]
+                X = cast(pd.DataFrame, X[self.feature_selection.feature_names_in_])
 
         if self.feature_selection is not None:
             X = self.feature_selection.transform(X)
@@ -185,8 +185,8 @@ class ClassifierEnsemble(formatting):
         self,
         estimators: List[Tuple[str, Pipeline]],
         voting: str = "hard",
-        weights: List[float] = None,
-        features: Optional[List[str]] = None,
+        weights: Optional[List[float]] = None,
+        features: Optional[List[Union[List[str], np.ndarray, pd.Index]]] = None,
         strategy: str = "stacking",
     ) -> None:
         # mutable defaults: a new object per call
@@ -204,9 +204,13 @@ class ClassifierEnsemble(formatting):
 
         self._fitted = False
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    def fit(  # y is required, default only for the formatting.fit signature
+        self,
+        X: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> ClassifierEnsemble:
+        if y is None:
+            raise ValueError("y is required to fit the ensemble.")
         # check for voting type
         if self.voting not in ["hard", "soft"]:
             raise ValueError("voting must be either 'hard' or 'soft'")
@@ -225,7 +229,9 @@ class ClassifierEnsemble(formatting):
         # initialize the feature list if not given
         # by full feature list
         if len(self.features) == 0:
-            self.features = [X.columns for _ in range(len(self.estimators))]
+            self.features = [
+                cast(pd.DataFrame, X).columns for _ in range(len(self.estimators))
+            ]
 
         # remember the name of response
         if isinstance(y, pd.Series):
@@ -252,7 +258,7 @@ class ClassifierEnsemble(formatting):
 
             # make sure all estimators are fitted
             if not item[1]._fitted:
-                item[1].fit(X[feature_subset], y)
+                item[1].fit(cast(pd.DataFrame, X[feature_subset]), y)
 
         self._fitted = True
 
@@ -266,7 +272,7 @@ class ClassifierEnsemble(formatting):
             # calculate predictions for all pipelines
             pred_list = np.asarray(
                 [
-                    pipeline.predict(X[feature_subset])
+                    pipeline.predict(cast(pd.DataFrame, X[feature_subset]))
                     for (name, pipeline), feature_subset in zip(
                         self.estimators, self.features
                     )
@@ -291,12 +297,16 @@ class ClassifierEnsemble(formatting):
                     axis=1,
                     arr=pred_list,
                 )
+            else:
+                raise ValueError("Unrecognized strategy {}.".format(self.strategy))
         elif self.voting == "soft":
             # calculate probabilities for all pipelines
             prob_list = []
             for (name, pipeline), feature_subset in zip(self.estimators, self.features):
                 try:
-                    prob_list.append(pipeline.predict_proba(X[feature_subset]))
+                    prob_list.append(
+                        pipeline.predict_proba(cast(pd.DataFrame, X[feature_subset]))
+                    )
                 except Exception as e:
                     logger.warning(
                         "Pipeline {} has problem {}. Ignoring.".format(e, name)
@@ -308,14 +318,21 @@ class ClassifierEnsemble(formatting):
                 )
             elif self.strategy == "boosting":
                 pred = np.sum(np.average(prob_list, axis=0), axis=1)
+            else:
+                raise ValueError("Unrecognized strategy {}.".format(self.strategy))
+        else:
+            raise ValueError("Unrecognized voting {}.".format(self.voting))
 
-        # make sure all predictions are seen
+        # make sure all predictions are seen (formatting is not inplace: returns a dataframe)
         if isinstance(pred, pd.DataFrame):
-            return super(ClassifierEnsemble, self).refit(pred)
+            return cast(pd.DataFrame, super(ClassifierEnsemble, self).refit(pred))
         # if not dataframe, convert to dataframe for formatting
         else:
-            return super(ClassifierEnsemble, self).refit(
-                pd.DataFrame(pred, columns=self._response)
+            return cast(
+                pd.DataFrame,
+                super(ClassifierEnsemble, self).refit(
+                    pd.DataFrame(pred, columns=self._response)
+                ),
             )
 
     def predict_proba(self, X: pd.DataFrame) -> pd.DataFrame:
@@ -327,7 +344,9 @@ class ClassifierEnsemble(formatting):
         prob_list = []
         for (name, pipeline), feature_subset in zip(self.estimators, self.features):
             try:
-                prob_list.append(pipeline.predict_proba(X[feature_subset]))
+                prob_list.append(
+                    pipeline.predict_proba(cast(pd.DataFrame, X[feature_subset]))
+                )
             except Exception:
                 logger.warning(
                     "Pipeline {} does not support predict_proba. Ignoring.".format(name)
@@ -360,9 +379,9 @@ class RegressorEnsemble(formatting):
     def __init__(
         self,
         estimators: List[Tuple[str, Pipeline]],
-        voting: str = "mean",
-        weights: List[float] = None,
-        features: Optional[List[str]] = None,
+        voting: Union[str, Callable] = "mean",
+        weights: Optional[List[float]] = None,
+        features: Optional[List[Union[List[str], np.ndarray, pd.Index]]] = None,
         strategy: str = "stacking",
     ) -> None:
         # mutable defaults: a new object per call
@@ -387,12 +406,16 @@ class RegressorEnsemble(formatting):
             "min": np.min,
         }
 
-    def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    def fit(  # y is required, default only for the formatting.fit signature
+        self,
+        X: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> RegressorEnsemble:
+        if y is None:
+            raise ValueError("y is required to fit the ensemble.")
         # check for voting type
         if self.voting in ["mean", "median", "max", "min"]:
-            self.voting = self._voting_methods[self.voting]
+            self.voting = self._voting_methods[cast(str, self.voting)]
         elif isinstance(self.voting, Callable):
             self.voting = self.voting
         else:
@@ -423,7 +446,9 @@ class RegressorEnsemble(formatting):
         # initialize the feature list if not given
         # by full feature list
         if len(self.features) == 0:
-            self.features = [X.columns for _ in range(len(self.estimators))]
+            self.features = [
+                cast(pd.DataFrame, X).columns for _ in range(len(self.estimators))
+            ]
 
         # check for estimators type
         if not isinstance(self.estimators, list):
@@ -438,7 +463,7 @@ class RegressorEnsemble(formatting):
 
             # make sure all estimators are fitted
             if not item[1]._fitted:
-                item[1].fit(X[feature_subset], y)
+                item[1].fit(cast(pd.DataFrame, X[feature_subset]), y)
 
         self._fitted = True
 
@@ -451,7 +476,9 @@ class RegressorEnsemble(formatting):
         # calculate predictions for all pipelines
         pred_list = np.asarray(
             [
-                pipeline.predict(X[feature_subset]).flatten()
+                np.asarray(
+                    pipeline.predict(cast(pd.DataFrame, X[feature_subset]))
+                ).flatten()
                 for (name, pipeline), feature_subset in zip(
                     self.estimators, self.features
                 )
@@ -467,16 +494,20 @@ class RegressorEnsemble(formatting):
         if self.strategy == "stacking" or self.strategy == "bagging":
             # if weights not included, not use weights
             try:
-                pred = self.voting(pred_list, axis=1, weights=self.weights)
+                pred = cast(Callable, self.voting)(
+                    pred_list, axis=1, weights=self.weights
+                )
             except BaseException:
                 # if weights included, but not available in voting function,
                 # warn users
                 if self.weights is not None:
                     logger.warning("weights are not used in voting method")
                     # warnings.warn("weights are not used in voting method")
-                pred = self.voting(pred_list, axis=1)
+                pred = cast(Callable, self.voting)(pred_list, axis=1)
         elif self.strategy == "boosting":
             pred = np.sum(pred_list, axis=1)
+        else:
+            raise ValueError("Unrecognized strategy {}.".format(self.strategy))
 
         return (
             pred

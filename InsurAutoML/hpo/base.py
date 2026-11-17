@@ -52,6 +52,7 @@ import copy
 import datetime
 import logging
 import pandas as pd
+from pandas.core.util.hashing import hash_pandas_object
 import numpy as np
 from ray import tune
 from sklearn.model_selection import KFold
@@ -872,8 +873,8 @@ class AutoTabularBase:
         }
 
     def _get_search_alg(
-        self, algo: Callable, hyperparameter_space: Dict
-    ) -> Tuple[Callable, Optional[Dict]]:
+        self, algo: Any, hyperparameter_space: Dict
+    ) -> Tuple[Any, Optional[Dict]]:
         """
         Search algorithm and Tuner param_space for the hyperparameter space
         (the space is embedded in the searcher for Optuna/Nevergrad).
@@ -940,6 +941,8 @@ class AutoTabularBase:
         dashboard_round = self._dashboard_round_start(name, num_samples)
         callbacks = list(callbacks) if callbacks is not None else []
         if dashboard_round is not None:
+            # a round index is only given with a dashboard recorder
+            assert self._dashboard is not None
             callbacks.append(DashboardCallback(self._dashboard, dashboard_round))
 
         # the dashboard replaces the Ray Tune console output
@@ -1212,6 +1215,7 @@ class AutoTabularBase:
                 return
 
             bagging = self.ensemble_strategy == "bagging"
+            feature_list: List[np.ndarray] = []  # (only used by bagging)
             if bagging:
                 # a random feature subset per round
                 feature_list = [
@@ -1477,7 +1481,7 @@ class AutoTabularBase:
     def _best_results(fit_results: pd.DataFrame, n: int = 1) -> pd.DataFrame:
         # top n fitted trials ordered by loss
         return (
-            fit_results[fit_results.training_status == "FITTED"]
+            cast(pd.DataFrame, fit_results[fit_results.training_status == "FITTED"])
             .sort_values(by=["loss"], ascending=True)
             .head(n)
         )
@@ -1614,7 +1618,7 @@ class AutoTabularBase:
         # if only one optimal input, need to convert to iterable
         if isinstance(trial_path, str):
             trial_path = [trial_path]
-            config = [config]
+            config = [cast(Dict, config)]
 
         # loop through all configs and trial directories, get model ensemble
         # trial directory is given by tune results (Result.path)
@@ -1673,10 +1677,10 @@ class AutoTabularBase:
             return None
         data = pd.DataFrame(data)
         try:
-            hashed = pd.util.hash_pandas_object(data, index=False)
+            hashed = hash_pandas_object(data, index=False)
         except TypeError:
             # cells that can not be hashed (e.g. lists): hash their text
-            hashed = pd.util.hash_pandas_object(data.astype(str), index=False)
+            hashed = hash_pandas_object(data.astype(str), index=False)
         digest = hashlib.sha1()
         digest.update(hashed.to_numpy().tobytes())
         digest.update(repr([(str(c), str(t)) for c, t in data.dtypes.items()]).encode())
@@ -1948,7 +1952,7 @@ class AutoTabularBase:
     def fit(
         self,
         X: pd.DataFrame,
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]],
         X_valid: Optional[pd.DataFrame] = None,
         y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabularBase:
@@ -1968,7 +1972,7 @@ class AutoTabularBase:
     def _fit(
         self,
         X: pd.DataFrame,
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]],
         X_valid: Optional[pd.DataFrame] = None,
         y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabularBase:

@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, List, Tuple, Callable
+from typing import Any, Optional, Union, List, Tuple, Callable, cast
 from itertools import combinations
 from collections import Counter
 import warnings
@@ -83,8 +83,8 @@ class CBFS(BaseFeatureSelection):
     def __init__(
         self,
         copula: str = "empirical",
-        n_components: int = None,
-        n_prop: float = None,
+        n_components: Optional[int] = None,
+        n_prop: Optional[float] = None,
     ) -> None:
         self.copula = copula
         self.n_components = n_components
@@ -111,11 +111,11 @@ class CBFS(BaseFeatureSelection):
 
     def select_feature(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
-        selected_features: List[str],
-        unselected_features: List[str],
-    ) -> Tuple[float, str]:
+        X: pd.DataFrame,
+        y: pd.DataFrame,
+        selected_features: List[int],
+        unselected_features: List[int],
+    ) -> Tuple[float, int]:
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
         # concat new test_comb with selected_features
@@ -130,6 +130,8 @@ class CBFS(BaseFeatureSelection):
                     p_dependent = self.Empirical_Copula(
                         pd.concat([X.iloc[:, col[0]], y], axis=1)
                     )
+                else:
+                    raise ValueError("Not recognizing copula {}!".format(self.copula))
                 # calculate dependency based on empirical copula
                 entropy_dependent = np.sum(
                     [-item * np.log2(item) for item in Counter(p_dependent).values()]
@@ -142,6 +144,8 @@ class CBFS(BaseFeatureSelection):
                         pd.concat([X.iloc[:, col[0]], y], axis=1)
                     )
                     p_redundant = self.Empirical_Copula(X.iloc[:, comb])
+                else:
+                    raise ValueError("Not recognizing copula {}!".format(self.copula))
 
                 # calculate dependency based on empirical copula
                 entropy_dependent = np.sum(
@@ -162,7 +166,7 @@ class CBFS(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> CBFS:
         # get feature names
         self._check_feature_names(X)
@@ -179,9 +183,10 @@ class CBFS(BaseFeatureSelection):
             self.n_components = min(self.n_components, X.shape[1])
         elif self.n_prop is not None:
             self.n_components = max(1, int(self.n_prop * X.shape[1]))
+        assert self.n_components is not None  # one of the branches above is taken
 
         # initialize selected/unselected features
-        selected_features = []
+        selected_features: List[int] = []
         optimal_loss = -np.inf
         unselected_features = list(range(X.shape[1]))
 
@@ -277,22 +282,22 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
     def __init__(
         self,
-        n_components: int = None,
-        n_prop: float = None,
+        n_components: Optional[int] = None,
+        n_prop: Optional[float] = None,
         n_generations: int = 10,
         fs_method: str = "random",
         n_initial: int = 10,
-        fitness_func: Callable = None,
+        fitness_func: Optional[Callable] = None,
         fitness_fit: str = "SVM",
         fitness_weight: float = 0.9,
         n_pair: int = 5,
         ga_selection: str = "Roulette Wheel",
         p_crossover: float = 1.0,
         ga_crossover: str = "Single-point",
-        crossover_n: int = None,
+        crossover_n: Optional[int] = None,
         p_mutation: float = 0.001,
-        mutation_n: int = None,
-        seed: int = None,
+        mutation_n: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_components = n_components
         self.n_prop = n_prop
@@ -322,8 +327,8 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
     def _random(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
         n: int,
     ) -> List[int]:
         # randomly select n features from X
@@ -346,8 +351,8 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
     def _entropy(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
         n: int,
     ) -> List[int]:
         # call Mutual Information from FeatureFilter
@@ -364,15 +369,15 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
     def _t_statistics(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
         n: int,
     ) -> List[int]:
         # for 2 group dataset, use t-statistics; otherwise, use ANOVA
         if len(np.unique(y)) == 2:
-            _score = t_score(X, y)
+            _score = cast(List[float], t_score(X, y))
         elif len(np.unique(y)) > 2:
-            _score = ANOVA(X, y)
+            _score = cast(List[float], ANOVA(X, y))
         else:
             raise ValueError("Only support for more than 2 groups, get only 1 group!")
 
@@ -387,8 +392,8 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
     def _SVM_RFE(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
         n: int,
     ) -> List[int]:
         from sklearn.feature_selection import RFE
@@ -417,8 +422,8 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
     def _cal_fitness(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
         selection: List[int],
     ) -> float:
         if not self.fitness_func:  # fit selected features and calculate accuracy score
@@ -497,18 +502,20 @@ class GeneticAlgorithm(BaseFeatureSelection):
                 y_pred = model.predict(X.iloc[:, True_index(selection)])
             _accuracy_score = metric(y, y_pred)
 
-            return self.fitness_weight * _accuracy_score + (
-                1 - self.fitness_weight
-            ) / max(sum(selection), 1)
+            return cast(
+                float,
+                self.fitness_weight * _accuracy_score
+                + (1 - self.fitness_weight) / max(sum(selection), 1),
+            )
         else:
             return self.fitness_func(X, y, selection)
 
     def _GeneticAlgorithm(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
         selection_pool: List[List[int]],
-    ) -> List[int]:
+    ) -> List[List[int]]:
         n, p = X.shape
 
         # calculate the fitness of all feature selection in the pool
@@ -631,8 +638,12 @@ class GeneticAlgorithm(BaseFeatureSelection):
                 return False
 
     def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> GeneticAlgorithm:
+        if y is None:
+            raise ValueError("GeneticAlgorithm needs the response y.")
         np.random.seed(self.seed)  # set random seed
         # get feature names
         self._check_feature_names(X)
@@ -651,6 +662,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
         # make sure selected features is at least 1
         elif self.n_prop is not None:
             self.n_components = max(1, int(self.n_prop * p))
+        assert self.n_components is not None  # one of the branches above is taken
         if self.n_components == p:
             warnings.warn("All features selected, no selection performed!")
             self.selection_ = [1 for _ in range(self.n_components)]
@@ -710,13 +722,13 @@ class GeneticAlgorithm(BaseFeatureSelection):
 
         return self
 
-    def _fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> GeneticAlgorithm:
+    def _fit(self, X: pd.DataFrame, y: pd.DataFrame) -> GeneticAlgorithm:
+        assert self.n_components is not None  # set in fit()
         # generate the feature selection pool using
         _sel_methods = [*self._feature_sel_methods]
         _sel_pool = []  # store all selection rules
-        self._fitness = None  # store the fitness of every individual
+        # store the fitness of every individual (None, then list, then np.array)
+        self._fitness: Any = None
 
         # keep diversity for the pool, selection rule can have different number
         # of features retained

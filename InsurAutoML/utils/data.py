@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Dict, Optional, Tuple, List, Union
+from typing import Any, Dict, Optional, Tuple, List, Union, cast
 import os
 import re
 import ast
@@ -83,7 +83,7 @@ def str2dict(item: Union[str, Dict]) -> Dict:
 
 # Train test split using test set percentage
 def train_test_split(
-    X: Any, y: Any, test_perc: float = 0.15, seed: int = None
+    X: Any, y: Any, test_perc: float = 0.15, seed: Optional[int] = None
 ) -> Tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     return order: X_train, X_test, y_train, y_test
@@ -119,20 +119,20 @@ class as_dataframe:
 
         return self.design_matrix
 
-    def to_df(self, X: Any = None, columns: List = None) -> pd.DataFrame:
+    def to_df(self, X: Any = None, columns: Optional[List] = None) -> pd.DataFrame:
         if not isinstance(X, np.ndarray):
             if not X:
                 X = self.design_matrix  # using original values from dataframe
             else:
                 raise TypeError("Input should be numpy array!")
 
-        try:
-            _empty = (columns is None).all()
-        except AttributeError:
-            _empty = columns is None
+        # (columns is None) is a bool: the former (columns is None).all() always
+        # fell back to columns is None
+        _empty = columns is None
 
         if _empty:
             columns = self.columns
+        assert columns is not None, "No columns given and no dataframe recorded."
 
         if len(columns) != X.shape[1]:
             raise ValueError(
@@ -270,7 +270,7 @@ class formatting:
         return data
 
     # make sure the category seen in observed data
-    def unify_cate(self, x: Any, list: List) -> Any:
+    def unify_cate(self, x: Any, list: Union[List, np.ndarray]) -> Any:
         if x not in list and str(x) not in self.nas:
             x = np.argmin(np.abs([item - x for item in list]))
 
@@ -472,7 +472,7 @@ def remove_index_columns(
             for _column, _threshold in zip(columns, threshold):
                 # only delete column when missing percentage larger than
                 # threshold
-                if data[_column].isnull().values.sum() / n >= _threshold:
+                if data[_column].isnull().to_numpy().sum() / n >= _threshold:
                     remove_column.append(_column)
         elif axis == 0:  # remove index
             if len(index) != len(threshold):
@@ -487,7 +487,7 @@ def remove_index_columns(
     else:
         if axis == 1:  # remove columns
             for _column in columns:
-                if data[_column].isnull().values.sum() / n >= threshold:
+                if data[_column].isnull().to_numpy().sum() / n >= threshold:
                     remove_column.append(_column)
         elif axis == 0:  # remove indexes
             for _index in index:
@@ -518,10 +518,10 @@ def remove_index_columns(
 
 # get missing matrix
 def get_missing_matrix(
-    data: pd.DataFrame,
+    data: Union[pd.DataFrame, np.ndarray],
     nas: Optional[List[str]] = None,
     missing: int = 1,
-) -> pd.DataFrame:
+) -> np.ndarray:
     """
     Get missing matrix for datasets
 
@@ -584,7 +584,7 @@ def get_missing_matrix(
 # unbalanced dataset
 def is_imbalance(
     data: pd.DataFrame, threshold: float, value: bool = False
-) -> Union[bool, Tuple[str, float]]:
+) -> Union[bool, Tuple[Any, Any]]:
     features = list(data.columns)
 
     for _column in features:
@@ -620,7 +620,7 @@ def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> Li
 
     _sample = sample.values
     features = list(table.columns)
-    _table = copy_frame(table, deep=True).astype(float)
+    _table = cast(pd.DataFrame, copy_frame(table, deep=True)).astype(float)
     _linktable = []
 
     for sample_point in _sample:
@@ -648,7 +648,7 @@ class ExtremeClass:
         self.extreme_threshold = extreme_threshold
 
     def cut(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
         features = list(_X.columns)
         for _column in features:
@@ -667,12 +667,12 @@ class ExtremeClass:
 # assign the class with the largest probability to the sample
 # common use of this function is to convert the prediction of the class
 # from neural network to actual predictions
-def assign_classes(list: List) -> List:
+def assign_classes(list: List) -> np.ndarray:
     return np.array([np.argmax(item) for item in list])
 
 
 # softmax function that can handle 1d data
-def softmax(df: pd.DataFrame) -> pd.DataFrame:
+def softmax(df: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
     if len(df.shape) == 1:
         ppositive = 1 / (1 + np.exp(-df))
         ppositive[ppositive > 0.999999] = 1
@@ -732,6 +732,8 @@ def plotHighDimCluster(
 
             tsne = TSNE(n_components=dim)
             project_result = tsne.fit_transform(X)
+    else:
+        raise ValueError('method must be "PCA" or "TSNE", get {}.'.format(method))
 
     # initiate storing dataframe
     df = pd.DataFrame()
@@ -746,7 +748,15 @@ def plotHighDimCluster(
     if dim == 3:
         fig = plt.figure()
         ax = fig.add_subplot(111, projection="3d")
-        ax.scatter(df["PCA_0"], df["PCA_1"], df["PCA_2"], c=y, cmap="RdYlBu", alpha=0.4)
+        # Axes3D.scatter zs is unannotated (inferred int)
+        ax.scatter(
+            df["PCA_0"],
+            df["PCA_1"],
+            cast(Any, df["PCA_2"]),
+            c=y,
+            cmap="RdYlBu",
+            alpha=0.4,
+        )
         ax.set_xlabel("PCA_1")
         ax.set_ylabel("PCA_2")
         ax.set_zlabel("PCA_3")
@@ -762,7 +772,7 @@ def plotHighDimCluster(
 
 
 # distinguish from numerical categorical and numerical continuous
-def numerical_categorical_continuous(df: pd.DataFrame) -> str:
+def numerical_categorical_continuous(df: pd.Series) -> str:
     if len(pd.unique(df)) <= min(UNI_CLASS, 0.1 * len(df)):
         return "numerical_categorical"
     else:
@@ -770,7 +780,7 @@ def numerical_categorical_continuous(df: pd.DataFrame) -> str:
 
 
 # distinguish the data type of each column between string categorical and text
-def string_categorical_text(df: pd.DataFrame) -> str:
+def string_categorical_text(df: pd.Series) -> str:
     # # check if the input is a dataframe
     # if not isinstance(df, pd.DataFrame):
     #     try:
@@ -787,10 +797,11 @@ def string_categorical_text(df: pd.DataFrame) -> str:
 # distinguish numerical and categorical features
 # one column at a time
 def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
+    # one column at a time: pd.unique (below) requires a series
     if not is_text_dtype(df.dtype):
-        return numerical_categorical_continuous(df)
+        return numerical_categorical_continuous(cast(pd.Series, df))
     else:
-        return string_categorical_text(df)
+        return string_categorical_text(cast(pd.Series, df))
 
 
 # text preprocessing
@@ -811,7 +822,7 @@ def text_preprocessing(text: str) -> list:
 def text2vec(
     df: Union[pd.DataFrame, pd.Series],
     method: str = "Word2Vec",
-    pretrained: str = None,
+    pretrained: Optional[str] = None,
     dim: int = 100,
     how: str = "sum",
     return_type: str = "df",
@@ -841,7 +852,7 @@ def text2vec(
                 return torch.cat(results, dim=1)
 
     # get prefix
-    prefix = df.name
+    prefix = cast(str, df.name)
 
     # method to combine the word (in sentences/phrases) vectors
     how_dict = {
@@ -892,6 +903,8 @@ def text2vec(
             import gensim.downloader
 
             KeyVectors = gensim.downloader.load(pretrained)
+    else:
+        raise ValueError('method must be "Word2Vec", get {}.'.format(method))
 
     # apply word2vec to convert text to vector
     vectorized_df = preprocessed_df.apply(

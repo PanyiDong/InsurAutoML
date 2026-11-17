@@ -155,7 +155,7 @@ def is_date(df: pd.Series, rule: str = "all") -> bool:
 # preprocessing/modification, the data changed)
 def feature_rounding(X: pd.DataFrame, uni_class: int = UNI_CLASS) -> pd.DataFrame:
     features = list(X.columns)
-    _X = copy_frame(X, deep=True)
+    _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
     for _column in features:
         _unique = np.sort(_X[_column].dropna().unique())
@@ -246,7 +246,7 @@ def True_index(X: List, _true: Sequence = (True, 1)) -> List[int]:
 # determine the task types
 def type_of_task(y: Union[pd.DataFrame, pd.Series, np.ndarray]) -> str:
     if isinstance(y, (pd.DataFrame, pd.Series)):
-        y = y.values
+        y = cast(np.ndarray, y.values)
 
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         return "continuous"  # assign for regression tasks

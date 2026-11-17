@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import importlib
+import importlib.util
 import os
 from ray.tune import Stopper
 from ray.tune.progress_reporter import ProgressReporter
@@ -52,7 +52,7 @@ import time
 import copy
 from inspect import isclass
 import warnings
-from typing import Dict, Callable, Union, List, Any, Optional
+from typing import Dict, Callable, Union, List, Any, Optional, cast
 import logging
 import signal
 from contextlib import contextmanager
@@ -290,6 +290,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "encoder_" in _key:
                     _encoder_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No encoder_ key found in hyperparameters {}.".format(item)
+                )
             if item[_encoder_key] == _encoder:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -320,6 +324,10 @@ def _hyeropt_get_hyperparameter_space(
                     if "imputer_" in _key:
                         _imputer_key = _key
                         break
+                else:
+                    raise ValueError(
+                        "No imputer_ key found in hyperparameters {}.".format(item)
+                    )
                 if item[_imputer_key] == _imputer:
                     # create a copy of hyperparameters, avoid changes on
                     # original
@@ -348,6 +356,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "balancing_" in _key:
                     _balancing_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No balancing_ key found in hyperparameters {}.".format(item)
+                )
             if item[_balancing_key] == _balancing:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -373,6 +385,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "scaling_" in _key:
                     _scaling_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No scaling_ key found in hyperparameters {}.".format(item)
+                )
             if item[_scaling_key] == _scaling:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -402,6 +418,12 @@ def _hyeropt_get_hyperparameter_space(
                 if "feature_selection_" in _key:
                     _feature_selection_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No feature_selection_ key found in hyperparameters {}.".format(
+                        item
+                    )
+                )
             if item[_feature_selection_key] == _feature_selection:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -430,6 +452,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "model_" in _key:
                     _model_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No model_ key found in hyperparameters {}.".format(item)
+                )
             if item[_model_key] == _model:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -727,9 +753,15 @@ def _converted_get_hyperparameter_space(
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from flaml import BlendSearch
+        from flaml.tune.searcher.blendsearch import BlendSearch
 
         searcher = BlendSearch
+    else:
+        raise ValueError(
+            'search_algo must be "Nevergrad" or "BlendSearch", get {}.'.format(
+                search_algo
+            )
+        )
 
     # encoding space
     # get all method names in hyperparameter space
@@ -1042,7 +1074,7 @@ def _get_hyperparameter_space(
     models: Dict,
     task_mode: str,
     search_aglo: str,
-) -> Union[Dict, Callable]:
+) -> Optional[Union[Dict, Callable]]:
     if search_aglo in ["RandomSearch", "GridSearch", "CFO"]:
         # BlendSearch can start from iter #2
         return _base_get_hyperparameter_space(
@@ -1115,6 +1147,8 @@ def _get_hyperparameter_space(
                 task_mode,
                 search_algo=search_aglo,
             )
+    # other algorithms (e.g. BlendSearch): no search space given
+    return None
     # elif search_aglo in ["Scikit-Optimize"] :
     #     return _skopt_get_hyperparameter_space(
     #         X,
@@ -1246,6 +1280,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "encoder_" in _key:
                     _encoder_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No encoder_ key found in hyperparameters {}.".format(item)
+                )
             if item[_encoder_key] == _encoder:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1275,6 +1313,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "complete_prep_" in _key:
                     _complete_prep_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No complete_prep_ key found in hyperparameters {}.".format(item)
+                )
             if item[_complete_prep_key] == _complete_prep:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1302,6 +1344,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "missing_prep_" in _key:
                     _missing_prep_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No missing_prep_ key found in hyperparameters {}.".format(item)
+                )
             if item[_missing_prep_key] == _missing_prep:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1328,6 +1374,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "model_" in _key:
                     _model_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No model_ key found in hyperparameters {}.".format(item)
+                )
             if item[_model_key] == _model:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1543,9 +1593,15 @@ def _converted_get_informed_hyperparameter_space(
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from flaml import BlendSearch
+        from flaml.tune.searcher.blendsearch import BlendSearch
 
         searcher = BlendSearch
+    else:
+        raise ValueError(
+            'search_algo must be "Nevergrad" or "BlendSearch", get {}.'.format(
+                search_algo
+            )
+        )
 
     # encoding space
     # get all method names in hyperparameter space
@@ -1665,7 +1721,7 @@ def _get_informed_hyperparameter_space(
     models: Dict,
     task_mode: str,
     search_aglo: str,
-) -> Union[Dict, Callable]:
+) -> Optional[Union[Dict, Callable]]:
     if search_aglo in ["RandomSearch", "GridSearch", "CFO"]:
         # BlendSearch can start from iter #2
         return _base_get_informed_hyperparameter_space(
@@ -1722,6 +1778,8 @@ def _get_informed_hyperparameter_space(
                 task_mode,
                 search_algo=search_aglo,
             )
+    # other algorithms (e.g. BlendSearch): no search space given
+    return None
 
 
 # get the hyperparameter optimization algorithm based on string input
@@ -1807,7 +1865,7 @@ def get_algo(search_algo: str) -> Callable:
         # Cost-Frugal Optimization
         # NOTE: ray>=2.x removed the ray.tune.search.flaml wrapper, the searchers
         # are imported from flaml directly (they implement the ray Searcher API)
-        from flaml import CFO
+        from flaml.tune.searcher.blendsearch import CFO
 
         algo = CFO
     # elif search_algo == "DragonflySearch":
@@ -1945,7 +2003,7 @@ def get_algo(search_algo: str) -> Callable:
     return algo
 
 
-def set_algo_seed(algo: str, seed: int = None):
+def set_algo_seed(algo: str, seed: Optional[int] = None):
     MAPPING = {
         "RandomSearch": "random_state",
         "GridSearch": "random_state",
@@ -2104,7 +2162,7 @@ class SilentReporter(ProgressReporter):
     def should_report(self, trials: List[Any], done: bool = False) -> bool:
         return False
 
-    def report(self, trials: List[Any], done: bool, *sys_info: Dict) -> None:
+    def report(self, trials: List[Any], done: bool, *sys_info: str) -> None:
         pass
 
 
@@ -2113,7 +2171,7 @@ def get_progress_reporter(
     progress_reporter: Optional[str],
     max_evals: int,
     max_error: int,
-) -> Optional[Callable]:
+) -> Optional[ProgressReporter]:
     # the web dashboard (default) replaces the Ray Tune console output
     if progress_reporter in (None, "Dashboard"):
         return SilentReporter()
@@ -2134,10 +2192,11 @@ def get_progress_reporter(
             )
             progress_reporter = "CLIReporter"
 
-    if progress_reporter == "CLIReporter":
-        from ray.tune.progress_reporter import CLIReporter
+    from ray.tune.progress_reporter import CLIReporter, JupyterNotebookReporter
 
-        progress_reporter = CLIReporter(
+    if progress_reporter == "CLIReporter":
+
+        reporter: Union[CLIReporter, JupyterNotebookReporter] = CLIReporter(
             # metric_columns=[
             #     "fitted_model",
             #     "training_status",
@@ -2147,15 +2206,13 @@ def get_progress_reporter(
             # ],
             parameter_columns=["task_type"],
             max_progress_rows=max_evals,
-            max_error_rows=max_error_rows,
+            max_error_rows=max_error_rows,  # type: ignore[arg-type]  # ray accepts None (no limit)
             # ray>=2 legacy reporter fails to sort trials terminated without
             # a loss (e.g. stopped by timeout), keep the trials unsorted
             sort_by_metric=False,
         )
     elif progress_reporter == "JupyterNotebookReporter":
-        from ray.tune.progress_reporter import JupyterNotebookReporter
-
-        progress_reporter = JupyterNotebookReporter(
+        reporter = JupyterNotebookReporter(
             overwrite=True,
             # metric_columns=[
             #     "fitted_model",
@@ -2166,18 +2223,20 @@ def get_progress_reporter(
             # ],
             parameter_columns=["task_type"],
             max_progress_rows=max_evals,
-            max_error_rows=max_error_rows,
+            max_error_rows=max_error_rows,  # type: ignore[arg-type]  # ray accepts None (no limit)
             # ray>=2 legacy reporter fails to sort trials terminated without
             # a loss (e.g. stopped by timeout), keep the trials unsorted
             sort_by_metric=False,
         )
+    else:
+        raise ValueError("Unrecognized progress reporter {}.".format(progress_reporter))
 
     # add metrics for visualization
-    progress_reporter.add_metric_column("fitted_model")
-    progress_reporter.add_metric_column("training_status")
-    progress_reporter.add_metric_column("loss")
+    reporter.add_metric_column("fitted_model")
+    reporter.add_metric_column("training_status")
+    reporter.add_metric_column("loss")
 
-    return progress_reporter
+    return reporter
 
 
 def get_logger(logger: List) -> List[Callable]:
@@ -2256,7 +2315,7 @@ class TimePlateauStopper(Stopper):
         std_ratio: float = 0.01,
         num_results: int = 4,
         grace_period: int = 4,
-        metric_threshold: float = None,
+        metric_threshold: Optional[float] = None,
         mode: str = "min",
     ) -> None:
         self._stored_start = None
@@ -2337,7 +2396,9 @@ class TimePlateauStopper(Stopper):
         # If mean is lower than previous mean, stop early.
         improvement_check = current_mean <= previous_mean
         # if current_mean is 0, stop early
-        return (plateau_check and improvement_check) if current_mean else True
+        return cast(
+            bool, (plateau_check and improvement_check) if current_mean else True
+        )
 
     def stop_all(self) -> bool:
         if self._stored_start:
@@ -2369,7 +2430,7 @@ class InformedStopper(Stopper):
         std_ratio: float = 0.01,
         num_results: int = 4,
         grace_period: int = 4,
-        metric_threshold: float = None,
+        metric_threshold: Optional[float] = None,
         mode: str = "min",
     ) -> None:
         self._stored_start = None
@@ -2426,7 +2487,7 @@ class InformedStopper(Stopper):
 
 
 # get estimator based on string or class
-def get_estimator(estimator_str: str) -> Callable:
+def get_estimator(estimator_str: str) -> Any:
     if estimator_str == "Lasso":
         from sklearn.linear_model import Lasso
 

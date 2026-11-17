@@ -40,6 +40,8 @@ SOFTWARE.
 
 from __future__ import annotations
 
+from typing import Optional, cast
+
 import numpy as np
 import pandas as pd
 from ..utils.base import copy_frame
@@ -78,8 +80,10 @@ class DataEncoding(BaseEncoder, formatting):
         super().__init__()
         self._fitted = False  # record whether the method is fitted
 
-    def fit(self, _df: pd.DataFrame) -> pd.DataFrame:
-        df = copy_frame(_df, deep=True)
+    def fit(  # type: ignore[override]  # returns the encoded data, not self
+        self, X: pd.DataFrame
+    ) -> pd.DataFrame:
+        df = cast(pd.DataFrame, copy_frame(X, deep=True))
         features = list(df.columns)
         self.category = pd.DataFrame()
         self.mean_scaler = {}
@@ -133,17 +137,24 @@ class DataEncoding(BaseEncoder, formatting):
                         df[[column]].values
                     )
                     # save scale map for scale back
-                    self.mean_scaler.update({column: standard_scaler.mean_[0]})
-                    self.sigma_scaler.update({column: standard_scaler.scale_[0]})
+                    self.mean_scaler.update(
+                        {column: cast(np.ndarray, standard_scaler.mean_)[0]}
+                    )
+                    self.sigma_scaler.update(
+                        {column: cast(np.ndarray, standard_scaler.scale_)[0]}
+                    )
                     df[column] = standard_scaler.transform(df[[column]].values)
                 elif self.transform == "center":
                     standard_scaler = preprocessing.StandardScaler().fit(
                         df[[column]].values
                     )
                     # save scale map for scale back
-                    self.mean_scaler.update({column: standard_scaler.mean_[0]})
+                    self.mean_scaler.update(
+                        {column: cast(np.ndarray, standard_scaler.mean_)[0]}
+                    )
                     df.loc[~df[column].isnull(), column] = (
-                        df.loc[~df[column].isnull(), column] - standard_scaler.mean_[0]
+                        df.loc[~df[column].isnull(), column]
+                        - cast(np.ndarray, standard_scaler.mean_)[0]
                     )
                 elif self.transform == "log":
                     df.loc[~df[column].isnull(), column] = np.log(
@@ -159,8 +170,8 @@ class DataEncoding(BaseEncoder, formatting):
 
         return df
 
-    def refit(self, _df: pd.DataFrame) -> pd.DataFrame:
-        df = copy_frame(_df, deep=True)
+    def refit(self, X: pd.DataFrame) -> pd.DataFrame:
+        df = cast(pd.DataFrame, copy_frame(X, deep=True))
         if self.category.empty:
             return df
         categorical_features = list(self.category.columns)
@@ -209,17 +220,24 @@ class DataEncoding(BaseEncoder, formatting):
                         df[[column]].values
                     )
                     # save scale map for scale back
-                    self.mean_scaler.update({column: standard_scaler.mean_[0]})
-                    self.sigma_scaler.update({column: standard_scaler.scale_[0]})
+                    self.mean_scaler.update(
+                        {column: cast(np.ndarray, standard_scaler.mean_)[0]}
+                    )
+                    self.sigma_scaler.update(
+                        {column: cast(np.ndarray, standard_scaler.scale_)[0]}
+                    )
                     df[column] = standard_scaler.transform(df[[column]].values)
                 elif self.transform == "center":
                     standard_scaler = preprocessing.StandardScaler().fit(
                         df[[column]].values
                     )
                     # save scale map for scale back
-                    self.mean_scaler.update({column: standard_scaler.mean_[0]})
+                    self.mean_scaler.update(
+                        {column: cast(np.ndarray, standard_scaler.mean_)[0]}
+                    )
                     df.loc[~df[column].isnull(), column] = (
-                        df.loc[~df[column].isnull(), column] - standard_scaler.mean_[0]
+                        df.loc[~df[column].isnull(), column]
+                        - cast(np.ndarray, standard_scaler.mean_)[0]
                     )
                 elif self.transform == "log":
                     df.loc[~df[column].isnull(), column] = np.log(
@@ -245,7 +263,7 @@ class CategoryShift(BaseEncoder):
     seed: random seed
     """
 
-    def __init__(self, shift: int = 3, seed: int = None) -> None:
+    def __init__(self, shift: int = 3, seed: Optional[int] = None) -> None:
         self.shift = shift
         self.seed = seed
 
@@ -262,7 +280,7 @@ class CategoryShift(BaseEncoder):
                 raise ValueError("Cannot handle categorical type!")
 
         # shift
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
         _X += self.shift
 
         self._fitted = True
@@ -279,7 +297,7 @@ class CategoryShift(BaseEncoder):
                 raise ValueError("Cannot handle categorical type!")
 
         # shift
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
         _X += self.shift
 
         return _X

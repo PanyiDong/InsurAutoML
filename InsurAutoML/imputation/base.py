@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union
+from typing import Any, Union, cast
 import numpy as np
 import pandas as pd
 from ..utils.base import copy_frame
@@ -53,7 +53,7 @@ class BaseImputer:
         pass
 
     def fill(
-        self, X: Union[pd.DataFrame, np.ndarray]
+        self, X: pd.DataFrame, *args: Any, **kwargs: Any
     ) -> Union[pd.DataFrame, np.ndarray]:
         raise NotImplementedError
 
@@ -79,22 +79,20 @@ class SimpleImputer(BaseImputer):
         super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
-    def fill(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=True)
+    def fill(self, X: Union[pd.DataFrame, np.ndarray]) -> pd.DataFrame:
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
         if _X.isnull().values.any():
             features = list(_X.columns)
             for _column in features:
-                if _X[_column].isnull().values.any():
+                if _X[_column].isnull().to_numpy().any():
                     _X[_column] = self._fill(_X[_column])
 
         self._fitted = True
 
         return _X
 
-    def _fill(self, X: Union[pd.Series, np.ndarray]) -> Union[pd.Series, np.ndarray]:
+    def _fill(self, X: pd.Series) -> pd.Series:
         if self.method == "mean":
             X = X.fillna(np.nanmean(X))
         elif self.method == "zero":
@@ -125,7 +123,7 @@ class MeanModeImputer(BaseImputer):
             else:
                 modes = X[col].mode(dropna=True)
                 if not modes.empty:
-                    mode_val = modes[0]
+                    mode_val = modes.iloc[0]
                     X[col] = X[col].fillna(mode_val)
         return X
 
@@ -172,8 +170,8 @@ class DummyImputer(BaseImputer):
 
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=True)
+    ) -> pd.DataFrame:
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
         if _X.isnull().values.any():
             _X = self._fill(_X, y)
@@ -183,12 +181,12 @@ class DummyImputer(BaseImputer):
         return _X
 
     def _fill(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, np.ndarray]
+    ) -> pd.DataFrame:
         features = list(X.columns)
 
         for _column in features:
-            if X[_column].isnull().values.any():
+            if X[_column].isnull().to_numpy().any():
                 _mean_nan = y[X[_column].isnull()].mean(axis=0)
                 _mean_non_nan = y[~X[_column].isnull()].mean(axis=0)
                 if abs(_mean_nan / _mean_non_nan - 1) >= self.threshold:
@@ -222,10 +220,8 @@ class JointImputer(BaseImputer):
         super().__init__()
         self._fitted = False  # whether the imputer has been fitted
 
-    def fill(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=True)
+    def fill(self, X: Union[pd.DataFrame, np.ndarray]) -> pd.DataFrame:
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
@@ -234,19 +230,15 @@ class JointImputer(BaseImputer):
 
         return _X
 
-    def _fill(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
         rows = list(X.index)
         for _row in rows:
-            if X.loc[_row, :].isnull().values.any():
+            if X.loc[_row, :].isnull().to_numpy().any():
                 X.loc[_row, :] = self._fill_row(_row, X)
 
         return X
 
-    def _fill_row(
-        self, row_index: Union[int, str], X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def _fill_row(self, row_index: Union[int, str], X: pd.DataFrame) -> pd.Series:
         r"""
         for x = (x_{mis}, x_{obs})^{T} with \mu = (\mu_{mis}, \mu_{obs}).T and \Sigma = ((Sigma_{mis, mis},
         Sigma_{mis, obs}), (Sigma_{obs, Sigma}, Sigma_{obs, obs})),
@@ -269,18 +261,18 @@ class JointImputer(BaseImputer):
             len(_obs_column), 1
         )
 
-        _sigma_11 = nan_cov(X.iloc[:, _mis_column].values)
-        _sigma_22 = nan_cov(X.iloc[:, _obs_column].values)
+        _sigma_11 = nan_cov(X.iloc[:, _mis_column].to_numpy())
+        _sigma_22 = nan_cov(X.iloc[:, _obs_column].to_numpy())
         _sigma_12 = nan_cov(
-            X.iloc[:, _mis_column].values, y=X.iloc[:, _obs_column].values
+            X.iloc[:, _mis_column].to_numpy(), y=X.iloc[:, _obs_column].to_numpy()
         )
         _sigma_21 = nan_cov(
-            X.iloc[:, _obs_column].values, y=X.iloc[:, _mis_column].values
+            X.iloc[:, _obs_column].to_numpy(), y=X.iloc[:, _mis_column].to_numpy()
         )
 
-        _a = X.loc[row_index, ~X.loc[row_index, :].isnull()].values.T.reshape(
-            len(_obs_column), 1
-        )
+        _a = X.loc[
+            row_index, ~X.loc[row_index, :].isnull()  # type: ignore[index]  # pandas-stubs lack scalar-row/mask-column .loc overload
+        ].values.T.reshape(len(_obs_column), 1)
         _mu = _mu_1 + _sigma_12 @ np.linalg.inv(_sigma_22) @ (_a - _mu_2)
         _mu = (
             _mu.ravel() if len(_mu.shape) > 1 else _mu

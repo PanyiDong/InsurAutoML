@@ -72,7 +72,7 @@ class InformedPipeline:
         self._fitted = False  # whether the pipeline is fitted
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series] = None
+        self, X: pd.DataFrame, y: Optional[Union[pd.DataFrame, pd.Series]] = None
     ) -> InformedPipeline:
         # loop all components, make sure they are fitted
         if self.encoder is not None and not self.encoder._fitted:
@@ -103,6 +103,9 @@ class InformedPipeline:
         if self.encoder is not None:
             X = self.encoder.refit(X)
 
+        # (all set when fitted)
+        assert self.complete_prep is not None and self.missing_prep is not None
+        assert self.model_complete is not None and self.model_missing is not None
         # transform the data
         X_complete, _ = self.complete_prep.transform(X, None)
         X_missing, _ = self.missing_prep.transform(X, None)
@@ -131,6 +134,9 @@ class InformedPipeline:
         if self.encoder is not None:
             X = self.encoder.refit(X)
 
+        # (all set when fitted)
+        assert self.complete_prep is not None and self.missing_prep is not None
+        assert self.model_complete is not None and self.model_missing is not None
         # transform the data
         X_complete, _ = self.complete_prep.transform(X, None)
         X_missing, _ = self.missing_prep.transform(X, None)
@@ -172,8 +178,8 @@ class InformedClassifierEnsemble(formatting):
         self,
         estimators: List[Tuple[str, InformedPipeline]],
         voting: str = "hard",
-        weights: List[float] = None,
-        features: Optional[List[str]] = None,
+        weights: Optional[List[float]] = None,
+        features: Optional[List[Union[List[str], np.ndarray, pd.Index]]] = None,
         strategy: str = "stacking",
     ) -> None:
         # mutable defaults: a new object per call
@@ -216,7 +222,9 @@ class InformedClassifierEnsemble(formatting):
         # initialize the feature list if not given
         # by full feature list
         if len(self.features) == 0:
-            self.features = [X.columns for _ in range(len(self.estimators))]
+            self.features = [
+                cast(pd.DataFrame, X).columns for _ in range(len(self.estimators))
+            ]
 
         # remember the name of response
         if isinstance(y, pd.Series):
@@ -243,7 +251,7 @@ class InformedClassifierEnsemble(formatting):
 
             # make sure all estimators are fitted
             if not item[1]._fitted:
-                item[1].fit(X[feature_subset], y)
+                item[1].fit(cast(pd.DataFrame, X[feature_subset]), y)
 
         self._fitted = True
 
@@ -258,7 +266,9 @@ class InformedClassifierEnsemble(formatting):
             # round predictions to nearest integers
             pred_list = np.asarray(
                 [
-                    pipeline.predict(X[feature_subset]).round().astype(int)
+                    pipeline.predict(cast(pd.DataFrame, X[feature_subset]))
+                    .round()
+                    .astype(int)
                     for (name, pipeline), feature_subset in zip(
                         self.estimators, self.features
                     )
@@ -290,7 +300,9 @@ class InformedClassifierEnsemble(formatting):
             prob_list = []
             for (name, pipeline), feature_subset in zip(self.estimators, self.features):
                 try:
-                    prob_list.append(pipeline.predict_proba(X[feature_subset]))
+                    prob_list.append(
+                        pipeline.predict_proba(cast(pd.DataFrame, X[feature_subset]))
+                    )
                 except Exception as e:
                     logger.warning(
                         "Pipeline {} has problem {}. Ignoring.".format(e, name)
@@ -330,7 +342,9 @@ class InformedClassifierEnsemble(formatting):
         prob_list = []
         for (name, pipeline), feature_subset in zip(self.estimators, self.features):
             try:
-                prob_list.append(pipeline.predict_proba(X[feature_subset]))
+                prob_list.append(
+                    pipeline.predict_proba(cast(pd.DataFrame, X[feature_subset]))
+                )
             except Exception:
                 logger.warning(
                     "Pipeline {} does not support predict_proba. Ignoring.".format(name)
@@ -364,8 +378,8 @@ class InformedRegressorEnsemble(formatting):
         self,
         estimators: List[Tuple[str, InformedPipeline]],
         voting: Union[str, Callable] = "mean",
-        weights: List[float] = None,
-        features: Optional[List[str]] = None,
+        weights: Optional[List[float]] = None,
+        features: Optional[List[Union[List[str], np.ndarray, pd.Index]]] = None,
         strategy: str = "stacking",
     ) -> None:
         # mutable defaults: a new object per call
@@ -399,7 +413,7 @@ class InformedRegressorEnsemble(formatting):
             raise ValueError("y is required to fit the ensemble.")
         # check for voting type
         if self.voting in ["mean", "median", "max", "min"]:
-            self.voting = self._voting_methods[self.voting]
+            self.voting = self._voting_methods[cast(str, self.voting)]
         elif isinstance(self.voting, Callable):
             self.voting = self.voting
         else:
@@ -430,7 +444,9 @@ class InformedRegressorEnsemble(formatting):
         # initialize the feature list if not given
         # by full feature list
         if len(self.features) == 0:
-            self.features = [X.columns for _ in range(len(self.estimators))]
+            self.features = [
+                cast(pd.DataFrame, X).columns for _ in range(len(self.estimators))
+            ]
 
         # check for estimators type
         if not isinstance(self.estimators, list):
@@ -445,7 +461,7 @@ class InformedRegressorEnsemble(formatting):
 
             # make sure all estimators are fitted
             if not item[1]._fitted:
-                item[1].fit(X[feature_subset], y)
+                item[1].fit(cast(pd.DataFrame, X[feature_subset]), y)
 
         self._fitted = True
 
@@ -458,7 +474,9 @@ class InformedRegressorEnsemble(formatting):
         # calculate predictions for all pipelines
         pred_list = np.asarray(
             [
-                pipeline.predict(X[feature_subset]).flatten()
+                np.asarray(
+                    pipeline.predict(cast(pd.DataFrame, X[feature_subset]))
+                ).flatten()
                 for (name, pipeline), feature_subset in zip(
                     self.estimators, self.features
                 )

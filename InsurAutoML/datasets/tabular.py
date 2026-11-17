@@ -60,7 +60,7 @@ class BaseTabularDataset:
         self.data_path = data_path
         self.download = download
 
-    def get_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    def get_data(self) -> Tuple[pd.DataFrame, pd.Series]:
         if os.path.exists(
             os.path.join(
                 self.data_path, self.data_name, self.data_name + ".csv"
@@ -106,7 +106,7 @@ class BaseTabularDataset:
 
 def ADULT(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("adult", data_path, download)
 
     return data_loader.get_data()
@@ -114,7 +114,7 @@ def ADULT(
 
 def AUTO(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("auto", data_path, download)
 
     return data_loader.get_data()
@@ -122,7 +122,7 @@ def AUTO(
 
 def BREAST(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("breast", data_path, download)
 
     return data_loader.get_data()
@@ -130,7 +130,7 @@ def BREAST(
 
 def CAR_EVALUATION(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("car_evaluation", data_path, download)
 
     return data_loader.get_data()
@@ -138,7 +138,7 @@ def CAR_EVALUATION(
 
 def NURSERY(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("nursery", data_path, download)
 
     return data_loader.get_data()
@@ -146,49 +146,49 @@ def NURSERY(
 
 def PAGE_BLOCKS(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("page_blocks", data_path, download)
 
     return data_loader.get_data()
 
 
-def HEART() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def HEART() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/heart.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def EMPLOYEE() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def EMPLOYEE() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/Employee.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def STROKE() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def STROKE() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/healthcare-dataset-stroke-data.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def HEART2020() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def HEART2020() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/heart_2020_cleaned.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def TRAVEL_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def TRAVEL_INSURANCE() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/TravelInsurancePrediction.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def IMBALANCED_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def IMBALANCED_INSURANCE() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/ImbalancedInsurance.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def HEALTH_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def HEALTH_INSURANCE() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/HealthInsurance.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
@@ -199,7 +199,7 @@ def HEALTH_INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
 
 def CPU_ACT(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("197_cpu_act", data_path, download)
 
     return data_loader.get_data()
@@ -207,7 +207,7 @@ def CPU_ACT(
 
 def WIND(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("503_wind", data_path, download)
 
     return data_loader.get_data()
@@ -215,19 +215,19 @@ def WIND(
 
 def HOUSES(
     data_path: str = "tmp", download: bool = True
-) -> Tuple[pd.DataFrame, pd.DataFrame]:
+) -> Tuple[pd.DataFrame, pd.Series]:
     data_loader = BaseTabularDataset("537_houses", data_path, download)
 
     return data_loader.get_data()
 
 
-def INSURANCE() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def INSURANCE() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/insurance.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
 
 
-def MEDICAL_PREMIUM() -> Tuple[pd.DataFrame, pd.DataFrame]:
+def MEDICAL_PREMIUM() -> Tuple[pd.DataFrame, pd.Series]:
     dataset = pd.read_csv("data/Medicalpremium.csv")
 
     return dataset.iloc[:, :-1], dataset.iloc[:, -1]
@@ -239,7 +239,7 @@ def MEDICAL_PREMIUM() -> Tuple[pd.DataFrame, pd.DataFrame]:
 # Machine Hack Product Sentiment Dataset
 def PROD(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_product_sentiment"
     DATANAME = "machine_hack_product_sentiment"
 
@@ -320,7 +320,7 @@ def PROD(
 # Jigsaw unintended bias in toxicity classification dataset
 def JIGSAW(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/jigsaw_unintended_bias"
     DATANAME = "jigsaw_unintended_bias"
 
@@ -400,7 +400,7 @@ def JIGSAW(
 # Jigsaw unintended bias in toxicity classification 100K dataset
 def JIGSAW100K(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/jigsaw_unintended_bias100K"
     DATANAME = "jigsaw_unintended_bias100K"
 
@@ -471,7 +471,7 @@ def JIGSAW100K(
 # Melbourne Airbnb dataset
 def AIRBNB(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/airbnb_melbourne"
     DATANAME = "airbnb_melbourne"
 
@@ -541,7 +541,7 @@ def AIRBNB(
 # IMDB Genre Prediction dataset
 def IMDBGenre(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/imdb_genre_prediction"
     DATANAME = "imdb_genre_prediction"
 
@@ -618,7 +618,7 @@ def IMDBGenre(
 # Fake Job Posting Prediction dataset
 def FakeJob(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/fake_job_postings"
     DATANAME = "fake_job_postings"
 
@@ -695,7 +695,7 @@ def FakeJob(
 # Fake Job Posting Prediction dataset 2
 def FakeJob2(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/fake_job_postings2"
     DATANAME = "fake_job_postings2"
 
@@ -772,7 +772,7 @@ def FakeJob2(
 # Kick Starter Success Prediction dataset
 def KickStarter(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/kick_starter_funding"
     DATANAME = "kick_starter_funding"
 
@@ -849,7 +849,7 @@ def KickStarter(
 # WINE Variety Classification dataset
 def WINEReview(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/wine_reviews"
     DATANAME = "wine_reviews"
 
@@ -926,7 +926,7 @@ def WINEReview(
 # News Channel Classification dataset
 def NewsChannel(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_channel"
     DATANAME = "news_channel"
 
@@ -1006,7 +1006,7 @@ def NewsChannel(
 # women clothing reviews dataset
 def WomenCloth(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/women_clothing_review"
     DATANAME = "women_clothing_review"
 
@@ -1077,7 +1077,7 @@ def WomenCloth(
 # Mercari Price Suggestion dataset
 def MERCARI(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/mercari_price_suggestion"
     DATANAME = "mercari_price_suggestion"
 
@@ -1157,7 +1157,7 @@ def MERCARI(
 # Mercari Price Suggestion 100K dataset
 def MERCARI100K(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/mercari_price_suggestion100K"
     DATANAME = "mercari_price_suggestion100K"
 
@@ -1228,7 +1228,7 @@ def MERCARI100K(
 # Innerwear (sold by American Eagle) Price Prediction
 def AE(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/ae_price_prediction"
     DATANAME = "ae_price_prediction"
 
@@ -1296,7 +1296,7 @@ def AE(
 # JC Penney Price Prediction dataset
 def JCPenney(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/jc_penney_products"
     DATANAME = "jc_penney_products"
 
@@ -1373,7 +1373,7 @@ def JCPenney(
 # News Popularity Regression dataset
 def NewsPopularity(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_popularity"
     DATANAME = "news_popularity"
 
@@ -1450,7 +1450,7 @@ def NewsPopularity(
 # News Popularity Regression dataset 2
 def NewsPopularity2(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/news_popularity2"
     DATANAME = "news_popularity2"
 
@@ -1527,7 +1527,7 @@ def NewsPopularity2(
 # Book Price Regression dataset
 def BookPrice(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_competitions/predict_the_price_of_books"
     DATANAME = "predict_the_price_of_books"
 
@@ -1604,7 +1604,7 @@ def BookPrice(
 # Data Science Salary Classification dataset
 def DSSalary(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/machine_hack_competitions/predict_the_data_scientists_salary_in_india_hackathon"
     DATANAME = "predict_the_data_scientists_salary"
 
@@ -1681,7 +1681,7 @@ def DSSalary(
 # California House Price dataset
 def CAHousePrice(
     split: Union[str, List[str]] = "train", save: bool = True, data_path: str = "tmp"
-) -> Dict[str, Tuple[pd.DataFrame, pd.DataFrame]]:
+) -> Union[Tuple[pd.DataFrame, pd.Series], Dict[str, Tuple[pd.DataFrame, pd.Series]]]:
     URL = "https://automl-mm-bench.s3.amazonaws.com/kaggle-california-house-prices"
     DATANAME = "california_house_prices"
 

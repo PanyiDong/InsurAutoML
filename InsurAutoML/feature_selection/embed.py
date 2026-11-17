@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import Any, Optional, Union, Tuple, cast
 import warnings
 import numbers
 import numpy as np
@@ -82,11 +82,11 @@ class PCA_FeatureSelection(BaseFeatureSelection):
 
     def __init__(
         self,
-        n_components: int = None,
+        n_components: Optional[int] = None,
         solver: str = "auto",
         tol: float = 0.0,
         n_iter: str = "auto",
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_components = n_components
         self.solver = solver
@@ -100,7 +100,7 @@ class PCA_FeatureSelection(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> PCA_FeatureSelection:
         n, p = X.shape
 
@@ -147,7 +147,7 @@ class PCA_FeatureSelection(BaseFeatureSelection):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _features = list(X.columns)
+        _features = list(cast(pd.DataFrame, X).columns)
 
         U = self.U_[:, : self.n_components]
 
@@ -199,8 +199,10 @@ class PCA_FeatureSelection(BaseFeatureSelection):
             # side='right' ensures that number of features selected
             # their variance is always greater than n_components float
             # passed.
-            ratio_cumsum = stable_cumsum(_var_ratio)
-            n_components = np.searchsorted(ratio_cumsum, n_components, side="right") + 1
+            ratio_cumsum = stable_cumsum(_var_ratio)  # type: ignore[reportCallIssue] # sklearn @deprecated types it as property
+            n_components = cast(
+                int, np.searchsorted(ratio_cumsum, n_components, side="right") + 1
+            )
         # Compute noise covariance using Probabilistic PCA model
         # The sigma2 maximum likelihood (cf. eq. 12.46)
         if n_components < min(n, p):
@@ -230,7 +232,14 @@ class PCA_FeatureSelection(BaseFeatureSelection):
 
             np.random.seed(self.seed)
             v0 = np.random.uniform(-1, 1, size=min(X.shape))
-            U, S, V = svds(X.values, k=n_components, tol=self.tol, v0=v0)
+            U, S, V = svds(
+                cast(pd.DataFrame, X).values,
+                k=n_components,
+                tol=self.tol,  # type: ignore[reportArgumentType] # scipy stub types tol as int
+                v0=v0,
+            )
+            # U and V are returned since return_singular_vectors=True
+            U, V = cast(np.ndarray, U), cast(np.ndarray, V)
             S = S[::-1]
             U, V = svd_flip(U[:, ::-1], V[::-1])
         elif solver == "randomized":
@@ -239,10 +248,12 @@ class PCA_FeatureSelection(BaseFeatureSelection):
             U, S, V = randomized_svd(
                 np.array(X),
                 n_components=n_components,
-                n_iter=self.n_iter,
+                n_iter=cast(Any, self.n_iter),  # "auto" or an int
                 flip_sign=True,
                 random_state=self.seed,
             )
+        else:
+            raise ValueError("Not recognizing solver = {}!".format(solver))
 
         self.n_samples, self.n_features = n, p
         self.components_ = V
@@ -360,7 +371,7 @@ class RBFSampler(BaseFeatureSelection):
     """
 
     def __init__(
-        self, gamma: float = 1.0, n_components: int = 100, seed: int = None
+        self, gamma: float = 1.0, n_components: int = 100, seed: Optional[int] = None
     ) -> None:
         self.gamma = gamma
         self.n_components = n_components
@@ -372,7 +383,7 @@ class RBFSampler(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> RBFSampler:
         # get feature names
         self._check_feature_names(X)

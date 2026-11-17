@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union, cast
 from logging import warning
 from random import random
 from re import L
@@ -63,7 +63,7 @@ class NoScaling(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> NoScaling:
         self._fitted = True
 
@@ -110,18 +110,18 @@ class Standardize(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Standardize:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         n, p = _X.shape
         if self.with_mean:
-            self._mean = [0 for _ in range(p)]
+            self._mean: List[float] = [0 for _ in range(p)]
         if self.with_std:
-            self._std = [0 for _ in range(p)]
+            self._std: List[float] = [0 for _ in range(p)]
 
         for i in range(p):
-            _data = _X.iloc[:, i].values
+            _data = cast(np.ndarray, _X.iloc[:, i].values)
             n_notnan = n - np.isnan(_data).sum()
             _x_sum = 0
             _x_2_sum = 0
@@ -141,7 +141,7 @@ class Standardize(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         if self.with_mean:
             _X -= self._mean
         if self.with_std:
@@ -191,17 +191,17 @@ class Normalize(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Normalize:
         if self.norm not in ["l1", "l2", "max"]:
             raise ValueError("Not recognizing norm method!")
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         n, p = _X.shape
-        self._scale = [0 for _ in range(p)]
+        self._scale: List[float] = [0 for _ in range(p)]
 
         for i in range(p):
-            _data = _X.iloc[:, i].values
+            _data = cast(np.ndarray, _X.iloc[:, i].values)
             if self.norm == "max":
                 self._scale[i] = np.max(np.abs(_data))
             elif self.norm == "l1":
@@ -216,7 +216,7 @@ class Normalize(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         _X /= self._scale
 
         return _X
@@ -271,7 +271,7 @@ class RobustScale(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> RobustScale:
         q_min, q_max = self.quantile
         if q_min is None:  # in case no input
@@ -283,24 +283,28 @@ class RobustScale(BaseScaling):
                 "Quantile not in range, get {0:.1f} and {1:.1f}!".format(q_min, q_max)
             )
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         n, p = _X.shape
         if self.with_centering:
-            self._median = [0 for _ in range(p)]
+            self._median: List[float] = [0 for _ in range(p)]
         if self.with_scale:
-            self._scale = [0 for _ in range(p)]
+            self._scale: List[float] = [0 for _ in range(p)]
 
         for i in range(p):
-            _data = _X.iloc[:, i].values
+            _data = cast(np.ndarray, _X.iloc[:, i].values)
             if self.with_centering:
                 self._median[i] = np.nanmedian(_data)
                 quantile = np.nanquantile(_data, (q_min / 100, q_max / 100))
                 quantile = np.transpose(quantile)
-                self._scale[i] = quantile[1] - quantile[0]
+                self._scale[i] = cast(float, quantile[1] - quantile[0])
                 if self.unit_variance:
-                    self._scale[i] = self.scale[i] / (
-                        scipy.stats.norm.ppf(q_max / 100.0)
-                        - scipy.stats.norm.ppf(q_min / 100.0)
+                    self._scale[i] = cast(
+                        float,
+                        self._scale[i]
+                        / (
+                            scipy.stats.norm.ppf(q_max / 100.0)
+                            - scipy.stats.norm.ppf(q_min / 100.0)
+                        ),
                     )
 
         # handle 0 in scale
@@ -319,7 +323,7 @@ class RobustScale(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         if self.with_centering:
             _X -= self._median
@@ -369,16 +373,16 @@ class MinMaxScale(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> MinMaxScale:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         n, p = _X.shape
 
-        self._min = [0 for _ in range(p)]
-        self._max = [0 for _ in range(p)]
+        self._min: List[float] = [0 for _ in range(p)]
+        self._max: List[float] = [0 for _ in range(p)]
 
         for i in range(p):
-            _data = _X.iloc[:, i].values
+            _data = cast(np.ndarray, _X.iloc[:, i].values)
             self._min[i] = np.nanmin(_data)
             self._max[i] = np.nanmax(_data)
 
@@ -393,7 +397,7 @@ class MinMaxScale(BaseScaling):
         if not f_min < f_max:
             raise ValueError("Minimum of feature range must be smaller than maximum!")
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         _X = (_X - self._min) / (np.array(self._max) - np.array(self._min))
         _X = _X * (f_max - f_min) + f_min
 
@@ -411,7 +415,7 @@ class MinMaxScale(BaseScaling):
         if not f_min < f_max:
             raise ValueError("Minimum of feature range must be smaller than maximum!")
 
-        _X = copy_frame(X, deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
         _X = (_X - f_min) / (f_max - f_min)
         _X = _X * (np.array(self._max) - np.array(self._min)) + self._min
 
@@ -449,12 +453,16 @@ class Winsorization(BaseScaling):
         self._fitted = False  # record whether the model has been fitted
 
     def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Winsorization:
         if not isinstance(y, pd.DataFrame) and not isinstance(X, pd.Series):
             warnings.warn("Method Winsorization requires response, but not getting it.")
+        # the response is required below (indexing None fails as before)
+        _y = cast(pd.DataFrame, y)
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         features = list(_X.columns)
         self._quantile_list = []
@@ -463,8 +471,8 @@ class Winsorization(BaseScaling):
         for _column in features:
             quantile = np.nanquantile(_X[_column], self.quantile, axis=0)
             self._quantile_list.append(quantile)
-            _above_quantile = np.ravel(y[_X[_column] > quantile].mean(axis=0))[0]
-            _below_quantile = np.ravel(y[_X[_column] <= quantile].mean(axis=0))[0]
+            _above_quantile = np.ravel(_y[_X[_column] > quantile].mean(axis=0))[0]
+            _below_quantile = np.ravel(_y[_X[_column] <= quantile].mean(axis=0))[0]
             # deal with the case where above quantile do not exists
             if not _above_quantile:
                 _above_quantile = quantile
@@ -481,7 +489,7 @@ class Winsorization(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
         features = list(_X.columns)
         i = 0
 
@@ -533,7 +541,7 @@ class PowerTransformer(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> PowerTransformer:
         # check if the inputs are dataframe
         if not isinstance(X, pd.DataFrame):
@@ -545,7 +553,7 @@ class PowerTransformer(BaseScaling):
         from sklearn.preprocessing import PowerTransformer
 
         self.mol = PowerTransformer(
-            method=self.method,
+            method=cast(Literal["yeo-johnson", "box-cox"], self.method),
             standardize=self.standardize,
             copy=self.deep_copy,
         )
@@ -559,7 +567,7 @@ class PowerTransformer(BaseScaling):
     def transform(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
         return pd.DataFrame(self.mol.transform(X), columns=self.features)
 
@@ -601,7 +609,7 @@ class QuantileTransformer(BaseScaling):
         output_distribution: str = "uniform",
         ignore_implicit_zeros: bool = False,
         subsample: int = int(1e5),
-        random_state: int = None,
+        random_state: Optional[int] = None,
         deep_copy: bool = True,
     ) -> None:
         self.n_quantiles = n_quantiles
@@ -617,7 +625,7 @@ class QuantileTransformer(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> QuantileTransformer:
         # check if the inputs are dataframe
         if not isinstance(X, pd.DataFrame):
@@ -633,14 +641,17 @@ class QuantileTransformer(BaseScaling):
 
         self.mol = QuantileTransformer(
             n_quantiles=self.n_quantiles,
-            output_distribution=self.output_distribution,
+            output_distribution=cast(
+                Literal["uniform", "normal"], self.output_distribution
+            ),
             ignore_implicit_zeros=self.ignore_implicit_zeros,
             subsample=self.subsample,
             random_state=self.random_state,
             copy=self.deep_copy,
         )
 
-        self.mol.fit(X, y)
+        # sklearn ignores y; its stub types it as Series
+        self.mol.fit(X, cast(Any, y))
 
         self._fitted = True
 
@@ -649,10 +660,11 @@ class QuantileTransformer(BaseScaling):
     def transform(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
-        if not (self.mol.feature_names_in_ == X.columns).all():
-            X = X[self.mol.feature_names_in_]
+        feature_names = cast(Any, self.mol).feature_names_in_
+        if not (feature_names == cast(pd.DataFrame, X).columns).all():
+            X = cast(pd.DataFrame, cast(pd.DataFrame, X)[feature_names])
         return pd.DataFrame(self.mol.transform(X), columns=self.features)
 
     def inverse_transform(
@@ -664,8 +676,9 @@ class QuantileTransformer(BaseScaling):
             )
 
         self._fitted = False
-        if not (self.mol.feature_names_in_ == X.columns).all():
-            X = X[self.mol.feature_names_in_]
+        feature_names = cast(Any, self.mol).feature_names_in_
+        if not (feature_names == cast(pd.DataFrame, X).columns).all():
+            X = cast(pd.DataFrame, cast(pd.DataFrame, X)[feature_names])
 
         return pd.DataFrame(self.mol.inverse_transform(X), columns=self.features)
 
@@ -734,7 +747,7 @@ def Feature_Manipulation(
         except BaseException:
             raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
-    _X = copy_frame(X, deep=deep_copy)
+    _X = cast(pd.DataFrame, copy_frame(X, deep=deep_copy))
 
     # if no columns/manipulation specified, raise warning
     if not columns or not manipulation:
@@ -749,7 +762,7 @@ def Feature_Manipulation(
                 len(columns), len(manipulation)
             )
         )
-    manipulation = dict(zip(columns, manipulation))
+    manipulation_dict = dict(zip(columns, manipulation))
 
     for _column in columns:
         # if observed in rename dict, change column names
@@ -761,19 +774,19 @@ def Feature_Manipulation(
         # new column names = old column names + manipulation
         # for distinguish
         if not replace and new_column_name == _column:
-            new_column_name += "_" + manipulation[_column]
+            new_column_name += "_" + manipulation_dict[_column]
 
         # column manipulation
-        if manipulation[_column] == "ln":
+        if manipulation_dict[_column] == "ln":
             _X[new_column_name] = np.log(_X[_column])
-        elif manipulation[_column] == "log2":
+        elif manipulation_dict[_column] == "log2":
             _X[new_column_name] = np.log2(_X[_column])
-        elif manipulation[_column] == "log10":
+        elif manipulation_dict[_column] == "log10":
             _X[new_column_name] = np.log10(_X[_column])
-        elif manipulation[_column] == "exp":
+        elif manipulation_dict[_column] == "exp":
             _X[new_column_name] = np.exp(_X[_column])
         else:
-            exec("_X[new_column_name] = _X[_column]" + manipulation[_column])
+            exec("_X[new_column_name] = _X[_column]" + manipulation_dict[_column])
 
     return _X
 
@@ -811,7 +824,7 @@ class Feature_Truncation(BaseScaling):
         # mutable defaults: a new object per call
         columns = [] if columns is None else columns
         self.columns = columns
-        self.quantile = quantile
+        self.quantile: Union[List[float], float, Dict[str, float]] = quantile
         self.deep_copy = deep_copy
 
         super().__init__()
@@ -819,7 +832,7 @@ class Feature_Truncation(BaseScaling):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Feature_Truncation:
         # make sure input is dataframe
         if not isinstance(X, pd.DataFrame):
@@ -828,7 +841,7 @@ class Feature_Truncation(BaseScaling):
             except BaseException:
                 raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         self.columns = list(_X.columns) if not self.columns else self.columns
 
@@ -844,7 +857,13 @@ class Feature_Truncation(BaseScaling):
         self.quantile_list = {}
 
         for _column in self.columns:
-            quantile = np.nanquantile(X[_column], self.quantile[_column], axis=0)
+            # a scalar quantile applies to all columns
+            _q = (
+                self.quantile[_column]
+                if isinstance(self.quantile, dict)
+                else self.quantile
+            )
+            quantile = np.nanquantile(X[_column], _q, axis=0)
             self.quantile_list[_column] = quantile
 
         return self
@@ -852,7 +871,7 @@ class Feature_Truncation(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         for _column in self.columns:
             # clip upcasts int columns when the quantile is float

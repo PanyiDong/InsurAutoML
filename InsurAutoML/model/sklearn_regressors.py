@@ -40,11 +40,13 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union
+from typing import Any, Callable, Dict, Literal, Optional, Union, cast
 import inspect
 import numpy as np
 import pandas as pd
 import scipy
+from numpy.typing import ArrayLike
+from scipy.sparse import spmatrix
 import sklearn
 import sklearn.linear_model
 import sklearn.neighbors
@@ -68,6 +70,12 @@ import sklearn.calibration
 from ..constant import MAX_ITER
 from ..utils.base import is_none
 from .base import BaseModel
+
+# inputs accepted by the wrapped scikit-learn estimators, mirroring
+# scikit-learn's MatrixLike and MatrixLike | ArrayLike
+MatrixData = Union[pd.DataFrame, np.ndarray, spmatrix]
+SklearnData = Union[MatrixData, ArrayLike]
+SampleWeight = Optional[ArrayLike]
 
 ##########################################################################
 # models from sklearn
@@ -96,25 +104,24 @@ class AdaboostRegressor(sklearn.ensemble.AdaBoostRegressor, BaseModel):
             estimator=DecisionTreeRegressor(max_depth=self.max_depth),
             n_estimators=self.n_estimators,
             learning_rate=self.learning_rate,
-            loss=self.loss,
+            loss=cast(Literal["linear", "square", "exponential"], self.loss),
         )
 
         self._fitted = False  # whether the model is fitted
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: SklearnData,
+        y: ArrayLike,
+        sample_weight: SampleWeight = None,
     ) -> AdaboostRegressor:
-        super(AdaboostRegressor, self).fit(X, y)
+        super(AdaboostRegressor, self).fit(X, y, sample_weight=sample_weight)
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: SklearnData) -> np.ndarray:
         return super(AdaboostRegressor, self).predict(X)
 
     def predict_proba(
@@ -153,7 +160,7 @@ class ARDRegression(sklearn.linear_model.ARDRegression, BaseModel):
         self.fit_intercept = fit_intercept
 
         super().__init__(
-            **{_ARD_ITER: self.max_iter},
+            **cast(Dict[str, Any], {_ARD_ITER: self.max_iter}),
             tol=self.tol,
             alpha_1=self.alpha_1,
             alpha_2=self.alpha_2,
@@ -167,8 +174,8 @@ class ARDRegression(sklearn.linear_model.ARDRegression, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: MatrixData,
+        y: ArrayLike,
     ) -> ARDRegression:
         super(ARDRegression, self).fit(X, y)
 
@@ -176,10 +183,10 @@ class ARDRegression(sklearn.linear_model.ARDRegression, BaseModel):
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        return super(ARDRegression, self).predict(X)
+    def predict(  # type: ignore[override]  # BaseModel.predict has no return_std
+        self, X: SklearnData
+    ) -> np.ndarray:
+        return cast(np.ndarray, super(ARDRegression, self).predict(X))
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
@@ -213,12 +220,17 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: SklearnData,
+        y: SklearnData,
+        sample_weight: SampleWeight = None,
+        check_input: bool = True,
     ) -> DecisionTreeRegressor:
         super(DecisionTreeRegressor, self).__init__(
-            criterion=self.criterion,
-            max_depth=max(int(self.max_depth_factor * X.shape[1]), 1),
+            criterion=cast(
+                Literal["squared_error", "friedman_mse", "absolute_error", "poisson"],
+                self.criterion,
+            ),
+            max_depth=max(int(self.max_depth_factor * cast(Any, X).shape[1]), 1),
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,
@@ -227,16 +239,16 @@ class DecisionTreeRegressor(sklearn.tree.DecisionTreeRegressor, BaseModel):
             min_impurity_decrease=self.min_impurity_decrease,
         )
 
-        super(DecisionTreeRegressor, self).fit(X, y)
+        super(DecisionTreeRegressor, self).fit(
+            X, y, sample_weight=sample_weight, check_input=check_input
+        )
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        return super(DecisionTreeRegressor, self).predict(X)
+    def predict(self, X: SklearnData, check_input: bool = True) -> np.ndarray:
+        return super(DecisionTreeRegressor, self).predict(X, check_input=check_input)
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
@@ -267,7 +279,9 @@ class ExtraTreesRegressor(BaseModel):
         self.min_weight_fraction_leaf = float(min_weight_fraction_leaf)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
-        self.estimator = None  # the fitted estimator
+        # the fitted estimator (Any: sklearn stubs omit hyper-parameter
+        # attributes such as n_estimators/max_iter that are updated below)
+        self.estimator: Any = None
         self.max_iter = self._get_max_iter()  # limit the number of iterations
 
         super().__init__()
@@ -288,7 +302,12 @@ class ExtraTreesRegressor(BaseModel):
 
             self.estimator = ExtraTreesRegressor(
                 n_estimators=n_iter,
-                criterion=self.criterion,
+                criterion=cast(
+                    Literal[
+                        "squared_error", "friedman_mse", "absolute_error", "poisson"
+                    ],
+                    self.criterion,
+                ),
                 max_depth=self.max_depth,
                 max_leaf_nodes=self.max_leaf_nodes,
                 min_samples_leaf=self.min_samples_leaf,
@@ -357,13 +376,14 @@ class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor, BaseMod
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: SklearnData,
+        y: SklearnData,
     ) -> GaussianProcess:
-        n_features = X.shape[1]
+        n_features = cast(Any, X).shape[1]
+        length_scale_bounds = [(self.thetaL, self.thetaU)] * n_features
         kernel = sklearn.gaussian_process.kernels.RBF(
             length_scale=[1.0] * n_features,
-            length_scale_bounds=[(self.thetaL, self.thetaU)] * n_features,
+            length_scale_bounds=length_scale_bounds,  # type: ignore[arg-type]  # stub lacks per-feature bounds
         )
 
         super(GaussianProcess, self).__init__(
@@ -381,10 +401,10 @@ class GaussianProcess(sklearn.gaussian_process.GaussianProcessRegressor, BaseMod
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        return super(GaussianProcess, self).predict(X)
+    def predict(  # type: ignore[override]  # BaseModel.predict has no return_std
+        self, X: SklearnData
+    ) -> np.ndarray:
+        return cast(np.ndarray, super(GaussianProcess, self).predict(X))
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
@@ -421,7 +441,9 @@ class HistGradientBoostingRegressor(BaseModel):
         self.n_iter_no_change = int(n_iter_no_change)
         self.validation_fraction = float(validation_fraction)
 
-        self.estimator = None  # the fitted estimator
+        # the fitted estimator (Any: sklearn stubs omit hyper-parameter
+        # attributes such as n_estimators/max_iter that are updated below)
+        self.estimator: Any = None
         self.max_iter = self._get_max_iter()  # limit the number of iterations
 
         super().__init__()
@@ -436,7 +458,7 @@ class HistGradientBoostingRegressor(BaseModel):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
         n_iter: int = 2,
-        sample_weight: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+        sample_weight: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> HistGradientBoostingRegressor:
         if self.estimator is None:
             from sklearn.ensemble import HistGradientBoostingRegressor
@@ -463,14 +485,17 @@ class HistGradientBoostingRegressor(BaseModel):
                 raise ValueError("early_stop should be either off, train or valid")
 
             self.estimator = HistGradientBoostingRegressor(
-                loss=self.loss,
+                loss=cast(
+                    Literal["squared_error", "absolute_error", "poisson", "quantile"],
+                    self.loss,
+                ),
                 learning_rate=self.learning_rate,
                 min_samples_leaf=self.min_samples_leaf,
                 max_depth=self.max_depth,
                 max_leaf_nodes=self.max_leaf_nodes,
                 max_bins=self.max_bins,
                 l2_regularization=self.l2_regularization,
-                early_stopping=self.early_stopping_,
+                early_stopping=self.early_stopping_,  # type: ignore[arg-type]  # inferred from sklearn's untyped default
                 tol=self.tol,
                 scoring=self.scoring,
                 n_iter_no_change=self.n_iter_no_change,
@@ -534,7 +559,7 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor, BaseMode
 
         super().__init__(
             n_neighbors=self.n_neighbors,
-            weights=self.weights,
+            weights=cast(Literal["uniform", "distance"], self.weights),
             p=self.p,
         )
 
@@ -542,8 +567,8 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor, BaseMode
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: MatrixData,
+        y: SklearnData,
     ) -> KNearestNeighborsRegressor:
         super(KNearestNeighborsRegressor, self).fit(X, y)
 
@@ -551,9 +576,7 @@ class KNearestNeighborsRegressor(sklearn.neighbors.KNeighborsRegressor, BaseMode
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: MatrixData) -> np.ndarray:
         return super(KNearestNeighborsRegressor, self).predict(X)
 
     def predict_proba(
@@ -583,8 +606,10 @@ class LibLinear_SVR(sklearn.svm.LinearSVR, BaseModel):
 
         super().__init__(
             epsilon=self.epsilon,
-            loss=self.loss,
-            dual=self.dual,
+            loss=cast(
+                Literal["epsilon_insensitive", "squared_epsilon_insensitive"], self.loss
+            ),
+            dual=self.dual,  # type: ignore[arg-type]  # inferred from sklearn's untyped default
             tol=self.tol,
             C=self.C,
             fit_intercept=self.fit_intercept,
@@ -595,18 +620,17 @@ class LibLinear_SVR(sklearn.svm.LinearSVR, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: SklearnData,
+        y: ArrayLike,
+        sample_weight: SampleWeight = None,
     ) -> LibLinear_SVR:
-        super(LibLinear_SVR, self).fit(X, y)
+        super(LibLinear_SVR, self).fit(X, y, sample_weight=sample_weight)
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: MatrixData) -> np.ndarray:
         return super(LibLinear_SVR, self).predict(X)
 
     def predict_proba(
@@ -640,9 +664,11 @@ class LibSVM_SVR(sklearn.svm.SVR, BaseModel):
 
         super().__init__(
             C=self.C,
-            kernel=self.kernel,
+            kernel=cast(
+                Literal["linear", "poly", "rbf", "sigmoid", "precomputed"], self.kernel
+            ),
             degree=self.degree,
-            gamma=self.gamma,
+            gamma=self.gamma,  # type: ignore[arg-type]  # inferred from sklearn's untyped default
             coef0=self.coef0,
             shrinking=self.shrinking,
             tol=self.tol,
@@ -653,18 +679,17 @@ class LibSVM_SVR(sklearn.svm.SVR, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: MatrixData,
+        y: ArrayLike,
+        sample_weight: SampleWeight = None,
     ) -> LibSVM_SVR:
-        super(LibSVM_SVR, self).fit(X, y)
+        super(LibSVM_SVR, self).fit(X, y, sample_weight=sample_weight)
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: SklearnData) -> np.ndarray:
         return super(LibSVM_SVR, self).predict(X)
 
     def predict_proba(
@@ -711,7 +736,9 @@ class MLPRegressor(BaseModel):
         self.beta_2 = float(beta_2)
         self.epsilon = float(epsilon)
 
-        self.estimator = None  # the fitted estimator
+        # the fitted estimator (Any: sklearn stubs omit hyper-parameter
+        # attributes such as n_estimators/max_iter that are updated below)
+        self.estimator: Any = None
         self.max_iter = self._get_max_iter()  # limit the number of iterations
 
         super().__init__()
@@ -750,14 +777,16 @@ class MLPRegressor(BaseModel):
 
             self.estimator = MLPRegressor(
                 hidden_layer_sizes=self.hidden_layer_sizes,
-                activation=self.activation,
+                activation=cast(
+                    Literal["relu", "identity", "logistic", "tanh"], self.activation
+                ),
                 alpha=self.alpha,
                 learning_rate_init=self.learning_rate_init,
                 early_stopping=self.early_stopping,
                 n_iter_no_change=self.n_iter_no_change,
                 validation_fraction=self.validation_fraction,
                 tol=self.tol,
-                solver=self.solver,
+                solver=cast(Literal["lbfgs", "sgd", "adam"], self.solver),
                 batch_size=self.batch_size,
                 shuffle=self.shuffle,
                 beta_1=self.beta_1,
@@ -832,7 +861,9 @@ class RandomForestRegressor(BaseModel):
         self.max_leaf_nodes = None if is_none(max_leaf_nodes) else int(max_leaf_nodes)
         self.min_impurity_decrease = float(min_impurity_decrease)
 
-        self.estimator = None  # the fitted estimator
+        # the fitted estimator (Any: sklearn stubs omit hyper-parameter
+        # attributes such as n_estimators/max_iter that are updated below)
+        self.estimator: Any = None
         self.max_iter = self._get_max_iter()  # limit the number of iterations
 
         super().__init__()
@@ -853,7 +884,12 @@ class RandomForestRegressor(BaseModel):
 
             self.estimator = RandomForestRegressor(
                 n_estimators=n_iter,
-                criterion=self.criterion,
+                criterion=cast(
+                    Literal[
+                        "squared_error", "friedman_mse", "absolute_error", "poisson"
+                    ],
+                    self.criterion,
+                ),
                 max_features=self.max_features,
                 max_depth=self.max_depth,
                 min_samples_split=self.min_samples_split,
@@ -933,7 +969,9 @@ class SGDRegressor(BaseModel):
         self.power_t = 0.5 if is_none(power_t) else float(power_t)
         self.average = average
 
-        self.estimator = None  # the fitted estimator
+        # the fitted estimator (Any: sklearn stubs omit hyper-parameter
+        # attributes such as n_estimators/max_iter that are updated below)
+        self.estimator: Any = None
         self.max_iter = self._get_max_iter()  # limit the number of iterations
 
         super().__init__()
@@ -954,7 +992,7 @@ class SGDRegressor(BaseModel):
 
             self.estimator = SGDRegressor(
                 loss=self.loss,
-                penalty=self.penalty,
+                penalty=cast(Literal["l2", "l1", "elasticnet"], self.penalty),
                 alpha=self.alpha,
                 fit_intercept=self.fit_intercept,
                 tol=self.tol,
@@ -1017,18 +1055,17 @@ class LinearRegression(sklearn.linear_model.LinearRegression, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: SklearnData,
+        y: SklearnData,
+        sample_weight: SampleWeight = None,
     ) -> LinearRegression:
-        super(LinearRegression, self).fit(X, y)
+        super(LinearRegression, self).fit(X, y, sample_weight=sample_weight)
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: MatrixData) -> np.ndarray:
         return super(LinearRegression, self).predict(X)
 
     def predict_proba(
@@ -1055,18 +1092,20 @@ class Lasso(sklearn.linear_model.Lasso, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: MatrixData,
+        y: SklearnData,
+        sample_weight: SampleWeight = None,
+        check_input: bool = True,
     ) -> Lasso:
-        super(Lasso, self).fit(X, y)
+        super(Lasso, self).fit(
+            X, y, sample_weight=sample_weight, check_input=check_input
+        )
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: MatrixData) -> np.ndarray:
         return super(Lasso, self).predict(X)
 
     def predict_proba(
@@ -1089,25 +1128,36 @@ class Ridge(sklearn.linear_model.Ridge, BaseModel):
         super().__init__(
             alpha=self.alpha,
             tol=self.tol,
-            solver=self.solver,
+            solver=cast(
+                Literal[
+                    "auto",
+                    "svd",
+                    "cholesky",
+                    "lsqr",
+                    "sparse_cg",
+                    "sag",
+                    "saga",
+                    "lbfgs",
+                ],
+                self.solver,
+            ),
         )
 
         self._fitted = False
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: MatrixData,
+        y: SklearnData,
+        sample_weight: SampleWeight = None,
     ) -> Ridge:
-        super(Ridge, self).fit(X, y)
+        super(Ridge, self).fit(X, y, sample_weight=sample_weight)
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: MatrixData) -> np.ndarray:
         return super(Ridge, self).predict(X)
 
     def predict_proba(
@@ -1133,25 +1183,27 @@ class ElasticNet(sklearn.linear_model.ElasticNet, BaseModel):
             alpha=self.alpha,
             l1_ratio=self.l1_ratio,
             tol=self.tol,
-            selection=self.selection,
+            selection=cast(Literal["cyclic", "random"], self.selection),
         )
 
         self._fitted = False
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: MatrixData,
+        y: SklearnData,
+        sample_weight: SampleWeight = None,
+        check_input: bool = True,
     ) -> ElasticNet:
-        super(ElasticNet, self).fit(X, y)
+        super(ElasticNet, self).fit(
+            X, y, sample_weight=sample_weight, check_input=check_input
+        )
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: MatrixData) -> np.ndarray:
         return super(ElasticNet, self).predict(X)
 
     def predict_proba(
@@ -1187,19 +1239,20 @@ class BayesianRidge(sklearn.linear_model.BayesianRidge, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: ArrayLike,
+        y: ArrayLike,
+        sample_weight: SampleWeight = None,
     ) -> BayesianRidge:
-        super(BayesianRidge, self).fit(X, y)
+        super(BayesianRidge, self).fit(X, y, sample_weight=sample_weight)
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
-        return super(BayesianRidge, self).predict(X)
+    def predict(  # type: ignore[override]  # BaseModel.predict has no return_std
+        self, X: SklearnData
+    ) -> np.ndarray:
+        return cast(np.ndarray, super(BayesianRidge, self).predict(X))
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
@@ -1220,7 +1273,8 @@ class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor, Base
         min_weight_fraction_leaf: float = 0.0,
         max_depth: int = 3,
         min_impurity_decrease: float = 0.0,
-        max_features: str = "auto",
+        # None: all features (formerly "auto", which scikit-learn no longer accepts)
+        max_features: Optional[Union[str, float, int]] = None,
         max_leaf_nodes: int = 31,
         validation_fraction: float = 0.1,
         n_iter_no_change: int = 10,
@@ -1243,17 +1297,23 @@ class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor, Base
         self.tol = float(tol)
 
         super().__init__(
-            loss=self.loss,
+            loss=cast(
+                Literal["squared_error", "absolute_error", "huber", "quantile"],
+                self.loss,
+            ),
             learning_rate=self.learning_rate,
             n_estimators=self.n_estimators,
             subsample=self.subsample,
-            criterion=self.criterion,
+            criterion=cast(Literal["friedman_mse", "squared_error"], self.criterion),
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,
-            max_depth=self.max_depth,
+            max_depth=self.max_depth,  # type: ignore[arg-type]  # inferred from sklearn's untyped default
             min_impurity_decrease=self.min_impurity_decrease,
-            max_features=self.max_features,
+            max_features=cast(
+                Optional[Union[float, Literal["auto", "sqrt", "log2"]]],
+                self.max_features,
+            ),
             max_leaf_nodes=self.max_leaf_nodes,
             validation_fraction=self.validation_fraction,
             n_iter_no_change=self.n_iter_no_change,
@@ -1264,18 +1324,20 @@ class GradientBoostingRegressor(sklearn.ensemble.GradientBoostingRegressor, Base
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: SklearnData,
+        y: ArrayLike,
+        sample_weight: SampleWeight = None,
+        monitor: Optional[Callable] = None,
     ) -> GradientBoostingRegressor:
-        super(GradientBoostingRegressor, self).fit(X, y)
+        super(GradientBoostingRegressor, self).fit(
+            X, y, sample_weight=sample_weight, monitor=monitor
+        )
 
         self._fitted = True
 
         return self
 
-    def predict(
-        self, X: Union[pd.DataFrame, np.ndarray]
-    ) -> Union[pd.DataFrame, np.ndarray]:
+    def predict(self, X: SklearnData) -> np.ndarray:
         return super(GradientBoostingRegressor, self).predict(X)
 
     def predict_proba(

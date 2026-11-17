@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from datasets import load_dataset
+from datasets import load_dataset  # type: ignore[attr-defined]  # optional HF "datasets"; pyright may resolve the local package
 
 ##########################################################################
 # Text Classification
@@ -109,6 +109,8 @@ def SQUAD(train=True, test=False, version=1):
         dataname = "squad"
     elif version == 2:
         dataname = "squad_v2"
+    else:
+        raise ValueError("version must be 1 or 2, got {}.".format(version))
 
     if train and not test:
         dataset = load_dataset(dataname, split="train")

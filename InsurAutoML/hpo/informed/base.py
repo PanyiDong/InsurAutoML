@@ -641,7 +641,7 @@ class InformedAutoTabularBase(AutoTabularBase):
         # if only one optimal input, need to convert to iterable
         if isinstance(trial_path, str):
             trial_path = [trial_path]
-            config = [config]
+            config = [cast(Dict, config)]
 
         # loop through all configs and trial directories, get model ensemble
         # trial directory is given by tune results (Result.path)
@@ -662,14 +662,16 @@ class InformedAutoTabularBase(AutoTabularBase):
         if self.task_mode == "classification":
             self.ensemble = InformedClassifierEnsemble(
                 estimators=self.ensemble_list,
-                voting=self.voting,
+                # (resolved by the task mode in AutoTabularBase.__init__)
+                voting=cast(str, self.voting),
                 features=self.feature_list,
                 strategy=self.ensemble_strategy,
             )
         elif self.task_mode == "regression":
             self.ensemble = InformedRegressorEnsemble(
                 estimators=self.ensemble_list,
-                voting=self.voting,
+                # (resolved by the task mode in AutoTabularBase.__init__)
+                voting=cast(str, self.voting),
                 features=self.feature_list,
                 strategy=self.ensemble_strategy,
             )

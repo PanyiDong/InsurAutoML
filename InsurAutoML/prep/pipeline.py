@@ -174,7 +174,7 @@ class CompletePrepPipeline(PrepPipeline):
         self.selector = CompleteSet(threshold=self.missing_threshold)
         X_prep = self.selector.fit_transform(X, y)
         # ensure y aligns with selected rows from X
-        y_prep = y[X_prep.index] if y is not None else None
+        y_prep = cast(pd.Series, y[X_prep.index]) if y is not None else None
         # CCC feature selection
         # self.filter = CCCFilter(threshold=self.cc_threshold)
         self.filter = FeatureFilter(
@@ -210,7 +210,7 @@ class CompletePrepPipeline(PrepPipeline):
         # X = standardization(X)
         X_prep = self.selector.transform(X)
         # align y with transformed X
-        y_prep = y[X_prep.index] if y is not None else None
+        y_prep = cast(pd.Series, y[X_prep.index]) if y is not None else None
         X_prep = cast(pd.DataFrame, self.filter.transform(X_prep))
 
         return X_prep, y_prep if y is not None else None

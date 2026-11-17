@@ -40,8 +40,9 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import List, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union, cast
 import numpy as np
+from numpy.typing import ArrayLike
 import pandas as pd
 from ..utils.base import copy_frame
 import warnings
@@ -53,7 +54,7 @@ from ..utils import formatting
 from ..scaling import MinMaxScale
 
 
-class AAI_kNN(formatting, MinMaxScale):
+class AAI_kNN(formatting, MinMaxScale):  # type: ignore[misc]  # bases' fit signatures differ; formatting.fit wins by MRO
     """
     kNN Imputation/Neighborhood-based Collaborative Filtering with
     Auto-adaptive Imputation/AutAI [1]
@@ -113,7 +114,7 @@ class AAI_kNN(formatting, MinMaxScale):
     # calculate Pearson Correlation Coefficient/PCC
     # PCC = \sum_{i}(x_{i}-\mu_{x})(y_{i}-\mu_{y}) /
     # \sqrt{\sum_{i}(x_{i}-\mu_{x})^{2}\sum_{i}(y_{i}-\mu_{y})^{2}}
-    def Pearson_Correlation_Coefficient(self, x: np.ndarray, y: np.ndarray) -> float:
+    def Pearson_Correlation_Coefficient(self, x: ArrayLike, y: ArrayLike) -> float:
         # convert to numpy array
         x = np.array(x)
         y = np.array(y)
@@ -134,7 +135,7 @@ class AAI_kNN(formatting, MinMaxScale):
 
     # calculate Cosine-based similarity/COS
     # COS = x * y / (|x|*|y|)
-    def Cosine_based_similarity(self, x: np.ndarray, y: np.ndarray) -> float:
+    def Cosine_based_similarity(self, x: ArrayLike, y: ArrayLike) -> float:
         # convert to numpy array
         x = np.array(x)
         y = np.array(y)
@@ -151,8 +152,11 @@ class AAI_kNN(formatting, MinMaxScale):
 
     # get column values from k nearest neighbors
     def _get_k_neighbors(
-        self, test: pd.DataFrame, train: pd.DataFrame, column: List[str]
-    ) -> Tuple[List[pd.DataFrame], List[Union[int, str]], List[float]]:
+        self,
+        test: Union[pd.DataFrame, pd.Series],
+        train: pd.DataFrame,
+        column: Union[str, List[str]],
+    ) -> Tuple[List[Any], List[Union[int, str]], List[float]]:
         similarity_list = []
 
         for index in list(train.index):
@@ -183,9 +187,9 @@ class AAI_kNN(formatting, MinMaxScale):
 
     # AutAI imputation
     def _AAI_impute(
-        self, X: pd.DataFrame, index: List[Union[str, int]], column: List[str]
+        self, X: pd.DataFrame, index: Union[str, int], column: str
     ) -> pd.DataFrame:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # (index, column) gives a location of missing value
         # the goal is to find and impute relatively important data
@@ -195,7 +199,7 @@ class AAI_kNN(formatting, MinMaxScale):
 
         # find union of columns where both non_missing (each from above)
         # and missing rows have data
-        T_s = []  # ultimate union of features
+        T_s: set = set()  # ultimate union of features
         loc_non_missing_column = set(_X.columns[~_X.loc[index, :].isnull()])
 
         for _index in U_a:
@@ -210,12 +214,12 @@ class AAI_kNN(formatting, MinMaxScale):
             else:
                 T_s = T_s.union(intersection_columns)
 
-        T_s = list(T_s)  # convert to list
+        T_s_list = list(T_s)  # convert to list
 
         # range (U_a, T_s) considered important data
 
         # use kNN with weight of similarity for imputation
-        for _column in T_s:
+        for _column in T_s_list:
             for _index in list(set(X[X[_column].isnull()].index) & set(U_a)):
                 # get kNN column values, index, and similarity
                 k_values, k_index, k_similarity = self._get_k_neighbors(
@@ -239,10 +243,8 @@ class AAI_kNN(formatting, MinMaxScale):
 
     # pool tasks on the index chunks
     # every pool task works on part of the chunks
-    def Pool_task(
-        self, X: pd.DataFrame, index_list: List[List[Union[str, int]]]
-    ) -> pd.DataFrame:
-        _X = copy_frame(X, deep=self.deep_copy)
+    def Pool_task(self, X: pd.DataFrame, index_list: np.ndarray) -> pd.DataFrame:
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         for _column in self.columns:
             # get missing rows
@@ -256,6 +258,7 @@ class AAI_kNN(formatting, MinMaxScale):
                 pass
             else:
                 for _index in list(missing.index):
+                    non_missing: Optional[pd.DataFrame] = None
                     # if need AutAI, perform AutAI imputation first
                     # if fitted, no need for AutAI, directly run kNN imputation
                     if self.AutAI and not self._fitted:
@@ -274,6 +277,7 @@ class AAI_kNN(formatting, MinMaxScale):
                     # use kNN imputation for (_index, _column)
                     # if fitted, use imputed dataset for imputation
                     if not self._fitted:
+                        assert non_missing is not None  # set above when not fitted
                         k_values, _, _ = self._get_k_neighbors(
                             _X.loc[_index, :], non_missing, _column
                         )
@@ -295,7 +299,7 @@ class AAI_kNN(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(X))
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # initialize columns
         self.columns = list(_X.columns)
@@ -305,7 +309,7 @@ class AAI_kNN(formatting, MinMaxScale):
             multiprocessing.cpu_count() if self.threads == -1 else int(self.threads)
         )
 
-        if _X[self.columns].isnull().values.any():
+        if _X[self.columns].isnull().to_numpy().any():
             _X = self._fill(_X)
         else:
             warnings.warn("No missing values found, no change.")
@@ -313,16 +317,17 @@ class AAI_kNN(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # convert categorical to numerical
         formatter = formatting(columns=self.columns, inplace=True)
         formatter.fit(_X)
 
         # if scaling, use MinMaxScale to scale the features
+        scaling: Optional[MinMaxScale] = None
         if self.scaling:
             scaling = MinMaxScale()
-            _X = scaling.fit_transform(_X)
+            _X = cast(pd.DataFrame, scaling.fit_transform(_X))
 
         # kNN imputation
 
@@ -346,8 +351,8 @@ class AAI_kNN(formatting, MinMaxScale):
         self.train = _X.copy() if self.train.empty else self.train
 
         # if scaling, scale back
-        if self.scaling:
-            _X = scaling.inverse_transform(_X)
+        if scaling is not None:
+            _X = cast(pd.DataFrame, scaling.inverse_transform(_X))
 
         # convert numerical back to categorical
         formatter.refit(_X)
@@ -364,7 +369,7 @@ raised, and all observations will be correctly assigned.
 """
 
 
-class KMI(formatting, MinMaxScale):
+class KMI(formatting, MinMaxScale):  # type: ignore[misc]  # bases' fit signatures differ; formatting.fit wins by MRO
     """
     KMI/K-Means Imputation[1], the idea is to incorporate K-Means
     Clustering with kNN imputation
@@ -388,7 +393,7 @@ class KMI(formatting, MinMaxScale):
         raise NotImplementedError("Not implemented!")
 
 
-class CMI(formatting, MinMaxScale):
+class CMI(formatting, MinMaxScale):  # type: ignore[misc]  # bases' fit signatures differ; formatting.fit wins by MRO
     """
     Clustering-based Missing Value Imputation/CMI[1], introduces the idea
     of clustering observations into groups and use the kernel statistsics
@@ -428,7 +433,7 @@ class CMI(formatting, MinMaxScale):
         distance: str = "l2",
         delta: float = 0.0,
         scaling: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
         threads: int = -1,
         deep_copy: bool = False,
     ) -> None:
@@ -447,7 +452,9 @@ class CMI(formatting, MinMaxScale):
 
     # calculate distance between row and k group mean
     # 'l1' or 'l2' Euclidean distance
-    def _distance(self, row: Union[pd.DataFrame, np.ndarray], k: int) -> float:
+    def _distance(
+        self, row: Union[pd.DataFrame, pd.Series, np.ndarray], k: int
+    ) -> Optional[float]:
         if self.distance == "l2":
             return np.sqrt(np.nansum((row - self.k_means[k]) ** 2))
         elif self.distance == "l1":
@@ -456,15 +463,15 @@ class CMI(formatting, MinMaxScale):
     # get the Gaussian kernel values
     def _kernel(
         self,
-        row1: Union[pd.DataFrame, np.ndarray],
-        row2: Union[pd.DataFrame, np.ndarray],
+        row1: Union[pd.DataFrame, pd.Series, np.ndarray],
+        row2: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> np.ndarray:
         return np.prod(
             np.exp(-(((row1 - row2) / self.bandwidth) ** 2) / 2) / np.sqrt(2 * np.pi)
         )
 
     # get k_means for group k
-    def _get_k_means(self, data: pd.DataFrame, k: int) -> Union[float, np.ndarray]:
+    def _get_k_means(self, data: pd.DataFrame, k: int) -> np.ndarray:
         # get observations in _k group
         group_data = data.loc[np.where(self.group_assign == k)[0], :]
 
@@ -476,7 +483,7 @@ class CMI(formatting, MinMaxScale):
 
     # get group assign for the chunk of data (by index_list)
     def _get_group_assign(
-        self, data: pd.DataFrame, index_list: List[Union[str, int]]
+        self, data: pd.DataFrame, index_list: np.ndarray
     ) -> List[int]:
         result = []
         for _index in index_list:
@@ -490,7 +497,7 @@ class CMI(formatting, MinMaxScale):
     # assign clustering groups according to Euclidean distance
     # only support numerical features
     def _k_means_clustering(self, X: pd.DataFrame) -> None:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         n, p = _X.shape  # number of observations
 
@@ -531,11 +538,11 @@ class CMI(formatting, MinMaxScale):
                 # assign each observation to new group based on k_means
                 pool = Pool(processes=self.threads)
                 divide_index = np.array_split(list(_X.index), self.threads)
-                self.group_assign = pool.map(
+                _group_assign = pool.map(
                     partial(self._get_group_assign, _X), divide_index
                 )
                 # flatten 2d list to 1d
-                self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+                self.group_assign = np.array(np.concatenate(_group_assign).flat)
                 pool.close()
                 pool.join()
 
@@ -570,11 +577,9 @@ class CMI(formatting, MinMaxScale):
             # assign each observation to new group based on k_means
             pool = Pool(processes=self.threads)
             divide_index = np.array_split(list(_X.index), self.threads)
-            self.group_assign = pool.map(
-                partial(self._get_group_assign, _X), divide_index
-            )
+            _group_assign = pool.map(partial(self._get_group_assign, _X), divide_index)
             # flatten 2d list to 1d
-            self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+            self.group_assign = np.array(np.concatenate(_group_assign).flat)
             pool.close()
             pool.join()
 
@@ -583,12 +588,12 @@ class CMI(formatting, MinMaxScale):
     def Pool_task(
         self,
         X: pd.DataFrame,
-        _column: List[str],
-        non_missing_index: List[Union[str, int]],
+        _column: str,
+        non_missing_index: Union[List[Any], np.ndarray],
         n: int,
-        index_list: List[Union[str, int]],
-    ) -> pd.DataFrame:
-        _X = copy_frame(X, deep=self.deep_copy)
+        index_list: np.ndarray,
+    ) -> pd.Series:
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # find missing indexes belongs to _k group
         for _index in index_list:
@@ -634,7 +639,7 @@ class CMI(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # initialize columns
         self.columns = list(_X.columns)
@@ -644,7 +649,7 @@ class CMI(formatting, MinMaxScale):
             multiprocessing.cpu_count() if self.threads == -1 else int(self.threads)
         )
 
-        if _X[self.columns].isnull().values.any():
+        if _X[self.columns].isnull().to_numpy().any():
             _X = self._fill(_X)
         else:
             warnings.warn("No missing values found, no change.")
@@ -652,16 +657,17 @@ class CMI(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # convert categorical to numerical
         formatter = formatting(columns=self.columns, inplace=True)
         formatter.fit(_X)
 
         # if scaling, use MinMaxScale to scale the features
+        scaling: Optional[MinMaxScale] = None
         if self.scaling:
             scaling = MinMaxScale()
-            _X = scaling.fit_transform(_X)
+            _X = cast(pd.DataFrame, scaling.fit_transform(_X))
 
         # imputation on formatted, scaled datasets
         # assign observations to self.k groups
@@ -708,8 +714,8 @@ class CMI(formatting, MinMaxScale):
         self.train = _X.copy() if self.train.empty else self.train
 
         # if scaling, scale back
-        if self.scaling:
-            _X = scaling.inverse_transform(_X)
+        if scaling is not None:
+            _X = cast(pd.DataFrame, scaling.inverse_transform(_X))
 
         # convert numerical back to categorical
         formatter.refit(_X)
@@ -717,7 +723,7 @@ class CMI(formatting, MinMaxScale):
         return _X
 
 
-class k_Prototype_NN(formatting, MinMaxScale):
+class k_Prototype_NN(formatting, MinMaxScale):  # type: ignore[misc]  # bases' fit signatures differ; formatting.fit wins by MRO
     """
     Three clustering models are provided: k-Means Paradigm, k-Modes Paradigm,
     k-Prototypes Paradigm [1]
@@ -762,7 +768,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         numerics: Optional[List[str]] = None,
         threads: int = -1,
         deep_copy: bool = False,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # mutable defaults: a new object per call
         numerics = (
@@ -788,7 +794,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
     # 'l1' or 'l2' Euclidean distance
     def _distance(
         self,
-        row: Union[pd.DataFrame, np.ndarray],
+        row: Union[pd.DataFrame, pd.Series, np.ndarray],
         k_centroids: Union[pd.DataFrame, np.ndarray],
     ) -> np.ndarray:
         # if not defining np.float64, may get float and
@@ -799,23 +805,29 @@ class k_Prototype_NN(formatting, MinMaxScale):
             )
         elif self.distance == "l1":
             return np.nansum(np.abs(row - k_centroids), axis=1, dtype=np.float64)
+        else:
+            raise ValueError("Unsupported distance {}.".format(self.distance))
 
     # calculate dissimilarity difference between row
     # and k group
     def _dissimilarity(
         self,
-        row: Union[pd.DataFrame, np.ndarray],
-        k_centroids: Union[pd.DataFrame, np.ndarray],
+        row: pd.Series,
+        k_centroids: pd.DataFrame,
     ) -> np.ndarray:
         k, p = k_centroids.shape
 
         # simple dissimilarity, number of different categories
         if self.dissimilarity == "simple":
-            return np.sum((row.values != k_centroids.values).astype(int), axis=1)
+            return np.sum(
+                cast(np.ndarray, row.values != k_centroids.values).astype(int), axis=1
+            )
         # weighted dissimilarity, weighted based on number of unique categories
         elif self.dissimilarity == "weighted":
             # set difference between row and k_centroids
-            different_matrix = (row.values != k_centroids.values).astype(int)
+            different_matrix = cast(
+                np.ndarray, row.values != k_centroids.values
+            ).astype(int)
 
             # initialize number counts
             row_count = np.empty(p)
@@ -823,7 +835,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
 
             for idx, _column in enumerate(list(k_centroids.columns)):
                 # get the category
-                cate = row[_column]
+                cate: Any = row[_column]
                 # find the corresponding count
                 # if get missing value, count as 0
                 row_count[idx] = (
@@ -848,6 +860,8 @@ class k_Prototype_NN(formatting, MinMaxScale):
                     )
 
             return np.nansum(np.multiply(weight, different_matrix), axis=1)
+        else:
+            raise ValueError("Unsupported dissimilarity {}.".format(self.dissimilarity))
 
     # calculate the measurement for given index
     def _get_group_assign(
@@ -855,16 +869,17 @@ class k_Prototype_NN(formatting, MinMaxScale):
         data: pd.DataFrame,
         numerical_columns: List[str],
         categorical_columns: List[str],
-        index_list: List[Union[int, str]],
+        index_list: np.ndarray,
     ) -> List[int]:
         group_assign = []
 
         for _index in index_list:
             measurement = self._distance(
-                data.loc[_index, numerical_columns], self.k_centroids[numerical_columns]
+                data.loc[_index, numerical_columns],
+                cast(pd.DataFrame, self.k_centroids[numerical_columns]),
             ) + self._dissimilarity(
-                data.loc[_index, categorical_columns],
-                self.k_centroids[categorical_columns],
+                cast(pd.Series, data.loc[_index, categorical_columns]),
+                cast(pd.DataFrame, self.k_centroids[categorical_columns]),
             )
 
             # assign the observations to closest centroids
@@ -905,7 +920,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
     # compared to modes
     # best support categorical features
     def _k_modes_clustering(self, X: pd.DataFrame) -> None:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         n, p = _X.shape  # number of observations
 
@@ -922,7 +937,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         numerical_columns: List[str],
         categorical_columns: List[str],
     ) -> None:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         n, p = _X.shape  # number of observations
 
@@ -961,7 +976,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
                 # parallelized calculation for group assignment
                 pool = Pool(processes=self.threads)
                 divide_list = np.array_split(list(_X.index), self.threads)
-                self.group_assign = pool.map(
+                _group_assign = pool.map(
                     partial(
                         self._get_group_assign,
                         _X,
@@ -971,7 +986,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
                     divide_list,
                 )
                 # flatten 2d list to 1d
-                self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+                self.group_assign = np.array(np.concatenate(_group_assign).flat)
                 pool.close()
                 pool.join()
 
@@ -981,7 +996,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
                 # recalculate the k_centroids
                 # calculate the new k_means
                 pool = Pool(processes=min(int(self.k), self.threads))
-                self.k_centroids = pool.map(
+                _k_centroids = pool.map(
                     partial(
                         self._get_k_centroids,
                         _X,
@@ -991,7 +1006,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
                     list(range(self.k)),
                 )
                 # concat the k centroids to one dataframe
-                self.k_centroids = pd.concat(self.k_centroids).sort_index()
+                self.k_centroids = pd.concat(_k_centroids).sort_index()
                 pool.close()
                 pool.join()
 
@@ -1012,14 +1027,14 @@ class k_Prototype_NN(formatting, MinMaxScale):
             # parallelized calculation for group assignment
             pool = Pool(processes=self.threads)
             divide_list = np.array_split(list(_X.index), self.threads)
-            self.group_assign = pool.map(
+            _group_assign = pool.map(
                 partial(
                     self._get_group_assign, _X, numerical_columns, categorical_columns
                 ),
                 divide_list,
             )
             # flatten 2d list to 1d
-            self.group_assign = np.array(np.concatenate(self.group_assign).flat)
+            self.group_assign = np.array(np.concatenate(_group_assign).flat)
             pool.close()
             pool.join()
 
@@ -1047,7 +1062,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # initialize columns
         self.columns = list(_X.columns)
@@ -1057,7 +1072,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
             multiprocessing.cpu_count() if self.threads == -1 else int(self.threads)
         )
 
-        if _X[self.columns].isnull().values.any():
+        if _X[self.columns].isnull().to_numpy().any():
             _X = self._fill(_X)
         else:
             warnings.warn("No missing values found, no change.")
@@ -1065,10 +1080,12 @@ class k_Prototype_NN(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = copy_frame(X, deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         # all numerical columns
-        numeric_columns = list(_X.select_dtypes(include=self.numerics).columns)
+        numeric_columns = list(
+            _X.select_dtypes(include=cast(Any, self.numerics)).columns
+        )
         # select numerical columns in self.columns
         numeric_columns = list(set(_X.columns) & set(numeric_columns))
         # select categorical columns in self.columns
@@ -1081,9 +1098,10 @@ class k_Prototype_NN(formatting, MinMaxScale):
         formatter.fit(_X)
 
         # if scaling, scaling the numerical columns
+        scaling: Optional[MinMaxScale] = None
         if self.scaling:
             scaling = MinMaxScale()
-            _X = scaling.fit_transform(_X)
+            _X = cast(pd.DataFrame, scaling.fit_transform(_X))
 
         # imputation procedure
         # assign observations to clustering groups using
@@ -1103,8 +1121,8 @@ class k_Prototype_NN(formatting, MinMaxScale):
         self._fitted = True
 
         # if scaling, scale back
-        if self.scaling:
-            _X = scaling.inverse_transform(_X)
+        if scaling is not None:
+            _X = cast(pd.DataFrame, scaling.inverse_transform(_X))
 
         # make sure column types retains
         formatter.refit(_X)

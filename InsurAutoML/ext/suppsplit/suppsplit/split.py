@@ -39,6 +39,8 @@ SOFTWARE.
 """
 
 import os
+from typing import Any, Optional, cast
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import StandardScaler
@@ -46,7 +48,7 @@ from .utils import HelmertEncoding
 from ...suppsplit.suppsplit_cpp import sp_cpp, subsample  # the compiled C++ extension
 
 
-def jitter(x, factor: float = 1, amount: float = None, seed=None):
+def jitter(x, factor: float = 1, amount: Optional[float] = None, seed=None):
     """
     Add uniform noise to x (to break duplicates).
 
@@ -88,7 +90,7 @@ def compute_sp(
     # n_threads caps the threads (SPlit uses 1 by default so parallel AutoML trials
     # do not oversubscribe the CPUs), None uses all CPUs
     n_threads = (
-        max(1, min(n_threads, os.cpu_count()))
+        max(1, min(n_threads, cast(int, os.cpu_count())))
         if n_threads is not None
         else os.cpu_count()
     )
@@ -129,7 +131,7 @@ def compute_sp(
     )
 
 
-def data_format(data):
+def data_format(data) -> np.ndarray:
     data = pd.DataFrame(data) if not isinstance(data, pd.DataFrame) else data
     if data.isnull().values.any():
         raise ValueError("Dataset contains missing values.")
@@ -142,7 +144,7 @@ def data_format(data):
             enc = HelmertEncoding()
             trans = enc.fit_transform(data[[col]])
             cols.append(trans)
-        elif np.issubdtype(data[col].dtype, np.number):
+        elif np.issubdtype(cast(Any, data[col].dtype), np.number):
             if (data[col] == data[col].iloc[0]).all():
                 continue
             cols.append(data[[col]].to_numpy())
@@ -153,7 +155,7 @@ def data_format(data):
     sc = StandardScaler()
     sc.fit(D)
     sc.scale_ = np.std(D, axis=0, ddof=1)  # R scale function use ddof=1
-    return sc.transform(D)
+    return cast(np.ndarray, sc.transform(D))
 
 
 def SPlit(

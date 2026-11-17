@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Dict, List
+from typing import Dict, List, Optional
 import os
 import pickle
 
@@ -120,7 +120,8 @@ def load_methods(file_name: str) -> List:
 
 
 # find exact folder path
-def find_exact_path(path: str, spec_str: str) -> str:
+def find_exact_path(path: str, spec_str: str) -> Optional[str]:
     for folder in os.listdir(path):
         if spec_str in os.path.join(path, folder):
             return os.path.join(path, folder)
+    return None
