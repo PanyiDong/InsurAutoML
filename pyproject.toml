@@ -82,7 +82,6 @@ dev = [
     "pytest",
     "pytest-cov",
     "coverage",
-    "codecov-cli",                  # scripts/coverage.sh uploads the local coverage
     "black",
 ]
 
