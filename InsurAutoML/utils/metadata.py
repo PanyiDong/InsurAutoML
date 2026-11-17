@@ -49,6 +49,7 @@ from itertools import compress
 
 from ..constant import UNI_CLASS, UNIQUE_FULLTYPE
 from .stats import merge_mean, merge_std, merge_dict
+from .base import is_text_dtype
 
 # get subtype of int
 
@@ -88,11 +89,11 @@ class get_details:
         elif self.type in ["Datetime", "Path"] or self.subtype == "Text":
             return {}
 
-    def merge(self, data: pd.Series) -> Union[Dict[Tuple, List], Dict]:
+    def merge(self, data: pd.Series, details: Dict) -> Union[Dict[Tuple, List], Dict]:
         if self.type == "Float" or self.subtype == "Numerical":
-            return self._merge_details_numerical(data)
+            return self._merge_details_numerical(data, details)
         elif self.subtype == "Categorical":
-            return self._merge_details_categorical(data)
+            return self._merge_details_categorical(data, details)
         elif self.type in ["Datetime", "Path"] or self.subtype == "Text":
             return {}
 
@@ -123,8 +124,8 @@ class get_details:
             "std": merge_std(
                 (_old_len, _old_mean, _old_std), (_new_len, _new_mean, _new_std)
             ),
-            "min": np.min(dict["min"], np.min(data)),
-            "max": np.max(dict["max"], np.max(data)),
+            "min": min(dict["min"], np.min(data)),
+            "max": max(dict["max"], np.max(data)),
         }
 
     # get details of categorical data
@@ -260,10 +261,10 @@ class MetaData:
                 )
 
             # get the details
-            details = get_details(type, subtype).merge(data[name], self.details[_key])
+            details = get_details(type, subtype).merge(data[name], self.details[name])
 
-            # register the metadata
-            self.register(name, (type, subtype), details)
+            # metadata already registered, only update the details
+            self.details[name] = details
 
         return self.metadata
 
@@ -276,7 +277,8 @@ class MetaData:
         # if names is a string, convert it to a list
         names = [names] if isinstance(names, str) else names
         # if fulltypes is a string, convert it to a list
-        fulltypes = [fulltypes] if isinstance(fulltypes, str) else fulltypes
+        # a single fulltype tuple, e.g. ("Int", "Categorical"), is also wrapped
+        fulltypes = [fulltypes] if isinstance(fulltypes, (str, tuple)) else fulltypes
 
         # check length of names and fulltypes
         if len(names) != len(fulltypes):
@@ -368,25 +370,27 @@ class MetaData:
                 type = "Int"
                 # check is Int_Numerical or Int_Categorical
                 subtype = meta_map_int(_data)
-
-            type = "Float"
-            subtype = ""
+            else:
+                type = "Float"
+                subtype = ""
         # Datetime
         elif "datetime" in str(_dtype):
             type = "Datetime"
             subtype = ""
         # Object
-        elif _dtype in ["object", "category"]:
+        elif is_text_dtype(_dtype) or str(_dtype) == "category":
             # check if is path
             try:
-                if os.path.isfile(data.iloc[0]):
-                    type = "Path"
-                    subtype = ""
+                _is_path = bool(os.path.isfile(data.iloc[0]))
             except Exception:
-                pass
+                _is_path = False
 
-            type = "Object"
-            subtype = meta_map_object(data)
+            if _is_path:
+                type = "Path"
+                subtype = ""
+            else:
+                type = "Object"
+                subtype = meta_map_object(data)
         else:
             raise TypeError(
                 "The data type {} of column {} is not supported.".format(

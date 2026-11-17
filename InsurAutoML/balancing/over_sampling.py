@@ -233,10 +233,21 @@ class Smote(BaseBalancing):
             warnings.warn("The dataset is balanced, no change.")
         else:
             if self.all:
-                while is_imbalance(_data, self.imbalance_threshold):
-                    _data = self._fit_transform(_data)
+                # stop when a pass does not change the data (can not balance further)
+                _iter = 0
+                while (
+                    is_imbalance(_data, self.imbalance_threshold)
+                    and _iter < self.max_iter
+                ):
+                    _new_data = Smote._fit_transform(self, _data)
+                    if len(_new_data) == len(_data):
+                        warnings.warn("Smote can not reduce the imbalance further.")
+                        _data = _new_data
+                        break
+                    _data = _new_data
+                    _iter += 1
             else:
-                _data = self._fit_transform(_data)
+                _data = Smote._fit_transform(self, _data)
 
         self._fitted = True
 

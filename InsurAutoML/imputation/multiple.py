@@ -48,6 +48,7 @@ from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
 from ..constant import UNI_CLASS
 from ..utils import random_index, random_list
+from ..utils.base import is_text_dtype
 from .base import SimpleImputer, BaseImputer
 
 
@@ -193,10 +194,9 @@ class KNNImputer(BaseImputer):
                     X[_column].loc[X[_column].isnull()].index.astype(int)
                 )
 
-        self._missing_vector = np.array(self._missing_vector).T
-        self._missing_table = pd.DataFrame(
-            self._missing_vector, columns=self._missing_feature
-        )
+        # columns may have different number of missing values, store the
+        # missing indexes per column instead of a (ragged) table
+        self._missing_table = dict(zip(self._missing_feature, self._missing_vector))
 
         X = SimpleImputer(method=self.method).fill(
             X
@@ -212,17 +212,16 @@ class KNNImputer(BaseImputer):
         # if assigned n_neighbors, use it, otherwise use k-fold cross
         # validation
         if self.n_neighbors is None:
+            _fold_size = int(len(X.index) / self.fold)
             for i in range(self.fold):
-                _test = X.iloc[
-                    i * int(len(X.index) / self.fold) : int(len(X.index) / self.fold), :
-                ]
-                _train = X
-                _train.drop(labels=_test.index, axis=0, inplace=True)
+                _test = X.iloc[i * _fold_size : (i + 1) * _fold_size, :]
+                _train = X.drop(labels=_test.index, axis=0)
                 _err.append(self._cross_validation_knn(_train, _test, random_features))
 
-            # mean of cross validation error
+            # mean of cross validation error, shape (n_neighbors, n_features)
             _err = np.mean(np.array(_err), axis=0)
-            self.optimial_k = np.array(_err).argmin()[0] + 1  # optimal k
+            # optimal k minimizes the total error over all features
+            self.optimial_k = int(np.sum(_err, axis=1).argmin()) + 1  # optimal k
 
             X = self._knn_impute(X, random_features, self.optimial_k)
         else:
@@ -305,7 +304,6 @@ class MissForestImputer(BaseImputer):
         random_state: int = None,
         categorical_threshold: int = UNI_CLASS,
     ) -> None:
-
         self.max_iter = max_iter
         self.n_estimators = n_estimators
         self.random_state = random_state
@@ -332,7 +330,7 @@ class MissForestImputer(BaseImputer):
             n_unique = non_null.nunique()
 
             if (
-                non_null.dtype == "object"
+                is_text_dtype(non_null.dtype)
                 or non_null.dtype.name == "category"
                 or n_unique <= self.categorical_threshold
             ):
@@ -588,7 +586,7 @@ class MICE(BaseImputer):
         features = list(X.columns)
 
         for _column in features:
-            if (X[_column].dtype == object) or (str(X[_column].dtype) == "category"):
+            if is_text_dtype(X[_column].dtype) or (str(X[_column].dtype) == "category"):
                 raise ValueError(
                     "MICE can only handle numerical filling, run encoding first!"
                 )
@@ -626,7 +624,8 @@ class MICE(BaseImputer):
             _subfeature = features.copy()
             _subfeature.remove(_column)
             X.loc[self._missing_table[_column] == 1, _column] = np.nan
-            if len(X[_column].unique()) == 2:
+            # check observed values only, the missing ones are reset to nan
+            if X[_column].dropna().nunique() == 2:
                 fit_model = LogisticRegression()
             elif len(features) <= 15:
                 fit_model = LinearRegression()

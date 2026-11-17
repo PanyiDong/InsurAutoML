@@ -128,13 +128,16 @@ PYBIND11_MODULE(suppsplit_cpp, m)
         std::size_t des_num = Ini.size();
         int dim_num = des_num ? Ini[0].size() : 0;
 
-        // Redirect std::cout to Python's sys.stdout
-        py::scoped_ostream_redirect stream_cout(
-            std::cout,
-            py::module_::import("sys").attr("stdout")
-        );
-
-        auto out = sp_cpp(des_num, dim_num, Ini, Distsamp, thin, Bd, point_num, it_max, tol, num_proc, n0, Wts, rnd_flg);
+        // Run the computation without the GIL and without redirecting std::cout to
+        // Python's sys.stdout. Calling into Python here can raise a pending Python
+        // exception (e.g. the asynchronous FunctionTimedOut injected by func_timeout
+        // on trial timeout) inside C++, which terminates the whole process.
+        // Progress is printed to the process stdout instead.
+        std::vector<std::vector<double>> out;
+        {
+            py::gil_scoped_release release;
+            out = sp_cpp(des_num, dim_num, Ini, Distsamp, thin, Bd, point_num, it_max, tol, num_proc, n0, Wts, rnd_flg);
+        }
         return vector2d_to_numpy(out); }, py::arg("ini"), py::arg("distsamp"), py::arg("thin"), py::arg("bd"), py::arg("point_num"), py::arg("it_max"), py::arg("tol"), py::arg("num_proc"), py::arg("n0"), py::arg("wts"), py::arg("rnd_flg"));
 
     m.def("subsample", [](py::array_t<double> data, py::array_t<double> points)

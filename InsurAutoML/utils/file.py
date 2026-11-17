@@ -85,9 +85,17 @@ def save_methods(file_name: str, methods: List) -> None:
     methods: list of methods objects to save
     """
 
-    with open(file_name, "wb") as out_f:
-        for method in methods:
-            pickle.dump(method, out_f)
+    # write to a temporary file and replace: an interrupted save (e.g. a timed-out
+    # trial) never leaves a truncated file behind
+    tmp_name = "{}.tmp{}".format(file_name, os.getpid())
+    try:
+        with open(tmp_name, "wb") as out_f:
+            for method in methods:
+                pickle.dump(method, out_f)
+        os.replace(tmp_name, file_name)
+    finally:
+        if os.path.exists(tmp_name):
+            os.remove(tmp_name)
 
 
 # load methods

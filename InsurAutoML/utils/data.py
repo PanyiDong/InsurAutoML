@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Tuple, List, Union
+from typing import Any, Dict, Tuple, List, Union
 import os
 import re
 import ast
@@ -46,25 +46,38 @@ import json
 import numpy as np
 import pandas as pd
 
-from .base import random_index
+from .base import random_index, is_text_dtype
 from ..constant import UNI_CLASS
 
 # string list to list
 
 
-def str2list(item: str) -> list:
+def str2list(item: Union[str, List]) -> List:
+    # list/tuple given directly
+    if not isinstance(item, str):
+        return list(item)
     try:
-        return ast.literal_eval(item)
-    except BaseException:
-        return item
+        value = ast.literal_eval(item)
+    except (ValueError, SyntaxError):
+        # a single name, e.g. "RandomForest"
+        return [item]
+    return list(value) if isinstance(value, (list, tuple)) else [value]
 
 
 # string dict to dict
-def str2dict(item: str) -> dict:
+def str2dict(item: Union[str, Dict]) -> Dict:
+    # dict given directly
+    if not isinstance(item, str):
+        return dict(item)
     try:
-        return json.loads(item)
-    except BaseException:
-        return item
+        value = json.loads(item)
+    except ValueError as error:
+        raise ValueError(
+            "Expect a dict or a JSON string, get {}.".format(item)
+        ) from error
+    if not isinstance(value, dict):
+        raise ValueError("Expect a dict or a JSON string, get {}.".format(item))
+    return value
 
 
 # Train test split using test set percentage
@@ -245,7 +258,9 @@ class formatting:
             unique_map[item] = idx
 
         # mapping categorical to numerical
-        data = data.replace(unique_map)
+        # pandas>=3 no longer downcasts after replace (result stays object/str),
+        # infer_objects restores the numerical dtype
+        data = data.replace(unique_map).infer_objects()
 
         return data
 
@@ -256,7 +271,7 @@ class formatting:
 
         return x
 
-    def fit(self, X: pd.DataFrame) -> None:
+    def fit(self, X: Union[pd.DataFrame, pd.Series, np.ndarray]) -> "formatting":
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
             try:
@@ -275,6 +290,8 @@ class formatting:
                     X[_column] = self.factorize(X[_column])
                 else:
                     self.factorize(X[_column])
+
+        return self
 
     def refit(self, X: pd.DataFrame) -> Union[None, pd.DataFrame]:
         for _column in self.columns:
@@ -365,9 +382,11 @@ def unify_nan(
     # unify the nan values
     for _column in columns:
         if replace:  # if replace, replace missing column with unified nan one
-            dataset[_column] = dataset[_column].replace(nas_dict)
+            dataset[_column] = dataset[_column].replace(nas_dict).infer_objects()
         else:
-            dataset[_column + "_useNA"] = dataset[_column].replace(nas_dict)
+            dataset[_column + "_useNA"] = (
+                dataset[_column].replace(nas_dict).infer_objects()
+            )
 
     return dataset
 
@@ -471,7 +490,7 @@ def remove_index_columns(
                 "Removing_data(Limited_Information).csv", index=False
             )
         elif axis == 0:
-            data[remove_index].to_csv(
+            data.loc[remove_index].to_csv(
                 "Removing_data(Limited_Information).csv", index=False
             )
 
@@ -627,7 +646,7 @@ class ExtremeClass:
                     len(X.loc[X[_column] == _value, _column]) / len(X)
                     >= self.extreme_threshold
                 ):
-                    _X.remove(labels=_column, inplace=True)
+                    _X.drop(columns=_column, inplace=True)
                     break
         return _X
 
@@ -756,7 +775,7 @@ def string_categorical_text(df: pd.DataFrame) -> str:
 # distinguish numerical and categorical features
 # one column at a time
 def feature_type(df: Union[pd.DataFrame, pd.Series]) -> str:
-    if not df.dtype == "object":
+    if not is_text_dtype(df.dtype):
         return numerical_categorical_continuous(df)
     else:
         return string_categorical_text(df)
@@ -785,11 +804,32 @@ def text2vec(
     how: str = "sum",
     return_type: str = "df",
 ):
-    # get prefix
+    # dataframe input: a single text column behaves like its Series,
+    # multiple text columns are vectorized column by column and concatenated
     if isinstance(df, pd.DataFrame):
-        prefix = df.columns[0]
-    elif isinstance(df, pd.Series):
-        prefix = df.name
+        if df.shape[1] == 1:
+            df = df.iloc[:, 0]
+        else:
+            results = [
+                text2vec(
+                    df[_column],
+                    method=method,
+                    pretrained=pretrained,
+                    dim=dim,
+                    how=how,
+                    return_type=return_type,
+                )
+                for _column in df.columns
+            ]
+            if return_type == "df":
+                return pd.concat(results, axis=1)
+            elif return_type == "pt":
+                import torch
+
+                return torch.cat(results, dim=1)
+
+    # get prefix
+    prefix = df.name
 
     # method to combine the word (in sentences/phrases) vectors
     how_dict = {

@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import importlib
+import os
 from ray.tune import Stopper
 from ray import tune
 import ray
@@ -50,7 +51,7 @@ import time
 import copy
 from inspect import isclass
 import warnings
-from typing import Dict, Callable, Union, List, Any
+from typing import Dict, Callable, Union, List, Any, Optional
 import logging
 import signal
 from contextlib import contextmanager
@@ -84,6 +85,17 @@ def setup_logger(name, log_file, level=logging.INFO):
 
 @contextmanager
 def time_limit(seconds):
+    """
+    Raise TimeoutError if the block runs longer than seconds (main thread, POSIX
+    only: relies on SIGALRM, which does not exist on Windows). The trainables use
+    func_timeout, which works on all platforms.
+    """
+    if not hasattr(signal, "SIGALRM"):
+        raise NotImplementedError(
+            "time_limit relies on SIGALRM, which is not available on this platform. "
+            "Use func_timeout.func_timeout instead."
+        )
+
     def signal_handler(signum, frame):
         raise TimeoutError("Timed out!")
 
@@ -100,17 +112,17 @@ def time_limit(seconds):
 # only chosen ones will be added to hyperparameter space
 def _base_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -233,17 +245,17 @@ def _base_get_hyperparameter_space(
 
 def _hyeropt_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -425,19 +437,103 @@ def _hyeropt_get_hyperparameter_space(
     }
 
 
+# Optuna define-by-run search space, defined at module level (not nested) so the
+# searcher can be pickled when Ray Tune checkpoints the experiment state
+def _optuna_search_space(
+    trial: Any,
+    _encoder,
+    _imputer,
+    _balancing,
+    _scaling,
+    _feature_selection,
+    _models,
+    _encoding_hyperparameter,
+    _imputer_hyperparameter,
+    _balancing_hyperparameter,
+    _scaling_hyperparameter,
+    _feature_selection_hyperparameter,
+    _model_hyperparameter,
+    task_mode,
+):
+    encoder = trial.suggest_categorical("encoder", _encoder)
+    imputer = trial.suggest_categorical("imputer", _imputer)
+    balancing = trial.suggest_categorical("balancing", _balancing)
+    scaling = trial.suggest_categorical("scaling", _scaling)
+    feature_selection = trial.suggest_categorical(
+        "feature_selection", _feature_selection
+    )
+    model = trial.suggest_categorical("model", _models)
+
+    # the pipeline search space
+    # select one of the method/hyperparameter setting from each part
+    encoder_hyper = {}
+    encoder_hyper["encoder"] = encoder
+    for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
+        encoder_hyper[key] = distribution_to_suggest(
+            trial, encoder, key, value, algo="Optuna"
+        )
+
+    imputer_hyper = {}
+    imputer_hyper["imputer"] = imputer
+    for key, value in _imputer_hyperparameter[[*_imputer].index(imputer)].items():
+        imputer_hyper[key] = distribution_to_suggest(
+            trial, imputer, key, value, algo="Optuna"
+        )
+
+    balancing_hyper = {}
+    balancing_hyper["balancing"] = balancing
+    for key, value in _balancing_hyperparameter[[*_balancing].index(balancing)].items():
+        balancing_hyper[key] = distribution_to_suggest(
+            trial, balancing, key, value, algo="Optuna"
+        )
+
+    scaling_hyper = {}
+    scaling_hyper["scaling"] = scaling
+    for key, value in _scaling_hyperparameter[[*_scaling].index(scaling)].items():
+        scaling_hyper[key] = distribution_to_suggest(
+            trial, scaling, key, value, algo="Optuna"
+        )
+
+    feature_selection_hyper = {}
+    feature_selection_hyper["feature_selection"] = feature_selection
+    for key, value in _feature_selection_hyperparameter[
+        [*_feature_selection].index(feature_selection)
+    ].items():
+        feature_selection_hyper[key] = distribution_to_suggest(
+            trial, feature_selection, key, value, algo="Optuna"
+        )
+
+    model_hyper = {}
+    model_hyper["model"] = model
+    for key, value in _model_hyperparameter[[*_models].index(model)].items():
+        model_hyper[key] = distribution_to_suggest(
+            trial, model, key, value, algo="Optuna"
+        )
+
+    return {
+        "task_type": "tabular_" + task_mode,
+        "encoder": encoder_hyper,
+        "imputer": imputer_hyper,
+        "balancing": balancing_hyper,
+        "scaling": scaling_hyper,
+        "feature_selection": feature_selection_hyper,
+        "model": model_hyper,
+    }
+
+
 def _optuna_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Callable:
@@ -450,7 +546,7 @@ def _optuna_get_hyperparameter_space(
         )
 
     import optuna
-    from ray.tune.suggest.optuna import OptunaSearch
+    from ray.tune.search.optuna import OptunaSearch
 
     # config space
     # encoding space
@@ -559,91 +655,8 @@ def _optuna_get_hyperparameter_space(
             "No model hyperparameters are found. Please check your encoders."
         )
 
-    def search_space(
-        trial: optuna.Trial,
-        _encoder,
-        _imputer,
-        _balancing,
-        _scaling,
-        _feature_selection,
-        _models,
-        _encoding_hyperparameter,
-        _imputer_hyperparameter,
-        _balancing_hyperparameter,
-        _scaling_hyperparameter,
-        _feature_selection_hyperparameter,
-        _model_hyperparameter,
-        task_mode,
-    ):
-        encoder = trial.suggest_categorical("encoder", _encoder)
-        imputer = trial.suggest_categorical("imputer", _imputer)
-        balancing = trial.suggest_categorical("balancing", _balancing)
-        scaling = trial.suggest_categorical("scaling", _scaling)
-        feature_selection = trial.suggest_categorical(
-            "feature_selection", _feature_selection
-        )
-        model = trial.suggest_categorical("model", _models)
-
-        # the pipeline search space
-        # select one of the method/hyperparameter setting from each part
-        encoder_hyper = {}
-        encoder_hyper["encoder"] = encoder
-        for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
-            encoder_hyper[key] = distribution_to_suggest(
-                trial, encoder, key, value, algo="Optuna"
-            )
-
-        imputer_hyper = {}
-        imputer_hyper["imputer"] = imputer
-        for key, value in _imputer_hyperparameter[[*_imputer].index(imputer)].items():
-            imputer_hyper[key] = distribution_to_suggest(
-                trial, imputer, key, value, algo="Optuna"
-            )
-
-        balancing_hyper = {}
-        balancing_hyper["balancing"] = balancing
-        for key, value in _balancing_hyperparameter[
-            [*_balancing].index(balancing)
-        ].items():
-            balancing_hyper[key] = distribution_to_suggest(
-                trial, balancing, key, value, algo="Optuna"
-            )
-
-        scaling_hyper = {}
-        scaling_hyper["scaling"] = scaling
-        for key, value in _scaling_hyperparameter[[*_scaling].index(scaling)].items():
-            scaling_hyper[key] = distribution_to_suggest(
-                trial, scaling, key, value, algo="Optuna"
-            )
-
-        feature_selection_hyper = {}
-        feature_selection_hyper["feature_selection"] = feature_selection
-        for key, value in _feature_selection_hyperparameter[
-            [*_feature_selection].index(feature_selection)
-        ].items():
-            feature_selection_hyper[key] = distribution_to_suggest(
-                trial, feature_selection, key, value, algo="Optuna"
-            )
-
-        model_hyper = {}
-        model_hyper["model"] = model
-        for key, value in _model_hyperparameter[[*_models].index(model)].items():
-            model_hyper[key] = distribution_to_suggest(
-                trial, model, key, value, algo="Optuna"
-            )
-
-        return {
-            "task_type": "tabular_" + task_mode,
-            "encoder": encoder_hyper,
-            "imputer": imputer_hyper,
-            "balancing": balancing_hyper,
-            "scaling": scaling_hyper,
-            "feature_selection": feature_selection_hyper,
-            "model": model_hyper,
-        }
-
     return partial(
-        search_space,
+        _optuna_search_space,
         _encoder=encoder,
         _imputer=imputer,
         _balancing=balancing,
@@ -662,17 +675,17 @@ def _optuna_get_hyperparameter_space(
 
 def _converted_get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_algo: str = "Nevergrad",
@@ -688,11 +701,11 @@ def _converted_get_hyperparameter_space(
     #     )
 
     if search_algo == "Nevergrad":
-        from ray.tune.suggest.nevergrad import NevergradSearch
+        from ray.tune.search.nevergrad import NevergradSearch
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from ray.tune.suggest.flaml import BlendSearch
+        from flaml import BlendSearch
 
         searcher = BlendSearch
 
@@ -742,14 +755,10 @@ def _converted_get_hyperparameter_space(
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = (
-            tune.choice(
-                [
-                    balancings_hyperparameters[all_balancings.index(_balancing)][
-                        "balancing"
-                    ]
-                ]
-            )
+        balancings_hyperparameters[all_balancings.index(_balancing)][
+            "balancing"
+        ] = tune.choice(
+            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
         )
         _balancing_hyperparameter.append(
             searcher.convert_search_space(
@@ -872,7 +881,7 @@ def _converted_get_hyperparameter_space(
 #             Command to install: pip install scikit-optimize"
 #         )
 
-#     from ray.tune.suggest.skopt import SkOptSearch
+#     from ray.tune.search.skopt import SkOptSearch
 
 #     # encoding space
 #     # get all method names in hyperparameter space
@@ -993,17 +1002,17 @@ def _converted_get_hyperparameter_space(
 
 def _get_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    imputers_hyperparameters: Dict,
+    imputers_hyperparameters: List[Dict],
     imputer: Dict,
-    balancings_hyperparameters: Dict,
+    balancings_hyperparameters: List[Dict],
     balancing: Dict,
-    scalings_hyperparameters: Dict,
+    scalings_hyperparameters: List[Dict],
     scaling: Dict,
-    feature_selection_hyperparameters: Dict,
+    feature_selection_hyperparameters: List[Dict],
     feature_selection: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_aglo: str,
@@ -1101,13 +1110,13 @@ def _get_hyperparameter_space(
 
 def _base_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -1192,13 +1201,13 @@ def _base_get_informed_hyperparameter_space(
 
 def _hyperopt_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Dict:
@@ -1320,15 +1329,77 @@ def _hyperopt_get_informed_hyperparameter_space(
     }
 
 
+# Optuna define-by-run search space of the informed pipelines, defined at module
+# level so the searcher can be pickled when Ray Tune checkpoints the experiment
+def _optuna_informed_search_space(
+    trial: Any,
+    _encoder,
+    _complete_prep,
+    _missing_prep,
+    _models,
+    _encoding_hyperparameter,
+    _complete_prep_hyperparameter,
+    _missing_prep_hyperparameter,
+    _model_hyperparameter,
+    task_mode,
+):
+    encoder = trial.suggest_categorical("encoder", _encoder)
+    complete_prep = trial.suggest_categorical("complete_prep", _complete_prep)
+    missing_prep = trial.suggest_categorical("missing_prep", _missing_prep)
+    model = trial.suggest_categorical("model", _models)
+
+    # the pipeline search space
+    # select one of the method/hyperparameter setting from each part
+    encoder_hyper = {}
+    encoder_hyper["encoder"] = encoder
+    for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
+        encoder_hyper[key] = distribution_to_suggest(
+            trial, encoder, key, value, algo="Optuna"
+        )
+
+    complete_prep_hyper = {}
+    complete_prep_hyper["complete_prep"] = complete_prep
+    for key, value in _complete_prep_hyperparameter[
+        [*_complete_prep].index(complete_prep)
+    ].items():
+        complete_prep_hyper[key] = distribution_to_suggest(
+            trial, complete_prep, key, value, algo="Optuna"
+        )
+
+    missing_prep_hyper = {}
+    missing_prep_hyper["missing_prep"] = missing_prep
+    for key, value in _missing_prep_hyperparameter[
+        [*_missing_prep].index(missing_prep)
+    ].items():
+        missing_prep_hyper[key] = distribution_to_suggest(
+            trial, missing_prep, key, value, algo="Optuna"
+        )
+
+    model_hyper = {}
+    model_hyper["model"] = model
+    for key, value in _model_hyperparameter[[*_models].index(model)].items():
+        model_hyper[key] = distribution_to_suggest(
+            trial, model, key, value, algo="Optuna"
+        )
+
+    return {
+        "task_type": "tabular_" + task_mode,
+        "encoder": encoder_hyper,
+        "complete_prep": complete_prep_hyper,
+        "missing_prep": missing_prep_hyper,
+        "model": model_hyper,
+    }
+
+
 def _optuna_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
 ) -> Callable:
@@ -1341,7 +1412,7 @@ def _optuna_get_informed_hyperparameter_space(
         )
 
     import optuna
-    from ray.tune.suggest.optuna import OptunaSearch
+    from ray.tune.search.optuna import OptunaSearch
 
     # config space
     # encoding space
@@ -1414,67 +1485,8 @@ def _optuna_get_informed_hyperparameter_space(
             "No model hyperparameters are found. Please check your encoders."
         )
 
-    def search_space(
-        trial: optuna.Trial,
-        _encoder,
-        _complete_prep,
-        _missing_prep,
-        _models,
-        _encoding_hyperparameter,
-        _complete_prep_hyperparameter,
-        _missing_prep_hyperparameter,
-        _model_hyperparameter,
-        task_mode,
-    ):
-        encoder = trial.suggest_categorical("encoder", _encoder)
-        complete_prep = trial.suggest_categorical("complete_prep", _complete_prep)
-        missing_prep = trial.suggest_categorical("missing_prep", _missing_prep)
-        model = trial.suggest_categorical("model", _models)
-
-        # the pipeline search space
-        # select one of the method/hyperparameter setting from each part
-        encoder_hyper = {}
-        encoder_hyper["encoder"] = encoder
-        for key, value in _encoding_hyperparameter[[*_encoder].index(encoder)].items():
-            encoder_hyper[key] = distribution_to_suggest(
-                trial, encoder, key, value, algo="Optuna"
-            )
-
-        complete_prep_hyper = {}
-        complete_prep_hyper["complete_prep"] = complete_prep
-        for key, value in _complete_prep_hyperparameter[
-            [*_complete_prep].index(complete_prep)
-        ].items():
-            complete_prep_hyper[key] = distribution_to_suggest(
-                trial, complete_prep, key, value, algo="Optuna"
-            )
-
-        missing_prep_hyper = {}
-        missing_prep_hyper["missing_prep"] = missing_prep
-        for key, value in _missing_prep_hyperparameter[
-            [*_missing_prep].index(missing_prep)
-        ].items():
-            missing_prep_hyper[key] = distribution_to_suggest(
-                trial, missing_prep, key, value, algo="Optuna"
-            )
-
-        model_hyper = {}
-        model_hyper["model"] = model
-        for key, value in _model_hyperparameter[[*_models].index(model)].items():
-            model_hyper[key] = distribution_to_suggest(
-                trial, model, key, value, algo="Optuna"
-            )
-
-        return {
-            "task_type": "tabular_" + task_mode,
-            "encoder": encoder_hyper,
-            "complete_prep": complete_prep_hyper,
-            "missing_prep": missing_prep_hyper,
-            "model": model_hyper,
-        }
-
     return partial(
-        search_space,
+        _optuna_informed_search_space,
         _encoder=encoder,
         _complete_prep=complete_prep,
         _missing_prep=missing_prep,
@@ -1489,23 +1501,23 @@ def _optuna_get_informed_hyperparameter_space(
 
 def _converted_get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_algo: str = "Nevergrad",
 ) -> Dict:
     if search_algo == "Nevergrad":
-        from ray.tune.suggest.nevergrad import NevergradSearch
+        from ray.tune.search.nevergrad import NevergradSearch
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from ray.tune.suggest.flaml import BlendSearch
+        from flaml import BlendSearch
 
         searcher = BlendSearch
 
@@ -1617,13 +1629,13 @@ def _converted_get_informed_hyperparameter_space(
 
 def _get_informed_hyperparameter_space(
     X: pd.DataFrame,
-    encoders_hyperparameters: Dict,
+    encoders_hyperparameters: List[Dict],
     encoder: Dict,
-    complete_prep_hyperparameters: Dict,
+    complete_prep_hyperparameters: List[Dict],
     complete_prep: Dict,
-    missing_prep_hyperparameters: Dict,
+    missing_prep_hyperparameters: List[Dict],
     missing_prep: Dict,
-    models_hyperparameters: Dict,
+    models_hyperparameters: List[Dict],
     models: Dict,
     task_mode: str,
     search_aglo: str,
@@ -1690,7 +1702,7 @@ def _get_informed_hyperparameter_space(
 def get_algo(search_algo: str) -> Callable:
     if search_algo == "RandomSearch" or search_algo == "GridSearch":
         # Random Search and Grid Search
-        from ray.tune.suggest.basic_variant import BasicVariantGenerator
+        from ray.tune.search.basic_variant import BasicVariantGenerator
 
         algo = BasicVariantGenerator
     # Update: Nov. 9, 2022
@@ -1712,7 +1724,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Bayesian Search
-    #     from ray.tune.suggest.bayesopt import BayesOptSearch
+    #     from ray.tune.search.bayesopt import BayesOptSearch
 
     #     algo = BayesOptSearch
     # elif search_algo == "AxSearch":
@@ -1727,7 +1739,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Ax Search
-    #     from ray.tune.suggest.ax import AxSearch
+    #     from ray.tune.search.ax import AxSearch
 
     #     algo = AxSearch
     # elif search_algo == "BOHB":
@@ -1742,7 +1754,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Bayesian Optimization HyperBand/BOHB
-    #     from ray.tune.suggest.bohb import TuneBOHB
+    #     from ray.tune.search.bohb import TuneBOHB
 
     #     algo = TuneBOHB
     # elif search_algo == "BlendSearch":
@@ -1755,7 +1767,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Blend Search
-    #     from ray.tune.suggest.flaml import BlendSearch
+    #     from flaml import BlendSearch
 
     #     algo = BlendSearch
     elif search_algo == "CFO":
@@ -1766,8 +1778,10 @@ def get_algo(search_algo: str) -> Callable:
                 "flaml not installed. Please install it first to use CFO. \nCommand to install: pip install flaml"
             )
 
-        # Blend Search
-        from ray.tune.suggest.flaml import CFO
+        # Cost-Frugal Optimization
+        # NOTE: ray>=2.x removed the ray.tune.search.flaml wrapper, the searchers
+        # are imported from flaml directly (they implement the ray Searcher API)
+        from flaml import CFO
 
         algo = CFO
     # elif search_algo == "DragonflySearch":
@@ -1781,7 +1795,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Dragonfly Search
-    #     from ray.tune.suggest.dragonfly import DragonflySearch
+    #     from ray.tune.search.dragonfly import DragonflySearch
 
     #     algo = DragonflySearch
     # elif search_algo == "HEBO":
@@ -1795,7 +1809,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Heteroscedastic Evolutionary Bayesian Optimization/HEBO
-    #     from ray.tune.suggest.hebo import HEBOSearch
+    #     from ray.tune.search.hebo import HEBOSearch
 
     #     algo = HEBOSearch
     elif search_algo == "HyperOpt":
@@ -1807,7 +1821,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # HyperOpt Search
-        from ray.tune.suggest.hyperopt import HyperOptSearch
+        from ray.tune.search.hyperopt import HyperOptSearch
 
         algo = HyperOptSearch
     elif search_algo == "Nevergrad":
@@ -1819,7 +1833,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # Nevergrad Search
-        from ray.tune.suggest.nevergrad import NevergradSearch
+        from ray.tune.search.nevergrad import NevergradSearch
 
         algo = NevergradSearch
     # default hyeprparameter space can not be easily converted
@@ -1832,7 +1846,7 @@ def get_algo(search_algo: str) -> Callable:
             )
 
         # Optuna Search
-        from ray.tune.suggest.optuna import OptunaSearch
+        from ray.tune.search.optuna import OptunaSearch
 
         algo = OptunaSearch
     # elif search_algo == "SigOpt":
@@ -1847,7 +1861,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # SigOpt Search
-    #     from ray.tune.suggest.sigopt import SigOptSearch
+    #     from ray.tune.search.sigopt import SigOptSearch
 
     #     algo = SigOptSearch
     # Update: Nov. 9, 2022
@@ -1863,7 +1877,7 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # Scikit-Optimize Search
-    #     from ray.tune.suggest.skopt import SkOptSearch
+    #     from ray.tune.search.skopt import SkOptSearch
 
     #     algo = SkOptSearch
     # elif search_algo == "ZOOpt":
@@ -1877,17 +1891,17 @@ def get_algo(search_algo: str) -> Callable:
     #         )
 
     #     # ZOOpt Search
-    #     from ray.tune.suggest.zoopt import ZOOptSearch
+    #     from ray.tune.search.zoopt import ZOOptSearch
 
     #     algo = ZOOptSearch
     elif search_algo == "Repeater":
         # Repeated Evaluations
-        from ray.tune.suggest import Repeater
+        from ray.tune.search import Repeater
 
         algo = Repeater
     elif search_algo == "ConcurrencyLimiter":
         # ConcurrencyLimiter
-        from ray.tune.suggest import ConcurrencyLimiter
+        from ray.tune.search import ConcurrencyLimiter
 
         algo = ConcurrencyLimiter
     else:
@@ -1975,12 +1989,79 @@ def get_scheduler(search_scheduler: str) -> Callable:
     return scheduler
 
 
+class TrialDirnameCreator:
+    """
+    Name trial directories as iter_{n}_id_{trial_id}.
+
+    A picklable callable is used (instead of a closure over the AutoTabular
+    object) since ray>=2.x pickles the TuneConfig into tuner.pkl for restoring.
+
+    Parameters
+    ----------
+    start: number of trials already named, default = 0
+    """
+
+    def __init__(self, start: int = 0) -> None:
+        self.count = start
+
+    # Tune deep-copies the tune config/experiment spec, keep one shared counter
+    # (pickling for tuner.pkl is not affected)
+    def __copy__(self) -> "TrialDirnameCreator":
+        return self
+
+    def __deepcopy__(self, memo: Dict) -> "TrialDirnameCreator":
+        return self
+
+    def __call__(self, trial: Any) -> str:
+        self.count += 1
+        return "iter_{}_id_{}".format(self.count, trial.trial_id)
+
+
+@contextmanager
+def legacy_progress_output(enable: bool = True):
+    """
+    Since ray 2.5, Tune uses a new console output engine which ignores
+    custom ProgressReporter objects. Temporarily switch back to the legacy
+    engine (RAY_AIR_NEW_OUTPUT=0) so the CLIReporter/JupyterNotebookReporter
+    (with loss/training_status columns) is used.
+    """
+    if not enable:
+        yield
+        return
+
+    _prev = os.environ.get("RAY_AIR_NEW_OUTPUT")
+    os.environ["RAY_AIR_NEW_OUTPUT"] = "0"
+    try:
+        yield
+    finally:
+        if _prev is None:
+            os.environ.pop("RAY_AIR_NEW_OUTPUT", None)
+        else:
+            os.environ["RAY_AIR_NEW_OUTPUT"] = _prev
+
+
 # get progress reporter based on string input
 def get_progress_reporter(
     progress_reporter: str,
     max_evals: int,
     max_error: int,
 ) -> Callable:
+    # max_error is the number of failures allowed, which can be 0
+    # 0 rows would make the error table of the reporter fail, use no limit (None)
+    max_error_rows = max_error if max_error and max_error > 0 else None
+
+    # the JupyterNotebookReporter displays through IPython (always available in
+    # notebooks, not a dependency of the package): fall back to the CLIReporter
+    if progress_reporter == "JupyterNotebookReporter":
+        try:
+            import IPython.display  # noqa: F401
+        except ImportError:
+            warnings.warn(
+                "JupyterNotebookReporter requires IPython, which is not installed. "
+                "Using CLIReporter instead."
+            )
+            progress_reporter = "CLIReporter"
+
     if progress_reporter == "CLIReporter":
         from ray.tune.progress_reporter import CLIReporter
 
@@ -1994,8 +2075,10 @@ def get_progress_reporter(
             # ],
             parameter_columns=["task_type"],
             max_progress_rows=max_evals,
-            max_error_rows=max_error,
-            sort_by_metric=True,
+            max_error_rows=max_error_rows,
+            # ray>=2 legacy reporter fails to sort trials terminated without
+            # a loss (e.g. stopped by timeout), keep the trials unsorted
+            sort_by_metric=False,
         )
     elif progress_reporter == "JupyterNotebookReporter":
         from ray.tune.progress_reporter import JupyterNotebookReporter
@@ -2011,8 +2094,10 @@ def get_progress_reporter(
             # ],
             parameter_columns=["task_type"],
             max_progress_rows=max_evals,
-            max_error_rows=max_error,
-            sort_by_metric=True,
+            max_error_rows=max_error_rows,
+            # ray>=2 legacy reporter fails to sort trials terminated without
+            # a loss (e.g. stopped by timeout), keep the trials unsorted
+            sort_by_metric=False,
         )
 
     # add metrics for visualization
@@ -2068,7 +2153,7 @@ def get_logger(logger: List) -> List[Callable]:
                     Command to install: pip install mlflow"
                 )
 
-            from ray.tune.integration.mlflow import MLflowLoggerCallback
+            from ray.air.integrations.mlflow import MLflowLoggerCallback
 
             loggers.append(MLflowLoggerCallback())
         elif "Wandb" == log:
@@ -2080,7 +2165,7 @@ def get_logger(logger: List) -> List[Callable]:
                     Command to install: pip install wandb"
                 )
 
-            from ray.tune.integration.wandb import WandbLoggerCallback
+            from ray.air.integrations.wandb import WandbLoggerCallback
 
             loggers.append(WandbLoggerCallback())
 
@@ -2408,7 +2493,7 @@ def get_metrics(metric_str: str) -> Callable:
 class ray_status:
     def __init__(
         self,
-        cpu_threads: int,
+        cpu_threads: Optional[int],
         gpu_count: int,
     ) -> None:
         self.cpu_threads = cpu_threads

@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Union, Callable, Any, Dict
+from typing import List, Optional, Union, Callable, Any, Dict, cast
 import logging
 import warnings
 import time
@@ -47,10 +47,24 @@ import pandas as pd
 from dateutil.parser import parse
 from ..constant import UNI_CLASS, PROP_UNIQUE
 
+
+def is_text_dtype(dtype: Any) -> bool:
+    """
+    Whether the dtype holds text: numpy object dtype or pandas string dtype.
+
+    Since pandas 3.0, string columns are inferred as the pandas string dtype
+    ("str", StringDtype) instead of object. Categorical dtype is not included.
+    """
+    if isinstance(dtype, pd.CategoricalDtype):
+        return False
+
+    return dtype == object or isinstance(dtype, pd.StringDtype)
+
+
 # set response to [0, 1] class, random guess at 0.5
 
 
-def random_guess(number: float, seed: int = None) -> int:
+def random_guess(number: float, seed: Optional[int] = None) -> int:
     if seed is not None:
         np.random.seed(seed)
     if number > 0.5:
@@ -63,7 +77,9 @@ def random_guess(number: float, seed: int = None) -> int:
 
 # Return random index of a list (unique values only)
 # from total draw n, default total = n
-def random_index(n: int, total: int = None, seed: int = None) -> np.ndarray:
+def random_index(
+    n: int, total: Optional[int] = None, seed: Optional[int] = None
+) -> np.ndarray:
     if seed is not None:
         np.random.seed(seed)
     if total is None:
@@ -96,7 +112,7 @@ def random_index(n: int, total: int = None, seed: int = None) -> np.ndarray:
 
 
 # Return randomly shuffle of a list (unique values only)
-def random_list(vlist: list, seed: int = None) -> np.ndarray:
+def random_list(vlist: list, seed: Optional[int] = None) -> np.ndarray:
     if seed is not None:
         np.random.seed(seed)
 
@@ -116,7 +132,7 @@ def random_list(vlist: list, seed: int = None) -> np.ndarray:
 # rule = 'any' will consider the column as date type as long as one value is date type,
 # rule = 'all' will consider the column as date type only when all values
 # are date type.
-def is_date(df: pd.Series, rule: str = "all") -> List[bool]:
+def is_date(df: pd.Series, rule: str = "all") -> bool:
     def _is_date(string, fuzzy=False):
         try:
             parse(string, fuzzy=fuzzy)
@@ -132,6 +148,7 @@ def is_date(df: pd.Series, rule: str = "all") -> List[bool]:
         return any(_check)
     elif rule == "all":
         return all(_check)
+    raise ValueError('rule must be "any" or "all", get {}.'.format(rule))
 
 
 # Round data for categorical features (in case after
@@ -149,10 +166,9 @@ def feature_rounding(X: pd.DataFrame, uni_class: int = UNI_CLASS) -> pd.DataFram
 
 
 # Return location of minimum values
-def minloc(vlist: List) -> int:
+def minloc(vlist: Union[List, np.ndarray]) -> int:
     # make sure input is np.array
-    if not isinstance(vlist, np.ndarray):
-        vlist = np.array(vlist)
+    vlist = np.asarray(vlist)
 
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
@@ -175,14 +191,14 @@ def minloc(vlist: List) -> int:
                 "Input is multi-dimensional array, return min location of the first dimension."
             )
 
-        return np.argmin(vlist, axis=0)
+        # index of a 1-D list (an array of indices for multi-dimensional input)
+        return cast(int, np.argmin(vlist, axis=0))
 
 
 # Return location of maximum values
-def maxloc(vlist: List) -> int:
+def maxloc(vlist: Union[List, np.ndarray]) -> int:
     # make sure input is np.array
-    if not isinstance(vlist, np.ndarray):
-        vlist = np.array(vlist)
+    vlist = np.asarray(vlist)
 
     if len(vlist) == 0:
         raise ValueError("Invalid List!")
@@ -205,7 +221,8 @@ def maxloc(vlist: List) -> int:
                 "Input is multi-dimensional array, return max location of the first dimension."
             )
 
-        return np.argmax(vlist, axis=0)
+        # index of a 1-D list (an array of indices for multi-dimensional input)
+        return cast(int, np.argmax(vlist, axis=0))
 
 
 # return the index of Boolean list or {0, 1} list
@@ -217,8 +234,8 @@ def True_index(X: List, _true: List = [True, 1]) -> List[int]:
 
 
 # determine the task types
-def type_of_task(y: Union[pd.DataFrame, np.ndarray]) -> str:
-    if isinstance(y, pd.DataFrame):
+def type_of_task(y: Union[pd.DataFrame, pd.Series, np.ndarray]) -> str:
+    if isinstance(y, (pd.DataFrame, pd.Series)):
         y = y.values
 
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
@@ -266,13 +283,17 @@ class Timer:
 # a jupyter notebook environment
 def type_of_script() -> str:
     try:
+        from IPython import get_ipython
+
         ipy_str = str(type(get_ipython()))
         if "zmqshell" in ipy_str:
             return "jupyter"
         if "terminal" in ipy_str:
             return "ipython"
     except BaseException:
-        return "terminal"
+        pass
+
+    return "terminal"
 
 
 # determine whether a method exists in a class
@@ -333,22 +354,21 @@ def format_hyper_dict(
 def _optuna_distribution_to_suggest(
     trial: Any, method: str, key: str, value: Any
 ) -> Any:
+    # optuna>=3.0: FloatDistribution/IntDistribution, the legacy Uniform/LogUniform/
+    # DiscreteUniform/IntUniform/IntLogUniform distributions are their subclasses
     import optuna.distributions as distributions
 
-    if isinstance(value, distributions.UniformDistribution):
-        return trial.suggest_uniform(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.LogUniformDistribution):
-        return trial.suggest_loguniform(method + "_" + key, value.low, value.high)
-    elif isinstance(value, distributions.DiscreteUniformDistribution):
-        return trial.suggest_discrete_uniform(
-            method + "_" + key, value.low, value.high, value.q
+    name = method + "_" + key
+    if isinstance(value, distributions.FloatDistribution):
+        return trial.suggest_float(
+            name, value.low, value.high, log=value.log, step=value.step
         )
-    elif isinstance(value, distributions.IntUniformDistribution):
-        return trial.suggest_int(method + "_" + key, value.low, value.high)
+    elif isinstance(value, distributions.IntDistribution):
+        return trial.suggest_int(
+            name, value.low, value.high, log=value.log, step=value.step
+        )
     elif isinstance(value, distributions.CategoricalDistribution):
-        return trial.suggest_categorical(method + "_" + key, value.choices)
-    elif isinstance(value, distributions.IntLogUniformDistribution):
-        return trial.suggest_int(method + "_" + key, value.low, value.high)
+        return trial.suggest_categorical(name, value.choices)
     else:
         raise TypeError("Distribution {} is not supported!".format(type(value)))
 

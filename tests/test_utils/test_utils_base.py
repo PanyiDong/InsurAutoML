@@ -67,9 +67,11 @@ def test_random_guess():
     assert random_guess(0) == 0, "random_guess(0) should be 0, get {}".format(
         random_guess(0)
     )
-    assert (
-        random_guess(0.5) == 0 or random_guess(0.5) == 1
-    ), "random_guess(0.5) should be either 0 or 1, get {}".format(random_guess(0.5))
+    # random at 0.5: call once (two separate calls may disagree)
+    guess = random_guess(0.5)
+    assert guess in (0, 1), "random_guess(0.5) should be either 0 or 1, get {}".format(
+        guess
+    )
 
 
 def test_random_index():
@@ -108,7 +110,13 @@ def test_is_date():
         }
     )
 
-    assert is_date(test, rule="all"), "The is_date method is not correctly done."
+    # is_date checks one column (as used by DataEncoding on text columns)
+    assert is_date(
+        test["col_2"], rule="all"
+    ), "The is_date method is not correctly done."
+    assert is_date(test["col_2"], rule="any")
+    assert not is_date(pd.Series(["Male", "Female", "2020-01-01"]), rule="all")
+    assert is_date(pd.Series(["Male", "Female", "2020-01-01"]), rule="any")
 
 
 def test_feature_rounding():

@@ -1,40 +1,52 @@
 name: CodeCov
+# pull requests: coverage of the changes; master: base report the pull requests
+# are compared against
 on:
-  - pull_request
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write # OIDC authentication for the Codecov upload
 jobs:
   run:
     runs-on: ubuntu-latest
     env:
       OS: ubuntu-latest
-      PYTHON: "3.9"
+      PYTHON: "3.12"
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: Setup Python
-        uses: actions/setup-python@master
+        uses: actions/setup-python@v7
         with:
-          python-version: 3.9
-      - name: Setup conda and C++ build deps
-        uses: conda-incubator/setup-miniconda@v2
-        with:
-          python-version: 3.9
-          auto-update-conda: true
-      - name: Install C/C++ headers and build tools
+          python-version: "3.12"
+      - name: Install C++ headers (nanoflann for the InformedAutoML extension)
         run: |
-          sudo apt install libnanoflann-dev
-          conda install -y -c conda-forge nanoflann pybind11 cmake ninja
+          sudo apt-get update
+          sudo apt-get install -y libnanoflann-dev
           python -m pip install --upgrade pip
-          python -m pip install cmake pybind11
+      # CPU-only torch (much smaller than the default CUDA wheels) so the neural
+      # network models are tested and covered; installed first, the "nn" extra
+      # below then finds torch already satisfied
+      - name: Install torch (CPU)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
       - name: "generate report"
         run: |
-          python -m pip install --upgrade pip
-          pip install coverage pytest
-          pip install -e .[extended]
-          coverage run -m pytest
+          INFORMEDAUTOML=1 pip install -e ".[informed,nn]" pytest pytest-cov
+          python -c "import torch; assert not torch.version.cuda, torch.version.cuda"
+          python -c "from InsurAutoML._optional import missing_informed_components as m; assert not m(), m()"
+          pytest tests/ --cov=InsurAutoML --cov-report=xml
+      # codecov-action >= v4 needs an upload token, use GitHub OIDC (no secret needed)
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v7
         with:
+          files: ./coverage.xml
           flags: uitests
+          use_oidc: true
           fail_ci_if_error: false
           verbose: true

@@ -39,6 +39,9 @@ SOFTWARE.
 """
 
 
+import pytest
+
+
 def test_get_algo():
     from InsurAutoML.utils.optimize import get_algo
 
@@ -105,8 +108,39 @@ def test_get_scheduler():
 def test_get_progress_reporter():
     from InsurAutoML.utils.optimize import get_progress_reporter
 
-    get_progress_reporter("CLIReporter", max_evals=64, max_error=4)
-    get_progress_reporter("JupyterNotebookReporter", max_evals=64, max_error=4)
+    from ray.tune.progress_reporter import CLIReporter, JupyterNotebookReporter
+
+    assert isinstance(
+        get_progress_reporter("CLIReporter", max_evals=64, max_error=4), CLIReporter
+    )
+    reporter = get_progress_reporter(
+        "JupyterNotebookReporter", max_evals=64, max_error=4
+    )
+    # without IPython (e.g. in CI) the CLIReporter is used instead
+    try:
+        import IPython.display  # noqa: F401
+
+        expected = JupyterNotebookReporter
+    except ImportError:
+        expected = CLIReporter
+    assert isinstance(reporter, expected)
+
+
+def test_get_progress_reporter_without_ipython(monkeypatch):
+    import sys
+
+    from ray.tune.progress_reporter import CLIReporter
+
+    from InsurAutoML.utils.optimize import get_progress_reporter
+
+    # None in sys.modules makes the import fail (IPython not installed)
+    monkeypatch.setitem(sys.modules, "IPython", None)
+    monkeypatch.setitem(sys.modules, "IPython.display", None)
+    with pytest.warns(UserWarning, match="requires IPython"):
+        reporter = get_progress_reporter(
+            "JupyterNotebookReporter", max_evals=64, max_error=4
+        )
+    assert isinstance(reporter, CLIReporter)
 
 
 def test_get_logger():

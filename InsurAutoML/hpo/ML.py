@@ -181,7 +181,7 @@ class AutoTabularRegressor(AutoTabularBase):
         voting: str = "mean",
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -204,13 +204,13 @@ class AutoTabularRegressor(AutoTabularBase):
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
         logger: Union[str, List[str]] = ["Logger"],
-        progress_reporter: str = None,
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -425,7 +425,7 @@ class AutoTabularClassifier(AutoTabularBase):
         voting="hard",
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -448,13 +448,13 @@ class AutoTabularClassifier(AutoTabularBase):
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
         logger: Union[str, List[str]] = ["Logger"],
-        progress_reporter: str = None,
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -672,10 +672,10 @@ class AutoTabular(AutoTabularBase):
         self,
         n_estimators: int = 5,
         ensemble_strategy: str = "stacking",
-        voting: str = None,
+        voting: Optional[str] = None,
         timeout: int = 360,
         max_evals: int = 64,
-        timeout_per_trial: int = None,
+        timeout_per_trial: Optional[int] = None,
         allow_error: Union[float, int] = 0.1,
         temp_directory: str = "tmp",
         delete_temp_after_terminate: bool = False,
@@ -698,13 +698,13 @@ class AutoTabular(AutoTabularBase):
         search_scheduler: str = "FIFOScheduler",
         search_scheduler_settings: Dict = {},
         logger: Union[str, List[str]] = ["Logger"],
-        progress_reporter: str = None,
+        progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
-        cpu_threads: int = None,
-        use_gpu: bool = None,
+        cpu_threads: Optional[int] = None,
+        use_gpu: Optional[bool] = None,
         reset_index: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -773,7 +773,7 @@ class AutoTabular(AutoTabularBase):
     def fit(
         self,
         X: pd.DataFrame,
-        y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
         X_valid: Optional[pd.DataFrame] = None,
         y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabular:

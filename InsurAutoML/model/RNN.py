@@ -149,7 +149,7 @@ class RNN_Net(nn.Module):
         self.dropout = nn.Dropout(p=dropout)  # dropout layer
         self.use_softmax = use_softmax
         if self.use_softmax:
-            self.softmax_layer = nn.LogSoftmax(dim=1)  # softmax layer
+            self.softmax_layer = nn.LogSoftmax(dim=-1)  # softmax layer
 
     def forward(
         self, input: torch.Tensor, hidden: torch.Tensor
@@ -369,6 +369,9 @@ class RNN_Base:
         # initialize hidden state
         h = self.model.init_hidden(len(test_tensor))
 
+        # evaluation mode (disable dropout)
+        self.model.eval()
+
         # predict
         for batch_idx, [data] in enumerate(test_loader):
             with torch.no_grad():
@@ -458,9 +461,6 @@ class RNN_Classifier(RNN_Base, BaseModel):
     def fit(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
     ) -> RNN_Classifier:
-        # get unique classes
-        self.output_size = len(pd.unique(y))
-
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
             X = torch.as_tensor(
@@ -473,6 +473,9 @@ class RNN_Classifier(RNN_Base, BaseModel):
                 y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
                 dtype=torch.long,
             )
+
+        # get unique classes (after conversion, pd.unique does not accept tensors)
+        self.output_size = len(torch.unique(y))
 
         super(RNN_Classifier, self).__init__(
             input_size=self.input_size,
@@ -502,8 +505,8 @@ class RNN_Classifier(RNN_Base, BaseModel):
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # not need to use argmax to select the one class
-        # but to return full probability
-        return super(RNN_Classifier, self).predict(X)
+        # but to return full probability (model outputs log-probabilities)
+        return np.exp(super(RNN_Classifier, self).predict(X))
 
 
 class RNN_Regressor(RNN_Base, BaseModel):

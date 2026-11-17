@@ -1,0 +1,120 @@
+# Package metadata of InsurAutoML.
+# setup.py only handles the dynamic parts: the version (written to InsurAutoML/VERSION
+# from the latest git tag) and the optional C++ extension of the InformedAutoML
+# version, built with INFORMEDAUTOML=1, e.g.
+#   INFORMEDAUTOML=1 pip install "InsurAutoML[informed]"
+
+[build-system]
+requires = [
+    "setuptools>=77",
+    "wheel",
+    "pybind11>=2.10",
+    "tomli>=1.1; python_version < '3.11'",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "InsurAutoML"
+dynamic = ["version"]
+description = "Automated Machine Learning/AutoML pipeline."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Panyi Dong", email = "panyid2@illinois.edu" }]
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Intended Audience :: Science/Research",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+dependencies = [
+    "setuptools",
+    "threadpoolctl>2.2.0",          # lower version may cause import error on C codes
+    "numpy>=1.24",                  # numpy 2.x supported
+    "pandas>=2.0",                  # pandas 3.x supported
+    "scipy",
+    "pyarrow",
+    "fastparquet",
+    "func-timeout",
+    "matplotlib",
+    "seaborn>=0.11.0",
+    "gensim",
+    "ray[tune]>=2.41",              # ray.tune.RunConfig/CheckpointConfig/FailureConfig, Tuner API
+    "redis; platform_system=='Windows'",
+    "tqdm",
+    "tensorboardX",
+    "scikit-learn>=1.2.0",
+]
+
+[project.optional-dependencies]
+normal = []
+# InformedAutoML version; the C++ extension is built with INFORMEDAUTOML=1
+informed = [
+    "missforest",
+    # build dependencies of the C++ extension
+    "nanoflann",
+    "pybind11",
+    # extended model/search space
+    "mlflow",
+    "lightgbm",
+    "catboost",
+    "xgboost",
+    "pygam",
+    "flaml",
+    # UPDATE: Feb. 2, 2023
+    # https://github.com/facebookresearch/nevergrad/issues/1492
+    "bayesian_optimization==1.4.0",
+    "colorama==0.4.4",
+    "nevergrad",
+    "hyperopt",
+    "optuna>=3.0",
+]
+nn = [
+    "gensim",
+    "torch",
+]
+# development: everything + test/format tools
+# (build the extension with INFORMEDAUTOML=1 pip install -e ".[dev]")
+dev = [
+    "InsurAutoML[informed,nn]",
+    "pytest",
+    "pytest-cov",
+    "coverage",
+    "black",
+]
+
+[project.urls]
+Homepage = "https://github.com/PanyiDong/InsurAutoML"
+Repository = "https://github.com/PanyiDong/InsurAutoML"
+
+[tool.setuptools]
+platforms = ["Linux", "Windows"]
+# Extension sources (.cpp) are listed as package data below; with
+# include-package-data = true setuptools would treat the *_cpp source folders as
+# (non-)packages and warn
+include-package-data = false
+
+[tool.setuptools.packages.find]
+exclude = [
+    "tests",
+    "Dockerfiles",
+    "example",
+    "experiments",
+    "archive",
+    "data",
+    "docs",
+    ".github",
+    "build",
+    "dist",
+]
+
+[tool.setuptools.package-data]
+# VERSION and the C++ sources of the InformedAutoML extension are package data, so
+# they are included in the sdist (the extension is built from it with INFORMEDAUTOML=1)
+InsurAutoML = ["VERSION", "ext/suppsplit/suppsplit_cpp/*.cpp", "data/*", "example/*"]
+
+[tool.setuptools.dynamic]
+# written from the latest git tag by setup.py (kept as is when building from the sdist)
+version = { file = "InsurAutoML/VERSION" }

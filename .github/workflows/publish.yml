@@ -19,15 +19,16 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v7
         with:
-          python-version: 3.9
+          python-version: "3.12"
       - name: Install dependencies
         run: |
-          sudo apt install libnanoflann-dev
           python -m pip install --upgrade pip
-          pip install "setuptools>=69.3" wheel twine cython auditwheel "patchelf>=0.14"
-      - name: Build wheel
+          pip install build
+      # source distribution only: the optional InformedAutoML C++ extension is built
+      # on the user's machine (INFORMEDAUTOML=1 pip install "InsurAutoML[informed]")
+      - name: Build sdist
         run: |
-          python setup.py sdist 
+          python -m build --sdist
 
       - name: Upload to artifacts linux
         uses: actions/upload-artifact@v7

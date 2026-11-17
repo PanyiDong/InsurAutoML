@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Any, List, Callable, Dict, Tuple
+from typing import Any, List, Callable, Dict, Optional, Tuple, Union, cast
 import os
 import json
 import time
@@ -51,19 +51,19 @@ from ray import tune
 
 from ..base import set_seed
 from ...utils.file import save_methods
-from ...utils.optimize import setup_logger, get_metrics
+from ...utils.optimize import get_metrics
+from ..utils import TrialArtifactMixin
 
 
-class InformedTabularObjective(tune.Trainable):
-
+class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
     def setup(
         self,
         config: Dict,
-        data_split: List[Tuple[pd.DataFrame, pd.DataFrame]] = None,
-        encoder: Dict[str, Callable] = None,
-        complete_prep: Dict[str, Callable] = None,
-        missing_prep: Dict[str, Callable] = None,
-        models: Dict[str, Callable] = None,
+        data_split: Optional[Tuple[pd.DataFrame, pd.DataFrame]] = None,
+        encoder: Optional[Dict[str, Callable]] = None,
+        complete_prep: Optional[Dict[str, Callable]] = None,
+        missing_prep: Optional[Dict[str, Callable]] = None,
+        models: Optional[Dict[str, Callable]] = None,
         model_name: str = "model",
         task_mode: str = "classification",
         objective: str = "accuracy",
@@ -71,7 +71,7 @@ class InformedTabularObjective(tune.Trainable):
         reset_index: bool = True,
         timeout: int = 36,
         _iter: int = 1,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # assign hyperparameter arguments
         self.encoder = encoder
@@ -92,11 +92,13 @@ class InformedTabularObjective(tune.Trainable):
 
         self.dict2config(config)
 
-        self._logger = setup_logger(__name__, "stdout.log")
+        self._logger = self._setup_trial_logger()
 
     def step(self) -> Dict[str, Any]:
         try:
-            self.status_dict = func_timeout.func_timeout(self.timeout, self._objective)
+            self.status_dict = cast(
+                Dict[str, Any], func_timeout.func_timeout(self.timeout, self._objective)
+            )
         # except TimeoutError:
         except func_timeout.FunctionTimedOut:
             self._logger.error(
@@ -104,6 +106,12 @@ class InformedTabularObjective(tune.Trainable):
                     self.timeout
                 )
             )
+            # a previous step of this trial was fitted (and its pipeline saved):
+            # keep that result and stop the trial ("done") instead of discarding it
+            _last = getattr(self, "status_dict", None)
+            if isinstance(_last, dict) and _last.get("training_status") == "FITTED":
+                return {**_last, "done": True}
+
             self.status_dict = {
                 "training_status": "TIMEOUT",
                 "loss": np.inf,
@@ -127,6 +135,10 @@ class InformedTabularObjective(tune.Trainable):
 
     def reset_config(self, new_config: Dict) -> bool:
         self.dict2config(new_config)
+        # reused actor: the status belongs to the previous trial
+        self.status_dict = None
+        # reused actor, log into the new trial directory
+        self._logger = self._setup_trial_logger()
 
         return True
 
@@ -134,20 +146,15 @@ class InformedTabularObjective(tune.Trainable):
     def _extract_hyper(params: Dict, comp: str) -> Tuple[str, Dict]:
         # get hyperparameter of component
         _hyper = params[comp].copy()
-        # find corresponding encoder key
-        try:
-            for key in _hyper.keys():
-                if "{}_".format(comp) in key:
-                    _key = key
-                    break
-            _comp = _hyper[_key]
-            del _hyper[_key]
+        # find the method key, e.g. "encoder_1" (method name injected into the space)
+        _key = next((key for key in _hyper.keys() if "{}_".format(comp) in key), None)
+        if _key is not None:
+            _comp = _hyper.pop(_key)
             # remove indications
-            _hyper = {k.replace(_comp + "_", ""): _hyper[k] for k in _hyper}
+            _hyper = {k.replace(_comp + "_", ""): v for k, v in _hyper.items()}
         # if not get above format, use default format
-        except BaseException:
-            _comp = _hyper[comp]
-            del _hyper[comp]
+        else:
+            _comp = _hyper.pop(comp)
 
         return _comp, _hyper
 
@@ -191,17 +198,18 @@ class InformedTabularObjective(tune.Trainable):
         self.mol_complete = copy.deepcopy(mol)
         self.mol_missing = copy.deepcopy(mol)
 
-    def save_checkpoint(self, tmp_checkpoint_dir: str) -> str:
-        checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
+    def save_checkpoint(self, checkpoint_dir: str) -> Optional[Dict]:
+        checkpoint_path = os.path.join(checkpoint_dir, "status.json")
 
         with open(checkpoint_path, "w") as out_f:
             json.dump(self.status_dict, out_f)
 
-        # need to return the path of checkpoints to be further processed
-        return tmp_checkpoint_dir
+        # None: the checkpoint is the content of checkpoint_dir
+        return None
 
-    def load_checkpoint(self, tmp_checkpoint_dir: str) -> None:
-        checkpoint_path = os.path.join(tmp_checkpoint_dir, "status.json")
+    def load_checkpoint(self, checkpoint: Union[str, Dict, None]) -> None:
+        # directory of the checkpoint (saved by save_checkpoint)
+        checkpoint_path = os.path.join(str(checkpoint), "status.json")
 
         with open(checkpoint_path, "r") as inp_f:
             self.status_dict = json.load(inp_f)
@@ -210,11 +218,7 @@ class InformedTabularObjective(tune.Trainable):
         # different evaluation metrics for classification and regression
         # notice: if add metrics that is larger the better, need to add - sign
         # at actual fitting process below (since try to minimize the loss)
-        objective_str = (
-            self.objective.__name__
-            if hasattr(self.objective, "__name__")
-            else self.objective
-        )
+        objective_str = getattr(self.objective, "__name__", self.objective)
         if self.task_mode == "regression":
             # evaluation for predictions
             if objective_str in ["R2"]:
@@ -223,12 +227,12 @@ class InformedTabularObjective(tune.Trainable):
                 _objective = self.objective
             try:
                 _obj = get_metrics(_objective)
-            except:
-                self._logger.error(
-                    'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
+            except Exception as error:
+                message = 'Mode {} only support ["MSE", "MAE", "MSLE", "R2", "MAX", callable], get{}'.format(
+                    self.task_mode, self.objective
                 )
+                self._logger.error(message)
+                raise ValueError(message) from error
 
             self._logger.info("Objective: {} by {}".format(_obj, _objective))
         elif self.task_mode == "classification":
@@ -245,12 +249,19 @@ class InformedTabularObjective(tune.Trainable):
                 _objective = self.objective
             try:
                 _obj = get_metrics(_objective)
-            except:
-                self._logger.error(
-                    'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
-                        self.task_mode, self.objective
-                    )
+            except Exception as error:
+                message = 'Mode {} only support ["accuracy", "precision", "auc", "hinge", "f1", callable], get{}'.format(
+                    self.task_mode, self.objective
                 )
+                self._logger.error(message)
+                raise ValueError(message) from error
+
+        else:
+            raise ValueError(
+                'task_mode must be "classification" or "regression", get {}.'.format(
+                    self.task_mode
+                )
+            )
 
         return _obj
 
@@ -265,6 +276,8 @@ class InformedTabularObjective(tune.Trainable):
         self._logger.info("[INFO] Objective starting...")
 
         # fit & predict
+        if self.data_split is None:
+            raise ValueError("data_split is not set, call setup with the data first.")
         X, y = self.data_split
         # data encoding
         start_time = time.time()
@@ -277,9 +290,12 @@ class InformedTabularObjective(tune.Trainable):
 
         # complete data preparation
         start_time = time.time()
-        X_train_complete, X_valid_complete, y_train_complete, y_valid_complete = (
-            self.comp_prep.fit(X_enc, y)
-        )
+        (
+            X_train_complete,
+            X_valid_complete,
+            y_train_complete,
+            y_valid_complete,
+        ) = self.comp_prep.fit(X_enc, y)
         end_time = time.time()
         self._logger.info(
             "[INFO] Complete data preparation takes: {:24.4f}s".format(
@@ -292,9 +308,12 @@ class InformedTabularObjective(tune.Trainable):
 
         # missing data preparation
         start_time = time.time()
-        X_train_missing, X_valid_missing, y_train_missing, y_valid_missing = (
-            self.miss_prep.fit(X_enc, y)
-        )
+        (
+            X_train_missing,
+            X_valid_missing,
+            y_train_missing,
+            y_valid_missing,
+        ) = self.miss_prep.fit(X_enc, y)
         end_time = time.time()
         self._logger.info(
             "[INFO] Missing data preparation takes: {:24.4f}s".format(
@@ -336,11 +355,7 @@ class InformedTabularObjective(tune.Trainable):
         _obj = self._get_objective()
 
         # get predictions for complete & missing set
-        objective_str = (
-            self.objective.__name__
-            if hasattr(self.objective, "__name__")
-            else self.objective
-        )
+        objective_str = getattr(self.objective, "__name__", self.objective)
         if objective_str.lower() in ["auc"]:
             y_pred_complete = self.mol_complete.predict_proba(X_valid_complete)
             y_pred_missing = self.mol_missing.predict_proba(X_valid_missing)
@@ -434,9 +449,10 @@ class InformedTabularObjective(tune.Trainable):
             "[INFO] Refit loss with all data is {:.6f}".format(_loss_refit)
         )
 
-        # save the fitted model objects
+        # save the fitted model objects to the trial directory
+        # InformedAutoTabular loads them from Result.path after tuning
         save_methods(
-            self.model_name,
+            self._trial_path(self.model_name),
             [
                 self.enc,
                 self.comp_prep,

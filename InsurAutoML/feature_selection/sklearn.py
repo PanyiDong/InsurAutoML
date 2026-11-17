@@ -263,12 +263,12 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration, BaseFeatureSel
     def __init__(
         self,
         n_clusters: int = 5,
-        affinity: str = "euclidean",
+        metric: str = "euclidean",
         linkage: str = "ward",
         pooling_func: str = "mean",
     ) -> None:
         self.n_clusters = int(n_clusters)
-        self.affinity = affinity
+        self.metric = metric
         self.linkage = linkage
         self.pooling_func = pooling_func
 
@@ -277,7 +277,13 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration, BaseFeatureSel
             "median": np.median,
             "max": np.max,
         }
-        super().__init__()
+        # pass the arguments to sklearn, otherwise defaults overwrite them
+        super().__init__(
+            n_clusters=self.n_clusters,
+            metric=self.metric,
+            linkage=self.linkage,
+            pooling_func=self.pooling_func,
+        )
         self._fitted = False
 
     def fit(
@@ -290,7 +296,7 @@ class feature_agglomeration(sklearn.cluster.FeatureAgglomeration, BaseFeatureSel
 
         super(feature_agglomeration, self).__init__(
             n_clusters=min(self.n_clusters, X.shape[1]),
-            affinity=self.affinity,
+            metric=self.metric,
             linkage=self.linkage,
             pooling_func=self.pooling_func,
         )
@@ -339,7 +345,7 @@ class kernel_pca(sklearn.decomposition.KernelPCA, BaseFeatureSelection):
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> kernel_pca:
         if scipy.sparse.issparse(X):
-            X = X.stype(np.float64)
+            X = X.astype(np.float64)
 
         with warnings.catch_warnings():
             warnings.filterwarnings("error")

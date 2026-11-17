@@ -68,7 +68,8 @@ class GAM_Classifier(BaseModel):
 
             self.model = LogisticGAM(tol=self.tol)
 
-        self.model.fit(X, y)
+        # pygam calls .ravel() on y, removed from pandas Series in pandas 3
+        self.model.fit(X, np.ravel(np.asarray(y)))
 
         self._fitted = True
 
@@ -122,7 +123,8 @@ class GAM_Regressor(BaseModel):
 
             self.model = InvGaussGAM(tol=self.tol)
 
-        self.model.fit(X, y)
+        # pygam calls .ravel() on y, removed from pandas Series in pandas 3
+        self.model.fit(X, np.ravel(np.asarray(y)))
 
         self._fitted = True
 

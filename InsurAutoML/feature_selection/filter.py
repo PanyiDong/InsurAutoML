@@ -99,7 +99,7 @@ class FeatureFilter(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> FeatureFilter:
         # get feature names
         self._check_feature_names(X)
@@ -235,6 +235,10 @@ class mRMR(BaseFeatureSelection):
             X = pd.DataFrame(X)
         if not isinstance(y, pd.DataFrame):
             y = pd.DataFrame(y)
+        # response name must not collide with feature names (e.g. both 0 for
+        # ndarray inputs), otherwise MI can not group on the joint columns
+        if y.columns[0] in X.columns:
+            y = y.rename(columns={y.columns[0]: "__response__"})
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -401,7 +405,6 @@ class FOCI(BaseFeatureSelection):
             return ACCC(X[[feature]], y, X[selected_features], mode="Q")
 
     def _fit(self, X, y) -> FOCI:
-
         # initialize the selected/unselected features
         Q = []
         selected_features = []
@@ -441,6 +444,16 @@ class FOCI(BaseFeatureSelection):
                 unselected_features.remove(tmp_feature)
             else:
                 break
+
+        # an empty selection breaks the downstream model,
+        # keep the top ranked feature instead
+        if len(selected_features) == 0 and self.num_features > 0:
+            warnings.warn(
+                "FOCI selected no feature, keep the top ranked feature {}.".format(
+                    tmp_feature
+                )
+            )
+            selected_features.append(tmp_feature)
 
         # record selected features
         self.select_features = selected_features

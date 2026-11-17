@@ -467,8 +467,8 @@ class Winsorization(BaseScaling):
         for _column in features:
             quantile = np.nanquantile(_X[_column], self.quantile, axis=0)
             self._quantile_list.append(quantile)
-            _above_quantile = y[_X[_column] > quantile].mean(axis=0)[0]
-            _below_quantile = y[_X[_column] <= quantile].mean(axis=0)[0]
+            _above_quantile = np.ravel(y[_X[_column] > quantile].mean(axis=0))[0]
+            _below_quantile = np.ravel(y[_X[_column] <= quantile].mean(axis=0))[0]
             # deal with the case where above quantile do not exists
             if not _above_quantile:
                 _above_quantile = quantile
@@ -856,13 +856,11 @@ class Feature_Truncation(BaseScaling):
         _X = X.copy(deep=self.deep_copy)
 
         for _column in self.columns:
+            # clip upcasts int columns when the quantile is float
+            # (pandas>=3 does not upcast when assigning through .loc)
             if self.quantile_list[_column] >= 0.5:
-                _X.loc[
-                    _X[_column] > self.quantile_list[_column], _column
-                ] = self.quantile_list[_column]
+                _X[_column] = _X[_column].clip(upper=self.quantile_list[_column])
             else:
-                _X.loc[
-                    _X[_column] < self.quantile_list[_column], _column
-                ] = self.quantile_list[_column]
+                _X[_column] = _X[_column].clip(lower=self.quantile_list[_column])
 
         return _X

@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union
+from typing import Optional, Union
 import numpy as np
 import pandas as pd
 
@@ -58,7 +58,7 @@ class BaseFeatureSelection:
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> BaseFeatureSelection:
         raise NotImplementedError
 
@@ -70,7 +70,7 @@ class BaseFeatureSelection:
     def fit_transform(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
         self.fit(X, y)
         return self.transform(X)

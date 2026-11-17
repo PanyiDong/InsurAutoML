@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
+import numpy as np
 from catboost import CatBoostRegressor, CatBoostClassifier
 from .base import BaseModel
 
@@ -79,7 +80,9 @@ class CatBoost_Regressor(BaseModel):
 class CatBoost_Classifier(BaseModel):
     def __init__(
         self,
-        loss_function: str = "Accuracy",
+        # NOTE: catboost only trains classifiers with Logloss/CrossEntropy (binary)
+        # or MultiClass/MultiClassOneVsAll; Accuracy/F1/AUC are evaluation metrics
+        loss_function: str = "Logloss",
         iterations: int = 1000,
         learning_rate: float = 0.03,
         depth: int = 6,
@@ -101,6 +104,11 @@ class CatBoost_Classifier(BaseModel):
         self._fitted = False
 
     def fit(self, X, y) -> CatBoost_Classifier:
+        # binary losses can not train on multiclass response, use MultiClass
+        if len(np.unique(np.asarray(y))) > 2 and self._model.get_params().get(
+            "loss_function"
+        ) in ["Logloss", "CrossEntropy"]:
+            self._model.set_params(loss_function="MultiClass")
         self._model.fit(X, y)
         self._fitted = True
         return self

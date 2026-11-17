@@ -530,7 +530,7 @@ def _ACCC(
     mode: str = "T",
     seed: int = None,
 ) -> float:
-    """
+    r"""
     Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1][2]
 
     if X is None:   correlation between Y (response) and Z (features);
@@ -590,7 +590,6 @@ def _ACCC(
         )
 
     if X is None:
-
         # fit 3-NN on Z to get distance and index
         nn = NearestNeighbors(n_neighbors=3, p=2, metric="minkowski")
         nn.fit(Z)

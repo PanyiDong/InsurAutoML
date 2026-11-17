@@ -42,11 +42,12 @@ from __future__ import annotations
 from typing import Optional, List
 import pandas as pd
 
+
 class MissingSet:
     """
     Column Dropper based on missing rate threshold.
 
-    This transformer drops columns whose missing rate (fraction of NaNs) 
+    This transformer drops columns whose missing rate (fraction of NaNs)
     exceeds a specified threshold.
 
     Parameters
@@ -58,17 +59,21 @@ class MissingSet:
 
     def __init__(self, threshold: float = 0.3) -> None:
         self.threshold = threshold
-        
+
         self._fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series =None) -> MissingSet:
+    def fit(self, X: pd.DataFrame, y: pd.Series = None) -> MissingSet:
         # Calculate missing rate for each column
         missing_series = X.isna().mean()
-        
+
         # Identify columns to drop (where missing rate > threshold)
-        self.dropped_features_ = missing_series[missing_series > self.threshold].index.tolist()
-        self.kept_features_ = missing_series[missing_series <= self.threshold].index.tolist()
-        
+        self.dropped_features_ = missing_series[
+            missing_series > self.threshold
+        ].index.tolist()
+        self.kept_features_ = missing_series[
+            missing_series <= self.threshold
+        ].index.tolist()
+
         self._fitted = True
         return self
 
@@ -77,13 +82,14 @@ class MissingSet:
             raise ValueError("MissingSet must be fitted before transform().")
 
         # Drop the columns
-        X_clean = X.drop(columns=self.dropped_features_, errors='ignore')
-        
+        X_clean = X.drop(columns=self.dropped_features_, errors="ignore")
+
         return X_clean
 
     def fit_transform(self, X: pd.DataFrame, y=None) -> pd.DataFrame:
         return self.fit(X, y).transform(X)
-    
+
+
 class CompleteSet:
     """
     Iterative missing Pruner (Complete Case Enforcer).
@@ -94,7 +100,7 @@ class CompleteSet:
     Parameters
     ----------
     threshold : float, default=0.5
-        The required fraction of rows that must be complete (non-NaN) relative to 
+        The required fraction of rows that must be complete (non-NaN) relative to
         the original dataset size.
     protected_cols : list of str, optional
         List of column names that must NEVER be dropped (e.g., target variable, ID).
@@ -103,9 +109,9 @@ class CompleteSet:
     """
 
     def __init__(
-        self, 
-        threshold: float = 0.5, 
-        protected_cols: Optional[List[str]] = None, 
+        self,
+        threshold: float = 0.5,
+        protected_cols: Optional[List[str]] = None,
     ):
         self.threshold = threshold
         self.protected_cols = protected_cols if protected_cols is not None else []
@@ -131,14 +137,14 @@ class CompleteSet:
             # 3. Identify column to drop
             missing_rates = X_.isna().mean().sort_values(ascending=False)
             # Exclude protected columns from being candidates
-            candidates = missing_rates.drop(self.protected_cols, errors='ignore')
+            candidates = missing_rates.drop(self.protected_cols, errors="ignore")
             # If no removable columns remain (or all remaining have 0 missing), stop
             if candidates.empty or candidates.iloc[0] == 0:
                 break
 
             col_to_drop = candidates.index[0]
             removed.append(col_to_drop)
-            
+
             # Drop from simulation
             X_ = X_.drop(columns=[col_to_drop])
 
@@ -152,10 +158,10 @@ class CompleteSet:
             raise ValueError("CompleteSet must be fitted before transform().")
 
         # 1. Drop the identified columns
-        X_reduced = X.drop(columns=self.dropped_features_, errors='ignore')
+        X_reduced = X.drop(columns=self.dropped_features_, errors="ignore")
         # 2. Drop rows that are still missing values (Complete Case)
         X_final = X_reduced.dropna(axis=0)
-        
+
         return X_final
 
     def fit_transform(self, X: pd.DataFrame, y=None) -> pd.DataFrame:

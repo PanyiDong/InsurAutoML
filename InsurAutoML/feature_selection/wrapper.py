@@ -132,7 +132,6 @@ class ExhaustiveFS(BaseFeatureSelection):
         for i in range(1, X.shape[1] + 1):
             for item in list(combinations(list(range(X.shape[1])), i)):
                 all_comb.append(list(item))
-        all_comb = np.array(all_comb).flatten()  # flatten 2D to 1D
 
         # initialize results
         results = []
@@ -141,7 +140,7 @@ class ExhaustiveFS(BaseFeatureSelection):
             self.estimator.fit(X.iloc[:, comb], y)
             results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
 
-        self.selected_features = all_comb[np.argmin(results)]
+        self.selected_features = all_comb[int(np.argmin(results))]
 
         self._fitted = True
 
@@ -473,6 +472,8 @@ class ASFFS(BaseFeatureSelection):
             _n_components = self.n_components
         if self.b is None:
             _b = min(5, int(0.05 * p))
+        else:
+            _b = int(self.b)
 
         _k = 0
         self.J_max = [
@@ -499,7 +500,7 @@ class ASFFS(BaseFeatureSelection):
                 )
 
                 if _max_obj > self.J_max[_k + _o]:
-                    self.J_max[_k + _o] = _max_obj.copy()
+                    self.J_max[_k + _o] = _max_obj
                     _k += _o
                     for (
                         _f
@@ -538,7 +539,7 @@ class ASFFS(BaseFeatureSelection):
                 _new_feature, _max_obj = self._Backward_Objective(_selected, _o, X, y)
 
                 if _max_obj > self.J_max[_k - _o]:
-                    self.J_max[_k - _o] = _max_obj.copy()
+                    self.J_max[_k - _o] = _max_obj
                     _k -= _o
                     for (
                         _f

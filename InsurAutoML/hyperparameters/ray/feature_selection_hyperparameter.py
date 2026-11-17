@@ -106,7 +106,7 @@ FEATUREAGGLOMERATION = {
     "feature_selection": "feature_agglomeration",
     # forbid linkage = 'ward' while affinity in ['manhattan', 'cosine']
     "n_clusters": tune.qrandint(2, 400, 1),
-    "affinity": tune.choice(["euclidean", "manhattan", "cosine"]),
+    "metric": tune.choice(["euclidean", "manhattan", "cosine"]),
     "linkage": tune.choice(["ward", "complete", "average"]),
     "pooling_func": tune.choice(["mean", "median", "max"]),
 }
@@ -224,7 +224,7 @@ CBFS = {
     "copula": tune.choice(["empirical"]),
     "n_prop": tune.uniform(0, 1),
 }
-CCCFilter= {
+CCCFilter = {
     "feature_selection": "CCCFilter",
     "threshold": tune.quniform(0.01, 0.10, 0.01),
 }

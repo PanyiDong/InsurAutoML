@@ -517,4 +517,4 @@ class MLP_Regressor(MLP_Base, BaseModel):
         return super(MLP_Regressor, self).predict(X)
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
-        return NotImplementedError("predict_proba is not implemented for regression.")
+        raise NotImplementedError("predict_proba is not implemented for regression.")
