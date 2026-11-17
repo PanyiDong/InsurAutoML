@@ -47,6 +47,7 @@ from re import L
 import warnings
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import scipy
 import scipy.stats
 
@@ -111,7 +112,7 @@ class Standardize(BaseScaling):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Standardize:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         n, p = _X.shape
         if self.with_mean:
@@ -140,7 +141,7 @@ class Standardize(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         if self.with_mean:
             _X -= self._mean
         if self.with_std:
@@ -195,7 +196,7 @@ class Normalize(BaseScaling):
         if self.norm not in ["l1", "l2", "max"]:
             raise ValueError("Not recognizing norm method!")
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         n, p = _X.shape
         self._scale = [0 for _ in range(p)]
 
@@ -215,7 +216,7 @@ class Normalize(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         _X /= self._scale
 
         return _X
@@ -282,7 +283,7 @@ class RobustScale(BaseScaling):
                 "Quantile not in range, get {0:.1f} and {1:.1f}!".format(q_min, q_max)
             )
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         n, p = _X.shape
         if self.with_centering:
             self._median = [0 for _ in range(p)]
@@ -318,7 +319,7 @@ class RobustScale(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         if self.with_centering:
             _X -= self._median
@@ -370,7 +371,7 @@ class MinMaxScale(BaseScaling):
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> MinMaxScale:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         n, p = _X.shape
 
         self._min = [0 for _ in range(p)]
@@ -392,7 +393,7 @@ class MinMaxScale(BaseScaling):
         if not f_min < f_max:
             raise ValueError("Minimum of feature range must be smaller than maximum!")
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         _X = (_X - self._min) / (np.array(self._max) - np.array(self._min))
         _X = _X * (f_max - f_min) + f_min
 
@@ -410,7 +411,7 @@ class MinMaxScale(BaseScaling):
         if not f_min < f_max:
             raise ValueError("Minimum of feature range must be smaller than maximum!")
 
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
         _X = (_X - f_min) / (f_max - f_min)
         _X = _X * (np.array(self._max) - np.array(self._min)) + self._min
 
@@ -453,7 +454,7 @@ class Winsorization(BaseScaling):
         if not isinstance(y, pd.DataFrame) and not isinstance(X, pd.Series):
             warnings.warn("Method Winsorization requires response, but not getting it.")
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         features = list(_X.columns)
         self._quantile_list = []
@@ -480,7 +481,7 @@ class Winsorization(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
         features = list(_X.columns)
         i = 0
 
@@ -733,7 +734,7 @@ def Feature_Manipulation(
         except BaseException:
             raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
-    _X = X.copy(deep=deep_copy)
+    _X = copy_frame(X, deep=deep_copy)
 
     # if no columns/manipulation specified, raise warning
     if not columns or not manipulation:
@@ -827,7 +828,7 @@ class Feature_Truncation(BaseScaling):
             except BaseException:
                 raise ValueError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         self.columns = list(_X.columns) if not self.columns else self.columns
 
@@ -851,7 +852,7 @@ class Feature_Truncation(BaseScaling):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         for _column in self.columns:
             # clip upcasts int columns when the quantile is float

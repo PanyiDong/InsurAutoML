@@ -43,6 +43,7 @@ from __future__ import annotations
 from typing import Union, Tuple
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 
 from ..constant import MAX_ITER
@@ -104,7 +105,7 @@ class Smote_TomekLink(Smote, TomekLink):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -183,7 +184,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
 
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")

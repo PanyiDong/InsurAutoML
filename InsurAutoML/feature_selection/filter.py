@@ -312,10 +312,13 @@ class CCCFilter(BaseFeatureSelection):
 
     def fit(self, X: pd.DataFrame, y: pd.Series) -> CCCFilter:
         # Compute CCC for each feature
+        # (one generator for all features: reproducible with the seed, and the ties
+        # of the features are not broken by the same permutation)
+        rng = np.random.default_rng(self.seed)
         scores = {}
         for col in X.columns:
             try:
-                scores[col] = CCC(X[col], y, seed=self.seed)
+                scores[col] = CCC(X[col], y, seed=rng)
             except Exception:
                 # if something fails (e.g., constant column)
                 scores[col] = 0.0
@@ -346,6 +349,10 @@ class FOCI(BaseFeatureSelection):
     [1] https://rdrr.io/cran/FOCI/src/R/foci.R
     [2] Azadkia, M., & Chatterjee, S. (2021). A simple measure of conditional dependence.
     The Annals of Statistics, 49(6), 3070-3102.
+
+    seed: seed of the random tie breaking of ACCC, default = 42; each step and
+    feature gets its own seed derived from it (reproducible, computed in parallel
+    processes), None for a random tie breaking
     """
 
     def __init__(
@@ -353,11 +360,13 @@ class FOCI(BaseFeatureSelection):
         num_features: int = None,
         standardize: str = None,
         conditional: bool = False,
+        seed: Optional[int] = 42,
     ):
         super().__init__()
         self.num_features = num_features
         self.standardize = standardize
         self.conditional = conditional
+        self.seed = seed
         self._fitted = False
 
     def fit(
@@ -401,18 +410,29 @@ class FOCI(BaseFeatureSelection):
         return self
 
     @staticmethod
-    def compute_accc(feature, X, y, selected_features):
-        if len(selected_features) == 0:
-            return ACCC(X[[feature]], y, mode="Q")
-        else:
-            return ACCC(X[selected_features + [feature]], y, mode="Q")
+    def _feature_seed(seed, step, feature, features):
+        """Seed of the tie breaking of a feature at a step (None: random)."""
+        if seed is None:
+            return None
+        return np.random.SeedSequence([seed, step, features.index(feature)])
 
     @staticmethod
-    def compute_conditional_accc(feature, X, y, selected_features):
+    def compute_accc(feature, X, y, selected_features, seed=42, step=0, features=None):
+        seed = FOCI._feature_seed(seed, step, feature, features or list(X.columns))
         if len(selected_features) == 0:
-            return ACCC(X[[feature]], y, mode="Q")
+            return ACCC(X[[feature]], y, mode="Q", seed=seed)
         else:
-            return ACCC(X[[feature]], y, X[selected_features], mode="Q")
+            return ACCC(X[selected_features + [feature]], y, mode="Q", seed=seed)
+
+    @staticmethod
+    def compute_conditional_accc(
+        feature, X, y, selected_features, seed=42, step=0, features=None
+    ):
+        seed = FOCI._feature_seed(seed, step, feature, features or list(X.columns))
+        if len(selected_features) == 0:
+            return ACCC(X[[feature]], y, mode="Q", seed=seed)
+        else:
+            return ACCC(X[[feature]], y, X[selected_features], mode="Q", seed=seed)
 
     def _fit(self, X, y) -> FOCI:
         # initialize the selected/unselected features
@@ -424,19 +444,20 @@ class FOCI(BaseFeatureSelection):
 
         # parallel computation of ACCC
         # if conditional, use conditional accc (given selected features)
-        if self.conditional:
+        compute = (
+            self.compute_conditional_accc if self.conditional else self.compute_accc
+        )
+
+        for idx in range(self.num_features):
             func = partial(
-                self.compute_conditional_accc,
+                compute,
                 X=X,
                 y=y,
                 selected_features=selected_features,
+                seed=self.seed,
+                step=idx,
+                features=self.features,
             )
-        else:
-            func = partial(
-                self.compute_accc, X=X, y=y, selected_features=selected_features
-            )
-
-        for idx in range(self.num_features):
             with ProcessPoolExecutor() as executor:
                 tmp_ACCC_list = list(executor.map(func, unselected_features))
 

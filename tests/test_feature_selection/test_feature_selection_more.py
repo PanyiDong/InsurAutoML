@@ -234,7 +234,7 @@ def test_foci_keeps_top_feature_when_nothing_selected(thread_executor, monkeypat
     monkeypatch.setattr(
         FOCI,
         "compute_accc",
-        staticmethod(lambda feature, X, y, selected_features: -1.0),
+        staticmethod(lambda feature, X, y, selected_features, **kwargs: -1.0),
     )
     with pytest.warns(UserWarning, match="selected no feature"):
         fs = FOCI().fit(X, y)

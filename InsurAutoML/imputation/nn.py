@@ -44,6 +44,7 @@ from time import sleep
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 
 from ..scaling import MinMaxScale
@@ -196,7 +197,7 @@ class GAIN_tf(formatting, MinMaxScale):
         return D_pro
 
     def fill(self, X):
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
@@ -206,7 +207,7 @@ class GAIN_tf(formatting, MinMaxScale):
         return _X
 
     def _fill(self, data):
-        _data = data.copy(deep=self.deep_copy)
+        _data = copy_frame(data, deep=self.deep_copy)
 
         n, p = _data.shape
         _h_dim = int(p)  # Hidden state dimensions
@@ -510,7 +511,7 @@ class GAIN_torch(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
@@ -520,7 +521,7 @@ class GAIN_torch(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         n, p = _X.shape  # get shape of dataset
         h_dim = int(p)  # get hidden state dimensions

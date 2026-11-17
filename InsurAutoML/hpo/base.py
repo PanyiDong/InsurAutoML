@@ -41,6 +41,7 @@ SOFTWARE.
 from __future__ import annotations
 from typing import Any, Union, List, Callable, Dict, Tuple, Optional, cast
 import hashlib
+import json
 import html
 import os
 import warnings
@@ -992,7 +993,11 @@ class AutoTabularBase:
         """Create (or restore) the Ray Tune experiment and run it."""
         # resume from the last experiment state if exists
         # (replaces tune.run(resume="AUTO"))
-        if self.resume and tune.Tuner.can_restore(experiment_path):
+        if (
+            self.resume
+            and getattr(self, "_restore", True)
+            and tune.Tuner.can_restore(experiment_path)
+        ):
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: Restoring tuning from {}.".format(
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -1667,10 +1672,13 @@ class AutoTabularBase:
         if data is None:
             return None
         data = pd.DataFrame(data)
+        try:
+            hashed = pd.util.hash_pandas_object(data, index=False)
+        except TypeError:
+            # cells that can not be hashed (e.g. lists): hash their text
+            hashed = pd.util.hash_pandas_object(data.astype(str), index=False)
         digest = hashlib.sha1()
-        digest.update(
-            pd.util.hash_pandas_object(data, index=False).to_numpy().tobytes()
-        )
+        digest.update(hashed.to_numpy().tobytes())
         digest.update(repr([(str(c), str(t)) for c, t in data.dtypes.items()]).encode())
         return digest.hexdigest()
 
@@ -1679,7 +1687,16 @@ class AutoTabularBase:
         settings = {}
         for name in self.FINGERPRINT_SETTINGS:
             value = getattr(self, name, None)
-            settings[name] = getattr(value, "__name__", None) or repr(value)
+            if callable(value) and not isinstance(value, type):
+                qualname = getattr(value, "__qualname__", None)
+                if qualname and "<" not in qualname:
+                    # module level function: identified by its full name
+                    value = "{}.{}".format(getattr(value, "__module__", ""), qualname)
+                else:
+                    # lambdas, local functions, callable objects: no stable name, a
+                    # stored model is never reused
+                    value = "unidentified callable {}".format(id(value))
+            settings[name] = value if isinstance(value, str) else repr(value)
         return {"data": [self._data_hash(item) for item in data], "settings": settings}
 
     def _load_stored_model(self, fingerprint: Dict[str, Any]) -> bool:
@@ -1698,6 +1715,8 @@ class AutoTabularBase:
             )
             self._logger.warning(message)
             warnings.warn(message)
+            # the experiments of the stored model are not resumed either
+            self._restore = False
             return False
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
@@ -1707,6 +1726,34 @@ class AutoTabularBase:
         )
         self.ensemble = stored[0]
         return True
+
+    def _check_resume(self, fingerprint: Dict[str, Any]) -> None:
+        """
+        Resume (restore the Ray Tune experiments of) the run folder only if they
+        were run on the same data with the same settings, and record the
+        fingerprint of this fit in the run folder.
+        """
+        path = os.path.join(self.temp_directory, self.model_name, "fingerprint.json")
+        self._restore = True
+        if os.path.isfile(path):
+            try:
+                with open(path, "r", encoding="utf-8") as inp_f:
+                    previous = json.load(inp_f)
+            except (OSError, ValueError):
+                previous = None
+            if previous != fingerprint:
+                self._restore = False
+                self._logger.info(
+                    "[INFO] Experiment: {}. The experiments in {} were run on other "
+                    "data or settings, they are not resumed.".format(
+                        self.model_name, os.path.dirname(path)
+                    )
+                )
+        try:
+            with open(path, "w", encoding="utf-8") as out_f:
+                json.dump(fingerprint, out_f)
+        except OSError:
+            pass
 
     def _delete_temp(self) -> None:
         """
@@ -1725,6 +1772,10 @@ class AutoTabularBase:
     def _init_fit(self) -> None:
         # release the log file of a previous fit (its folder may be deleted below)
         close_logger(getattr(self, "_logger", None))
+
+        # state of a previous fit of this object (the ensemble is built again)
+        for name in ("ensemble_list", "feature_list", "metadata"):
+            self.__dict__.pop(name, None)
 
         # the fitted model is stored in the file model_name
         if os.path.isdir(self.model_name):
@@ -1802,6 +1853,17 @@ class AutoTabularBase:
             self.n_estimators = int(min(self.n_estimators, self.max_evals))
         else:
             self.n_estimators = int(self.n_estimators)
+            # the trials are split over the rounds of bagging/boosting
+            if self.n_estimators > 1 and self.ensemble_strategy in [
+                "bagging",
+                "boosting",
+            ]:
+                raise ValueError(
+                    "{} splits max_evals over its {} rounds, set max_evals > 0 "
+                    "(get {}).".format(
+                        self.ensemble_strategy, self.n_estimators, self.max_evals
+                    )
+                )
 
         # at least one constraint of time/evaluations should be provided
         if self.timeout == -1 and self.max_evals == -1:
@@ -1822,12 +1884,13 @@ class AutoTabularBase:
                 )
             self.timeout = min(self.timeout, MAX_TIME)
 
-        # set up timeout per trial
-        self.timeout_per_trial = (
-            max(1, int(self.timeout / self.max_evals * 5))
-            if self.timeout_per_trial is None
-            else self.timeout_per_trial
-        )
+        # set up timeout per trial (no trial limit: the time budget)
+        if self.timeout_per_trial is None:
+            self.timeout_per_trial = (
+                max(1, int(self.timeout / self.max_evals * 5))
+                if self.max_evals > 0
+                else int(self.timeout)
+            )
 
         # progress report: the web dashboard by default, Ray Tune console/notebook
         # output if specified
@@ -2026,6 +2089,7 @@ class AutoTabularBase:
 
         # if the model is already trained (same data and settings), read it
         self._fingerprint = self._fit_fingerprint(_X, _y, X_valid, y_valid)
+        self._check_resume(self._fingerprint)
         if self._load_stored_model(self._fingerprint):
             self._fitted = True  # successfully fitted the model
 

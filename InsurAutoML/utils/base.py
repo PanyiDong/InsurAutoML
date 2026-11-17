@@ -155,7 +155,7 @@ def is_date(df: pd.Series, rule: str = "all") -> bool:
 # preprocessing/modification, the data changed)
 def feature_rounding(X: pd.DataFrame, uni_class: int = UNI_CLASS) -> pd.DataFrame:
     features = list(X.columns)
-    _X = X.copy(deep=True)
+    _X = copy_frame(X, deep=True)
 
     for _column in features:
         _unique = np.sort(_X[_column].dropna().unique())
@@ -223,6 +223,16 @@ def maxloc(vlist: Union[List, np.ndarray]) -> int:
 
         # index of a 1-D list (an array of indices for multi-dimensional input)
         return cast(int, np.argmax(vlist, axis=0))
+
+
+def copy_frame(X: Any, deep: bool = True) -> Union[pd.DataFrame, pd.Series]:
+    """
+    Copy of X as pandas object: dataframes/series are copied (deep or shallow),
+    other inputs (numpy arrays, lists) are converted to a new dataframe.
+    """
+    if isinstance(X, (pd.DataFrame, pd.Series)):
+        return X.copy(deep=deep)
+    return pd.DataFrame(np.array(X, copy=True))
 
 
 # return the index of Boolean list or {0, 1} list

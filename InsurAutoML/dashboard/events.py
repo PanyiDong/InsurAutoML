@@ -1,4 +1,42 @@
 """
+File Name: events.py
+Author: Panyi Dong
+GitHub: https://github.com/PanyiDong/
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
+
+Project: InsurAutoML
+Latest Version: 0.2.9
+Relative Path: /InsurAutoML/dashboard/events.py
+File Created: Monday, 16th November 2026 7:47:40 pm
+Author: Panyi Dong (panyid2@illinois.edu)
+
+-----
+Last Modified: Monday, 16th November 2026 11:33:33 pm
+Modified By: Panyi Dong (panyid2@illinois.edu)
+
+-----
+MIT License
+
+Copyright (c) 2026, Panyi Dong
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
 Event log of an optimization run.
 
 The dashboard is driven by an append-only JSON lines file, one event per line:
@@ -38,6 +76,10 @@ TIMEOUT = "TIMEOUT"
 ERROR = "ERROR"
 # finished without any reported result
 TERMINATED = "TERMINATED"
+
+# no event for this long while the run is not finished: the run is considered
+# stopped (e.g. the process was killed), its clock stops at the last event
+STALE_AFTER = 600.0
 
 
 def to_json(value: Any) -> Any:
@@ -253,9 +295,12 @@ class DashboardState:
             }
             self.trials[key] = trial
         else:
-            # restored trial
+            # restored trial: timed again from its restart (the downtime is not
+            # part of its duration)
             trial["status"] = RUNNING
+            trial["start"] = event.get("time")
             trial["end"] = None
+            trial["duration"] = None
         self.peak_running = max(self.peak_running, len(self._running()))
 
     def _on_trial_result(self, event: Dict[str, Any]) -> None:
@@ -300,7 +345,20 @@ class DashboardState:
     def _now(self, now: Optional[float]) -> float:
         if self.finished and self.end_time is not None:
             return self.end_time
-        return time.time() if now is None else now
+        now = time.time() if now is None else now
+        # stopped run (no event for long): the clock stops at the last event
+        if self.last_time is not None and now - self.last_time > STALE_AFTER:
+            return self.last_time
+        return now
+
+    def stale(self, now: Optional[float] = None) -> bool:
+        """Whether the run looks stopped (not finished, no event for long)."""
+        now = time.time() if now is None else now
+        return (
+            not self.finished
+            and self.last_time is not None
+            and now - self.last_time > STALE_AFTER
+        )
 
     # --------------------------------------------------------------- summaries
 
@@ -326,6 +384,7 @@ class DashboardState:
         observed pace.
         """
         with self._lock:
+            stale = self.stale(now)
             now = self._now(now)
             counts = {status: 0 for status in (RUNNING, FITTED, TIMEOUT, ERROR)}
             counts[TERMINATED] = 0
@@ -396,6 +455,10 @@ class DashboardState:
 
             return {
                 "finished": self.finished,
+                # effective time of the progress (stops at the end of the run, or
+                # at the last event of a stopped run)
+                "now": now,
+                "stale": stale,
                 "elapsed": elapsed,
                 "wall_time": wall,
                 "timeout": timeout,

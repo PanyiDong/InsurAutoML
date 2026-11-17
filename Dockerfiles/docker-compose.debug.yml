@@ -1,11 +1,23 @@
-version: '3.4'
-
+# docker compose -f Dockerfiles/docker-compose.debug.yml up --build
+# then attach a debugger (e.g. VS Code "Python: Remote Attach") to 127.0.0.1:5678
 services:
-  automltest:
-    image: automltest
+  insurautoml:
+    image: insurautoml
     build:
-      context: .
-      dockerfile: ./Dockerfile
-    command: ["sh", "-c", "pip install debugpy -t /tmp && python /tmp/debugpy --wait-for-client --listen 0.0.0.0:5678 test.py "]
+      # the repository root
+      context: ..
+      dockerfile: Dockerfiles/Dockerfile
+      args:
+        EXTRAS: informed
+    command:
+      - sh
+      - -c
+      - >-
+        pip install --user debugpy
+        && python -m debugpy --wait-for-client --listen 0.0.0.0:5678
+        main.py --data_folder example/example_data --train_data heart
+        --response HeartDisease
     ports:
-      - 5678:5678
+      - "5678:5678"
+      - "8765:8765"
+    shm_size: "2gb"

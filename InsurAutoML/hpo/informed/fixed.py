@@ -39,6 +39,7 @@ SOFTWARE.
 """
 
 import os
+import warnings
 from typing import Any, Dict, Optional
 import pandas as pd
 import numpy as np
@@ -46,6 +47,7 @@ import numpy as np
 from ...encoding import DataEncoding
 from ...prep import CompletePrepPipeline, MissingPrepPipeline
 from ..ML import AutoTabular
+from ..base import AutoTabularBase
 from ...utils.base import type_of_task
 from ...utils.file import load_methods, save_methods
 
@@ -117,7 +119,13 @@ class InformedAutoTabular:
 
     def _auto_tabular(self, model_name: str) -> AutoTabular:
         """AutoTabular of a subset (complete/missing cases)."""
-        return AutoTabular(
+        kwargs: Dict[str, Any] = dict(
+            # a new fit searches again: the experiments of a previous fit (other
+            # preparation) are not restored
+            resume=False,
+        )
+        kwargs.update(self.auto_kwargs)
+        kwargs.update(
             model_name=model_name,
             max_evals=self.max_evals,
             timeout=self.timeout,
@@ -131,14 +139,26 @@ class InformedAutoTabular:
             # the wrapper saves the models with their preparation: a model saved
             # alone would be reloaded with a new preparation in the next fit
             save=False,
-            **self.auto_kwargs,
         )
+        return AutoTabular(**kwargs)
+
+    def _fingerprint(self, X: pd.DataFrame, y: pd.Series) -> Dict[str, Any]:
+        """Data and settings of a fit (stored with the fitted wrapper)."""
+        settings = {"seed": repr(self.seed)}
+        settings.update({key: repr(value) for key, value in self.auto_kwargs.items()})
+        return {
+            "data": [AutoTabularBase._data_hash(X), AutoTabularBase._data_hash(y)],
+            "settings": settings,
+        }
 
     def _state(self) -> Dict[str, Any]:
         return {name: getattr(self, name) for name in FITTED_STATE}
 
-    def _load(self) -> bool:
-        """Load the saved fitted wrapper, False if there is none."""
+    def _load(self, fingerprint: Dict[str, Any]) -> bool:
+        """
+        Load the saved fitted wrapper if it was fitted on the same data with the
+        same settings, False otherwise.
+        """
         if not (self.save and os.path.isfile(self.model_name)):
             return False
         state = load_methods(self.model_name)[0]
@@ -147,6 +167,13 @@ class InformedAutoTabular:
                 "{} is not a saved InformedAutoTabular, remove it or use another "
                 "model_name.".format(self.model_name)
             )
+        # wrappers saved by previous versions have no fingerprint: loaded as before
+        if state.get("fingerprint", fingerprint) != fingerprint:
+            warnings.warn(
+                "Stored model {} was fitted on other data or settings, fitting "
+                "again (it will be replaced).".format(self.model_name)
+            )
+            return False
         for name in FITTED_STATE:
             setattr(self, name, state[name])
         self._fitted = True
@@ -154,7 +181,8 @@ class InformedAutoTabular:
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
         # saved fitted wrapper: reuse it (models with their preparation)
-        if self._load():
+        fingerprint = self._fingerprint(X, y)
+        if self._load(fingerprint):
             return self
 
         # basic checks
@@ -206,7 +234,9 @@ class InformedAutoTabular:
 
         self._fitted = True
         if self.save:
-            save_methods(self.model_name, [self._state()])
+            save_methods(
+                self.model_name, [{**self._state(), "fingerprint": fingerprint}]
+            )
 
         return self
 

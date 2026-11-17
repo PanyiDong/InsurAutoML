@@ -2,6 +2,7 @@ from __future__ import annotations
 from typing import Union
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 
 
 class BaseScaling:
@@ -25,7 +26,7 @@ class BaseScaling:
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, np.ndarray] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         self.fit(_X, y)
 

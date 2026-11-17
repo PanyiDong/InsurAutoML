@@ -138,7 +138,7 @@ class InformedPipeline:
         if not hasattr(self.model_complete, "predict_proba") or not hasattr(
             self.model_missing, "predict_proba"
         ):
-            logger.error("model does not have predict_proba method!")
+            raise AttributeError("model does not have predict_proba method!")
 
         # get the probabilities
         y_pred_complete = self.model_complete.predict_proba(X_complete)

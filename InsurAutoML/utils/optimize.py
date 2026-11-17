@@ -2455,17 +2455,21 @@ def get_estimator(estimator_str: str) -> Callable:
         from sklearn.ensemble import RandomForestClassifier
 
         return RandomForestClassifier()
-    elif isclass(type(estimator_str)):
-        # if estimator is recognized as a class
-        # make sure it has fit/predict methods
-        if not has_method(estimator_str, "fit") or not has_method(
-            estimator_str, "predict"
-        ):
-            raise ValueError("Estimator must have fit/predict methods!")
+    elif isinstance(estimator_str, str):
+        raise ValueError("Unrecognized estimator {}!".format(estimator_str))
 
+    # an estimator class or instance: make sure it has fit/predict methods
+    if not has_method(estimator_str, "fit") or not has_method(estimator_str, "predict"):
+        raise ValueError("Estimator must have fit/predict methods!")
+    if isclass(estimator_str):
         return estimator_str()
-    else:
-        raise AttributeError("Unrecognized estimator!")
+    # an instance: a new unfitted copy (the given one is not modified)
+    try:
+        from sklearn.base import clone
+
+        return clone(estimator_str)
+    except TypeError:
+        return copy.deepcopy(estimator_str)
 
 
 # get metrics based on string or class

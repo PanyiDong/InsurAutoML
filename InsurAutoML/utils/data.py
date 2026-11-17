@@ -45,6 +45,7 @@ import ast
 import json
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 
 from .base import random_index, is_text_dtype
 from ..constant import UNI_CLASS
@@ -619,7 +620,7 @@ def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> Li
 
     _sample = sample.values
     features = list(table.columns)
-    _table = table.copy(deep=True).astype(float)
+    _table = copy_frame(table, deep=True).astype(float)
     _linktable = []
 
     for sample_point in _sample:
@@ -647,7 +648,7 @@ class ExtremeClass:
         self.extreme_threshold = extreme_threshold
 
     def cut(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
 
         features = list(_X.columns)
         for _column in features:

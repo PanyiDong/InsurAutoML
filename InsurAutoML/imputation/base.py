@@ -43,6 +43,7 @@ from __future__ import annotations
 from typing import Union
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 
 from ..utils import nan_cov
 
@@ -81,12 +82,12 @@ class SimpleImputer(BaseImputer):
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
 
         if _X.isnull().values.any():
-            features = list(X.columns)
+            features = list(_X.columns)
             for _column in features:
-                if X[_column].isnull().values.any():
+                if _X[_column].isnull().values.any():
                     _X[_column] = self._fill(_X[_column])
 
         self._fitted = True
@@ -172,7 +173,7 @@ class DummyImputer(BaseImputer):
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
 
         if _X.isnull().values.any():
             _X = self._fill(_X, y)
@@ -224,7 +225,7 @@ class JointImputer(BaseImputer):
     def fill(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
 
         if _X.isnull().values.any():
             _X = self._fill(_X)

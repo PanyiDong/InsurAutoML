@@ -43,6 +43,7 @@ from __future__ import annotations
 from typing import List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 from functools import partial
 import multiprocessing
@@ -184,7 +185,7 @@ class AAI_kNN(formatting, MinMaxScale):
     def _AAI_impute(
         self, X: pd.DataFrame, index: List[Union[str, int]], column: List[str]
     ) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # (index, column) gives a location of missing value
         # the goal is to find and impute relatively important data
@@ -241,7 +242,7 @@ class AAI_kNN(formatting, MinMaxScale):
     def Pool_task(
         self, X: pd.DataFrame, index_list: List[List[Union[str, int]]]
     ) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         for _column in self.columns:
             # get missing rows
@@ -294,7 +295,7 @@ class AAI_kNN(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(X))
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # initialize columns
         self.columns = list(_X.columns)
@@ -312,7 +313,7 @@ class AAI_kNN(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # convert categorical to numerical
         formatter = formatting(columns=self.columns, inplace=True)
@@ -489,7 +490,7 @@ class CMI(formatting, MinMaxScale):
     # assign clustering groups according to Euclidean distance
     # only support numerical features
     def _k_means_clustering(self, X: pd.DataFrame) -> None:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         n, p = _X.shape  # number of observations
 
@@ -587,7 +588,7 @@ class CMI(formatting, MinMaxScale):
         n: int,
         index_list: List[Union[str, int]],
     ) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # find missing indexes belongs to _k group
         for _index in index_list:
@@ -633,7 +634,7 @@ class CMI(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # initialize columns
         self.columns = list(_X.columns)
@@ -651,7 +652,7 @@ class CMI(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # convert categorical to numerical
         formatter = formatting(columns=self.columns, inplace=True)
@@ -904,7 +905,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
     # compared to modes
     # best support categorical features
     def _k_modes_clustering(self, X: pd.DataFrame) -> None:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         n, p = _X.shape  # number of observations
 
@@ -921,7 +922,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         numerical_columns: List[str],
         categorical_columns: List[str],
     ) -> None:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         n, p = _X.shape  # number of observations
 
@@ -1046,7 +1047,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # initialize columns
         self.columns = list(_X.columns)
@@ -1064,7 +1065,7 @@ class k_Prototype_NN(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = copy_frame(X, deep=self.deep_copy)
 
         # all numerical columns
         numeric_columns = list(_X.select_dtypes(include=self.numerics).columns)

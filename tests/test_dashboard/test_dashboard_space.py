@@ -1,4 +1,44 @@
 """
+File Name: test_dashboard_space.py
+Author: Panyi Dong
+GitHub: https://github.com/PanyiDong/
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
+
+Project: InsurAutoML
+Latest Version: 0.2.9
+Relative Path: /tests/test_dashboard/test_dashboard_space.py
+File Created: Monday, 16th November 2026 8:41:45 pm
+Author: Panyi Dong (panyid2@illinois.edu)
+
+-----
+Last Modified: Monday, 16th November 2026 11:34:52 pm
+Modified By: Panyi Dong (panyid2@illinois.edu)
+
+-----
+MIT License
+
+Copyright (c) 2026, Panyi Dong
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+"""
 Tests of the search space description, sampling and distances of the dashboard map.
 """
 
@@ -170,7 +210,7 @@ def test_encode_and_distances():
     values = encoded.values[("model", "A")]
     # log scale: 1e-2 is half way between 1e-4 and 1
     assert values[0].tolist() == pytest.approx([0.5, 0.5, 0.0])
-    assert np.isnan(values[5, 0]) and np.isnan(values[5, 1]) and values[5, 2] == -1
+    assert np.isnan(values[5, 0]) and np.isnan(values[5, 1]) and values[5, 2] < 0
     # clipped to the range, non positive values of log scales at the lower bound
     assert values[6, :2].tolist() == [0.0, 1.0]
 
@@ -192,3 +232,21 @@ def test_encode_and_distances():
     # no weight / empty sets
     assert not distances(schema, encoded, encoded, {"model": 0.0}).any()
     assert distances(schema, encode(schema, []), encoded, weights).shape == (0, 8)
+
+
+def test_unknown_categories_differ():
+    schema = {
+        "steps": ["model"],
+        "methods": {
+            "model": {"A": {"kind": {"type": "categorical", "categories": ["x", "y"]}}}
+        },
+    }
+    configs = [
+        _config("A", kind="new1"),
+        _config("A", kind="new2"),
+        _config("A", kind="new1"),
+    ]
+    encoded = encode(schema, configs)
+    matrix = distances(schema, encoded, encoded, {"model": 1.0})
+    # two unknown values differ, the same unknown value does not
+    assert matrix[0, 1] > 0 and matrix[0, 2] == 0

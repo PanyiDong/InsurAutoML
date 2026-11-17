@@ -43,6 +43,7 @@ from __future__ import annotations
 from typing import Union, List
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 from sklearn.ensemble import RandomForestRegressor, RandomForestClassifier
 
@@ -82,7 +83,7 @@ class ExpectationMaximization(BaseImputer):
         self.iterations = int(self.iterations)
         self.threshold = float(self.threshold)
 
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
         n = _X.shape[0]
 
         if _X.isnull().values.any():
@@ -167,7 +168,7 @@ class KNNImputer(BaseImputer):
             if len(X[_column].unique()) <= min(0.1 * len(X), self.uni_class):
                 raise ValueError("KNN Imputation not supported for categorical data!")
 
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
         if _X.isnull().values.any():
             _X = self._fill(_X)
         else:
@@ -243,11 +244,11 @@ class KNNImputer(BaseImputer):
                 else [self.n_neighbors]
             )
 
-        _test_mark = _test.copy(deep=True)
+        _test_mark = copy_frame(_test, deep=True)
         _err = []
 
         for _k in n_neighbors:
-            _test = _test_mark.copy(deep=True)
+            _test = copy_frame(_test_mark, deep=True)
             for _feature in random_features:
                 _subfeatures = list(_train.columns)
                 _subfeatures.remove(_feature)
@@ -571,7 +572,7 @@ class MICE(BaseImputer):
     def fill(self, X: pd.DataFrame) -> pd.DataFrame:
         self.cycle = int(self.cycle)
 
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
 
         if _X.isnull().values.any():
             _X = self._fill(_X)

@@ -1,4 +1,44 @@
 """
+File Name: test_dashboard_events.py
+Author: Panyi Dong
+GitHub: https://github.com/PanyiDong/
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
+
+Project: InsurAutoML
+Latest Version: 0.2.9
+Relative Path: /tests/test_dashboard/test_dashboard_events.py
+File Created: Monday, 16th November 2026 7:49:55 pm
+Author: Panyi Dong (panyid2@illinois.edu)
+
+-----
+Last Modified: Monday, 16th November 2026 11:34:30 pm
+Modified By: Panyi Dong (panyid2@illinois.edu)
+
+-----
+MIT License
+
+Copyright (c) 2026, Panyi Dong
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+"""
+
+"""
 Tests of the event log of the dashboard.
 """
 
@@ -367,3 +407,50 @@ def test_quiet_ray_output(monkeypatch):
 
     with quiet_ray_output(enable=False):
         assert tune_logger.level == level
+
+
+def test_state_of_stopped_run():
+    # killed process: no round_end/run_end, the clock stops at the last event
+    from InsurAutoML.dashboard.events import STALE_AFTER
+
+    state = DashboardState()
+    state.apply({"type": "run_start", "time": 0, "timeout": 10000})
+    state.apply({"type": "round_start", "time": 0, "round": 0, "num_samples": 4})
+    state.apply({"type": "trial_start", "time": 10, "round": 0, "trial_id": "a"})
+    state.apply(
+        {
+            "type": "trial_result",
+            "time": 50,
+            "round": 0,
+            "trial_id": "a",
+            "loss": 1.0,
+            "training_status": "FITTED",
+        }
+    )
+
+    running = state.progress(now=100)
+    assert running["elapsed"] == 100 and not running["stale"]
+    stopped = state.progress(now=50 + STALE_AFTER + 1000)
+    assert stopped["stale"] and stopped["now"] == 50 and stopped["elapsed"] == 50
+
+    # a restored trial is timed from its restart
+    state.apply(
+        {
+            "type": "trial_end",
+            "time": 60,
+            "round": 0,
+            "trial_id": "a",
+            "status": "COMPLETED",
+        }
+    )
+    state.apply({"type": "trial_start", "time": 500, "round": 0, "trial_id": "a"})
+    state.apply(
+        {
+            "type": "trial_end",
+            "time": 520,
+            "round": 0,
+            "trial_id": "a",
+            "status": "COMPLETED",
+        }
+    )
+    assert next(iter(state.trials.values()))["duration"] == 20

@@ -790,6 +790,7 @@ class InformedAutoTabularBase(AutoTabularBase):
 
         # if the model is already trained (same data and settings), read it
         self._fingerprint = self._fit_fingerprint(_X, _y, X_valid, y_valid)
+        self._check_resume(self._fingerprint)
         if self._load_stored_model(self._fingerprint):
             self._fitted = True  # successfully fitted the model
 

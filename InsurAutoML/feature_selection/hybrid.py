@@ -566,7 +566,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
                                 p, self.crossover_n
                             )
                         )
-                    self.crossover_n == int(self.crossover_n)
+                    self.crossover_n = int(self.crossover_n)
 
                 for i in range(self.n_pair):
                     _tmp1 = selection_pool[-(2 * i + 2)]
@@ -594,7 +594,7 @@ class GeneticAlgorithm(BaseFeatureSelection):
                                 p, self.mutation_n
                             )
                         )
-                    self.mutation_n == int(self.mutation_n)
+                    self.mutation_n = int(self.mutation_n)
 
                 _mutation_index = random_index(
                     self.mutation_n, p, seed=None

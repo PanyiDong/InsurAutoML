@@ -195,6 +195,8 @@ def test_fixed_informed_autotabular_saved_and_seeded(
 
     import InsurAutoML.hpo.informed.fixed as fixed_module
 
+    prep_fit = fixed_module.CompletePrepPipeline.fit
+    auto_fit = fixed_module.AutoTabular.fit
     monkeypatch.setattr(fixed_module.CompletePrepPipeline, "fit", no_fit)
     monkeypatch.setattr(fixed_module.AutoTabular, "fit", no_fit)
     loaded = FixedInformedAutoTabular(
@@ -204,6 +206,15 @@ def test_fixed_informed_autotabular_saved_and_seeded(
     assert list(loaded.complete_prep.filter.select_features) == list(
         mol.complete_prep.filter.select_features
     )
+
+    # other data: fitted again (the saved wrapper is not reused)
+    monkeypatch.setattr(fixed_module.CompletePrepPipeline, "fit", prep_fit)
+    monkeypatch.setattr(fixed_module.AutoTabular, "fit", auto_fit)
+    with pytest.warns(UserWarning, match="other data or settings"):
+        refit = FixedInformedAutoTabular(
+            model_name="fixed_saved", max_evals=2, timeout=60, n_estimators=1, seed=1
+        ).fit(X.iloc[:-20], y["expenses"].iloc[:-20])
+    assert refit.complete_model is not None
 
     # not a saved wrapper
     with open("not_a_model", "wb") as out_f:

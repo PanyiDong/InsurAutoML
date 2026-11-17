@@ -229,7 +229,8 @@ function renderHeader() {
   } else if (!run.start) {
     setBadge("waiting for the run…");
   } else if (
-    view.data.last_time && view.data.server_time - view.data.last_time > STALE_S
+    progress.stale ||
+    (view.data.last_time && view.data.server_time - view.data.last_time > STALE_S)
   ) {
     setBadge("no updates for " + fmtDuration(view.data.server_time - view.data.last_time), "stale");
   } else {
@@ -318,7 +319,7 @@ function renderRunning() {
   element.className = "running";
   element.innerHTML = running
     .map((trial) => {
-      const elapsed = Math.max(0, view.data.server_time - trial.start);
+      const elapsed = Math.max(0, view.data.progress.now - trial.start);
       const progress = trial.iterations
         ? trial.iterations + (trial.iterations === 1 ? " step" : " steps") +
           (trial.loss !== null && trial.loss !== undefined ? " · loss " + fmtLoss(trial.loss) : "")
@@ -386,7 +387,8 @@ function renderLossChart() {
 function renderMethodChart() {
   const select = $("method-step");
   const available = steps();
-  if (select.options.length !== available.length) {
+  if (select.dataset.options !== available.join(",")) {
+    select.dataset.options = available.join(",");
     select.innerHTML = available
       .map((step) => '<option value="' + escapeHtml(step) + '">' + escapeHtml(stepLabel(step)) + "</option>")
       .join("");
@@ -466,7 +468,9 @@ function sortValue(trial, key) {
 
 function renderTable() {
   const filter = $("filter").value.trim().toLowerCase();
-  const signature = JSON.stringify([view.signature, filter, view.sortKey, view.sortAsc]);
+  // running trials: their time changes on every update
+  const clock = view.data.running.length ? Math.floor(view.data.progress.now) : null;
+  const signature = JSON.stringify([view.signature, filter, view.sortKey, view.sortAsc, clock]);
   if (signature === view.tableSignature) return;
   view.tableSignature = signature;
 
@@ -494,7 +498,7 @@ function renderTable() {
       '<td class="num">' + fmtLoss(trial.loss) + "</td>" +
       '<td class="num">' + (trial.duration !== null && trial.duration !== undefined
         ? fmtDuration(trial.duration)
-        : fmtDuration(view.data.server_time - trial.start)) + "</td>" +
+        : fmtDuration(view.data.progress.now - trial.start)) + "</td>" +
       "<td>" + escapeHtml(modelOf(trial)) + "</td>" +
       '<td class="pipe">' + escapeHtml(pipeline) + "</td></tr>"
     );

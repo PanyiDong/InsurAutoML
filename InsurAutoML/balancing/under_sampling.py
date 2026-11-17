@@ -43,6 +43,7 @@ from __future__ import annotations
 from typing import Union, Tuple, Callable
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 import sklearn
 import sklearn.utils
@@ -113,7 +114,7 @@ class SimpleRandomUnderSampling(BaseBalancing):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -214,7 +215,7 @@ class TomekLink(BaseBalancing):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -336,7 +337,7 @@ class EditedNearestNeighbor(BaseBalancing):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
 
         if (self.k % 2) == 0:
             warnings.warn(
@@ -477,7 +478,7 @@ class CondensedNearestNeighbor(BaseBalancing):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -629,7 +630,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -717,7 +718,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = copy_frame(data, deep=True)
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:

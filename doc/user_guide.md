@@ -186,4 +186,11 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 
 1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `data` provides test datasets in the report.
 
-2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
+2. `Dockerfiles` builds a Docker image of the repository (Python 3.12, the InformedAutoML version with its C++ extension). From the repository root:
+
+   ```console
+   docker build -f Dockerfiles/Dockerfile -t insurautoml .
+   docker run --rm -p 8765:8765 --shm-size=2g insurautoml
+   ```
+
+   or `docker compose -f Dockerfiles/docker-compose.yml up --build`. The container runs the command line example (`main.py` on the heart data); the optimization dashboard is published at `http://127.0.0.1:8765` while it runs. The build argument `EXTRAS` selects the optional dependencies (default `informed`; `normal` for the InsurAutoML version only, `informed,nn` adds torch), e.g. `docker build --build-arg EXTRAS=normal ...`. `docker-compose.debug.yml` starts the example under `debugpy` (port 5678) to attach a debugger.

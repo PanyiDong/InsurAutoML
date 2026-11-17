@@ -165,7 +165,7 @@ class Pipeline:
             X = self.feature_selection.transform(X)
 
         if not hasattr(self.model, "predict_proba"):
-            logger.error("model does not have predict_proba method!")
+            raise AttributeError("model does not have predict_proba method!")
 
         return self.model.predict_proba(X)
 

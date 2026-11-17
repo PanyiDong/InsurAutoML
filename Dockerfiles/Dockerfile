@@ -1,36 +1,74 @@
-# For more information, please refer to https://aka.ms/vscode-docker-python
-FROM python:3.8-slim-buster
-# Keeps Python from generating .pyc files in the container
-ENV PYTHONDONTWRITEBYTECODE=1
+# syntax=docker/dockerfile:1
+#
+# InsurAutoML image, built from the repository (the build context is the repository
+# root):
+#
+#   docker build -f Dockerfiles/Dockerfile -t insurautoml .
+#   docker run --rm -p 8765:8765 --shm-size=2g insurautoml
+#
+# or with Docker Compose: docker compose -f Dockerfiles/docker-compose.yml up --build
+#
+# Build arguments:
+#   PYTHON_VERSION  Python of the image, default 3.12 (the version tested in CI)
+#   EXTRAS          optional dependencies, default "informed" (InformedAutoML, with
+#                   the C++ extension); "normal" for the InsurAutoML version only,
+#                   "informed,nn" adds torch (large, CUDA wheels)
 
-# Turns off buffering for easier container logging
-ENV PYTHONUNBUFFERED=1
+ARG PYTHON_VERSION=3.12
 
-# Update pip
-RUN python -m pip install --upgrade pip
+# ---------------------------------------------------------------------- build
+# compiles the C++ extension of the informed pipelines into the InsurAutoML wheel
+FROM python:${PYTHON_VERSION}-slim-trixie AS build
 
-# Install git
-RUN apt-get -y update
-RUN apt-get -y upgrade
-RUN apt-get -y install git
+ENV PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install pip requirements
-# COPY requirements.txt .
-# RUN python -m pip install -r requirements.txt
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential libnanoflann-dev \
+    && rm -rf /var/lib/apt/lists/*
 
+# only the files of the package (not outputs/builds of the working tree, whether
+# or not the builder applies Dockerfile.dockerignore)
+WORKDIR /src
+COPY pyproject.toml setup.py README.md LICENSE ./
+COPY InsurAutoML ./InsurAutoML
+RUN INFORMEDAUTOML=1 pip wheel --no-deps --wheel-dir /wheels .
+
+# -------------------------------------------------------------------- runtime
+FROM python:${PYTHON_VERSION}-slim-trixie
+
+ARG EXTRAS=informed
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    # the optimization dashboard listens on all interfaces of the container
+    # (published with -p 8765:8765)
+    INSURAUTOML_DASHBOARD_HOST=0.0.0.0 \
+    INSURAUTOML_DASHBOARD_PORT=8765 \
+    MLFLOW_DISABLE_AGENT_HINT=1
+
+# OpenMP runtime of the C++ extension and LightGBM
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends libgomp1 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=build /wheels /wheels
+RUN pip install "$(ls /wheels/*.whl)[${EXTRAS}]" \
+    && rm -rf /wheels
+
+# command line interface and example data
 WORKDIR /app
-COPY . /app
+COPY main.py ./
+COPY example/example_data ./example/example_data
 
-# Clone AutoML from git to workspace
-RUN git clone https://github.com/PanyiDong/My_AutoML.git /app/My_AutoML
-RUN cd /app/My_AutoML
-# Install dependencies
-RUN pip install -e .[normal]
-
-# Creates a non-root user with an explicit UID and adds permission to access the /app folder
-# For more info, please refer to https://aka.ms/vscode-docker-python-configure-containers
-RUN adduser -u 5678 --disabled-password --gecos "" appuser && chown -R appuser /app
+# non-root user
+RUN useradd --uid 5678 --create-home appuser \
+    && chown -R appuser /app
 USER appuser
 
-# During debugging, this entry point will be overridden. For more information, please refer to https://aka.ms/vscode-docker-python-debug
-CMD ["python", "main.py --data_folder example/example_data --train_data heart --response HeartDisease"]
+# optimization dashboard
+EXPOSE 8765
+
+CMD ["python", "main.py", "--data_folder", "example/example_data", "--train_data", "heart", "--response", "HeartDisease"]

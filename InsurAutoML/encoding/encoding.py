@@ -42,6 +42,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 from sklearn import preprocessing
 
 from ..utils.base import is_date, is_text_dtype
@@ -78,7 +79,7 @@ class DataEncoding(BaseEncoder, formatting):
         self._fitted = False  # record whether the method is fitted
 
     def fit(self, _df: pd.DataFrame) -> pd.DataFrame:
-        df = _df.copy(deep=True)
+        df = copy_frame(_df, deep=True)
         features = list(df.columns)
         self.category = pd.DataFrame()
         self.mean_scaler = {}
@@ -159,7 +160,7 @@ class DataEncoding(BaseEncoder, formatting):
         return df
 
     def refit(self, _df: pd.DataFrame) -> pd.DataFrame:
-        df = _df.copy(deep=True)
+        df = copy_frame(_df, deep=True)
         if self.category.empty:
             return df
         categorical_features = list(self.category.columns)
@@ -261,7 +262,7 @@ class CategoryShift(BaseEncoder):
                 raise ValueError("Cannot handle categorical type!")
 
         # shift
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
         _X += self.shift
 
         self._fitted = True
@@ -278,7 +279,7 @@ class CategoryShift(BaseEncoder):
                 raise ValueError("Cannot handle categorical type!")
 
         # shift
-        _X = X.copy(deep=True)
+        _X = copy_frame(X, deep=True)
         _X += self.shift
 
         return _X
