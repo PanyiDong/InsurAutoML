@@ -76,7 +76,6 @@ if torch_spec is not None:
 
 
 class GAIN_tf(formatting, MinMaxScale):
-
     """
     Generative Adversarial Imputation Nets tensorflow version (GAIN)
     train Generator (G) and Discriminator (D) to impute missing values [1]
@@ -103,7 +102,7 @@ class GAIN_tf(formatting, MinMaxScale):
 
     scaling: whether scale the dataset before imputation, default = True
 
-    deep_copy: whether to deep copy dataframe, deafult = False
+    deep_copy: whether to deep copy dataframe, default = False
 
     seed: random seed, default = 1
     """
@@ -245,7 +244,7 @@ class GAIN_tf(formatting, MinMaxScale):
 
         self.theta_G = [G_W1, G_W2, G_W3, G_b1, G_b2, G_b3]
 
-        # Discriminator Varaibles
+        # Discriminator Variables
         D_W1 = tf.Variable(self.normal_initial([p * 2, _h_dim]))
         D_b1 = tf.Variable(tf.zeros(shape=[_h_dim]))
         D_W2 = tf.Variable(self.normal_initial([_h_dim, _h_dim]))
@@ -338,7 +337,6 @@ class GAIN_tf(formatting, MinMaxScale):
 
 
 class GAIN_torch(formatting, MinMaxScale):
-
     """
     Generative Adversarial Imputation Nets (GAIN) pytorch version [1]
     train Generator (G) and Discriminator (D) to impute missing values
@@ -371,7 +369,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
     scaling: whether scale the dataset before imputation, default = True
 
-    deep_copy: whether to deep copy dataframe, deafult = False
+    deep_copy: whether to deep copy dataframe, default = False
 
     seed: random seed, default = 1
     """
@@ -588,9 +586,7 @@ class GAIN_torch(formatting, MinMaxScale):
             else:
                 raise KeyError(
                     'Get unknown optimizer {}, should be one of ["Adam", "SGD", \
-                    "Adagrad", "LBFGS", "RMSprop"].'.format(
-                        self.optim
-                    )
+                    "Adagrad", "LBFGS", "RMSprop"].'.format(self.optim)
                 )
 
             # store the losses for early_stopping
@@ -685,7 +681,6 @@ class GAIN_torch(formatting, MinMaxScale):
 
 
 class GAIN(GAIN_tf, GAIN_torch):
-
     """
     Generative Adversarial Imputation Nets (GAIN) [1]
     use pytorch/tensorflow when available
@@ -719,7 +714,7 @@ class GAIN(GAIN_tf, GAIN_torch):
 
     scaling: whether scale the dataset before imputation, default = True
 
-    deep_copy: whether to deep copy dataframe, deafult = False
+    deep_copy: whether to deep copy dataframe, default = False
 
     seed: random seed, default = 1
     """

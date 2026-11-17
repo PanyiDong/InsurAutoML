@@ -29,7 +29,9 @@ def resolve_events(path: str) -> str:
     for candidate in candidates:
         if os.path.isfile(candidate):
             return os.path.abspath(candidate)
-    raise FileNotFoundError("No dashboard event log ({}) found in {}".format(EVENTS_FILE, path))
+    raise FileNotFoundError(
+        "No dashboard event log ({}) found in {}".format(EVENTS_FILE, path)
+    )
 
 
 def main(argv: Optional[List[str]] = None) -> int:
@@ -37,10 +39,21 @@ def main(argv: Optional[List[str]] = None) -> int:
         prog="python -m InsurAutoML.dashboard",
         description="Dashboard of a recorded InsurAutoML optimization run.",
     )
-    parser.add_argument("path", help="run directory (<temp_directory>/<model_name>) or event log")
-    parser.add_argument("--host", default=None, help="address to listen on (default 127.0.0.1)")
-    parser.add_argument("--port", type=int, default=None, help="port (default 8765, or the next free one)")
-    parser.add_argument("--open", action="store_true", help="open the dashboard in the browser")
+    parser.add_argument(
+        "path", help="run directory (<temp_directory>/<model_name>) or event log"
+    )
+    parser.add_argument(
+        "--host", default=None, help="address to listen on (default 127.0.0.1)"
+    )
+    parser.add_argument(
+        "--port",
+        type=int,
+        default=None,
+        help="port (default 8765, or the next free one)",
+    )
+    parser.add_argument(
+        "--open", action="store_true", help="open the dashboard in the browser"
+    )
     args = parser.parse_args(argv)
 
     try:

@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple, List
+from typing import List, Optional, Tuple, Union
 import numpy as np
 import pandas as pd
 import warnings
@@ -53,7 +53,6 @@ from ..scaling import MinMaxScale
 
 
 class AAI_kNN(formatting, MinMaxScale):
-
     """
     kNN Imputation/Neighborhood-based Collaborative Filtering with
     Auto-adaptive Imputation/AutAI [1]
@@ -365,7 +364,6 @@ raised, and all observations will be correctly assigned.
 
 
 class KMI(formatting, MinMaxScale):
-
     """
     KMI/K-Means Imputation[1], the idea is to incorporate K-Means
     Clustering with kNN imputation
@@ -390,7 +388,6 @@ class KMI(formatting, MinMaxScale):
 
 
 class CMI(formatting, MinMaxScale):
-
     """
     Clustering-based Missing Value Imputation/CMI[1], introduces the idea
     of clustering observations into groups and use the kernel statistsics
@@ -720,7 +717,6 @@ class CMI(formatting, MinMaxScale):
 
 
 class k_Prototype_NN(formatting, MinMaxScale):
-
     """
     Three clustering models are provided: k-Means Paradigm, k-Modes Paradigm,
     k-Prototypes Paradigm [1]
@@ -762,18 +758,17 @@ class k_Prototype_NN(formatting, MinMaxScale):
         distance: str = "l2",
         dissimilarity: str = "weighted",
         scaling: bool = True,
-        numerics: List[str] = [
-            "int16",
-            "int32",
-            "int64",
-            "float16",
-            "float32",
-            "float64",
-        ],
+        numerics: Optional[List[str]] = None,
         threads: int = -1,
         deep_copy: bool = False,
         seed: int = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        numerics = (
+            ["int16", "int32", "int64", "float16", "float32", "float64"]
+            if numerics is None
+            else numerics
+        )
         self.k = k
         self.distance = distance
         self.dissimilarity = dissimilarity

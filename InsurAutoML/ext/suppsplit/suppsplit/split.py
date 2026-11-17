@@ -46,15 +46,44 @@ from .utils import HelmertEncoding
 from ...suppsplit.suppsplit_cpp import sp_cpp, subsample  # the compiled C++ extension
 
 
-def jitter(x, factor: float = 1, amount: float = None):
+def jitter(x, factor: float = 1, amount: float = None, seed=None):
+    """
+    Add uniform noise to x (to break duplicates).
+
+    seed: seed or numpy Generator of the noise (local generator, the global numpy
+    random state is not changed)
+    """
     sort_unique = np.sort(np.unique(x))
     smallest_diff = sort_unique[1] - sort_unique[0]
     if amount is None:
         amount = smallest_diff / 5
-    return x + np.random.uniform(-1, 1, size=x.shape) * amount * factor
+    rng = np.random.default_rng(seed)
+    return x + rng.uniform(-1, 1, size=x.shape) * amount * factor
 
 
-def compute_sp(n, p, dist_samp, num_subsamp, iter_max=500, tol=1e-10, n_threads=None):
+def compute_sp(
+    n,
+    p,
+    dist_samp,
+    num_subsamp,
+    iter_max=500,
+    tol=1e-10,
+    n_threads=None,
+    seed=None,
+    verbose=False,
+):
+    """
+    Support points of dist_samp.
+
+    seed: seed (or numpy Generator) of the random initialization, the jitter and
+    the random subsamples of the C++ iterations (None: random)
+
+    verbose: print the progress of the optimization on the console
+    """
+    rng = np.random.default_rng(seed)
+    # seed of the C++ random engine (subsamples, only used when num_subsamp is less
+    # than the sample size), -1: seeded by the clock
+    cpp_seed = int(rng.integers(0, 2**31 - 1)) if seed is not None else -1
     rnd_flg = num_subsamp < dist_samp.shape[0]
     # n_threads caps the threads (SPlit uses 1 by default so parallel AutoML trials
     # do not oversubscribe the CPUs), None uses all CPUs
@@ -69,14 +98,14 @@ def compute_sp(n, p, dist_samp, num_subsamp, iter_max=500, tol=1e-10, n_threads=
 
     # handle duplicate
     if pd.DataFrame(dist_samp).duplicated().any():
-        dist_samp = jitter(dist_samp)
+        dist_samp = jitter(dist_samp, seed=rng)
         # clip dist_samp to avoid numerical issues
         for j in range(p):
             dist_samp[:, j] = np.clip(dist_samp[:, j], bd[j, 0], bd[j, 1])
 
     # initialize design
-    ini = dist_samp[np.random.choice(dist_samp.shape[0], size=n, replace=False), :]
-    ini = jitter(ini)
+    ini = dist_samp[rng.choice(dist_samp.shape[0], size=n, replace=False), :]
+    ini = jitter(ini, seed=rng)
     for j in range(p):
         ini[:, j] = np.clip(ini[:, j], bd[j, 0], bd[j, 1])
 
@@ -95,6 +124,8 @@ def compute_sp(n, p, dist_samp, num_subsamp, iter_max=500, tol=1e-10, n_threads=
         n0,
         wts,
         rnd_flg,
+        cpp_seed,
+        bool(verbose),
     )
 
 
@@ -132,7 +163,18 @@ def SPlit(
     max_iterations=500,
     tolerance=1e-10,
     n_threads=1,  # use only one thread by default to allow AutoML parallelism
+    seed=None,
+    verbose=False,
 ):
+    """
+    Split the data with support points (SPlit), returns the (0-based) indices of
+    the split_ratio part.
+
+    seed: seed of the random parts of SPlit (initialization, jitter of duplicated
+    rows, subsamples): the same seed gives the same split, None: random
+
+    verbose: print the progress of the optimization (C++) on the console
+    """
     if not (0 < split_ratio < 1):
         raise ValueError("split_ratio must be in (0, 1).")
 
@@ -155,6 +197,8 @@ def SPlit(
         iter_max=max_iterations,
         tol=tolerance,
         n_threads=n_threads,
+        seed=seed,
+        verbose=verbose,
     )
 
     return subsample(data_, sp_) - 1

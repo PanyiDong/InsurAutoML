@@ -47,7 +47,6 @@ from .informed import (
 )
 from .DL import AutoTextClassifier, AutoNextWordPrediction
 
-
 __all__ = [
     "AutoTabular",
     "AutoTabularClassifier",

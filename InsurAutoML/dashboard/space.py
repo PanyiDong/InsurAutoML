@@ -225,7 +225,9 @@ def encode(schema: Schema, configs: Sequence[Config]) -> EncodedConfigs:
             hyperparameters = setting.get("hyperparameters") or {}
             for col, (param, spec) in enumerate(params.items()):
                 if param in hyperparameters:
-                    values[(step, name)][row, col] = _scale(spec, hyperparameters[param])
+                    values[(step, name)][row, col] = _scale(
+                        spec, hyperparameters[param]
+                    )
 
         methods[step] = step_methods
 

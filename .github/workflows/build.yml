@@ -16,6 +16,9 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          # reuse the downloaded packages between runs
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - name: Install C++ headers (nanoflann for the InformedAutoML extension)
         run: |
           sudo apt-get update

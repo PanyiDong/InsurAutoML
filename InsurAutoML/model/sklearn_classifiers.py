@@ -191,9 +191,11 @@ class DecisionTreeClassifier(sklearn.tree.DecisionTreeClassifier, BaseModel):
     ) -> DecisionTreeClassifier:
         super(DecisionTreeClassifier, self).__init__(
             criterion=self.criterion,
-            max_depth=None
-            if is_none(self.max_depth_factor)
-            else max(int(self.max_depth_factor * X.shape[1]), 1),
+            max_depth=(
+                None
+                if is_none(self.max_depth_factor)
+                else max(int(self.max_depth_factor * X.shape[1]), 1)
+            ),
             min_samples_split=self.min_samples_split,
             min_samples_leaf=self.min_samples_leaf,
             min_weight_fraction_leaf=self.min_weight_fraction_leaf,

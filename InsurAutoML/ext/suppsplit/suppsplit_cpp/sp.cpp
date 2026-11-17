@@ -76,7 +76,9 @@ std::vector<std::vector<double>> sp_cpp(std::size_t des_num, int dim_num,
                                         int num_proc,
                                         double n0,
                                         const std::vector<double> &wts,
-                                        bool rnd_flg)
+                                        bool rnd_flg,
+                                        long long seed,
+                                        bool verbose)
 {
 #ifdef _OPENMP
     omp_set_num_threads(num_proc);
@@ -103,15 +105,18 @@ std::vector<std::vector<double>> sp_cpp(std::size_t des_num, int dim_num,
         }
     }
 
-    // RNG
-    std::default_random_engine generator(std::chrono::high_resolution_clock::now().time_since_epoch().count());
+    // RNG: seeded by the caller (reproducible), or by the clock if seed < 0
+    std::default_random_engine generator(
+        seed >= 0 ? static_cast<std::default_random_engine::result_type>(seed)
+                  : static_cast<std::default_random_engine::result_type>(
+                        std::chrono::high_resolution_clock::now().time_since_epoch().count()));
 
     double nug = 0.0;
     int percent_complete = 0;
     while (cont)
     {
         int percent = (100 * (it_num + 1)) / it_max;
-        if (percent > percent_complete)
+        if (verbose && percent > percent_complete)
         {
             printProgress(percent);
             percent_complete = percent;
@@ -202,7 +207,8 @@ std::vector<std::vector<double>> sp_cpp(std::size_t des_num, int dim_num,
         {
             nug += 1.0;
             std::fill(runconst.begin(), runconst.end(), 0.0);
-            std::cout << "\nNumerical instabilities encountered; resetting optimization.\n";
+            if (verbose)
+                std::cout << "\nNumerical instabilities encountered; resetting optimization.\n";
         }
         else
         {
@@ -224,7 +230,8 @@ std::vector<std::vector<double>> sp_cpp(std::size_t des_num, int dim_num,
         if ((maxdiff < tol) && (!nanflg))
         {
             cont = false;
-            std::cout << "\nTolerance level reached.";
+            if (verbose)
+                std::cout << "\nTolerance level reached.";
         }
 
         if ((it_num >= it_max) && (!nanflg))
@@ -233,7 +240,8 @@ std::vector<std::vector<double>> sp_cpp(std::size_t des_num, int dim_num,
         }
     } // end while
 
-    std::cout << "\n";
+    if (verbose)
+        std::cout << "\n";
     std::vector<std::vector<double>> retdes(des_num, std::vector<double>(dim_num, 0.0));
     for (int j = 0; j < dim_num; j++)
     {

@@ -95,7 +95,7 @@ def test_NoScaing():
 
     data = method.inverse_transform(fitted_data)
 
-    assert method._fitted == False, "The NoScaling method is not correctly inversed."
+    assert not method._fitted, "The NoScaling method is not correctly inversed."
 
 
 # test decrepted methods

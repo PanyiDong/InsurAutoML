@@ -39,7 +39,7 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Callable, Union, List, Tuple
+from typing import Callable, List, Optional, Tuple, Union
 import scipy
 import logging
 import pandas as pd
@@ -186,9 +186,11 @@ class ClassifierEnsemble(formatting):
         estimators: List[Tuple[str, Pipeline]],
         voting: str = "hard",
         weights: List[float] = None,
-        features: List[str] = [],
+        features: Optional[List[str]] = None,
         strategy: str = "stacking",
     ) -> None:
+        # mutable defaults: a new object per call
+        features = [] if features is None else features
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
@@ -326,7 +328,7 @@ class ClassifierEnsemble(formatting):
         for (name, pipeline), feature_subset in zip(self.estimators, self.features):
             try:
                 prob_list.append(pipeline.predict_proba(X[feature_subset]))
-            except:
+            except Exception:
                 logger.warning(
                     "Pipeline {} does not support predict_proba. Ignoring.".format(name)
                 )
@@ -360,9 +362,11 @@ class RegressorEnsemble(formatting):
         estimators: List[Tuple[str, Pipeline]],
         voting: str = "mean",
         weights: List[float] = None,
-        features: List[str] = [],
+        features: Optional[List[str]] = None,
         strategy: str = "stacking",
     ) -> None:
+        # mutable defaults: a new object per call
+        features = [] if features is None else features
         self.estimators = estimators
         self.voting = voting
         self.weights = weights

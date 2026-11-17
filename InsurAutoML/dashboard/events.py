@@ -71,9 +71,7 @@ class EventRecorder:
     restoring, so a resumed experiment keeps writing to the same log.
     """
 
-    def __init__(
-        self, directory: str, clock: Callable[[], float] = time.time
-    ) -> None:
+    def __init__(self, directory: str, clock: Callable[[], float] = time.time) -> None:
         self.directory = os.path.abspath(directory)
         self.path = os.path.join(self.directory, EVENTS_FILE)
         self.clock = clock
@@ -219,8 +217,12 @@ class DashboardState:
         for trial in self._running():
             if trial["round"] == event.get("round"):
                 self._on_trial_end(
-                    {"time": event.get("time"), "round": trial["round"],
-                     "trial_id": trial["trial_id"], "status": "STOPPED"}
+                    {
+                        "time": event.get("time"),
+                        "round": trial["round"],
+                        "trial_id": trial["trial_id"],
+                        "status": "STOPPED",
+                    }
                 )
 
         current = self._round(event.get("round"))

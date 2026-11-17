@@ -77,7 +77,6 @@ def set_seed(seed: int = 1):
 
 
 class no_processing:
-
     """
     No processing on data, asa comparison
     """
@@ -122,7 +121,6 @@ class no_processing:
 
 
 class load_data:
-
     """
     load all data files to dict
 
@@ -146,7 +144,7 @@ class load_data:
                 for _path in path
             ]
         else:
-            path = [(path if (path == "" or path[-1] == "/") else path + "/")]
+            path = [path if (path == "" or path[-1] == "/") else path + "/"]
 
         for _path in path:
             self._main(_path, filename)

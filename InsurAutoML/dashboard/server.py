@@ -81,7 +81,9 @@ class _Handler(BaseHTTPRequestHandler):
         dashboard = self.server.dashboard
         try:
             if route in ("/", "/index.html"):
-                self._file(os.path.join(STATIC_DIR, "index.html"), STATIC_FILES["index.html"])
+                self._file(
+                    os.path.join(STATIC_DIR, "index.html"), STATIC_FILES["index.html"]
+                )
             elif route == "/static/plotly.min.js":
                 path = plotly_js_path()
                 if path is None:
@@ -114,9 +116,7 @@ class _Handler(BaseHTTPRequestHandler):
         self.send_response(status)
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header(
-            "Cache-Control", "max-age=86400" if cache else "no-store"
-        )
+        self.send_header("Cache-Control", "max-age=86400" if cache else "no-store")
         self.end_headers()
         self.wfile.write(body)
 

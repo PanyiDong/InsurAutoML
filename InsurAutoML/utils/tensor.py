@@ -54,7 +54,6 @@ def repackage_hidden(h):
 
 
 class CustomTensorDataset(Dataset):
-
     """
     Custom Tensor Dataset
     """
@@ -139,7 +138,6 @@ class CustomTensorDataset(Dataset):
 
 
 class ListTensorDataset(Dataset):
-
     """Custom Tensor Dataset that can be used for serialization for List of tensor Dataset."""
 
     def __init__(
@@ -192,7 +190,6 @@ class ListTensorDataset(Dataset):
 
 
 class DictTensorDataset(Dataset):
-
     """Custom Tensor Dataset that can be used for serialization for dict of tensor Dataset."""
 
     def __init__(
@@ -245,7 +242,6 @@ class DictTensorDataset(Dataset):
 
 
 class SerialTensorDataset(ListTensorDataset, DictTensorDataset):
-
     """Custom Tensor Dataset that can be used for serialization."""
 
     def __init__(

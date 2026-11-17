@@ -39,9 +39,9 @@ def test_missing_package(monkeypatch):
     monkeypatch.setattr(
         _optional.importlib.util,
         "find_spec",
-        lambda name, *args: None
-        if name == "missforest"
-        else real_find_spec(name, *args),
+        lambda name, *args: (
+            None if name == "missforest" else real_find_spec(name, *args)
+        ),
     )
 
     assert "missforest" in missing_informed_components()

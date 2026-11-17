@@ -1,28 +1,28 @@
 name: Format python code
-on: pull_request
+# check the formatting (black) and lint (ruff) of the code; format locally with
+# pre-commit (pip install pre-commit && pre-commit install) or black .
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+permissions:
+  contents: read
 jobs:
-  linter_name:
-    name: runner / black
+  lint:
+    name: black / ruff
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - name: Setup Python
+        uses: actions/setup-python@v7
         with:
-          fetch-depth: 0
-      - name: Check files using the black formatter
-        uses: rickstaa/action-black@v1
-        id: action_black
-        with:
-          black_args: "."
-      - name: Create Pull Request
-        if: steps.action_black.outputs.is_formatted == 'true'
-        uses: peter-evans/create-pull-request@v8
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Format Python code with psf/black push"
-          commit-message: ":art: Format Python code with psf/black"
-          body: |
-            There appear to be some python formatting errors in ${{ github.sha }}. This pull request
-            uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
-          labels: black, automated pr
-          base: ${{ github.head_ref }} # Creates pull request onto pull request or commit branch
-          branch: black-patches
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - name: Install black and ruff
+        run: pip install black==26.10.1 ruff==0.17.5
+      - name: Lint (ruff)
+        run: ruff check .
+      - name: Formatting (black)
+        run: black --check --diff .

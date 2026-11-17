@@ -38,7 +38,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional
+import os
+from typing import Any, Dict, Optional
 import pandas as pd
 import numpy as np
 
@@ -46,6 +47,18 @@ from ...encoding import DataEncoding
 from ...prep import CompletePrepPipeline, MissingPrepPipeline
 from ..ML import AutoTabular
 from ...utils.base import type_of_task
+from ...utils.file import load_methods, save_methods
+
+# fitted state of the wrapper, saved together (the models with the preprocessing
+# they were trained on)
+FITTED_STATE = (
+    "task_mode",
+    "encoder",
+    "complete_prep",
+    "missing_prep",
+    "complete_model",
+    "missing_model",
+)
 
 
 class InformedAutoTabular:
@@ -62,23 +75,88 @@ class InformedAutoTabular:
       classification).
 
     This class is intentionally light-weight and meant for quick experimentation.
+
+    Parameters
+    ----------
+    seed: seed of the preparation pipelines (feature selection tie breaking,
+    MissForest, SPlit) and of the two AutoTabular runs, default = None (random)
+    the same seed gives the same preparation (splits) and search
+
+    save: whether to save the fitted wrapper (preparation pipelines and models
+    together) as `model_name`, default = True
+    when the file exists, fit loads it instead of fitting again (as AutoTabular),
+    so the models are always used with the preparation they were trained on
+
+    other keyword arguments are passed to both AutoTabular
     """
 
     def __init__(
-        self, model_name="model", max_evals: int = 32, timeout: int = 360, **auto_kwargs
+        self,
+        model_name="model",
+        max_evals: int = 32,
+        timeout: int = 360,
+        seed: Optional[int] = None,
+        save: bool = True,
+        **auto_kwargs,
     ):
         self.model_name = model_name
         self.max_evals = int(max_evals)
         self.timeout = timeout
+        self.seed = seed
+        self.save = save
         # kwargs forwarded to AutoTabular constructor (encoder, models, objective etc.)
         self.auto_kwargs = auto_kwargs
         # keep fitted models
         self.complete_model: Optional[AutoTabular] = None
         self.missing_model: Optional[AutoTabular] = None
+        self.complete_prep: Optional[CompletePrepPipeline] = None
+        self.missing_prep: Optional[MissingPrepPipeline] = None
         self.encoder = DataEncoding(dummy_coding=False)
         self.task_mode = None
+        self._fitted = False
+
+    def _auto_tabular(self, model_name: str) -> AutoTabular:
+        """AutoTabular of a subset (complete/missing cases)."""
+        return AutoTabular(
+            model_name=model_name,
+            max_evals=self.max_evals,
+            timeout=self.timeout,
+            validation="STAT",
+            # encoder=["NoEncoding"],
+            imputer=["no_processing"],
+            balancing=["no_processing"],
+            scaling=["no_processing"],
+            feature_selection=["no_processing"],
+            seed=self.seed,
+            # the wrapper saves the models with their preparation: a model saved
+            # alone would be reloaded with a new preparation in the next fit
+            save=False,
+            **self.auto_kwargs,
+        )
+
+    def _state(self) -> Dict[str, Any]:
+        return {name: getattr(self, name) for name in FITTED_STATE}
+
+    def _load(self) -> bool:
+        """Load the saved fitted wrapper, False if there is none."""
+        if not (self.save and os.path.isfile(self.model_name)):
+            return False
+        state = load_methods(self.model_name)[0]
+        if not isinstance(state, dict) or not set(FITTED_STATE) <= set(state):
+            raise ValueError(
+                "{} is not a saved InformedAutoTabular, remove it or use another "
+                "model_name.".format(self.model_name)
+            )
+        for name in FITTED_STATE:
+            setattr(self, name, state[name])
+        self._fitted = True
+        return True
 
     def fit(self, X: pd.DataFrame, y: pd.Series):
+        # saved fitted wrapper: reuse it (models with their preparation)
+        if self._load():
+            return self
+
         # basic checks
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
@@ -92,7 +170,7 @@ class InformedAutoTabular:
         X_enc = self.encoder.fit(X)
 
         # prepare complete & missing datasets
-        self.complete_prep = CompletePrepPipeline()
+        self.complete_prep = CompletePrepPipeline(seed=self.seed)
 
         (
             X_train_complete,
@@ -102,26 +180,18 @@ class InformedAutoTabular:
         ) = self.complete_prep.fit(X_enc, y)
 
         # initialize and fit AutoTabular on complete set
+        self.complete_model = None
         if len(X_train_complete) > 0:
-            self.complete_model = AutoTabular(
-                model_name=self.model_name + "_complete",
-                max_evals=self.max_evals,
-                timeout=self.timeout,
-                validation="STAT",
-                # encoder=["NoEncoding"],
-                imputer=["no_processing"],
-                balancing=["no_processing"],
-                scaling=["no_processing"],
-                feature_selection=["no_processing"],
-                **self.auto_kwargs,
-            )
+            self.complete_model = self._auto_tabular(self.model_name + "_complete")
             self.complete_model.fit(
                 X_train_complete, y_train_complete, X_valid_complete, y_valid_complete
             )
 
         # initialize and fit AutoTabular on missing set (skip if no missing data)
+        self.missing_prep = None
+        self.missing_model = None
         if X_enc.isnull().values.any():
-            self.missing_prep = MissingPrepPipeline()
+            self.missing_prep = MissingPrepPipeline(seed=self.seed)
             (
                 X_train_missing,
                 X_valid_missing,
@@ -129,21 +199,14 @@ class InformedAutoTabular:
                 y_valid_missing,
             ) = self.missing_prep.fit(X_enc, y)
 
-            self.missing_model = AutoTabular(
-                model_name=self.model_name + "_missing",
-                max_evals=self.max_evals,
-                timeout=self.timeout,
-                validation="STAT",
-                # encoder=["NoEncoding"],
-                imputer=["no_processing"],
-                balancing=["no_processing"],
-                scaling=["no_processing"],
-                feature_selection=["no_processing"],
-                **self.auto_kwargs,
-            )
+            self.missing_model = self._auto_tabular(self.model_name + "_missing")
             self.missing_model.fit(
                 X_train_missing, y_train_missing, X_valid_missing, y_valid_missing
             )
+
+        self._fitted = True
+        if self.save:
+            save_methods(self.model_name, [self._state()])
 
         return self
 

@@ -102,21 +102,43 @@ def _events(clock, recorder):
     """A run of 2 rounds (3 trials planned per round)."""
     recorder.emit("run_start", timeout=100, max_evals=6, rounds=2)
     recorder.emit("round_start", round=0, name="model", num_samples=3)
-    recorder.emit("trial_start", round=0, trial_id="a", config={"model": {"method": "A"}})
-    recorder.emit("trial_start", round=0, trial_id="b", config={"model": {"method": "B"}})
+    recorder.emit(
+        "trial_start", round=0, trial_id="a", config={"model": {"method": "A"}}
+    )
+    recorder.emit(
+        "trial_start", round=0, trial_id="b", config={"model": {"method": "B"}}
+    )
     clock.now += 10
-    recorder.emit("trial_result", round=0, trial_id="a", loss=0.5,
-                  training_status="FITTED", iteration=1)
-    recorder.emit("trial_result", round=0, trial_id="b", loss=float("inf"),
-                  training_status="TIMEOUT", iteration=1)
+    recorder.emit(
+        "trial_result",
+        round=0,
+        trial_id="a",
+        loss=0.5,
+        training_status="FITTED",
+        iteration=1,
+    )
+    recorder.emit(
+        "trial_result",
+        round=0,
+        trial_id="b",
+        loss=float("inf"),
+        training_status="TIMEOUT",
+        iteration=1,
+    )
     recorder.emit("trial_end", round=0, trial_id="a", status="COMPLETED")
     recorder.emit("trial_end", round=0, trial_id="b", status="COMPLETED")
     recorder.emit("trial_start", round=0, trial_id="c", config={})
     clock.now += 10
     recorder.emit("trial_end", round=0, trial_id="c", status="ERROR", error="boom")
     recorder.emit("trial_start", round=0, trial_id="d", config={})
-    recorder.emit("trial_result", round=0, trial_id="d", loss=0.2,
-                  training_status="FITTED", iteration=2)
+    recorder.emit(
+        "trial_result",
+        round=0,
+        trial_id="d",
+        loss=0.2,
+        training_status="FITTED",
+        iteration=2,
+    )
     clock.now += 5
 
 
@@ -130,7 +152,10 @@ def test_state_fold_and_progress(tmp_path):
     trials = {trial["trial_id"]: trial for trial in state.trials.values()}
 
     assert [trials[key]["status"] for key in "abcd"] == [
-        "FITTED", "TIMEOUT", "ERROR", "RUNNING",
+        "FITTED",
+        "TIMEOUT",
+        "ERROR",
+        "RUNNING",
     ]
     assert trials["c"]["error"] == "boom"
     assert trials["a"]["duration"] == 10 and trials["d"]["iterations"] == 2
@@ -181,8 +206,15 @@ def test_state_without_results_and_resume():
     # unknown trials are ignored
     state.apply({"type": "trial_result", "time": 11, "round": 0, "trial_id": "x"})
     state.apply({"type": "trial_end", "time": 11, "round": 0, "trial_id": "x"})
-    state.apply({"type": "trial_end", "time": 12, "round": 0, "trial_id": "a",
-                 "status": "COMPLETED"})
+    state.apply(
+        {
+            "type": "trial_end",
+            "time": 12,
+            "round": 0,
+            "trial_id": "a",
+            "status": "COMPLETED",
+        }
+    )
     progress = state.progress(now=20)
     # no result reported
     assert progress["counts"]["TERMINATED"] == 1
@@ -210,7 +242,10 @@ def test_standardize_config():
         "model": {"model": "LightGBM", "n_estimators": np.int64(10)},
     }
     assert standardize_config(config) == {
-        "encoder": {"method": "DataEncoding", "hyperparameters": {"dummy_coding": True}},
+        "encoder": {
+            "method": "DataEncoding",
+            "hyperparameters": {"dummy_coding": True},
+        },
         "model": {"method": "LightGBM", "hyperparameters": {"n_estimators": 10}},
     }
     # the trial config is not changed
@@ -242,7 +277,9 @@ def test_callback_events(tmp_path):
     )
     callback.on_trial_start(0, [trial], trial)
     callback.on_trial_result(
-        0, [trial], trial,
+        0,
+        [trial],
+        trial,
         {"loss": math.inf, "training_status": "TIMEOUT", "training_iteration": 1},
     )
     callback.on_trial_complete(0, [trial], trial)
@@ -258,8 +295,13 @@ def test_callback_events(tmp_path):
 
     events, _ = read_events(recorder.path)
     assert [event["type"] for event in events] == [
-        "trial_start", "trial_result", "trial_end", "trial_end",
-        "trial_start", "trial_end", "trial_start",
+        "trial_start",
+        "trial_result",
+        "trial_end",
+        "trial_end",
+        "trial_start",
+        "trial_end",
+        "trial_start",
     ]
     assert all(event["round"] == 2 for event in events)
     assert events[0]["config"] == {

@@ -549,7 +549,7 @@ class MICE(BaseImputer):
     cycle: how many runs of regression/imputation to build the complete data, default = 10
 
     method: the method to initially fill nan values, default = 'mean'
-    supproted methods ['mean', 'zero', 'median', 'most frequent', constant]
+    supported methods ['mean', 'zero', 'median', 'most frequent', constant]
     'mean' : fill columns with nan values using mean of non nan values
     'zero': fill columns with nan values using 0
     'median': fill columns with nan values using median of non nan values

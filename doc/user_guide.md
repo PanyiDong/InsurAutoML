@@ -11,6 +11,7 @@ This guide complements the [README](../README.md) (overview, installation and th
    - [Customized methods](#customized-methods)
    - [Save and load the models](#save-and-load-the-models)
    - [Configuration](#configuration)
+   - [Development](#development)
    - [Other files in the repository](#other-files-in-the-repository)
 
 ## Command Line Interface
@@ -147,7 +148,9 @@ Customized/personalized preprocessing methods and models are supported by using 
 
 ### Save and load the models
 
-To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file, file name may vary by experiments, controlled by argument `model_name` in Python interface, or `train_data` + "_model" in command line interface). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and directly use the optimal pipeline, which can save the training time (for optimization). Fitted models, preprocessed train/test datasets, hyperparameter settings for each trials will also by stored in `tmp` folders for inspection. (Both `model` and `tmp` are changeable arguments if you prefer other names.)
+To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file, file name may vary by experiments, controlled by argument `model_name` in Python interface, or `train_data` + "_model" in command line interface). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and directly use the optimal pipeline, which can save the training time (for optimization). The stored model is only reused when it was fitted on the same data with the same settings (task, objective, ensemble, validation and the methods of the search space); otherwise a warning is shown and the model is fitted again (and replaced). The time and evaluation budgets (`timeout`, `max_evals`) are not compared. Fitted models, preprocessed train/test datasets, hyperparameter settings for each trials will also by stored in `tmp` folders for inspection. (Both `model` and `tmp` are changeable arguments if you prefer other names.) With `delete_temp_after_terminate=True`, only the folder of the run (`tmp/<model_name>`) is deleted, the runs of other models in `tmp` are kept.
+
+The fixed informed pipeline (`InsurAutoML.hpo.informed.fixed.InformedAutoTabular`) stores its preparation pipelines together with its models in the `model_name` file, and takes a `seed` (the same seed gives the same data preparation, feature selection and validation split).
 
 ### Configuration
 
@@ -170,6 +173,14 @@ Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRe
 > 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
 >
 > 9. progress_reporter: `Dashboard` (default, local web dashboard, see [Optimization dashboard](#optimization-dashboard)), `CLIReporter` or `JupyterNotebookReporter` (Ray Tune output)
+
+### Development
+
+> 1. formatting and linting: `pip install pre-commit && pre-commit install` runs black and ruff before each commit (the "Format python code" workflow checks them on pull requests);
+>
+> 2. tests: `pytest tests/` (the tests run in a temporary working directory); the long searches are marked `slow`, `pytest tests/ -m "not slow"` skips them;
+>
+> 3. `requirements.txt`, `requirements_nn.txt` and `package.json` are generated from `pyproject.toml` with `python setup.py sync` (a build does not modify them).
 
 ### Other files in the repository
 

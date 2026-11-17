@@ -53,7 +53,6 @@ from .base import BaseModel
 
 
 class XGBoost_Base:
-
     """
     XGBoost Base model
 
@@ -141,7 +140,6 @@ class XGBoost_Base:
 
 
 class XGBoost_Classifier(XGBoost_Base, BaseModel):
-
     """
     XGBoost Classification model
 
@@ -215,7 +213,6 @@ class XGBoost_Classifier(XGBoost_Base, BaseModel):
 
 
 class XGBoost_Regressor(XGBoost_Base, BaseModel):
-
     """
     XGBoost Regression model
 

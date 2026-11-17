@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, List
+from typing import Optional, Union, List
 from functools import partial
 from itertools import combinations
 from concurrent.futures import ProcessPoolExecutor
@@ -73,8 +73,12 @@ class FeatureFilter(BaseFeatureSelection):
     will be set to n_features
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
+
+    seed: int, default = 42
+    seed of the random tie breaking of the 'CCC' criteria (the same seed selects
+    the same features), None for a random tie breaking
     """
 
     criteria_mapping = {
@@ -88,10 +92,12 @@ class FeatureFilter(BaseFeatureSelection):
         criteria: str = "Pearson",
         n_components: int = None,
         n_prop: float = None,
+        seed: Optional[int] = 42,
     ) -> None:
         self.criteria = criteria
         self.n_components = n_components
         self.n_prop = n_prop
+        self.seed = seed
 
         super().__init__()
         self._fitted = False
@@ -141,7 +147,11 @@ class FeatureFilter(BaseFeatureSelection):
         elif self.criteria == "MI":
             self._score = MI(X, y)
         elif self.criteria == "CCC":
-            self._score = [CCC(X.loc[:, feature], y) for feature in self.features]
+            # one generator for all features: reproducible with a seed
+            rng = np.random.default_rng(self.seed)
+            self._score = [
+                CCC(X.loc[:, feature], y, seed=rng) for feature in self.features
+            ]
         else:
             raise ValueError(f"Unsupported criteria: {self.criteria}")
 
@@ -178,7 +188,7 @@ class mRMR(BaseFeatureSelection):
     number of components to select, if None, no limit
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
     """
 

@@ -55,7 +55,6 @@ from .base import BaseFeatureSelection
 
 
 class PCA_FeatureSelection(BaseFeatureSelection):
-
     """
     Principal Component Analysis
 
@@ -347,7 +346,6 @@ class PCA_FeatureSelection(BaseFeatureSelection):
 
 
 class RBFSampler(BaseFeatureSelection):
-
     """
     Implement of Weighted Sums of Random Kitchen Sinks
 

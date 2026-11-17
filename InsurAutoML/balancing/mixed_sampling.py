@@ -61,7 +61,6 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 
 
 class Smote_TomekLink(Smote, TomekLink):
-
     """
     Run Smote then run Tomek Link to balance dataset
     """
@@ -141,7 +140,6 @@ class Smote_TomekLink(Smote, TomekLink):
 
 
 class Smote_ENN(Smote, EditedNearestNeighbor):
-
     """
     Run Smote then run ENN to balance dataset
     """

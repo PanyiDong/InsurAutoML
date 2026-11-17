@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Any, Dict, Tuple, List, Union
+from typing import Any, Dict, Optional, Tuple, List, Union
 import os
 import re
 import ast
@@ -173,7 +173,6 @@ class as_dataframe:
 #         return X
 # new version of formatting
 class formatting:
-
     """
     Format numerical/categorical columns
 
@@ -218,19 +217,24 @@ class formatting:
 
     def __init__(
         self,
-        columns: List = [],
-        numerics: List[str] = [
-            "int16",
-            "int32",
-            "int64",
-            "float16",
-            "float32",
-            "float64",
-        ],
-        nas: List = [np.nan, None, "nan", "NaN", "NA", "novalue", "None", "none"],
+        columns: Optional[List] = None,
+        numerics: Optional[List[str]] = None,
+        nas: Optional[List] = None,
         allow_string: bool = False,
         inplace: bool = True,
     ) -> None:
+        # mutable defaults: a new object per call
+        columns = [] if columns is None else columns
+        numerics = (
+            ["int16", "int32", "int64", "float16", "float32", "float64"]
+            if numerics is None
+            else numerics
+        )
+        nas = (
+            [np.nan, None, "nan", "NaN", "NA", "novalue", "None", "none"]
+            if nas is None
+            else nas
+        )
         self.columns = columns
         self.numerics = numerics
         self.nas = nas
@@ -324,8 +328,8 @@ class formatting:
 
 def unify_nan(
     dataset: pd.DataFrame,
-    columns: List = [],
-    nas: List[str] = ["novalue", "None", "none"],
+    columns: Optional[List] = None,
+    nas: Optional[List[str]] = None,
     replace: bool = False,
 ) -> pd.DataFrame:
     """
@@ -362,6 +366,9 @@ def unify_nan(
     3  novalue     None        11             NaN             NaN
     4  novalue       13        14             NaN            13.0
     """
+    # mutable defaults: a new object per call
+    columns = [] if columns is None else columns
+    nas = ["novalue", "None", "none"] if nas is None else nas
 
     # if not specified, all columns containing nas values will add to columns
     if not columns:
@@ -393,8 +400,8 @@ def unify_nan(
 
 def remove_index_columns(
     data: pd.DataFrame,
-    index: List = [],
-    columns: List = [],
+    index: Optional[List] = None,
+    columns: Optional[List] = None,
     axis: int = 1,
     threshold: float = 1,
     reset_index: bool = True,
@@ -425,6 +432,9 @@ def remove_index_columns(
 
     save: save will store the removing columns to another file
     """
+    # mutable defaults: a new object per call
+    index = [] if index is None else index
+    columns = [] if columns is None else columns
 
     remove_index = []  # store index need removing
     remove_column = []  # store columns need removing
@@ -508,7 +518,7 @@ def remove_index_columns(
 # get missing matrix
 def get_missing_matrix(
     data: pd.DataFrame,
-    nas: List[str] = ["nan", "NaN", "NaT", "NA", "novalue", "None", "none"],
+    nas: Optional[List[str]] = None,
     missing: int = 1,
 ) -> pd.DataFrame:
     """
@@ -541,6 +551,8 @@ def get_missing_matrix(
      [0 0 0]
      [1 1 0]]
     """
+    # mutable defaults: a new object per call
+    nas = ["nan", "NaN", "NaT", "NA", "novalue", "None", "none"] if nas is None else nas
 
     # make sure input becomes array
     # if data is dataframe, get only values
@@ -622,7 +634,6 @@ def LinkTable(sample: pd.DataFrame, table: pd.DataFrame, norm: str = "l2") -> Li
 
 
 class ExtremeClass:
-
     """
     remove the features where only one unique class exists, since no information provided by the feature
 

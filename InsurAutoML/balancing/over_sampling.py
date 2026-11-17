@@ -62,7 +62,6 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 
 
 class SimpleRandomOverSampling(BaseBalancing):
-
     """
     Simple Random Over-Sampling
     Randomly draw samples from minority class and replicate the sample
@@ -162,7 +161,6 @@ class SimpleRandomOverSampling(BaseBalancing):
 
 
 class Smote(BaseBalancing):
-
     """
     Synthetic Minority Over-sampling Technique (Smote)
     use over-sampling to generate minority class points using nearest neighbors
@@ -285,11 +283,7 @@ class Smote(BaseBalancing):
                         X.loc[X.index[_link], :] - X.lox[_sample.index, :]
                     )
                 else:
-                    raise ValueError(
-                        'Not recognizing generation method! Should be in \
-                        ["mean", "random"], get {}'.format(
-                            self.generation
-                        )
-                    )
+                    raise ValueError('Not recognizing generation method! Should be in \
+                        ["mean", "random"], get {}'.format(self.generation))
 
         return X

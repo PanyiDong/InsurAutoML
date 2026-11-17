@@ -62,7 +62,7 @@ class AutoTabularRegressor(AutoTabularBase):
 
     timeout: Total time limit for the job in seconds, default = 360
 
-    max_evals: Maximum number of function evaluations allowed, default = 32
+    max_evals: Maximum number of function evaluations allowed, default = 64
 
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
@@ -198,15 +198,15 @@ class AutoTabularRegressor(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "MSE",
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: Union[str, List[str]] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[Union[str, List[str]]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -215,6 +215,15 @@ class AutoTabularRegressor(AutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        exclude = {} if exclude is None else exclude
+        search_algo_settings = (
+            {} if search_algo_settings is None else search_algo_settings
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else search_scheduler_settings
+        )
+        logger = ["Logger"] if logger is None else logger
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.voting = voting
@@ -308,7 +317,7 @@ class AutoTabularClassifier(AutoTabularBase):
 
     timeout: Total time limit for the job in seconds, default = 360
 
-    max_evals: Maximum number of function evaluations allowed, default = 32
+    max_evals: Maximum number of function evaluations allowed, default = 64
 
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
@@ -445,15 +454,15 @@ class AutoTabularClassifier(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: Union[str, List[str]] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[Union[str, List[str]]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -462,6 +471,15 @@ class AutoTabularClassifier(AutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        exclude = {} if exclude is None else exclude
+        search_algo_settings = (
+            {} if search_algo_settings is None else search_algo_settings
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else search_scheduler_settings
+        )
+        logger = ["Logger"] if logger is None else logger
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.voting = voting
@@ -556,7 +574,7 @@ class AutoTabular(AutoTabularBase):
 
     timeout: Total time limit for the job in seconds, default = 360
 
-    max_evals: Maximum number of function evaluations allowed, default = 32
+    max_evals: Maximum number of function evaluations allowed, default = 64
 
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
@@ -632,7 +650,7 @@ class AutoTabular(AutoTabularBase):
     support metrics for regression ("MSE", "MAE", "MSLE", "R2", "MAX")
     support metrics for classification ("accuracy", "precision", "auc", "hinge", "f1")
 
-    search_algo: search algorithm used for hyperparameter optimization, deafult = "RandomSearch"
+    search_algo: search algorithm used for hyperparameter optimization, default = "RandomSearch"
     support ("RandomSearch", "GridSearch", "BayesOptSearch", "AxSearch", "BOHB",
             "BlendSearch", "CFO", "DragonflySearch", "HEBO", "HyperOpt", "Nevergrad",
             "Optuna", "SigOpt", "Scikit-Optimize", "ZOOpt", "Reapter",
@@ -698,15 +716,15 @@ class AutoTabular(AutoTabularBase):
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = None,
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: Union[str, List[str]] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[Union[str, List[str]]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -715,6 +733,15 @@ class AutoTabular(AutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        exclude = {} if exclude is None else exclude
+        search_algo_settings = (
+            {} if search_algo_settings is None else search_algo_settings
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else search_scheduler_settings
+        )
+        logger = ["Logger"] if logger is None else logger
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.voting = voting

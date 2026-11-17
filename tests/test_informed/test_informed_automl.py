@@ -42,6 +42,7 @@ import os
 from typing import Any, Dict
 
 import numpy as np
+import pytest
 import pandas as pd
 
 from InsurAutoML import (
@@ -82,7 +83,12 @@ def test_informed_classifier_stacking(in_tmp_dir, heart_missing):
 
     state = load_state(os.path.join("tmp", "informed_clf", "dashboard"))
     assert state.finished
-    assert state.schema["steps"] == ["encoder", "complete_prep", "missing_prep", "model"]
+    assert state.schema["steps"] == [
+        "encoder",
+        "complete_prep",
+        "missing_prep",
+        "model",
+    ]
     assert all(
         trial["config"]["model"]["method"] in state.schema["methods"]["model"]
         for trial in state.trials.values()
@@ -166,6 +172,44 @@ def test_fixed_informed_autotabular(in_tmp_dir, insurance_missing):
     assert isinstance(y_pred, pd.DataFrame)
     assert len(y_pred) == len(X)
     assert not y_pred.isna().any().any()
+
+
+def test_fixed_informed_autotabular_saved_and_seeded(
+    in_tmp_dir, insurance_missing, monkeypatch
+):
+    X, y = insurance_missing
+
+    mol = FixedInformedAutoTabular(
+        model_name="fixed_saved", max_evals=2, timeout=60, n_estimators=1, seed=1
+    )
+    mol.fit(X, y["expenses"])
+    y_pred = mol.predict(X.copy())
+    # the wrapper (models with their preparation) is saved, the sub-models alone not
+    assert os.path.isfile("fixed_saved")
+    assert not os.path.exists("fixed_saved_complete")
+    assert not os.path.exists("fixed_saved_missing")
+
+    # second fit: loaded, no new preparation or search
+    def no_fit(*args, **kwargs):
+        raise AssertionError("fitted again")
+
+    import InsurAutoML.hpo.informed.fixed as fixed_module
+
+    monkeypatch.setattr(fixed_module.CompletePrepPipeline, "fit", no_fit)
+    monkeypatch.setattr(fixed_module.AutoTabular, "fit", no_fit)
+    loaded = FixedInformedAutoTabular(
+        model_name="fixed_saved", max_evals=2, timeout=60, n_estimators=1, seed=1
+    ).fit(X, y["expenses"])
+    pd.testing.assert_frame_equal(loaded.predict(X.copy()), y_pred)
+    assert list(loaded.complete_prep.filter.select_features) == list(
+        mol.complete_prep.filter.select_features
+    )
+
+    # not a saved wrapper
+    with open("not_a_model", "wb") as out_f:
+        __import__("pickle").dump([1], out_f)
+    with pytest.raises(ValueError, match="not a saved InformedAutoTabular"):
+        FixedInformedAutoTabular(model_name="not_a_model").fit(X, y["expenses"])
 
 
 def test_fixed_informed_autotabular_without_missing(in_tmp_dir, insurance_missing):

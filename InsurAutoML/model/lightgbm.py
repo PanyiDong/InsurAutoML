@@ -60,7 +60,6 @@ from .base import BaseModel
 
 
 class LightGBM_Base:
-
     """
     LightGBM Classification/Regression Wrapper
 
@@ -246,7 +245,6 @@ class LightGBM_Base:
 
 
 class LightGBM_Classifier(LightGBM_Base, BaseModel):
-
     """
     LightGBM Classification Wrapper
 
@@ -349,7 +347,6 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
 
 
 class LightGBM_Regressor(LightGBM_Base, BaseModel):
-
     """
     LightGBM Regression Wrapper
 

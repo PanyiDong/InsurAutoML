@@ -173,9 +173,11 @@ class InformedClassifierEnsemble(formatting):
         estimators: List[Tuple[str, InformedPipeline]],
         voting: str = "hard",
         weights: List[float] = None,
-        features: List[str] = [],
+        features: Optional[List[str]] = None,
         strategy: str = "stacking",
     ) -> None:
+        # mutable defaults: a new object per call
+        features = [] if features is None else features
         self.estimators = estimators
         self.voting = voting
         self.weights = weights
@@ -329,7 +331,7 @@ class InformedClassifierEnsemble(formatting):
         for (name, pipeline), feature_subset in zip(self.estimators, self.features):
             try:
                 prob_list.append(pipeline.predict_proba(X[feature_subset]))
-            except:
+            except Exception:
                 logger.warning(
                     "Pipeline {} does not support predict_proba. Ignoring.".format(name)
                 )
@@ -363,9 +365,11 @@ class InformedRegressorEnsemble(formatting):
         estimators: List[Tuple[str, InformedPipeline]],
         voting: Union[str, Callable] = "mean",
         weights: List[float] = None,
-        features: List[str] = [],
+        features: Optional[List[str]] = None,
         strategy: str = "stacking",
     ) -> None:
+        # mutable defaults: a new object per call
+        features = [] if features is None else features
         self.estimators = estimators
         self.voting = voting
         self.weights = weights

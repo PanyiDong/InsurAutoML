@@ -62,10 +62,16 @@ def test_space_schema():
     assert schema["methods"]["scaling"] == {"Standardize": {}}
     lightgbm = schema["methods"]["model"]["LightGBM"]
     assert lightgbm["learning_rate"] == {
-        "type": "float", "low": 1e-3, "high": 1.0, "log": True,
+        "type": "float",
+        "low": 1e-3,
+        "high": 1.0,
+        "log": True,
     }
     assert lightgbm["num_leaves"] == {
-        "type": "int", "low": 2.0, "high": 64.0, "log": False,
+        "type": "int",
+        "low": 2.0,
+        "high": 64.0,
+        "log": False,
     }
     assert lightgbm["boosting"]["categories"] == ["gbdt", "dart"]
     # constants, single categories, functions are not supported
@@ -91,7 +97,9 @@ def test_sample_configs():
     assert configs == sample_configs(schema, 200, seed=1)
     assert len(configs) == 200
     assert {config["model"]["method"] for config in configs} == {
-        "LightGBM", "Logistic", "Dummy",
+        "LightGBM",
+        "Logistic",
+        "Dummy",
     }
     for config in configs:
         assert set(config) == {"encoder", "imputer", "scaling", "model"}
@@ -118,7 +126,12 @@ def test_step_weights():
     schema = space_schema(_space())
     weights = step_weights(schema)
     # a step with a single method without hyperparameters does not count
-    assert weights == {"encoder": 1.0, "imputer": 0.0, "scaling": 0.0, "model": MODEL_WEIGHT}
+    assert weights == {
+        "encoder": 1.0,
+        "imputer": 0.0,
+        "scaling": 0.0,
+        "model": MODEL_WEIGHT,
+    }
     assert step_weights(schema, "encoder")["encoder"] == EMPHASIS_WEIGHT
 
 

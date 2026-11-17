@@ -99,7 +99,7 @@ def test_imputer():
                 method_name
             )
             assert (
-                data.isnull().any().any() == False
+                not data.isnull().any().any()
             ), "The imputation method {} fail to impute all missings.".format(
                 method_name
             )
@@ -127,7 +127,7 @@ def test_DummyImputer():
 
     assert imputer._fitted, "The method DummyImputer is not correctly fitted."
     assert (
-        filled_data.isnull().any().any() == False
+        not filled_data.isnull().any().any()
     ), "The imputation method DummyImputer fail to impute all missings."
 
 
@@ -150,7 +150,7 @@ def test_kNNImputer():
 
     assert imputer._fitted, "The method KNNImputer is not correctly fitted."
     assert (
-        filled_data.isnull().any().any() == False
+        not filled_data.isnull().any().any()
     ), "The imputation method KNNImputer fail to impute all missings."
 
 

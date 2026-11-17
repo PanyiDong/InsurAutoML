@@ -173,3 +173,52 @@ def test_prep_pipeline_length_mismatch(numeric_missing):
     X, y = numeric_missing
     with pytest.raises(ValueError):
         CompletePrepPipeline().fit(X, y.iloc[:-1])
+
+
+@pytest.mark.parametrize("pipeline", [CompletePrepPipeline, MissingPrepPipeline])
+def test_prep_pipeline_seed(numeric_missing, pipeline):
+    # discrete features: ties in the CCC feature selection (random tie breaking)
+    X, y = numeric_missing
+    X = X.round(0)
+    kwargs = dict(split_ratio=0.2, cc_threshold=0.5)
+    if pipeline is MissingPrepPipeline:
+        kwargs["imputation_max_iter"] = 2
+
+    def run(seed):
+        X_train, X_valid, _, _ = pipeline(seed=seed, **kwargs).fit(X, y)
+        return list(X_train.columns), list(X_valid.index), X_train
+
+    first, second = run(3), run(3)
+    # same seed: same features, split and (imputed) values
+    assert first[0] == second[0] and first[1] == second[1]
+    pd.testing.assert_frame_equal(first[2], second[2])
+    # the global numpy random state is not used
+    np.random.seed(0)
+    state = np.random.get_state()[1].copy()
+    run(4)
+    np.testing.assert_array_equal(np.random.get_state()[1], state)
+
+
+def test_split_seed():
+    from InsurAutoML.ext import SPlit
+    from InsurAutoML.ext.suppsplit.suppsplit.split import compute_sp, data_format
+
+    rng = np.random.default_rng(0)
+    # duplicated rows: jittered
+    data = pd.DataFrame(
+        {"a": rng.integers(0, 3, 200), "b": rng.normal(size=200).round(1)}
+    )
+
+    def split(seed):
+        return np.sort(SPlit(data, split_ratio=0.2, seed=seed))
+
+    np.testing.assert_array_equal(split(1), split(1))
+    assert not np.array_equal(split(1), split(2))
+
+    # subsampled iterations (C++ random engine) seeded as well
+    data_ = data_format(data)
+    points = [
+        compute_sp(20, data_.shape[1], data_.copy(), 50, iter_max=20, seed=5)
+        for _ in range(2)
+    ]
+    np.testing.assert_array_equal(points[0], points[1])

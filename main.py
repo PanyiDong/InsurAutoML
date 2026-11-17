@@ -254,7 +254,7 @@ if __name__ == "__main__":
             datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
         )
     )
-    # if test_data provided, use train/test data seperately
+    # if test_data provided, use train/test data separately
     if test != "":
         database = load_data().load(args.data_folder, [train, test])
 

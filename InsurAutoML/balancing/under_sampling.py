@@ -63,7 +63,6 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 
 
 class SimpleRandomUnderSampling(BaseBalancing):
-
     """
     Simple Random Under-Sampling
     Randomly eliminate samples from majority class
@@ -160,7 +159,6 @@ class SimpleRandomUnderSampling(BaseBalancing):
 
 
 class TomekLink(BaseBalancing):
-
     """
     Use Tomek Links to remove noisy or border significant majority class sample
     Tomek links define as nearest neighbors with different classification
@@ -279,7 +277,6 @@ class TomekLink(BaseBalancing):
 
 
 class EditedNearestNeighbor(BaseBalancing):
-
     """
     Edited Nearest Neighbor (ENN)
     Under-sampling method, drop samples where majority of k nearest neighbors belong to different class
@@ -428,7 +425,6 @@ class EditedNearestNeighbor(BaseBalancing):
 
 
 class CondensedNearestNeighbor(BaseBalancing):
-
     """
     Condensed Nearest Neighbor Rule (CNN)
     get subset of E that can predict the same as E using 1-NN
@@ -578,7 +574,6 @@ class CondensedNearestNeighbor(BaseBalancing):
 
 
 class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
-
     """
     One Sided Selection (OSS)
     employs Tomek Link to remove noisy and border majority class samples, then use CNN to remove majority
@@ -667,7 +662,6 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
 
 
 class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
-
     """
     CNN_Tomek Link
     employs CNN first and Tomek Link to reduce the calculation for Tomek Link (large calculation for distance

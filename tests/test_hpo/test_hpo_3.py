@@ -45,6 +45,9 @@ import pytest
 import InsurAutoML
 from InsurAutoML import load_data
 
+# full searches of minutes each: skipped on Windows CI (-m "not slow")
+pytestmark = pytest.mark.slow
+
 # time budget of the experiments: the hosted Windows runners are much slower, a
 # sampled pipeline can take longer than a minute there (all trials time out)
 TIMEOUT = 180 if sys.platform == "win32" else 60

@@ -58,7 +58,9 @@ std::vector<std::vector<double>> sp_cpp(std::size_t des_num, int dim_num,
                                         int num_proc,
                                         double n0,
                                         const std::vector<double> &wts,
-                                        bool rnd_flg);
+                                        bool rnd_flg,
+                                        long long seed,
+                                        bool verbose);
 
 std::vector<std::size_t> subsample(const std::vector<std::vector<double>> &data, const std::vector<std::vector<double>> &points);
 
@@ -117,7 +119,7 @@ PYBIND11_MODULE(suppsplit_cpp, m)
 {
     m.doc() = "suppsplit_cpp: C++ support points and subsample backend (std::vector + nanoflann)";
 
-    m.def("sp_cpp", [](py::array_t<double> ini, py::array_t<double> distsamp, bool thin, py::array_t<double> bd, std::size_t point_num, int it_max, double tol, int num_proc, double n0, py::array_t<double> wts, bool rnd_flg)
+    m.def("sp_cpp", [](py::array_t<double> ini, py::array_t<double> distsamp, bool thin, py::array_t<double> bd, std::size_t point_num, int it_max, double tol, int num_proc, double n0, py::array_t<double> wts, bool rnd_flg, long long seed, bool verbose)
           {
 
         auto Ini = ndarray_to_vector2d(ini);
@@ -136,9 +138,13 @@ PYBIND11_MODULE(suppsplit_cpp, m)
         std::vector<std::vector<double>> out;
         {
             py::gil_scoped_release release;
-            out = sp_cpp(des_num, dim_num, Ini, Distsamp, thin, Bd, point_num, it_max, tol, num_proc, n0, Wts, rnd_flg);
+            out = sp_cpp(des_num, dim_num, Ini, Distsamp, thin, Bd, point_num, it_max, tol, num_proc, n0, Wts, rnd_flg, seed, verbose);
         }
-        return vector2d_to_numpy(out); }, py::arg("ini"), py::arg("distsamp"), py::arg("thin"), py::arg("bd"), py::arg("point_num"), py::arg("it_max"), py::arg("tol"), py::arg("num_proc"), py::arg("n0"), py::arg("wts"), py::arg("rnd_flg"));
+        return vector2d_to_numpy(out); }, py::arg("ini"), py::arg("distsamp"), py::arg("thin"), py::arg("bd"), py::arg("point_num"), py::arg("it_max"), py::arg("tol"), py::arg("num_proc"), py::arg("n0"), py::arg("wts"), py::arg("rnd_flg"),
+          // seed of the random subsamples, -1: seeded by the clock
+          py::arg("seed") = -1,
+          // progress and messages of the optimization on the console
+          py::arg("verbose") = false);
 
     m.def("subsample", [](py::array_t<double> data, py::array_t<double> points)
           {

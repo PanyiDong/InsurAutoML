@@ -24,6 +24,10 @@ authors = [{ name = "Panyi Dong", email = "panyid2@illinois.edu" }]
 requires-python = ">=3.10"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Operating System :: POSIX :: Linux",
     "Operating System :: Microsoft :: Windows",
     "Intended Audience :: Science/Research",
@@ -83,7 +87,10 @@ dev = [
     "pytest",
     "pytest-cov",
     "coverage",
-    "black",
+    # formatting/linting (same versions in .pre-commit-config.yaml and CI)
+    "black==26.10.1",
+    "ruff==0.17.5",
+    "pre-commit",
 ]
 
 [project.urls]
@@ -98,17 +105,29 @@ platforms = ["Linux", "Windows"]
 include-package-data = false
 
 [tool.setuptools.packages.find]
+# the folders and their subfolders (e.g. tests/test_hpo) are not packages
 exclude = [
     "tests",
+    "tests.*",
     "Dockerfiles",
+    "Dockerfiles.*",
     "example",
+    "example.*",
     "experiments",
+    "experiments.*",
     "archive",
+    "archive.*",
     "data",
+    "data.*",
     "docs",
+    "docs.*",
+    "doc",
+    "doc.*",
     ".github",
     "build",
+    "build.*",
     "dist",
+    "dist.*",
 ]
 
 [tool.setuptools.package-data]
@@ -126,3 +145,30 @@ InsurAutoML = [
 [tool.setuptools.dynamic]
 # written from the latest git tag by setup.py (kept as is when building from the sdist)
 version = { file = "InsurAutoML/VERSION" }
+
+[tool.black]
+line-length = 88
+target-version = ["py310"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+extend-exclude = ["build", "dist", "archive", "experiments"]
+
+[tool.ruff.lint]
+# bug-prone patterns: bare except, mutable/call defaults, undefined or redefined
+# names, comparisons to None/True/False, `is` with literals
+select = ["E711", "E712", "E722", "B006", "B008", "F632", "F811", "F821"]
+
+[tool.pytest.ini_options]
+markers = [
+    "slow: long hyperparameter searches (skipped on Windows CI: -m 'not slow')",
+]
+
+[tool.pyright]
+# files of the type checking (Pylance in VS Code reads this section too): the
+# package only, not the build output (stale copies of the sources); the checking
+# mode is left to the editor settings
+include = ["InsurAutoML"]
+exclude = ["build", "dist", "archive", "experiments", "**/__pycache__"]
+pythonVersion = "3.10"

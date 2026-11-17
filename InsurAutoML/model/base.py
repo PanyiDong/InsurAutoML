@@ -45,7 +45,6 @@ import pandas as pd
 
 
 class BaseModel:
-
     """
     Base model class
     """
@@ -72,7 +71,6 @@ class BaseModel:
 
 
 class BaseClassificationWrapper:
-
     """Classification model wrapper"""
 
     def __init__(self, estimator: Callable) -> None:
@@ -109,7 +107,6 @@ class BaseClassificationWrapper:
 
 
 class BaseRegressionWrapper:
-
     """Regression model wrapper"""
 
     def __init__(self, estimator: Callable) -> None:

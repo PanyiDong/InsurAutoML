@@ -44,7 +44,6 @@ from ..constant import MAX_ITER
 
 
 class BaseBalancing:
-
     """
     Base class for balancing methods.
     """

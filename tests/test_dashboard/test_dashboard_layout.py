@@ -51,7 +51,12 @@ def test_trial_scores():
         ]
     )
     # best 1, worst 0, ties share the rank, unfitted trials not scored
-    assert scores == {"b": 1.0, "c": pytest.approx(0.5), "d": pytest.approx(0.5), "a": 0.0}
+    assert scores == {
+        "b": 1.0,
+        "c": pytest.approx(0.5),
+        "d": pytest.approx(0.5),
+        "a": 0.0,
+    }
 
 
 def test_space_map(tmp_path):
@@ -80,7 +85,9 @@ def test_space_map(tmp_path):
         _trial("b", "B", loss=2.0, depth=3),
         _trial("x", "Unknown", loss=3.0),
     ]
-    positions = space_map.place([t["config"] for t in trials], [t["key"] for t in trials])
+    positions = space_map.place(
+        [t["config"] for t in trials], [t["key"] for t in trials]
+    )
     assert set(positions) == {"a", "b", "x"}
     model = space_map.encoded.methods["model"]
     for key, order in (("a", 0), ("b", 1)):
@@ -90,9 +97,7 @@ def test_space_map(tmp_path):
     assert space_map.place([], []) == {}
 
     # the performance spreads to the settings around a trial, of its model only
-    field = space_map.field(
-        [trials[0]["config"]], [positions["a"]], [1.0]
-    )
+    field = space_map.field([trials[0]["config"]], [positions["a"]], [1.0])
     score = np.array([np.nan if s is None else s for s in field["score"]])
     confidence = np.asarray(field["confidence"])
     assert np.all(confidence[model != 0] == 0)

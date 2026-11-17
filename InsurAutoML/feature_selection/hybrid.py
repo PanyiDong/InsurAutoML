@@ -60,7 +60,6 @@ from .base import BaseFeatureSelection
 
 
 class CBFS(BaseFeatureSelection):
-
     """
     CBFS Copula-based Feature Selection [1]
 
@@ -77,7 +76,7 @@ class CBFS(BaseFeatureSelection):
     number of components to select, if None, no limit
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
     """
 
@@ -218,7 +217,6 @@ class CBFS(BaseFeatureSelection):
 
 # Genetic Algorithm (GA)
 class GeneticAlgorithm(BaseFeatureSelection):
-
     """
     Use Genetic Algorithm (GA) to select best subset features [1]
 
@@ -602,9 +600,11 @@ class GeneticAlgorithm(BaseFeatureSelection):
                     self.mutation_n, p, seed=None
                 )  # randomly select mutation points
                 selection_pool[-(i + 1)] = [
-                    selection_pool[-(i + 1)][j]
-                    if j not in _mutation_index
-                    else 1 - selection_pool[-(i + 1)][j]
+                    (
+                        selection_pool[-(i + 1)][j]
+                        if j not in _mutation_index
+                        else 1 - selection_pool[-(i + 1)][j]
+                    )
                     for j in range(p)
                 ]  # flip mutation points (0 to 1, 1 to 0)
 

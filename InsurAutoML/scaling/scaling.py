@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple, List, Dict
+from typing import Dict, List, Optional, Tuple, Union
 from logging import warning
 from random import random
 from re import L
@@ -86,7 +86,6 @@ class NoScaling(BaseScaling):
 
 
 class Standardize(BaseScaling):
-
     """
     Standardize the dataset by column (each feature), using _x = (x - mean) / std
 
@@ -168,7 +167,6 @@ class Standardize(BaseScaling):
 
 
 class Normalize(BaseScaling):
-
     """
     Normalize features with x / x_
 
@@ -238,7 +236,6 @@ class Normalize(BaseScaling):
 
 
 class RobustScale(BaseScaling):
-
     """
     Use quantile to scale, x / (q_max - q_min)
 
@@ -310,9 +307,9 @@ class RobustScale(BaseScaling):
             self._scale < 10 * np.finfo(np.float64).eps
         )  # avoid extremely small values
         for index in [i for i, value in enumerate(constant_mask) if value]:
-            self._scale[
-                index
-            ] = 1.0  # change scale at True index of constant_mask to 1.0
+            self._scale[index] = (
+                1.0  # change scale at True index of constant_mask to 1.0
+            )
 
         self._fitted = True
 
@@ -349,7 +346,6 @@ class RobustScale(BaseScaling):
 
 
 class MinMaxScale(BaseScaling):
-
     """
     Use min_max value to scale the feature, x / (x_max - x_min)
 
@@ -424,7 +420,6 @@ class MinMaxScale(BaseScaling):
 
 
 class Winsorization(BaseScaling):
-
     """
     Limit feature to certain quantile (remove the effect of extreme values)
     if the response of extreme values are different than non extreme values above threshold, the feature will
@@ -491,16 +486,15 @@ class Winsorization(BaseScaling):
 
         for _column in features:
             if self._list[i]:
-                _X.loc[
-                    _X[_column] > self._quantile_list[i], _column
-                ] = self._quantile_list[i]
+                _X.loc[_X[_column] > self._quantile_list[i], _column] = (
+                    self._quantile_list[i]
+                )
             i += 1
 
         return _X
 
 
 class PowerTransformer(BaseScaling):
-
     """
     PowerTransformer, implemented by sklearn, is a transformer that applies
     a power function to each feature.
@@ -582,7 +576,6 @@ class PowerTransformer(BaseScaling):
 
 
 class QuantileTransformer(BaseScaling):
-
     """
     QuantileTransformer, implemented by sklearn
 
@@ -680,9 +673,9 @@ class QuantileTransformer(BaseScaling):
 # Special Case
 def Feature_Manipulation(
     X: pd.DataFrame,
-    columns: List[str] = [],
-    manipulation: List[str] = [],
-    rename_columns: Dict[str, str] = {},
+    columns: Optional[List[str]] = None,
+    manipulation: Optional[List[str]] = None,
+    rename_columns: Optional[Dict[str, str]] = None,
     replace: bool = False,
     deep_copy: bool = False,
 ) -> pd.DataFrame:
@@ -728,6 +721,10 @@ def Feature_Manipulation(
     3         9        10        11             900      2.302585            12
     4        12        13        14            1200      2.564949            15
     """
+    # mutable defaults: a new object per call
+    columns = [] if columns is None else columns
+    manipulation = [] if manipulation is None else manipulation
+    rename_columns = {} if rename_columns is None else rename_columns
 
     # make sure input is dataframe
     if not isinstance(X, pd.DataFrame):
@@ -783,7 +780,6 @@ def Feature_Manipulation(
 ##########################################################################
 # Feature Truncation
 class Feature_Truncation(BaseScaling):
-
     """
     Truncate feature to certain quantile (remove the effect of extreme values)
     No inverse transform available
@@ -807,10 +803,12 @@ class Feature_Truncation(BaseScaling):
 
     def __init__(
         self,
-        columns: List[str] = [],
+        columns: Optional[List[str]] = None,
         quantile: Union[List[float], float] = 0.95,
         deep_copy: bool = False,
     ) -> None:
+        # mutable defaults: a new object per call
+        columns = [] if columns is None else columns
         self.columns = columns
         self.quantile = quantile
         self.deep_copy = deep_copy

@@ -11,7 +11,6 @@ from InsurAutoML import load_data
 from InsurAutoML.dashboard import EVENTS_DIR, EVENTS_FILE, load_state
 from InsurAutoML.dashboard.server import ENV_SERVE, active_dashboard
 
-
 DATA = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "example",
@@ -51,9 +50,10 @@ def test_fit_records_dashboard_events(tmp_path, capsys):
     assert os.path.isfile(path)
     # the URL of the dashboard is printed (instead of the Ray Tune output)
     assert mol.dashboard_url is not None
-    assert "Track the optimization of {} at {}".format(
-        model_name, mol.dashboard_url
-    ) in capsys.readouterr().out
+    assert (
+        "Track the optimization of {} at {}".format(model_name, mol.dashboard_url)
+        in capsys.readouterr().out
+    )
     assert active_dashboard().path == path
 
     state = load_state(path)
@@ -136,7 +136,9 @@ def test_fit_with_ray_reporter_has_no_dashboard(tmp_path):
     mol.fit(X, y)
 
     assert mol._dashboard is None
-    assert not os.path.exists(os.path.join(str(tmp_path / "tmp"), model_name, EVENTS_DIR))
+    assert not os.path.exists(
+        os.path.join(str(tmp_path / "tmp"), model_name, EVENTS_DIR)
+    )
 
 
 def test_invalid_progress_reporter(tmp_path):

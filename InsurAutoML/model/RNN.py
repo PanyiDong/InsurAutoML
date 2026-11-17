@@ -101,7 +101,7 @@ class RNN_Net(nn.Module):
         activation: str = "Sigmoid",
         dropout: float = 0.2,
         use_softmax: bool = False,
-        device: Union[str, torch.device] = torch.device("cuda"),
+        device: Union[str, torch.device] = "cuda",
     ) -> None:
         super().__init__()
 

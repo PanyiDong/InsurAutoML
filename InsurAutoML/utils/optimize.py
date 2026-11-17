@@ -70,18 +70,39 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logger(name, log_file, level=logging.INFO):
-    """To setup as many loggers as you want"""
-
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-
-    handler = logging.FileHandler(log_file, mode="a")
-    handler.setFormatter(formatter)
+    """
+    Logger writing to log_file. Calling it again (e.g. a new fit) does not add
+    another handler: the log lines are written once, and only to the current file.
+    """
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
+
+    log_file = os.path.abspath(log_file)
+    for handler in list(logger.handlers):
+        if isinstance(handler, logging.FileHandler):
+            # same file, still there (a new run deletes its previous folder)
+            if handler.baseFilename == log_file and os.path.exists(log_file):
+                return logger
+            # previous (or deleted) file: closed (released on Windows)
+            logger.removeHandler(handler)
+            handler.close()
+
+    handler = logging.FileHandler(log_file, mode="a")
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
     logger.addHandler(handler)
 
     return logger
+
+
+def close_logger(logger: Optional[logging.Logger]) -> None:
+    """Close the file handlers of a logger (releases the log files)."""
+    if logger is None:
+        return
+    for handler in list(logger.handlers):
+        if isinstance(handler, logging.FileHandler):
+            logger.removeHandler(handler)
+            handler.close()
 
 
 @contextmanager
@@ -756,10 +777,14 @@ def _converted_get_hyperparameter_space(
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        balancings_hyperparameters[all_balancings.index(_balancing)][
-            "balancing"
-        ] = tune.choice(
-            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
+        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = (
+            tune.choice(
+                [
+                    balancings_hyperparameters[all_balancings.index(_balancing)][
+                        "balancing"
+                    ]
+                ]
+            )
         )
         _balancing_hyperparameter.append(
             searcher.convert_search_space(
@@ -1964,10 +1989,8 @@ def get_scheduler(search_scheduler: str) -> Callable:
         # check whether GPy2 is installed
         Gpy_spec = importlib.util.find_spec("GPy")
         if Gpy_spec is None:
-            raise ImportError(
-                "GPy2 not installed. Please install it first to use PB2. \
-                Command to install: pip install GPy"
-            )
+            raise ImportError("GPy2 not installed. Please install it first to use PB2. \
+                Command to install: pip install GPy")
 
         from ray.tune.schedulers.pb2 import PB2
 
@@ -2573,7 +2596,7 @@ class ray_status:
         # shut down ray
         ray.shutdown()
         # check if ray is shutdown
-        assert ray.is_initialized() == False, "Ray is not shutdown."
+        assert not ray.is_initialized(), "Ray is not shutdown."
 
 
 # check if an object has a method

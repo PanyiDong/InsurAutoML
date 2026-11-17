@@ -40,7 +40,6 @@ SOFTWARE.
 
 
 class AutoTextClassifier:
-
     """
     Automated sentence classification: sentiment analysis, topic detection, etc.
     """
@@ -63,7 +62,6 @@ class AutoTextClassifier:
 
 
 class AutoNextWordPrediction:
-
     """
     Automated Next Word Prediction: sequence modeling, etc.
     """

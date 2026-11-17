@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Optional, Union, Callable, Any, Dict, cast
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union, cast
 import logging
 import warnings
 import time
@@ -227,7 +227,7 @@ def maxloc(vlist: Union[List, np.ndarray]) -> int:
 
 # return the index of Boolean list or {0, 1} list
 # default 1 consider as True
-def True_index(X: List, _true: List = [True, 1]) -> List[int]:
+def True_index(X: List, _true: Sequence = (True, 1)) -> List[int]:
     result = [i for i, value in enumerate(X) if value in _true]
 
     return result
@@ -302,7 +302,7 @@ def has_method(obj: Callable, name: str) -> bool:
 
 
 # check if is None
-def is_none(item: Any, pat: List = [None, "None", "none", "NONE"]) -> bool:
+def is_none(item: Any, pat: Sequence = (None, "None", "none", "NONE")) -> bool:
     if item in pat:
         return True
     else:

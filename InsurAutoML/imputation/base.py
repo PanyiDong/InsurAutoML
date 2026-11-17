@@ -64,7 +64,7 @@ class SimpleImputer(BaseImputer):
     Parameters
     ----------
     method: the method to fill nan values, default = 'mean'
-    supproted methods ['mean', 'zero', 'median', 'most frequent', constant]
+    supported methods ['mean', 'zero', 'median', 'most frequent', constant]
     'mean' : fill columns with nan values using mean of non nan values
     'zero': fill columns with nan values using 0
     'median': fill columns with nan values using median of non nan values
@@ -151,7 +151,7 @@ class DummyImputer(BaseImputer):
     if mean of nan response and mean of non nan response is different above threshold, threshold will be created
 
     method: the method to fill nan values for columns not reaching threshold, default = 'mean'
-    supproted methods ['mean', 'zero', 'median', 'most frequent', constant]
+    supported methods ['mean', 'zero', 'median', 'most frequent', constant]
     'mean' : fill columns with nan values using mean of non nan values
     'zero': fill columns with nan values using 0
     'median': fill columns with nan values using median of non nan values

@@ -13,7 +13,12 @@ import pytest
 
 from InsurAutoML.dashboard import server as server_module
 from InsurAutoML.dashboard.__main__ import main, resolve_events
-from InsurAutoML.dashboard.events import EVENTS_DIR, EVENTS_FILE, EventRecorder, EventTail
+from InsurAutoML.dashboard.events import (
+    EVENTS_DIR,
+    EVENTS_FILE,
+    EventRecorder,
+    EventTail,
+)
 from InsurAutoML.dashboard.server import (
     DashboardServer,
     plotly_js_path,
@@ -46,11 +51,24 @@ def _record(directory, model_name="run", schema=SCHEMA):
     recorder.emit("round_start", round=0, name=model_name, num_samples=4)
     for key, model, loss in (("a", "A", 0.2), ("b", "B", 0.5)):
         recorder.emit(
-            "trial_start", round=0, trial_id=key,
-            config={"model": {"method": model, "hyperparameters": {"rate": 0.01} if model == "A" else {}}},
+            "trial_start",
+            round=0,
+            trial_id=key,
+            config={
+                "model": {
+                    "method": model,
+                    "hyperparameters": {"rate": 0.01} if model == "A" else {},
+                }
+            },
         )
-        recorder.emit("trial_result", round=0, trial_id=key, loss=loss,
-                      training_status="FITTED", iteration=1)
+        recorder.emit(
+            "trial_result",
+            round=0,
+            trial_id=key,
+            loss=loss,
+            training_status="FITTED",
+            iteration=1,
+        )
         recorder.emit("trial_end", round=0, trial_id=key, status="COMPLETED")
     return recorder
 
@@ -137,8 +155,13 @@ def test_server_api(served):
     assert len(_get_json(url + "/api/state")["trials"]) == 3
 
     # another run
-    other = _record(os.path.join(os.path.dirname(os.path.dirname(recorder.path)), "other", EVENTS_DIR),
-                    model_name="other", schema=None)
+    other = _record(
+        os.path.join(
+            os.path.dirname(os.path.dirname(recorder.path)), "other", EVENTS_DIR
+        ),
+        model_name="other",
+        schema=None,
+    )
     dashboard.set_path(other.path)
     state = _get_json(url + "/api/state")
     assert state["run"]["model_name"] == "other" and state["map_steps"] == []
@@ -164,7 +187,9 @@ def test_server_ports_and_url(tmp_path, monkeypatch):
     with pytest.raises(OSError, match="No free port"):
         DashboardServer(str(tmp_path), port=port)._bind()
 
-    assert DashboardServer(str(tmp_path), host="0.0.0.0").url.startswith("http://127.0.0.1:")
+    assert DashboardServer(str(tmp_path), host="0.0.0.0").url.startswith(
+        "http://127.0.0.1:"
+    )
     assert DashboardServer(str(tmp_path), host="::1").url.startswith("http://[::1]:")
     monkeypatch.setenv(server_module.ENV_HOST, "localhost")
     monkeypatch.setenv(server_module.ENV_PORT, "9999")
@@ -219,7 +244,9 @@ def test_event_tail(tmp_path):
 
     # smaller log (truncated)
     with open(recorder.path, "w") as out_f:
-        out_f.write(json.dumps({"type": "run_start", "time": 1, "model_name": "new"}) + "\n")
+        out_f.write(
+            json.dumps({"type": "run_start", "time": 1, "model_name": "new"}) + "\n"
+        )
     state = tail.refresh()
     assert len(state.trials) == 0
 

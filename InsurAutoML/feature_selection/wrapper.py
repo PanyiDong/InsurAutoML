@@ -166,7 +166,7 @@ class SFS(BaseFeatureSelection):
     limit maximum number of features to select, if None, no limit
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
 
     criteria: str, default = "accuracy"
@@ -318,7 +318,7 @@ class ASFFS(BaseFeatureSelection):
     maximum features to be considered as one step
 
     model: the model used to evaluate the objective function, default = 'linear'
-    supproted ('Linear', 'Lasso', 'Ridge')
+    supported ('Linear', 'Lasso', 'Ridge')
 
     objective: the objective function of significance of the features, default = 'MSE'
     supported {'MSE', 'MAE'}

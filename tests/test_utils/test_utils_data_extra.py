@@ -327,7 +327,7 @@ def test_text2vec_word2vec(corpus):
 
 
 def test_text2vec_pretrained(corpus, monkeypatch):
-    gensim = pytest.importorskip("gensim")
+    pytest.importorskip("gensim")
     import gensim.downloader
     from gensim.models import KeyedVectors
 
