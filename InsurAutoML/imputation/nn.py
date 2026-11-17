@@ -39,11 +39,12 @@ SOFTWARE.
 """
 
 from __future__ import annotations
-from typing import Union
+from typing import TYPE_CHECKING, Any, Optional, Tuple, Union, cast
 from time import sleep
 from tqdm import tqdm
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 
 from ..scaling import MinMaxScale
@@ -56,17 +57,18 @@ from ..utils import (
 
 # check if tensorflow exists
 # if exists, import tensorflow
-import importlib
+import importlib.util
 
 tensorflow_spec = importlib.util.find_spec("tensorflow")
-if tensorflow_spec is not None:
-    import tensorflow as tf
+# TYPE_CHECKING lets the type checker see the optional imports as always bound
+if TYPE_CHECKING or tensorflow_spec is not None:
+    import tensorflow as tf  # type: ignore[import]  # optional dependency, may not be installed
 
     tf.compat.v1.disable_eager_execution()
     # tf.compat.v1.disable_v2_behavior() # use tf < 2.0 functions
 
 torch_spec = importlib.util.find_spec("torch")
-if torch_spec is not None:
+if TYPE_CHECKING or torch_spec is not None:
     import torch
     import torch.optim
     from torch import nn
@@ -75,8 +77,7 @@ if torch_spec is not None:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class GAIN_tf(formatting, MinMaxScale):
-
+class GAIN_tf(formatting, MinMaxScale):  # type: ignore[misc]  # bases' fit signatures differ; formatting.fit wins by MRO
     """
     Generative Adversarial Imputation Nets tensorflow version (GAIN)
     train Generator (G) and Discriminator (D) to impute missing values [1]
@@ -103,7 +104,7 @@ class GAIN_tf(formatting, MinMaxScale):
 
     scaling: whether scale the dataset before imputation, default = True
 
-    deep_copy: whether to deep copy dataframe, deafult = False
+    deep_copy: whether to deep copy dataframe, default = False
 
     seed: random seed, default = 1
     """
@@ -120,7 +121,7 @@ class GAIN_tf(formatting, MinMaxScale):
         scaling=True,
         progressbar=False,
         deep_copy=False,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         self.batch_size = batch_size
         self.hint_rate = hint_rate
@@ -144,7 +145,7 @@ class GAIN_tf(formatting, MinMaxScale):
         return tf.random.normal(shape=size, stddev=1 / tf.sqrt(_dim / 2))
 
     # return random binary array by size
-    def binary_sampler(self, p=0.5, size=(1, 1)):
+    def binary_sampler(self, p: float = 0.5, size: Any = (1, 1)):
         # allows only change row size with (n, )
         # cannot handle (, n)
         size = list(size)
@@ -160,7 +161,7 @@ class GAIN_tf(formatting, MinMaxScale):
         return 1 * (_random_unit < p)
 
     # return random uniform array by size
-    def uniform_sampler(self, low=0, high=1, size=(1, 1)):
+    def uniform_sampler(self, low: float = 0, high: float = 1, size: Any = (1, 1)):
         # allows only change row size with (n, )
         # cannot handle (, n)
         size = list(size)
@@ -197,7 +198,7 @@ class GAIN_tf(formatting, MinMaxScale):
         return D_pro
 
     def fill(self, X):
-        _X = X.copy(deep=True)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
@@ -207,12 +208,12 @@ class GAIN_tf(formatting, MinMaxScale):
         return _X
 
     def _fill(self, data):
-        _data = data.copy(deep=self.deep_copy)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=self.deep_copy))
 
         n, p = _data.shape
         _h_dim = int(p)  # Hidden state dimensions
 
-        _mask = self.mask_matrix(_data).values
+        _mask = self.mask_matrix(_data).to_numpy()
 
         # convert categorical to numerical
         formatter = formatting(inplace=True)
@@ -220,15 +221,16 @@ class GAIN_tf(formatting, MinMaxScale):
 
         # if scaling, use MinMaxScale to scale the features
         _data_scaled = _data
+        scaling: Optional[MinMaxScale] = None
         if self.scaling:
             scaling = MinMaxScale()
-            _data_scaled = scaling.fit_transform(_data_scaled)
+            _data_scaled = cast(pd.DataFrame, scaling.fit_transform(_data_scaled))
 
         _data_scaled = _data_scaled.fillna(0)
 
         # divide dataframe to np array for values and features names list
         _features = list(_data_scaled.columns)
-        _data_scaled = _data_scaled.values
+        _data_scaled = _data_scaled.to_numpy()
 
         # GAIN architecture
         _X = tf.compat.v1.placeholder(tf.float32, shape=[None, p])  # data
@@ -245,7 +247,7 @@ class GAIN_tf(formatting, MinMaxScale):
 
         self.theta_G = [G_W1, G_W2, G_W3, G_b1, G_b2, G_b3]
 
-        # Discriminator Varaibles
+        # Discriminator Variables
         D_W1 = tf.Variable(self.normal_initial([p * 2, _h_dim]))
         D_b1 = tf.Variable(tf.zeros(shape=[_h_dim]))
         D_W2 = tf.Variable(self.normal_initial([_h_dim, _h_dim]))
@@ -310,7 +312,9 @@ class GAIN_tf(formatting, MinMaxScale):
                 feed_dict={_M: _M_mb, _X: _X_mb, _H: _H_mb},
             )
 
-            _seed += 1
+            # seed=None (the default) means unseeded sampling, nothing to advance
+            if _seed is not None:
+                _seed += 1
 
         # return imputed data
         _Z_mb = self.uniform_sampler(low=0, high=0.01, size=(n, p))
@@ -328,8 +332,8 @@ class GAIN_tf(formatting, MinMaxScale):
         self._fitted = True
 
         # if scaling, scale back
-        if self.scaling:
-            _imputed_data = scaling.inverse_transform(_imputed_data)
+        if scaling is not None:
+            _imputed_data = cast(pd.DataFrame, scaling.inverse_transform(_imputed_data))
 
         # convert numerical back to categorical
         formatter.refit(_imputed_data)
@@ -337,8 +341,7 @@ class GAIN_tf(formatting, MinMaxScale):
         return _imputed_data
 
 
-class GAIN_torch(formatting, MinMaxScale):
-
+class GAIN_torch(formatting, MinMaxScale):  # type: ignore[misc]  # bases' fit signatures differ; formatting.fit wins by MRO
     """
     Generative Adversarial Imputation Nets (GAIN) pytorch version [1]
     train Generator (G) and Discriminator (D) to impute missing values
@@ -371,7 +374,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
     scaling: whether scale the dataset before imputation, default = True
 
-    deep_copy: whether to deep copy dataframe, deafult = False
+    deep_copy: whether to deep copy dataframe, default = False
 
     seed: random seed, default = 1
     """
@@ -382,13 +385,13 @@ class GAIN_torch(formatting, MinMaxScale):
         hint_rate: float = 0.9,
         alpha: int = 100,
         optim: str = "Adam",
-        lr: float = None,
+        lr: Optional[float] = None,
         max_iter: int = 100,
         delta: float = 1e-8,
         scaling: bool = True,
         progressbar: bool = False,
         deep_copy: bool = False,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.batch_size = batch_size
         self.hint_rate = hint_rate
@@ -488,7 +491,7 @@ class GAIN_torch(formatting, MinMaxScale):
     # Generator loss
     def network_loss(
         self, X: torch.Tensor, M: torch.Tensor, H: torch.Tensor
-    ) -> torch.Tensor:
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         _G = self.Generator(X, M)
         _hat_X = X * M + _G * (1 - M)
         _D = self.Discriminator(_hat_X, H)
@@ -508,11 +511,11 @@ class GAIN_torch(formatting, MinMaxScale):
         # make sure input is a dataframe
         if not isinstance(X, pd.DataFrame):
             try:
-                X = pd.DataFrame(X)
+                X = pd.DataFrame(cast(Any, X))  # stubs reject tensors
             except BaseException:
                 raise TypeError("Expect a dataframe, get {}.".format(type(X)))
 
-        _X = X.copy(deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         if _X.isnull().values.any():
             _X = self._fill(_X)
@@ -522,7 +525,7 @@ class GAIN_torch(formatting, MinMaxScale):
         return _X
 
     def _fill(self, X: pd.DataFrame) -> pd.DataFrame:
-        _X = X.copy(deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         n, p = _X.shape  # get shape of dataset
         h_dim = int(p)  # get hidden state dimensions
@@ -535,9 +538,10 @@ class GAIN_torch(formatting, MinMaxScale):
         formatter.fit(_X)
 
         # if scaling, use MinMaxScale to scale the features
+        scaling: Optional[MinMaxScale] = None
         if self.scaling:
             scaling = MinMaxScale()
-            _X = scaling.fit_transform(_X)
+            _X = cast(pd.DataFrame, scaling.fit_transform(_X))
 
         # GAIN imputation
 
@@ -549,7 +553,7 @@ class GAIN_torch(formatting, MinMaxScale):
 
         # divide dataframe to list of features and array of values
         _features = list(_X.columns)
-        _X = _X.values
+        _X = _X.to_numpy()
 
         # if not fitted, train the networks
         if not self._fitted:
@@ -588,9 +592,7 @@ class GAIN_torch(formatting, MinMaxScale):
             else:
                 raise KeyError(
                     'Get unknown optimizer {}, should be one of ["Adam", "SGD", \
-                    "Adagrad", "LBFGS", "RMSprop"].'.format(
-                        self.optim
-                    )
+                    "Adagrad", "LBFGS", "RMSprop"].'.format(self.optim)
                 )
 
             # store the losses for early_stopping
@@ -625,13 +627,17 @@ class GAIN_torch(formatting, MinMaxScale):
                 # closure is required by LBFGS (accepted by all optimizers)
                 def closure():
                     optimizer.zero_grad()
-                    G_loss, D_loss = self.network_loss(_X_mb, _M_mb, _H_mb)
+                    G_loss, D_loss = self.network_loss(
+                        cast(torch.Tensor, _X_mb),
+                        cast(torch.Tensor, _M_mb),
+                        cast(torch.Tensor, _H_mb),
+                    )
                     loss = G_loss + D_loss
                     loss.backward()
                     return loss
 
                 # optimization step
-                loss = optimizer.step(closure)
+                loss = cast(torch.Tensor, optimizer.step(closure))
 
                 # early_stopping
                 self.losses.append(loss.item())
@@ -644,13 +650,13 @@ class GAIN_torch(formatting, MinMaxScale):
                     ):
                         # for tqdm, to break, need manual close
                         if self.progressbar:
-                            iterator.close()
+                            cast(tqdm, iterator).close()
                         break
 
                 # display loss
                 if self.progressbar:
-                    iterator.set_postfix({"loss": loss.item()})
-                    iterator.refresh()  # to show immediately the update
+                    cast(tqdm, iterator).set_postfix({"loss": loss.item()})
+                    cast(tqdm, iterator).refresh()  # to show immediately the update
                     sleep(0.01)
 
         # impute the missing data
@@ -675,8 +681,8 @@ class GAIN_torch(formatting, MinMaxScale):
         self._fitted = True
 
         # if scaling, scale back
-        if self.scaling:
-            _X = scaling.inverse_transform(_X)
+        if scaling is not None:
+            _X = cast(pd.DataFrame, scaling.inverse_transform(_X))
 
         # convert numerical back to categorical
         formatter.refit(_X)
@@ -684,8 +690,7 @@ class GAIN_torch(formatting, MinMaxScale):
         return _X
 
 
-class GAIN(GAIN_tf, GAIN_torch):
-
+class GAIN(GAIN_tf, GAIN_torch):  # type: ignore[misc]  # tf/torch backends differ; GAIN delegates to self.model
     """
     Generative Adversarial Imputation Nets (GAIN) [1]
     use pytorch/tensorflow when available
@@ -719,7 +724,7 @@ class GAIN(GAIN_tf, GAIN_torch):
 
     scaling: whether scale the dataset before imputation, default = True
 
-    deep_copy: whether to deep copy dataframe, deafult = False
+    deep_copy: whether to deep copy dataframe, default = False
 
     seed: random seed, default = 1
     """
@@ -730,13 +735,13 @@ class GAIN(GAIN_tf, GAIN_torch):
         hint_rate: float = 0.9,
         alpha: int = 100,
         optim: str = "Adam",
-        lr: float = None,
+        lr: Optional[float] = None,
         max_iter: int = 100,
         delta: float = 1e-8,
         scaling: bool = True,
         progressbar: bool = False,
         deep_copy: bool = False,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.batch_size = batch_size
         self.hint_rate = hint_rate

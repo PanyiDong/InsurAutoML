@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union, List, Tuple
+from typing import Any, Optional, Union, List, Tuple, cast
 import warnings
 import numpy as np
 import pandas as pd
@@ -79,7 +79,7 @@ def merge_dict(dict1, dict2):
 
 def nan_cov(
     X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     axis: int = 0,
 ) -> np.ndarray:
     if isinstance(y, pd.DataFrame):
@@ -95,6 +95,8 @@ def nan_cov(
         y = copy.deepcopy(X)
     else:
         y = y
+    # not _empty implies y is not None
+    assert y is not None
 
     if axis == 0:
         if len(X) != len(y):
@@ -140,15 +142,15 @@ def nan_cov(
 
 # return class (unique in y) mean of X
 def class_means(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
-) -> List[float]:
+    X: pd.DataFrame,
+    y: Union[pd.DataFrame, pd.Series],
+) -> List[np.ndarray]:
     _class = np.unique(y)
     result = []
 
     for _cl in _class:
         data = X.loc[y.values == _cl]
-        result.append(np.mean(data, axis=0).values)
+        result.append(cast(pd.Series, np.mean(data, axis=0)).values)
 
     return result
 
@@ -168,7 +170,7 @@ def empirical_covariance(
     if assume_centered:
         covariance = np.dot(X.T, X) / X.shape[0]
     else:
-        covariance = np.cov(X.T, bias=1)
+        covariance = np.cov(X.T, bias=True)
 
     if covariance.ndim == 0:
         covariance = np.array([[covariance]])
@@ -185,7 +187,7 @@ def class_cov(
         X = pd.DataFrame(X)
 
     if not isinstance(y, pd.Series):
-        y = pd.Series(y)
+        y = pd.Series(cast(Any, y))
 
     _class = np.unique(y)
     cov = np.zeros(shape=(X.shape[1], X.shape[1]))
@@ -250,7 +252,8 @@ def MI(
         _H_y_X = -sum(
             _pro_val[i]
             * np.log(
-                _pro_val[i] / _X_pro.loc[_X_pro.index == _pro.index[i][0]].values[0]
+                _pro_val[i]
+                / _X_pro.loc[_X_pro.index == cast(Any, _pro.index[i])[0]].values[0]
             )
             for i in range(len(_pro))
         )
@@ -261,16 +264,16 @@ def MI(
 
 # return t-statistics of dataset, only two groups dataset are suitable
 def t_score(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X: pd.DataFrame,
+    y: Union[pd.DataFrame, pd.Series],
     fvalue: bool = True,
     pvalue: bool = False,
-) -> Union[float, Tuple[float, float]]:
+) -> Optional[Union[List[float], Tuple[List[float], List[float]]]]:
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
     features = list(X.columns)
-    if len(y.shape) > 1:
+    if isinstance(y, pd.DataFrame):  # len(y.shape) > 1
         y = y.iloc[:, 0]  # only accept one column of response
 
     _group = y.unique()
@@ -298,20 +301,21 @@ def t_score(
         return _f
     elif pvalue:
         return _p
+    return None
 
 
 # return ANOVA of dataset, more than two groups dataset are suitable
 def ANOVA(
-    X: Union[pd.DataFrame, pd.Series, np.ndarray],
-    y: Union[pd.DataFrame, pd.Series, np.ndarray],
+    X: pd.DataFrame,
+    y: Union[pd.DataFrame, pd.Series],
     fvalue: bool = True,
     pvalue: bool = False,
-) -> Union[float, Tuple[float, float]]:
+) -> Optional[Union[List[float], Tuple[List[float], List[float]]]]:
     if len(X) != len(y):
         raise ValueError("X and y not same size!")
 
     features = list(X.columns)
-    if len(y.shape) > 1:
+    if isinstance(y, pd.DataFrame):  # len(y.shape) > 1
         y = y.iloc[:, 0]  # only accept one column of response
 
     _group = y.unique()
@@ -335,6 +339,7 @@ def ANOVA(
         return _f
     elif pvalue:
         return _p
+    return None
 
 
 # convert metrics to minimize the error (as a loss function)
@@ -370,7 +375,7 @@ def neg_precision(
 ) -> float:
     from sklearn.metrics import precision_score
 
-    return -precision_score(y_true, y_pred)
+    return -cast(float, precision_score(y_true, y_pred))
 
 
 def neg_auc(
@@ -402,17 +407,19 @@ def neg_f1(
 ) -> float:
     from sklearn.metrics import f1_score
 
-    return -f1_score(y_true, y_pred)
+    return -cast(float, f1_score(y_true, y_pred))
 
 
-def rankdata_random(values, seed: int = None):
+def rankdata_random(values, seed: Optional[Union[int, np.random.Generator]] = None):
     """
     Return ranks of the data, with random tie breaking.
+
+    seed: seed or random generator of the tie breaking (a local generator: the
+    global numpy random state is not changed)
     """
 
-    # set random seed permutation
-    np.random.seed(seed)
-    perm = np.random.permutation(len(values))
+    # random permutation (local generator)
+    perm = np.random.default_rng(seed).permutation(len(values))
     # set values to numpy array
     values = np.asarray(values)
     # apply rankdata to permuted values
@@ -425,7 +432,11 @@ def rankdata_random(values, seed: int = None):
     # return ranks[np.argsort(perm)]
 
 
-def _rankdata(values, ties_method: str = "average", seed: int = None) -> np.ndarray:
+def _rankdata(
+    values,
+    ties_method: str = "average",
+    seed: Optional[Union[int, np.random.Generator]] = None,
+) -> np.ndarray:
     """
     Wrap for scipy.stats.rankdata with different ties breaking method
 
@@ -436,8 +447,8 @@ def _rankdata(values, ties_method: str = "average", seed: int = None) -> np.ndar
     ties_method : str, optional
         Method to handle ties. Default is "average".
         List of options includes "average", "min", "max", "ordinal", "random".
-    seed : int, optional
-        Random seed for tie breaking.
+    seed : int or numpy Generator, optional
+        Random seed (or generator) for tie breaking.
 
     Returns
     -------
@@ -451,23 +462,27 @@ def _rankdata(values, ties_method: str = "average", seed: int = None) -> np.ndar
         return scipy.stats.rankdata(values, method=ties_method)
 
 
-def randomNN(idx):
+def randomNN(idx, seed: Optional[Union[int, np.random.Generator]] = None):
     # index size
     n = len(np.asarray(idx))
     # sample n indices from [0, n-2]
-    x = np.random.randint(0, n - 1, size=n)
+    x = np.random.default_rng(seed).integers(0, n - 1, size=n)
     # shift the indices that are >= i by 1 to avoid index equals to position
     x += x >= np.arange(n)
 
     return idx[x]
 
 
-def _NN(idx, ties_method: str = "random"):
+def _NN(
+    idx,
+    ties_method: str = "random",
+    seed: Optional[Union[int, np.random.Generator]] = None,
+):
     """
     A list of methods to deal with identical nearest neighbors.
     """
     if ties_method == "random":
-        return randomNN(idx)
+        return randomNN(idx, seed=seed)
     elif ties_method == "first":
         return idx[0] * np.ones(len(idx), dtype=int)
     elif ties_method == "last":
@@ -481,7 +496,7 @@ def _CCC(
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
     X_ties_method: str = "random",
     y_ties_method: str = "ordinal",
-    seed: int = None,
+    seed: Optional[Union[int, np.random.Generator]] = None,
 ) -> float:
     """_summary_
     Empirical implementation of Chatterjee Correlation Coefficient (CCC) [1][2]
@@ -503,13 +518,15 @@ def _CCC(
         )
 
     n = len(y)
+    # one generator for all random tie breaking
+    rng = np.random.default_rng(seed)
 
     # rank of X, random tie breaking
-    PI = _rankdata(X, ties_method=X_ties_method, seed=seed)
+    PI = _rankdata(X, ties_method=X_ties_method, seed=rng)
     ord = np.argsort(PI)
     # rank of y and -y (numbers larger than y)
-    fr = _rankdata(y, ties_method=y_ties_method) / n
-    gr = _rankdata(-y, ties_method=y_ties_method) / n
+    fr = _rankdata(y, ties_method=y_ties_method, seed=rng) / n
+    gr = _rankdata(-y, ties_method=y_ties_method, seed=rng) / n
 
     # rearrange fr by ord
     fr = fr[ord]
@@ -523,13 +540,13 @@ def _CCC(
 def _ACCC(
     Z: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    X: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     Z_ties_method: str = "random",
     y_ties_method: str = "ordinal",
     X_ties_method: str = "random",
     mode: str = "T",
-    seed: int = None,
-) -> float:
+    seed: Optional[Union[int, np.random.Generator]] = None,
+) -> Optional[float]:
     r"""
     Empirical implementation of Azadkia-Chatterjee Correlation Coefficient (ACCC) [1][2]
 
@@ -556,11 +573,15 @@ def _ACCC(
         Method to handle ties in X. Options are "random", "first", "last", and "ordinal".
     """
 
+    # one generator for all random tie breaking (the global numpy random state is
+    # not changed)
+    rng = np.random.default_rng(seed)
+
     def tie_helper(Z, a):
         dists = cdist([Z[a]], np.delete(Z, a, axis=0), metric="euclidean")
         min_dist = np.min(dists)
         id = np.where(dists[0] == min_dist)[0]
-        choice = np.random.choice(id)
+        choice = rng.choice(id)
         return choice + (choice >= a)  # shift index if needed
 
     # format data to numpy array
@@ -608,7 +629,7 @@ def _ACCC(
             }
         )
         df_Z["rnn"] = df_Z.groupby("group")["id"].transform(
-            lambda x: _NN(x.values, ties_method=Z_ties_method)
+            lambda x: _NN(x.values, ties_method=Z_ties_method, seed=rng)
         )
         nn_index_Z[repeat_data] = df_Z["rnn"].values
 
@@ -619,8 +640,8 @@ def _ACCC(
             nn_index_Z[idx] = tie_helper(Z, idx)
 
         # estimate cc
-        R_Y = _rankdata(y, ties_method=y_ties_method, seed=seed)
-        L_Y = _rankdata(-y, ties_method=y_ties_method, seed=seed)
+        R_Y = _rankdata(y, ties_method=y_ties_method, seed=rng)
+        L_Y = _rankdata(-y, ties_method=y_ties_method, seed=rng)
         S_n = np.sum(L_Y * (n - L_Y)) / (n**3)
         Q_n = np.sum(np.minimum(R_Y, R_Y[nn_index_Z]) - L_Y**2 / n) / (n**2)
 
@@ -645,7 +666,7 @@ def _ACCC(
             }
         )
         df_X["rnn"] = df_X.groupby("group")["id"].transform(
-            lambda x: _NN(x.values, ties_method=X_ties_method)
+            lambda x: _NN(x.values, ties_method=X_ties_method, seed=rng)
         )
         nn_index_X[repeat_data_X] = df_X["rnn"].values
 
@@ -670,7 +691,7 @@ def _ACCC(
             }
         )
         df_W["rnn"] = df_W.groupby("group")["id"].transform(
-            lambda x: _NN(x.values, ties_method=X_ties_method)
+            lambda x: _NN(x.values, ties_method=X_ties_method, seed=rng)
         )
         nn_index_W[repeat_data_W] = df_W["rnn"].values
 
@@ -681,8 +702,8 @@ def _ACCC(
             nn_index_W[idx] = tie_helper(X, idx)
 
         # estimate ccc
-        R_Y = _rankdata(y, ties_method=y_ties_method)
-        L_Y = _rankdata(-y, ties_method=y_ties_method)
+        R_Y = _rankdata(y, ties_method=y_ties_method, seed=rng)
+        L_Y = _rankdata(-y, ties_method=y_ties_method, seed=rng)
         S_n = np.sum(R_Y - np.minimum(R_Y, R_Y[nn_index_X])) / (n**2)
         Q_n = np.sum(
             np.minimum(R_Y, R_Y[nn_index_W]) - np.minimum(R_Y, R_Y[nn_index_X])
@@ -692,12 +713,16 @@ def _ACCC(
         return Q_n / S_n if S_n != 0 else 1
     elif mode == "Q":
         return Q_n
+    return None
 
 
 """
 NOTE: Sep. 16, 2025
 CCC and ACCC are subject to tie-breaking in identical values. And randomness may be introduced in the results.
 By default, only one time tie-breaking is performed. If you want to have more stable results, please set fold > 1 as it repeats the calculation multiple times and takes the average.
+
+The random tie breaking uses a local generator created from `seed` (the same seed gives
+the same result; the global numpy random state is not changed).
 """
 
 
@@ -707,46 +732,80 @@ def CCC(
     X_ties_method: str = "random",
     y_ties_method: str = "ordinal",
     fold: int = 1,
-    seed: int = None,
+    seed: Optional[Union[int, np.random.Generator]] = None,
 ) -> float:
     """
     Compute CCC in case of random tie breaking (multiple folds).
     """
-    # fix random seed
-    np.random.seed(seed)
+    # local generator, shared by the folds
+    rng = np.random.default_rng(seed)
     if "random" in [X_ties_method, y_ties_method]:
         return np.mean(
             [
-                _CCC(X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method)
+                _CCC(
+                    X,
+                    y,
+                    X_ties_method=X_ties_method,
+                    y_ties_method=y_ties_method,
+                    seed=rng,
+                )
                 for _ in range(fold)
             ]
         )
     else:
-        return _CCC(X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method)
+        return _CCC(
+            X, y, X_ties_method=X_ties_method, y_ties_method=y_ties_method, seed=rng
+        )
 
 
 def ACCC(
     Z: Union[pd.DataFrame, pd.Series, np.ndarray],
     y: Union[pd.DataFrame, pd.Series, np.ndarray],
-    X: Union[pd.DataFrame, pd.Series, np.ndarray] = None,
+    X: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     Z_ties_method: str = "random",
     y_ties_method: str = "ordinal",
     X_ties_method: str = "random",
     mode: str = "T",
     fold: int = 1,
-    seed: int = 42,
+    seed: Optional[Union[int, np.random.Generator]] = 42,
 ) -> float:
     """
     Compute the ACCC with multiple folds.
     """
-    # fix random seed
-    np.random.seed(seed)
+    # local generator, shared by the folds
+    rng = np.random.default_rng(seed)
     if "random" in [Z_ties_method, y_ties_method, X_ties_method]:
+        # None only for a mode other than "T"/"Q"
         return np.mean(
-            [
-                _ACCC(Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode=mode)
-                for _ in range(fold)
-            ]
+            cast(
+                List[float],
+                [
+                    _ACCC(
+                        Z,
+                        y,
+                        X,
+                        Z_ties_method,
+                        y_ties_method,
+                        X_ties_method,
+                        mode=mode,
+                        seed=rng,
+                    )
+                    for _ in range(fold)
+                ],
+            )
         )
     else:
-        return _ACCC(Z, y, X, Z_ties_method, y_ties_method, X_ties_method, mode=mode)
+        # None only for a mode other than "T"/"Q"
+        return cast(
+            float,
+            _ACCC(
+                Z,
+                y,
+                X,
+                Z_ties_method,
+                y_ties_method,
+                X_ties_method,
+                mode=mode,
+                seed=rng,
+            ),
+        )

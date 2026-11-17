@@ -41,9 +41,7 @@ SOFTWARE.
 from __future__ import annotations
 from typing import Any, Union, List, Callable, Dict, Tuple, Optional, cast
 import os
-import warnings
 import importlib.util
-import shutil
 import copy
 import datetime
 import pandas as pd
@@ -69,14 +67,10 @@ from ...utils.optimize import (
     set_algo_seed,
     get_scheduler,
     get_logger,
-    get_progress_reporter,
     InformedStopper,
     TrialDirnameCreator,
-    ray_status,
     check_status,
 )
-
-warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available
 torch_spec = importlib.util.find_spec("torch")
@@ -109,7 +103,7 @@ class InformedAutoTabularBase(AutoTabularBase):
 
     timeout: Total time limit for the job in seconds, default = 360
 
-    max_evals: Maximum number of function evaluations allowed, default = 32
+    max_evals: Maximum number of function evaluations allowed, default = 64
 
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
@@ -174,8 +168,10 @@ class InformedAutoTabularBase(AutoTabularBase):
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    automatically decide what progressbar to use
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard and the Ray Tune console output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 
@@ -213,14 +209,14 @@ class InformedAutoTabularBase(AutoTabularBase):
         model_name: str = "model",
         ignore_warning: bool = True,
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: List[str] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[List[str]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -229,6 +225,15 @@ class InformedAutoTabularBase(AutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call (own copies: updated in fit)
+        exclude = {} if exclude is None else dict(exclude)
+        search_algo_settings = (
+            {} if search_algo_settings is None else dict(search_algo_settings)
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else dict(search_scheduler_settings)
+        )
+        logger = ["Logger"] if logger is None else logger
         self.task_mode = task_mode
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -312,7 +317,7 @@ class InformedAutoTabularBase(AutoTabularBase):
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_encoders
-        except:
+        except ImportError:
             add_encoders = {}
 
         # include original encoders
@@ -347,7 +352,7 @@ class InformedAutoTabularBase(AutoTabularBase):
             # if additional exists, import, otherwise set to default
             try:
                 from additional import add_classifiers
-            except:
+            except ImportError:
                 add_classifiers = {}
 
             # include original classifiers
@@ -360,7 +365,7 @@ class InformedAutoTabularBase(AutoTabularBase):
             # if additional exists, import, otherwise set to default
             try:
                 from additional import add_regressors
-            except:
+            except ImportError:
                 add_regressors = {}
 
             # include original regressors
@@ -400,7 +405,7 @@ class InformedAutoTabularBase(AutoTabularBase):
             models = {}  # if specified, check if models in default models
             for _model in self.models:
                 if _model not in [*_all_models]:
-                    self._logger.error(
+                    raise ValueError(
                         "Only supported models are {}, get {}.".format(
                             [*_all_models], _model
                         )
@@ -430,7 +435,7 @@ class InformedAutoTabularBase(AutoTabularBase):
                 add_classifier_hyperparameter,
                 add_regressor_hyperparameter,
             )
-        except:
+        except ImportError:
             add_encoder_hyperparameter = {}
             add_classifier_hyperparameter = {}
             add_regressor_hyperparameter = {}
@@ -636,7 +641,7 @@ class InformedAutoTabularBase(AutoTabularBase):
         # if only one optimal input, need to convert to iterable
         if isinstance(trial_path, str):
             trial_path = [trial_path]
-            config = [config]
+            config = [cast(Dict, config)]
 
         # loop through all configs and trial directories, get model ensemble
         # trial directory is given by tune results (Result.path)
@@ -657,19 +662,34 @@ class InformedAutoTabularBase(AutoTabularBase):
         if self.task_mode == "classification":
             self.ensemble = InformedClassifierEnsemble(
                 estimators=self.ensemble_list,
-                voting=self.voting,
+                # (resolved by the task mode in AutoTabularBase.__init__)
+                voting=cast(str, self.voting),
                 features=self.feature_list,
                 strategy=self.ensemble_strategy,
             )
         elif self.task_mode == "regression":
             self.ensemble = InformedRegressorEnsemble(
                 estimators=self.ensemble_list,
-                voting=self.voting,
+                # (resolved by the task mode in AutoTabularBase.__init__)
+                voting=cast(str, self.voting),
                 features=self.feature_list,
                 strategy=self.ensemble_strategy,
             )
 
-    def fit(
+    # the informed objective splits the data itself: data_split is (X, y)
+    @staticmethod
+    def _feature_subset(data_split: Any, features: Any) -> Any:
+        X, y = data_split
+        return (X.loc[:, features], y)
+
+    @staticmethod
+    def _boosting_residuals(data_split: Any, estimator: Any) -> Any:
+        X, residual = data_split
+        # (predictions are positional: align them to the response shape)
+        prediction = np.asarray(estimator.predict(X), dtype=float)
+        return (X, residual - prediction.reshape(np.shape(residual)))
+
+    def _fit(  # type: ignore[override]
         self,
         X: pd.DataFrame,
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
@@ -696,10 +716,10 @@ class InformedAutoTabularBase(AutoTabularBase):
                         self.model_name,
                     )
                 )
-            except BaseException:
-                self._logger.error(
+            except Exception as err:
+                raise TypeError(
                     "Cannot convert X to dataframe, get {}".format(type(X))
-                )
+                ) from err
         if not isinstance(y, pd.DataFrame):
             try:
                 y = pd.DataFrame(y)
@@ -709,10 +729,10 @@ class InformedAutoTabularBase(AutoTabularBase):
                         self.model_name,
                     )
                 )
-            except BaseException:
-                self._logger.error(
+            except Exception as err:
+                raise TypeError(
                     "Cannot convert y to dataframe, get {}".format(type(y))
-                )
+                ) from err
 
         # X and y are converted to dataframes above
         X = cast(pd.DataFrame, X)
@@ -748,9 +768,9 @@ class InformedAutoTabularBase(AutoTabularBase):
             )
         # TODO: when NLP and Image supported, redirect to corresponding model
         if ("Object", "Text") in self.metadata.keys():
-            self._logger.error("Text data type is not supported yet.")
+            self._logger.warning("Text data type is not supported yet.")
         if ("Path", "") in self.metadata.keys():
-            self._logger.error("Image data type is not supported yet.")
+            self._logger.warning("Image data type is not supported yet.")
 
         (
             encoder,
@@ -760,22 +780,20 @@ class InformedAutoTabularBase(AutoTabularBase):
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
 
+        # search space of the dashboard map
+        if self._use_dashboard():
+            self._dashboard_schema = self._dashboard_space(_X, _y)
+
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
             )
         )
 
-        # if the model is already trained, read the setting
-        if os.path.exists(self.model_name):
-            self._logger.info(
-                "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                    self.model_name,
-                )
-            )
-            [self.ensemble] = load_methods(self.model_name)
-
+        # if the model is already trained (same data and settings), read it
+        self._fingerprint = self._fit_fingerprint(_X, _y, X_valid, y_valid)
+        self._check_resume(self._fingerprint)
+        if self._load_stored_model(self._fingerprint):
             self._fitted = True  # successfully fitted the model
 
             return self
@@ -808,13 +826,6 @@ class InformedAutoTabularBase(AutoTabularBase):
         # get callback logger
         logger = get_logger(self.logger)
 
-        # get progress reporter
-        progress_reporter = get_progress_reporter(
-            self.progress_reporter,
-            self.max_evals,
-            self.max_error,
-        )
-
         # initialize stopper
         stopper = InformedStopper(
             timeout=self.timeout,
@@ -837,365 +848,34 @@ class InformedAutoTabularBase(AutoTabularBase):
             )
         )
 
-        # set ray status
-        rayStatus = ray_status(
-            cpu_threads=self.cpu_threads,
-            gpu_count=self.gpu_count,
+        # search (one or several rounds, by ensemble strategy) and ensemble
+        self._search(
+            InformedTabularObjective,
+            dict(
+                encoder=encoder,
+                complete_prep=complete_prep,
+                missing_prep=missing_prep,
+                models=models,
+                model_name=self.model_name,
+                task_mode=self.task_mode,
+                objective=self.objective,
+                full_status=self.full_status,
+                reset_index=self.reset_index,
+                timeout=self.timeout_per_trial,
+                seed=self.seed,
+            ),
+            (_X, _y),
+            hyperparameter_space,
+            dict(
+                algo=algo,
+                scheduler=scheduler,
+                callbacks=logger,
+                stopper=stopper,
+                trial_dirname_creator=trial_str_creator,
+            ),
+            _X,
+            _y,
         )
-
-        # ensemble settings
-        if self.n_estimators == 1:
-            self._logger.warning("Set n_estimators to 1, no ensemble will be used.")
-
-            # get progress reporter
-            progress_reporter = get_progress_reporter(
-                self.progress_reporter,
-                self.max_evals,
-                self.max_error,
-            )
-
-            # set trainable
-            trainer = tune.with_parameters(
-                InformedTabularObjective,
-                data_split=(_X, _y),
-                encoder=encoder,
-                complete_prep=complete_prep,
-                missing_prep=missing_prep,
-                models=models,
-                model_name=self.model_name,
-                task_mode=self.task_mode,
-                objective=self.objective,
-                full_status=self.full_status,
-                reset_index=self.reset_index,
-                timeout=self.timeout_per_trial,
-                _iter=self._iter,
-                seed=self.seed,
-            )
-
-            # initialize ray
-            rayStatus.ray_init()
-
-            # subtrial directory
-            self.sub_directory = os.path.abspath(self.temp_directory)
-
-            # optimization process
-            # partially activated objective function
-            # (Optuna embeds the search space in the search algorithm, see _run_tune)
-            fit_results = self._run_tune(
-                trainer,
-                hyperparameter_space,
-                name=self.model_name,
-                num_samples=self.max_evals,
-                algo=algo,
-                scheduler=scheduler,
-                callbacks=logger,
-                stopper=stopper,
-                progress_reporter=progress_reporter,
-                trial_dirname_creator=trial_str_creator,
-            )
-
-            # shut down ray
-            rayStatus.ray_shutdown()
-
-            self._logger.info(
-                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
-
-            # check status of the trial analysis
-            self.check_analysis(fit_results)
-            # get the best config settings
-            best_result = self._best_results(fit_results, 1).iloc[0]
-
-            # select optimal settings and fit optimal pipeline
-            self._fit_ensemble(best_result["path"], best_result["config"])
-        # Stacking ensemble
-        elif self.ensemble_strategy == "stacking":
-            # get progress reporter
-            progress_reporter = get_progress_reporter(
-                self.progress_reporter,
-                self.max_evals,
-                self.max_error,
-            )
-
-            # set trainable
-            trainer = tune.with_parameters(
-                InformedTabularObjective,
-                data_split=(_X, _y),
-                encoder=encoder,
-                complete_prep=complete_prep,
-                missing_prep=missing_prep,
-                models=models,
-                model_name=self.model_name,
-                task_mode=self.task_mode,
-                objective=self.objective,
-                full_status=self.full_status,
-                reset_index=self.reset_index,
-                timeout=self.timeout_per_trial,
-                _iter=self._iter,
-                seed=self.seed,
-            )
-
-            # initialize ray
-            rayStatus.ray_init()
-
-            # subtrial directory
-            self.sub_directory = os.path.abspath(self.temp_directory)
-
-            # optimization process
-            # partially activated objective function
-            # (Optuna embeds the search space in the search algorithm, see _run_tune)
-            fit_results = self._run_tune(
-                trainer,
-                hyperparameter_space,
-                name=self.model_name,
-                num_samples=self.max_evals,
-                algo=algo,
-                scheduler=scheduler,
-                callbacks=logger,
-                stopper=stopper,
-                progress_reporter=progress_reporter,
-                trial_dirname_creator=trial_str_creator,
-            )
-
-            # shut down ray
-            rayStatus.ray_shutdown()
-
-            self._logger.info(
-                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
-
-            # check status of the trial analysis
-            self.check_analysis(fit_results)
-            # get all configs and trial directories
-            analysis_df = fit_results
-            # if not enough valid trials, raise warning
-            if (analysis_df.training_status == "FITTED").sum() < self.n_estimators:
-                self._logger.warning(
-                    "[WARNING] {}  Experiment: {}. Ask for total {} estimators, but no enough valid trials exists. Use all {} pipelines instead.".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                        self.n_estimators,
-                        (analysis_df.training_status == "FITTED").sum(),
-                    )
-                )
-
-            # top configs among the fitted trials only: timed-out/failed trials have
-            # no saved pipeline, and can tie with fitted trials of infinite loss
-            analysis_df = self._best_results(analysis_df, self.n_estimators)
-
-            # select optimal settings and create the ensemble of pipeline
-            self._fit_ensemble(analysis_df["path"], analysis_df["config"])
-        # Bagging ensemble
-        elif self.ensemble_strategy == "bagging":
-            # create a list of feature subsets
-            feature_list = [
-                np.random.choice(
-                    _X.columns,
-                    size=2 * len(_X.columns) // self.n_estimators,
-                    replace=False,
-                )
-                for _ in range(self.n_estimators)
-            ]
-
-            # loop through feature_list
-            for _n, feature_subset in enumerate(feature_list):
-                # get n_trials for the subsets
-                sub_n_trials = (
-                    (self.max_evals // self.n_estimators + 1)
-                    if _n < self.max_evals % self.n_estimators
-                    else (self.max_evals // self.n_estimators)
-                )
-
-                # get progress reporter
-                progress_reporter = get_progress_reporter(
-                    self.progress_reporter,
-                    self.max_evals,
-                    self.max_error,
-                )
-
-                # set trainable
-                trainer = tune.with_parameters(
-                    InformedTabularObjective,
-                    data_split=(_X.loc[:, feature_subset], _y),
-                    encoder=encoder,
-                    complete_prep=complete_prep,
-                    missing_prep=missing_prep,
-                    models=models,
-                    model_name=self.model_name,
-                    task_mode=self.task_mode,
-                    objective=self.objective,
-                    full_status=self.full_status,
-                    reset_index=self.reset_index,
-                    timeout=self.timeout_per_trial,
-                    _iter=self._iter,
-                    seed=self.seed,
-                )
-
-                # initialize ray
-                rayStatus.ray_init()
-
-                # subtrial directory
-                self.sub_directory = os.path.abspath(
-                    os.path.join(self.temp_directory, self.model_name)
-                )
-
-                # optimization process
-                # partially activated objective function
-                # (Optuna embeds the search space in the search algorithm, see _run_tune)
-                fit_results = self._run_tune(
-                    trainer,
-                    hyperparameter_space,
-                    name="{}_{}_{}".format(
-                        self.model_name, self.ensemble_strategy, _n + 1
-                    ),
-                    num_samples=sub_n_trials,
-                    algo=algo,
-                    scheduler=scheduler,
-                    callbacks=logger,
-                    stopper=stopper,
-                    progress_reporter=progress_reporter,
-                    trial_dirname_creator=trial_str_creator,
-                )
-
-                # shut down ray
-                rayStatus.ray_shutdown()
-
-                self._logger.info(
-                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                    )
-                )
-
-                # check status of the trial analysis
-                if self._stop_ensemble_early(fit_results, _n):
-                    break
-                self.check_analysis(fit_results)
-                # get the best config settings
-                best_result = self._best_results(fit_results, 1).iloc[0]
-
-                # select optimal settings and fit optimal pipeline
-                self._fit_ensemble(
-                    best_result["path"],
-                    best_result["config"],
-                    iter=_n,
-                    features=feature_subset,
-                )
-
-        # Boosting ensemble
-        elif self.ensemble_strategy == "boosting":
-            _y_pred = None
-            data_split = (_X, _y)
-            # loop through n_estimators
-            for _n in range(self.n_estimators):
-                sub_n_trials = (
-                    (self.max_evals // self.n_estimators + 1)
-                    if _n < self.max_evals % self.n_estimators
-                    else (self.max_evals // self.n_estimators)
-                )
-
-                if _y_pred is not None:
-                    # if fitted before, use pred for residuals
-                    # (predictions are positional: align them to the response shape)
-                    _residual = data_split[1]
-                    data_split = (
-                        data_split[0],
-                        _residual
-                        - np.asarray(_y_pred, dtype=float).reshape(np.shape(_residual)),
-                    )
-                else:
-                    # if not, use y as residuals
-                    data_split = (_X, _y)
-
-                # get progress reporter
-                progress_reporter = get_progress_reporter(
-                    self.progress_reporter,
-                    self.max_evals,
-                    self.max_error,
-                )
-
-                # set trainable
-                trainer = tune.with_parameters(
-                    InformedTabularObjective,
-                    data_split=data_split,
-                    encoder=encoder,
-                    complete_prep=complete_prep,
-                    missing_prep=missing_prep,
-                    models=models,
-                    model_name=self.model_name,
-                    task_mode=self.task_mode,
-                    objective=self.objective,
-                    full_status=self.full_status,
-                    reset_index=self.reset_index,
-                    timeout=self.timeout_per_trial,
-                    _iter=self._iter,
-                    seed=self.seed,
-                )
-
-                # initialize ray
-                rayStatus.ray_init()
-
-                # subtrial directory
-                self.sub_directory = os.path.abspath(
-                    os.path.join(self.temp_directory, self.model_name)
-                )
-
-                # optimization process
-                # partially activated objective function
-                # (Optuna embeds the search space in the search algorithm, see _run_tune)
-                fit_results = self._run_tune(
-                    trainer,
-                    hyperparameter_space,
-                    name="{}_{}_{}".format(
-                        self.model_name, self.ensemble_strategy, _n + 1
-                    ),
-                    num_samples=sub_n_trials,
-                    algo=algo,
-                    scheduler=scheduler,
-                    callbacks=logger,
-                    stopper=stopper,
-                    progress_reporter=progress_reporter,
-                    trial_dirname_creator=trial_str_creator,
-                )
-
-                # shut down ray
-                rayStatus.ray_shutdown()
-
-                self._logger.info(
-                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                    )
-                )
-
-                # check status of the trial analysis
-                if self._stop_ensemble_early(fit_results, _n):
-                    break
-                self.check_analysis(fit_results)
-                # get the best config settings
-                best_result = self._best_results(fit_results, 1).iloc[0]
-
-                # select optimal settings and fit optimal pipeline
-                self._fit_ensemble(
-                    best_result["path"],
-                    best_result["config"],
-                    iter=_n,
-                )
-
-                # make sure the ensemble is fitted
-                # usually, most of the methods are already fitted
-                self.ensemble.fit(_X, _y)
-
-                # get predictions on the residuals
-                # only use the last/latest pipeline
-                _best_estimator = self.ensemble.estimators[-1][1]
-                _y_pred = _best_estimator.predict(_X)
 
         # make sure the ensemble is fitted
         # usually, every method is already fitted
@@ -1204,11 +884,15 @@ class InformedAutoTabularBase(AutoTabularBase):
 
         # if need to save the ensemble
         if self.save:
-            save_methods(self.model_name, [self.ensemble])
+            save_methods(self.model_name, [self.ensemble, self._fingerprint])
+
+        # end of the run for the dashboard
+        self._dashboard_finish()
 
         # whether to retain temp files
+        # (only the folder of this run: other models share the temp directory)
         if self.delete_temp_after_terminate:
-            shutil.rmtree(self.temp_directory)
+            self._delete_temp()
 
         self._logger.info(
             "[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(

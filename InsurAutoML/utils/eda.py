@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Optional, Union
+from typing import Any, Optional, Union, cast
 import os
 import glob
 import warnings
@@ -88,7 +88,7 @@ def EDA(
             response = y.name
         else:
             y = pd.Series(np.ravel(y), name=response)
-        data_type[response] = feature_type(y)
+        data_type[response] = feature_type(cast(pd.Series, y))
 
     # print for examination
     print("Data Column Types:")
@@ -128,7 +128,9 @@ def EDA(
                         f.write(str(summary) + "\n\n")
                 # plot the histogram
                 plt.tight_layout()
-                sns.histplot(X[column], kde=True, color="blue")
+                sns.histplot(
+                    cast(Any, X[column]), kde=True, color="blue"
+                )  # seaborn stubs omit Series
                 plt.xlabel("{}".format(column))
                 plt.ylabel("Frequency")
                 plt.title("Histogram of Column {}".format(column))
@@ -149,7 +151,9 @@ def EDA(
                         f.write(str(summary) + "\n\n")
                 # plot the histogram
                 plt.tight_layout()
-                sns.histplot(X[column], kde=False, color="blue")
+                sns.histplot(
+                    cast(Any, X[column]), kde=False, color="blue"
+                )  # seaborn stubs omit Series
                 plt.xlabel("{}".format(column))
                 plt.ylabel("Frequency")
                 plt.title("Histogram of Column {}".format(column))
@@ -178,7 +182,9 @@ def EDA(
                 # plot the histogram
                 fig, (ax1, ax2) = plt.subplots(1, 2)
                 plt.tight_layout()
-                sns.histplot(X[column], ax=ax1, kde=True, color="blue")
+                sns.histplot(
+                    cast(Any, X[column]), ax=ax1, kde=True, color="blue"
+                )  # seaborn stubs omit Series
                 ax1.set_xlabel("{}".format(column))
                 ax1.set_ylabel("Frequency")
                 ax1.set_title("Histogram of Column {}".format(column))

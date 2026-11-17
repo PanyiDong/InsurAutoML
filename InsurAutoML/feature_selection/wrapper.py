@@ -41,7 +41,7 @@ SOFTWARE.
 from __future__ import annotations
 
 from inspect import isclass
-from typing import Union, Callable, List, Tuple
+from typing import Any, Optional, Union, Callable, List, Tuple, cast
 from itertools import combinations
 import numpy as np
 import pandas as pd
@@ -82,15 +82,20 @@ class ExhaustiveFS(BaseFeatureSelection):
         estimator: str = "Lasso",
         criteria: str = "neg_accuracy",
     ) -> None:
-        self.estimator = estimator
-        self.criteria = criteria
+        # replaced by the estimator object/metric function in fit
+        self.estimator: Any = estimator
+        self.criteria: Any = criteria
 
         super().__init__()
         self._fitted = False
 
     def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> ExhaustiveFS:
+        if y is None:
+            raise ValueError("ExhaustiveFS needs the response y.")
         # get feature names
         self._check_feature_names(X)
         # make sure estimator is recognized
@@ -136,9 +141,10 @@ class ExhaustiveFS(BaseFeatureSelection):
         # initialize results
         results = []
 
+        _X = cast(pd.DataFrame, X)  # expects a dataframe
         for comb in all_comb:
-            self.estimator.fit(X.iloc[:, comb], y)
-            results.append(self.criteria(y, self.estimator.predict(X.iloc[:, comb])))
+            self.estimator.fit(_X.iloc[:, comb], y)
+            results.append(self.criteria(y, self.estimator.predict(_X.iloc[:, comb])))
 
         self.selected_features = all_comb[int(np.argmin(results))]
 
@@ -149,7 +155,7 @@ class ExhaustiveFS(BaseFeatureSelection):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return X.iloc[:, self.selected_features]
+        return cast(pd.DataFrame, cast(pd.DataFrame, X).iloc[:, self.selected_features])
 
 
 # Sequential Feature Selection (SFS)
@@ -166,7 +172,7 @@ class SFS(BaseFeatureSelection):
     limit maximum number of features to select, if None, no limit
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
 
     criteria: str, default = "accuracy"
@@ -176,26 +182,27 @@ class SFS(BaseFeatureSelection):
     def __init__(
         self,
         estimator: str = "Lasso",
-        n_components: int = None,
-        n_prop: float = None,
+        n_components: Optional[int] = None,
+        n_prop: Optional[float] = None,
         criteria: str = "neg_accuracy",
     ) -> None:
         self.estimator = estimator
         self.n_components = n_components
         self.n_prop = n_prop
-        self.criteria = criteria
+        # replaced by the metric function in fit
+        self.criteria: Any = criteria
 
         super().__init__()
         self._fitted = False
 
     def select_feature(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
-        estimator: Callable,
-        selected_features: List[str],
-        unselected_features: List[str],
-    ) -> Tuple[float, str]:
+        X: pd.DataFrame,
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        estimator: Any,
+        selected_features: List[int],
+        unselected_features: List[int],
+    ) -> Tuple[float, int]:
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
         # concat new test_comb with selected_features
@@ -219,7 +226,7 @@ class SFS(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> SFS:
         # get feature names
         self._check_feature_names(X)
@@ -241,6 +248,7 @@ class SFS(BaseFeatureSelection):
         # if empty, raise error
         if _empty:
             raise ValueError("Must have response!")
+        assert y is not None  # a None response is caught above
 
         # make sure estimator is recognized
         estimator = get_estimator(self.estimator)
@@ -253,12 +261,13 @@ class SFS(BaseFeatureSelection):
         # make sure selected features is at least 1
         elif self.n_prop is not None:
             self.n_components = max(1, int(self.n_prop * X.shape[1]))
+        assert self.n_components is not None  # one of the branches above is taken
 
         # check whether criteria is valid
         self.criteria = get_metrics(self.criteria)
 
         # initialize selected/unselected features
-        selected_features = []
+        selected_features: List[int] = []
         optimal_loss = np.inf
         unselected_features = list(range(X.shape[1]))
 
@@ -285,7 +294,7 @@ class SFS(BaseFeatureSelection):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return X.iloc[:, self.selected_features]
+        return cast(pd.DataFrame, cast(pd.DataFrame, X).iloc[:, self.selected_features])
 
 
 # Sequential Backward Selection (SBS)
@@ -318,7 +327,7 @@ class ASFFS(BaseFeatureSelection):
     maximum features to be considered as one step
 
     model: the model used to evaluate the objective function, default = 'linear'
-    supproted ('Linear', 'Lasso', 'Ridge')
+    supported ('Linear', 'Lasso', 'Ridge')
 
     objective: the objective function of significance of the features, default = 'MSE'
     supported {'MSE', 'MAE'}
@@ -326,9 +335,9 @@ class ASFFS(BaseFeatureSelection):
 
     def __init__(
         self,
-        n_components: int = None,
+        n_components: Optional[int] = None,
         Delta: float = 0.0,
-        b: int = None,
+        b: Optional[int] = None,
         r_max: int = 5,
         model: str = "Linear",
         objective: str = "MSE",
@@ -358,9 +367,9 @@ class ASFFS(BaseFeatureSelection):
         selected: List[str],
         unselected: List[str],
         o: int,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
-    ) -> Tuple[str, float]:
+        X: pd.DataFrame,
+        y: pd.DataFrame,
+    ) -> Tuple[Tuple[str, ...], float]:
         _subset = list(itertools.combinations(unselected, o))
         _comb_subset = [
             selected + list(item) for item in _subset
@@ -390,6 +399,8 @@ class ASFFS(BaseFeatureSelection):
             from sklearn.metrics import mean_absolute_error
 
             _obj = mean_absolute_error
+        else:
+            raise ValueError("Not recognizing objective!")
 
         for _set in _comb_subset:
             _model.fit(X[_set], y)
@@ -407,9 +418,9 @@ class ASFFS(BaseFeatureSelection):
         self,
         selected: List[str],
         o: int,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
-    ) -> Tuple[str, float]:
+        X: pd.DataFrame,
+        y: pd.DataFrame,
+    ) -> Tuple[Tuple[str, ...], float]:
         _subset = list(itertools.combinations(selected, o))
         _comb_subset = [
             [_full for _full in selected if _full not in item] for item in _subset
@@ -439,6 +450,8 @@ class ASFFS(BaseFeatureSelection):
             from sklearn.metrics import mean_absolute_error
 
             _obj = mean_absolute_error
+        else:
+            raise ValueError("Not recognizing objective!")
 
         for _set in _comb_subset:
             _model.fit(X[_set], y)
@@ -453,8 +466,12 @@ class ASFFS(BaseFeatureSelection):
         )
 
     def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.DataFrame, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> ASFFS:
+        if y is None:
+            raise ValueError("ASFFS needs the response y.")
         # get feature names
         self._check_feature_names(X)
         # check if the input is a dataframe
@@ -476,7 +493,7 @@ class ASFFS(BaseFeatureSelection):
             _b = int(self.b)
 
         _k = 0
-        self.J_max = [
+        self.J_max: List[float] = [
             0 for _ in range(p + 1)
         ]  # mark the most significant objective function value
         self._subset_max = [

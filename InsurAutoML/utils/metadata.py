@@ -44,7 +44,7 @@ import os
 import numpy as np
 import pandas as pd
 import warnings
-from typing import Any, Dict, Tuple, List, Union
+from typing import Any, Dict, Tuple, List, Optional, Union, cast
 from itertools import compress
 
 from ..constant import UNI_CLASS, UNIQUE_FULLTYPE
@@ -68,7 +68,10 @@ def meta_map_object(data: pd.Series) -> str:
         return "Categorical"
     # judge by average length
     try:
-        txt_avg_len = pd.Series(data.unique()).str.split().str.len().mean(axis=0)
+        # (text values: the stubs type the unique values as numbers)
+        txt_avg_len = (
+            cast(Any, pd.Series(data.unique())).str.split().str.len().mean(axis=0)
+        )
         if txt_avg_len >= 3:
             return "Text"
     except BaseException:
@@ -81,25 +84,29 @@ class get_details:
         self.type = type
         self.subtype = subtype
 
-    def get(self, data: pd.Series) -> Union[Dict[Tuple, List], Dict]:
+    def get(self, data: pd.Series) -> Optional[Union[Dict[Tuple, List], Dict]]:
         if self.type == "Float" or self.subtype == "Numerical":
             return self._get_details_numerical(data)
         elif self.subtype == "Categorical":
             return self._get_details_categorical(data)
         elif self.type in ["Datetime", "Path"] or self.subtype == "Text":
             return {}
+        return None
 
-    def merge(self, data: pd.Series, details: Dict) -> Union[Dict[Tuple, List], Dict]:
+    def merge(
+        self, data: pd.Series, details: Dict
+    ) -> Optional[Union[Dict[Tuple, List], Dict]]:
         if self.type == "Float" or self.subtype == "Numerical":
             return self._merge_details_numerical(data, details)
         elif self.subtype == "Categorical":
             return self._merge_details_categorical(data, details)
         elif self.type in ["Datetime", "Path"] or self.subtype == "Text":
             return {}
+        return None
 
     # get details of numerical data
     @staticmethod
-    def _get_details_numerical(data: pd.Series) -> Dict[str, np.ndarray]:
+    def _get_details_numerical(data: pd.Series) -> Dict[str, Any]:
         return {
             "length": len(data),
             "mean": np.mean(data),
@@ -203,7 +210,7 @@ class MetaData:
             return self._get_from_others(data)
 
     def update(
-        self, data: pd.DataFrame, names: List[str] = None
+        self, data: pd.DataFrame, names: Optional[Union[List[str], pd.Index]] = None
     ) -> Union[Dict[Tuple, List], Dict]:
         # check whether metadata generated
         self._check_metadata()
@@ -235,7 +242,7 @@ class MetaData:
         return self.metadata
 
     def merge(
-        self, data: pd.DataFrame, names: List[str] = None
+        self, data: pd.DataFrame, names: Optional[Union[List[str], pd.Index]] = None
     ) -> Union[Dict[Tuple, List], Dict]:
         # check whether metadata generated
         self._check_metadata()
@@ -269,7 +276,9 @@ class MetaData:
         return self.metadata
 
     def force_update(
-        self, names: Union[List[str], str], fulltypes: Union[List[Tuple[str, str]], str]
+        self,
+        names: Union[List[str], str],
+        fulltypes: Union[List[Tuple[str, str]], Tuple[str, str], str],
     ) -> Union[Dict[Tuple, List], Dict]:
         # check whether metadata generated
         self._check_metadata()
@@ -278,17 +287,19 @@ class MetaData:
         names = [names] if isinstance(names, str) else names
         # if fulltypes is a string, convert it to a list
         # a single fulltype tuple, e.g. ("Int", "Categorical"), is also wrapped
-        fulltypes = [fulltypes] if isinstance(fulltypes, (str, tuple)) else fulltypes
+        fulltypes_: List[Any] = (
+            [fulltypes] if isinstance(fulltypes, (str, tuple)) else fulltypes
+        )
 
         # check length of names and fulltypes
-        if len(names) != len(fulltypes):
+        if len(names) != len(fulltypes_):
             raise ValueError(
                 "Length of names and fulltypes must be the same. Got {} and {}.".format(
-                    len(names), len(fulltypes)
+                    len(names), len(fulltypes_)
                 )
             )
 
-        for name, fulltype in zip(names, fulltypes):
+        for name, fulltype in zip(names, fulltypes_):
             # find the key of the name in metadata
             _key = self._get_key(name, self.metadata)
             # remove registered metadata
@@ -304,7 +315,9 @@ class MetaData:
 
         return self.metadata
 
-    def register(self, name: str, fulltype: dict, details: dict = None) -> None:
+    def register(
+        self, name: str, fulltype: Tuple[str, str], details: Optional[dict] = None
+    ) -> None:
         # check whether metadata generated
         self._check_metadata()
 
@@ -346,7 +359,7 @@ class MetaData:
                 )
 
     @staticmethod
-    def _get_fulltype(data: pd.Series) -> str:
+    def _get_fulltype(data: pd.Series) -> Tuple[str, str]:
         _column = data.name  # get column name
         _dtype = data.dtypes  # get column dtype
 

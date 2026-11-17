@@ -1,8 +1,15 @@
-version: '3.4'
-
+# docker compose -f Dockerfiles/docker-compose.yml up --build
 services:
-  automltest:
-    image: automltest
+  insurautoml:
+    image: insurautoml
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      # the repository root
+      context: ..
+      dockerfile: Dockerfiles/Dockerfile
+      args:
+        EXTRAS: informed
+    ports:
+      # optimization dashboard: http://127.0.0.1:8765
+      - "8765:8765"
+    # shared memory of the Ray object store (the default 64MB is too small)
+    shm_size: "2gb"

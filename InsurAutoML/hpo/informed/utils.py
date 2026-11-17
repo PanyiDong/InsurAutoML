@@ -40,6 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 from typing import Any, List, Callable, Dict, Optional, Tuple, Union, cast
+import inspect
 import os
 import json
 import time
@@ -158,8 +159,31 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
 
         return _comp, _hyper
 
+    def _with_seed(self, method: Callable, hyperparameters: Dict) -> Any:
+        """
+        Instance of a preparation method, with the seed of the trial when the method
+        takes one (CCC tie breaking, MissForest, SPlit: reproducible trials).
+        """
+        hyperparameters = dict(hyperparameters)
+        try:
+            takes_seed = "seed" in inspect.signature(method).parameters
+        except (TypeError, ValueError):
+            takes_seed = False
+        if takes_seed and "seed" not in hyperparameters:
+            # (set in setup; an objective configured without it: no seed)
+            hyperparameters["seed"] = getattr(self, "seed", None)
+        return method(**hyperparameters)
+
     # convert dict hyperparameter to actual classes
     def dict2config(self, params: Dict) -> None:
+        # the method dictionaries are given in setup with the data
+        assert (
+            self.encoder is not None
+            and self.complete_prep is not None
+            and self.missing_prep is not None
+            and self.models is not None
+        ), "The method dictionaries are not set, call setup with them first."
+
         for key in list(params.keys()):
             if key not in [
                 "encoder",
@@ -178,16 +202,16 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         self._complete_prep, self._complete_prep_hyper = self._extract_hyper(
             params, "complete_prep"
         )
-        self.comp_prep = self.complete_prep[self._complete_prep](
-            **self._complete_prep_hyper
+        self.comp_prep = self._with_seed(
+            self.complete_prep[self._complete_prep], self._complete_prep_hyper
         )
 
         # get method & hyperparameter of missing_prep
         self._missing_prep, self._missing_prep_hyper = self._extract_hyper(
             params, "missing_prep"
         )
-        self.miss_prep = self.missing_prep[self._missing_prep](
-            **self._missing_prep_hyper
+        self.miss_prep = self._with_seed(
+            self.missing_prep[self._missing_prep], self._missing_prep_hyper
         )
 
         # get method & hyperparameter of model
@@ -271,7 +295,7 @@ class InformedTabularObjective(TrialArtifactMixin, tune.Trainable):
         self,
     ) -> Dict[str, Any]:
         # set random seed
-        set_seed(self.seed)
+        set_seed(cast(int, self.seed))  # the seed is set by the hpo
 
         self._logger.info("[INFO] Objective starting...")
 

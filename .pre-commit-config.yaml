@@ -1,0 +1,12 @@
+# Formatting and linting before each commit:
+#   pip install pre-commit && pre-commit install
+# (the same versions as the dev extra and the "Format python code" workflow)
+repos:
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.10.1
+    hooks:
+      - id: black
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.5
+    hooks:
+      - id: ruff

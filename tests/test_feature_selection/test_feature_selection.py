@@ -259,3 +259,33 @@ def test_GA_fitness_without_selected_features():
     assert selector._cal_fitness(X_reg, y_reg, [0, 0]) == pytest.approx(
         np.var(y_reg["y"])
     )
+
+
+def test_GA_float_crossover_mutation_points():
+    # crossover_n/mutation_n given as floats are converted to integers
+    # (previously compared instead of assigned: slicing with a float failed)
+    from InsurAutoML.encoding import DataEncoding
+    from InsurAutoML.feature_selection import GeneticAlgorithm
+
+    data = pd.read_csv("data/heart.csv")
+    formatter = DataEncoding()
+    formatter.fit(data)
+    data = formatter.refit(data)
+    X = data.iloc[:, :-1]
+    y = data.iloc[:, -1]
+
+    feature_selection = GeneticAlgorithm(
+        n_components=5,
+        fs_method="random",
+        fitness_fit="Linear",
+        n_generations=3,
+        p_crossover=1.0,
+        crossover_n=2.0,
+        p_mutation=1.0,
+        mutation_n=1.0,
+    )
+    feature_selection.fit(X, y)
+    assert feature_selection.crossover_n == 2 and isinstance(
+        feature_selection.crossover_n, int
+    )
+    assert isinstance(feature_selection.mutation_n, int)

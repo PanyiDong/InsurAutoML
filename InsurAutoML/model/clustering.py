@@ -44,7 +44,6 @@ from sklearn.cluster import (
     Birch,
     DBSCAN,
     KMeans,
-    SpectralBiclustering,
     MiniBatchKMeans,
     MeanShift,
     OPTICS,

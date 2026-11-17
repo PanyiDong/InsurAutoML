@@ -1,15 +1,41 @@
 """
-File: test_optional.py
+File Name: test_optional.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
+Latest Version: 0.2.9
 Relative Path: /tests/test_utils/test_optional.py
+File Created: Monday, 16th November 2026 7:12:56 pm
+Author: Panyi Dong (panyid2@illinois.edu)
 
-Tests of the optional informed installation (InsurAutoML/_optional.py): detection of
-the missing components and the error raised when the informed pipelines are used
-without the informed installation.
+-----
+Last Modified: Monday, 16th November 2026 11:36:43 pm
+Modified By: Panyi Dong (panyid2@illinois.edu)
+
+-----
+MIT License
+
+Copyright (c) 2026, Panyi Dong
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 """
 
 import os
@@ -39,9 +65,9 @@ def test_missing_package(monkeypatch):
     monkeypatch.setattr(
         _optional.importlib.util,
         "find_spec",
-        lambda name, *args: None
-        if name == "missforest"
-        else real_find_spec(name, *args),
+        lambda name, *args: (
+            None if name == "missforest" else real_find_spec(name, *args)
+        ),
     )
 
     assert "missforest" in missing_informed_components()

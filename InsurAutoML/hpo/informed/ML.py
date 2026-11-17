@@ -64,14 +64,14 @@ class InformedAutoTabularRegressor(InformedAutoTabularBase):
         model_name: str = "model",
         ignore_warning: bool = True,
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "MSE",
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: List[str] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[List[str]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -80,6 +80,15 @@ class InformedAutoTabularRegressor(InformedAutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        exclude = {} if exclude is None else exclude
+        search_algo_settings = (
+            {} if search_algo_settings is None else search_algo_settings
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else search_scheduler_settings
+        )
+        logger = ["Logger"] if logger is None else logger
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.voting = voting
@@ -163,14 +172,14 @@ class InformedAutoTabularClassifier(InformedAutoTabularBase):
         model_name: str = "model",
         ignore_warning: bool = True,
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: List[str] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[List[str]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -179,6 +188,15 @@ class InformedAutoTabularClassifier(InformedAutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        exclude = {} if exclude is None else exclude
+        search_algo_settings = (
+            {} if search_algo_settings is None else search_algo_settings
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else search_scheduler_settings
+        )
+        logger = ["Logger"] if logger is None else logger
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.voting = voting
@@ -262,14 +280,14 @@ class InformedAutoTabular(InformedAutoTabularBase):
         model_name: str = "model",
         ignore_warning: bool = True,
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         valid_size: float = 0.2,
-        objective: Union[str, Callable] = None,
+        objective: Optional[Union[str, Callable]] = None,
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: List[str] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[List[str]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -278,6 +296,15 @@ class InformedAutoTabular(InformedAutoTabularBase):
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call
+        exclude = {} if exclude is None else exclude
+        search_algo_settings = (
+            {} if search_algo_settings is None else search_algo_settings
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else search_scheduler_settings
+        )
+        logger = ["Logger"] if logger is None else logger
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
         self.voting = voting

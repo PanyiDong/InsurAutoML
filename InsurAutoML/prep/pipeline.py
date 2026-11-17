@@ -139,6 +139,8 @@ class CompletePrepPipeline(PrepPipeline):
 
     Parameters
     ----------
+    seed: seed of the random parts (tie breaking of the CCC feature selection,
+    SPlit), default = None (random); the same seed gives the same features and split
     """
 
     def __init__(
@@ -146,21 +148,21 @@ class CompletePrepPipeline(PrepPipeline):
         missing_threshold: float = 0.5,
         cc_threshold: float = 0.9,
         split_ratio: float = 0.1,
+        seed: Optional[int] = None,
     ) -> None:
         self.missing_threshold = missing_threshold
         self.cc_threshold = cc_threshold
         self.split_ratio = split_ratio
+        self.seed = seed
 
         self._fitted = False
         super().__init__()
 
     @overload
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse:
-        ...
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse: ...
 
     @overload
-    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse:
-        ...
+    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse: ...
 
     def fit(
         self, X: pd.DataFrame, y: Optional[pd.Series] = None
@@ -172,14 +174,18 @@ class CompletePrepPipeline(PrepPipeline):
         self.selector = CompleteSet(threshold=self.missing_threshold)
         X_prep = self.selector.fit_transform(X, y)
         # ensure y aligns with selected rows from X
-        y_prep = y[X_prep.index] if y is not None else None
+        y_prep = cast(pd.Series, y[X_prep.index]) if y is not None else None
         # CCC feature selection
         # self.filter = CCCFilter(threshold=self.cc_threshold)
-        self.filter = FeatureFilter(criteria="CCC", n_prop=self.cc_threshold)
+        self.filter = FeatureFilter(
+            criteria="CCC", n_prop=self.cc_threshold, seed=self.seed
+        )
         # DataFrame input, DataFrame output
         X_prep = cast(pd.DataFrame, self.filter.fit_transform(X_prep, y_prep))
         # SPlit data splitting
-        test_idx = X_prep.index[np.array(SPlit(X_prep, split_ratio=self.split_ratio))]
+        test_idx = X_prep.index[
+            np.array(SPlit(X_prep, split_ratio=self.split_ratio, seed=self.seed))
+        ]
         train_idx = np.setdiff1d(X_prep.index, test_idx)
 
         self._fitted = True
@@ -204,7 +210,7 @@ class CompletePrepPipeline(PrepPipeline):
         # X = standardization(X)
         X_prep = self.selector.transform(X)
         # align y with transformed X
-        y_prep = y[X_prep.index] if y is not None else None
+        y_prep = cast(pd.Series, y[X_prep.index]) if y is not None else None
         X_prep = cast(pd.DataFrame, self.filter.transform(X_prep))
 
         return X_prep, y_prep if y is not None else None
@@ -227,6 +233,10 @@ class MissingPrepPipeline(PrepPipeline):
     the informed AutoML runs several trials in parallel (one CPU each), and LightGBM
     using all cores in every trial oversubscribes the CPUs (orders of magnitude
     slower); one thread is also the fastest for the small per-column models
+
+    seed: seed of the random parts (MissForest models, tie breaking of the CCC
+    feature selection, SPlit), default = None (random); the same seed gives the
+    same imputation, features and split
     """
 
     def __init__(
@@ -238,6 +248,7 @@ class MissingPrepPipeline(PrepPipeline):
         split_ratio: float = 0.1,
         cc_threshold: float = 0.9,
         n_jobs: int = 1,
+        seed: Optional[int] = None,
     ) -> None:
         self.missing_threshold = missing_threshold
         self.twin_r = twin_r
@@ -246,17 +257,16 @@ class MissingPrepPipeline(PrepPipeline):
         self.split_ratio = split_ratio
         self.cc_threshold = cc_threshold
         self.n_jobs = n_jobs
+        self.seed = seed
 
         self._fitted = False
         super().__init__()
 
     @overload
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse:
-        ...
+    def fit(self, X: pd.DataFrame, y: pd.Series) -> SplitWithResponse: ...
 
     @overload
-    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse:
-        ...
+    def fit(self, X: pd.DataFrame, y: None = None) -> SplitWithoutResponse: ...
 
     def fit(
         self, X: pd.DataFrame, y: Optional[pd.Series] = None
@@ -273,19 +283,33 @@ class MissingPrepPipeline(PrepPipeline):
         # )
         # MissForest default models (linear_tree LightGBM) with limited threads
         self.imputer2 = MissForest(
-            clf=LGBMClassifier(verbosity=-1, linear_tree=True, n_jobs=self.n_jobs),
-            rgr=LGBMRegressor(verbosity=-1, linear_tree=True, n_jobs=self.n_jobs),
+            clf=LGBMClassifier(
+                verbosity=-1,
+                linear_tree=True,
+                n_jobs=self.n_jobs,
+                random_state=self.seed,
+            ),
+            rgr=LGBMRegressor(
+                verbosity=-1,
+                linear_tree=True,
+                n_jobs=self.n_jobs,
+                random_state=self.seed,
+            ),
             max_iter=self.imputation_max_iter,
             verbose=0,
         )
         X_prep = self.imputer2.fit_transform(X_prep)
         # CCC feature selection
         # self.filter = CCCFilter(threshold=self.cc_threshold)
-        self.filter = FeatureFilter(criteria="CCC", n_prop=self.cc_threshold)
+        self.filter = FeatureFilter(
+            criteria="CCC", n_prop=self.cc_threshold, seed=self.seed
+        )
         # DataFrame input, DataFrame output
         X_prep = cast(pd.DataFrame, self.filter.fit_transform(X_prep, y_prep))
         # SPlit data splitting
-        test_idx = X_prep.index[np.array(SPlit(X_prep, split_ratio=self.split_ratio))]
+        test_idx = X_prep.index[
+            np.array(SPlit(X_prep, split_ratio=self.split_ratio, seed=self.seed))
+        ]
         train_idx = np.setdiff1d(X_prep.index, test_idx)
 
         self._fitted = True

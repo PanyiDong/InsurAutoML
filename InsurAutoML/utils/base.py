@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import List, Optional, Union, Callable, Any, Dict, cast
+from typing import Any, Callable, Dict, List, Optional, Sequence, Union, cast
 import logging
 import warnings
 import time
@@ -155,7 +155,7 @@ def is_date(df: pd.Series, rule: str = "all") -> bool:
 # preprocessing/modification, the data changed)
 def feature_rounding(X: pd.DataFrame, uni_class: int = UNI_CLASS) -> pd.DataFrame:
     features = list(X.columns)
-    _X = X.copy(deep=True)
+    _X = cast(pd.DataFrame, copy_frame(X, deep=True))
 
     for _column in features:
         _unique = np.sort(_X[_column].dropna().unique())
@@ -225,9 +225,19 @@ def maxloc(vlist: Union[List, np.ndarray]) -> int:
         return cast(int, np.argmax(vlist, axis=0))
 
 
+def copy_frame(X: Any, deep: bool = True) -> Union[pd.DataFrame, pd.Series]:
+    """
+    Copy of X as pandas object: dataframes/series are copied (deep or shallow),
+    other inputs (numpy arrays, lists) are converted to a new dataframe.
+    """
+    if isinstance(X, (pd.DataFrame, pd.Series)):
+        return X.copy(deep=deep)
+    return pd.DataFrame(np.array(X, copy=True))
+
+
 # return the index of Boolean list or {0, 1} list
 # default 1 consider as True
-def True_index(X: List, _true: List = [True, 1]) -> List[int]:
+def True_index(X: List, _true: Sequence = (True, 1)) -> List[int]:
     result = [i for i, value in enumerate(X) if value in _true]
 
     return result
@@ -236,7 +246,7 @@ def True_index(X: List, _true: List = [True, 1]) -> List[int]:
 # determine the task types
 def type_of_task(y: Union[pd.DataFrame, pd.Series, np.ndarray]) -> str:
     if isinstance(y, (pd.DataFrame, pd.Series)):
-        y = y.values
+        y = cast(np.ndarray, y.values)
 
     if y.dtype.kind == "f" and np.any(y != y.astype(int)):
         return "continuous"  # assign for regression tasks
@@ -302,7 +312,7 @@ def has_method(obj: Callable, name: str) -> bool:
 
 
 # check if is None
-def is_none(item: Any, pat: List = [None, "None", "none", "NONE"]) -> bool:
+def is_none(item: Any, pat: Sequence = (None, "None", "none", "NONE")) -> bool:
     if item in pat:
         return True
     else:

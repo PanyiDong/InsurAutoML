@@ -15,11 +15,16 @@ jobs:
         uses: actions/setup-python@v7
         with:
           python-version: "3.12"
+          # reuse the downloaded packages between runs
+          cache: pip
+          cache-dependency-path: pyproject.toml
       - name: Upgrade pip
         run: python -m pip install --upgrade pip
       # the InformedAutoML C++ extension is not supported on Windows,
       # tests of the informed pipelines are skipped
+      # the long searches (marked slow, run on Linux) are skipped on the slower
+      # Windows runners
       - name: "run tests (without neural network)"
         run: |
           pip install -e ".[informed]" pytest
-          pytest tests/
+          pytest tests/ -m "not slow"

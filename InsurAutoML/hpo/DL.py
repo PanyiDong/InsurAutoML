@@ -38,16 +38,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from typing import Optional
+
 
 class AutoTextClassifier:
-
     """
     Automated sentence classification: sentiment analysis, topic detection, etc.
     """
 
     def __init__(
         self,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         self.seed = seed
 
@@ -63,14 +64,13 @@ class AutoTextClassifier:
 
 
 class AutoNextWordPrediction:
-
     """
     Automated Next Word Prediction: sequence modeling, etc.
     """
 
     def __init__(
         self,
-        seed: int = None,
+        seed: Optional[int] = None,
     ):
         self.seed = seed
 

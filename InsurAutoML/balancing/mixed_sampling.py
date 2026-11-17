@@ -40,9 +40,10 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import Any, List, Optional, Union, Tuple, cast
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 
 from ..constant import MAX_ITER
@@ -61,7 +62,6 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 
 
 class Smote_TomekLink(Smote, TomekLink):
-
     """
     Run Smote then run Tomek Link to balance dataset
     """
@@ -71,10 +71,10 @@ class Smote_TomekLink(Smote, TomekLink):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
+        max_iter: Optional[int] = None,
         k: int = 5,
         generation: str = "mean",
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -87,25 +87,26 @@ class Smote_TomekLink(Smote, TomekLink):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -120,7 +121,7 @@ class Smote_TomekLink(Smote, TomekLink):
                 k=self.k,
                 generation=self.generation,
             )
-            _data = super().fit_transform(_data)
+            _data = cast(pd.DataFrame, super().fit_transform(_data))
 
             super(Smote, self).__init__(
                 imbalance_threshold=_threshold,
@@ -129,19 +130,20 @@ class Smote_TomekLink(Smote, TomekLink):
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
-            _data = super(Smote, self).fit_transform(_data)
+            _data = cast(pd.DataFrame, super(Smote, self).fit_transform(_data))
             self.imbalance_threshold = _threshold
 
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
 
 class Smote_ENN(Smote, EditedNearestNeighbor):
-
     """
     Run Smote then run ENN to balance dataset
     """
@@ -151,8 +153,8 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
         k: int = 5,
         generation: str = "mean",
     ) -> None:
@@ -167,25 +169,26 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
 
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
@@ -201,7 +204,7 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
                 k=self.k,
                 generation=self.generation,
             )
-            _data = super().fit_transform(_data)
+            _data = cast(pd.DataFrame, super().fit_transform(_data))
 
             super(Smote, self).__init__(
                 imbalance_threshold=_threshold,
@@ -210,12 +213,14 @@ class Smote_ENN(Smote, EditedNearestNeighbor):
                 seed=self.seed,
                 k=self.k,
             )
-            _data = super(Smote, self).fit_transform(_data)
+            _data = cast(pd.DataFrame, super(Smote, self).fit_transform(_data))
             self.imbalance_threshold = _threshold
 
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data

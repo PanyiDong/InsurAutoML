@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple
+from typing import TYPE_CHECKING, Any, Optional, Union, Tuple, cast
 import warnings
 import numpy as np
 import pandas as pd
@@ -51,10 +51,10 @@ from .base import BaseModel
 
 # check if pytorch exists
 # if exists, import pytorch
-import importlib
+import importlib.util
 
 pytorch_spec = importlib.util.find_spec("torch")
-if pytorch_spec is not None:
+if TYPE_CHECKING or pytorch_spec is not None:
     import torch
     from torch import nn
     from torch import optim
@@ -101,7 +101,7 @@ class RNN_Net(nn.Module):
         activation: str = "Sigmoid",
         dropout: float = 0.2,
         use_softmax: bool = False,
-        device: Union[str, torch.device] = torch.device("cuda"),
+        device: Union[str, torch.device] = "cuda",
     ) -> None:
         super().__init__()
 
@@ -155,10 +155,15 @@ class RNN_Net(nn.Module):
         self, input: torch.Tensor, hidden: torch.Tensor
     ) -> Tuple[torch.Tensor, Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]]:
         # embeds = self.embedding(input)
+        hidden_out: Union[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]
         if self.RNN_unit in ["LSTM"]:
             rnn_out, (rnn_hidden, rnn_cell) = self.rnn(input, hidden)
+            hidden_out = (rnn_hidden, rnn_cell)
         elif self.RNN_unit in ["RNN", "GRU"]:
             rnn_out, rnn_hidden = self.rnn(input, hidden)
+            hidden_out = rnn_hidden
+        else:
+            raise TypeError("Not recognizing RNN unit type!")
         tag_space = self.hidden2tag(rnn_out)
         tag_scores = self.dropout(self.activation(tag_space))
         if self.use_softmax:
@@ -166,10 +171,7 @@ class RNN_Net(nn.Module):
                 tag_scores
             )  # [:, -1, :]  # keep full output here
 
-        if self.RNN_unit in ["LSTM"]:
-            return tag_scores, (rnn_hidden, rnn_cell)
-        elif self.RNN_unit in ["RNN", "GRU"]:
-            return tag_scores, rnn_hidden
+        return tag_scores, hidden_out
 
     def init_hidden(
         self, batch_size: int
@@ -186,6 +188,7 @@ class RNN_Net(nn.Module):
         # if not (RNN, GRU), need h0
         if self.RNN_unit in ["RNN", "GRU"]:
             return h0
+        raise TypeError("Not recognizing RNN unit type!")
 
 
 class RNN_Base:
@@ -237,14 +240,14 @@ class RNN_Base:
         RNN_unit: str = "RNN",
         activation: str = "Sigmoid",
         dropout: float = 0.2,
-        learning_rate: float = None,
+        learning_rate: Optional[float] = None,
         optimizer: str = "Adam",
         criteria: str = "CrossEntropy",
         batch_size: int = 32,
         num_epochs: int = 20,
         use_softmax: bool = False,
         is_cuda: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # model parameters
         self.input_size = input_size
@@ -270,8 +273,8 @@ class RNN_Base:
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: torch.Tensor,
+        y: torch.Tensor,
     ) -> RNN_Base:
         # set seed
         # torch.manual_seed(self.seed)
@@ -311,6 +314,8 @@ class RNN_Base:
         elif self.optimizer == "SGD":
             lr = 0.1 if self.learning_rate is None else self.learning_rate
             optimizer = optim.SGD(self.model.parameters(), lr=lr)
+        else:
+            raise ValueError("Not recognized optimizer: {}.".format(self.optimizer))
 
         # specify loss function
         if self.criteria == "CrossEntropy":
@@ -356,13 +361,13 @@ class RNN_Base:
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # convert to tensor
-        X = torch.as_tensor(
+        X_tensor = torch.as_tensor(
             X.values if isinstance(X, pd.DataFrame) else X, dtype=torch.float
         )
-        X.unsqueeze_(-1)  # expand to 3d tensor
+        X_tensor.unsqueeze_(-1)  # expand to 3d tensor
 
         # load data to TensorDataset
-        test_tensor = TensorDataset(X)
+        test_tensor = TensorDataset(X_tensor)
         # load data to DataLoader
         test_loader = DataLoader(test_tensor, batch_size=len(test_tensor))
 
@@ -373,9 +378,12 @@ class RNN_Base:
         self.model.eval()
 
         # predict
+        results: Optional[torch.Tensor] = None
         for batch_idx, [data] in enumerate(test_loader):
             with torch.no_grad():
                 results, h = self.model(data.to(self.device), h)
+        if results is None:
+            raise ValueError("No data to predict.")
 
         return results[:, -1, :].cpu().numpy()  # return prediction to cpu
 
@@ -429,13 +437,13 @@ class RNN_Classifier(RNN_Base, BaseModel):
         RNN_unit: str = "RNN",
         activation: str = "Sigmoid",
         dropout: float = 0.2,
-        learning_rate: float = None,
+        learning_rate: Optional[float] = None,
         optimizer: str = "Adam",
         criteria: str = "CrossEntropy",
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # model parameters
         self.input_size = input_size
@@ -459,23 +467,29 @@ class RNN_Classifier(RNN_Base, BaseModel):
         self._fitted = False
 
     def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray, torch.Tensor],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray, torch.Tensor],
     ) -> RNN_Classifier:
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
-            X = torch.as_tensor(
+            X_tensor = torch.as_tensor(
                 X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
                 dtype=torch.float,
             )
-            X.unsqueeze_(-1)  # expand to 3d tensor
+            X_tensor.unsqueeze_(-1)  # expand to 3d tensor
+        else:
+            X_tensor = X
         if not isinstance(y, torch.Tensor):
-            y = torch.as_tensor(
+            y_tensor = torch.as_tensor(
                 y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
                 dtype=torch.long,
             )
+        else:
+            y_tensor = y
 
         # get unique classes (after conversion, pd.unique does not accept tensors)
-        self.output_size = len(torch.unique(y))
+        self.output_size = len(torch.unique(y_tensor))
 
         super(RNN_Classifier, self).__init__(
             input_size=self.input_size,
@@ -497,11 +511,16 @@ class RNN_Classifier(RNN_Base, BaseModel):
 
         self._fitted = True
 
-        return super(RNN_Classifier, self).fit(X, y)
+        super(RNN_Classifier, self).fit(X_tensor, y_tensor)
+
+        return self
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # need to assign prediction to classes
-        return assign_classes(super(RNN_Classifier, self).predict(X))
+        return cast(
+            np.ndarray,
+            assign_classes(cast(Any, super(RNN_Classifier, self).predict(X))),
+        )
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # not need to use argmax to select the one class
@@ -558,13 +577,13 @@ class RNN_Regressor(RNN_Base, BaseModel):
         RNN_unit: str = "RNN",
         activation: str = "Sigmoid",
         dropout: float = 0.2,
-        learning_rate: float = None,
+        learning_rate: Optional[float] = None,
         optimizer: str = "Adam",
         criteria: str = "MSE",
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         # model parameters
         self.input_size = input_size
@@ -588,23 +607,29 @@ class RNN_Regressor(RNN_Base, BaseModel):
         self._fitted = False
 
     def fit(
-        self, X: Union[pd.DataFrame, np.ndarray], y: Union[pd.Series, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray, torch.Tensor],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray, torch.Tensor],
     ) -> RNN_Regressor:
         # get unique classes
         self.output_size = 1
 
         # convert data to tensor
         if not isinstance(X, torch.Tensor):
-            X = torch.as_tensor(
+            X_tensor = torch.as_tensor(
                 X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
                 dtype=torch.float,
             )
-            X.unsqueeze_(-1)  # expand to 3d tensor
+            X_tensor.unsqueeze_(-1)  # expand to 3d tensor
+        else:
+            X_tensor = X
         if not isinstance(y, torch.Tensor):
-            y = torch.as_tensor(
+            y_tensor = torch.as_tensor(
                 y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
                 dtype=torch.float,
             )
+        else:
+            y_tensor = y
 
         super(RNN_Regressor, self).__init__(
             input_size=self.input_size,
@@ -626,7 +651,9 @@ class RNN_Regressor(RNN_Base, BaseModel):
 
         self._fitted = True
 
-        return super(RNN_Regressor, self).fit(X, y)
+        super(RNN_Regressor, self).fit(X_tensor, y_tensor)
+
+        return self
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         return super(RNN_Regressor, self).predict(X)

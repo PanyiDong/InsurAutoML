@@ -1,17 +1,21 @@
 from __future__ import annotations
-from typing import Union
+from typing import Optional, Union, cast
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 
 
 class BaseScaling:
+    # set by subclasses that support copying
+    deep_copy: bool
+
     def __init__(self) -> None:
         pass
 
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> BaseScaling:
         raise NotImplementedError
 
@@ -23,9 +27,9 @@ class BaseScaling:
     def fit_transform(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, np.ndarray]] = None,
     ) -> Union[pd.DataFrame, np.ndarray]:
-        _X = X.copy(deep=self.deep_copy)
+        _X = cast(pd.DataFrame, copy_frame(X, deep=self.deep_copy))
 
         self.fit(_X, y)
 

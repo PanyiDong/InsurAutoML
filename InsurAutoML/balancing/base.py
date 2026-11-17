@@ -38,13 +38,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union, Tuple
+from typing import Optional, Union, Tuple
 import pandas as pd
 from ..constant import MAX_ITER
 
 
 class BaseBalancing:
-
     """
     Base class for balancing methods.
     """
@@ -56,6 +55,6 @@ class BaseBalancing:
         return MAX_ITER
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         raise NotImplementedError

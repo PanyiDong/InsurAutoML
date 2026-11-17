@@ -104,17 +104,17 @@ feature_selections = {
 
 
 # sklearn implementations of the auto-sklearn feature preprocessors
-feature_selections[
-    "extra_trees_preproc_for_classification"
-] = extra_trees_preproc_for_classification
-feature_selections[
-    "extra_trees_preproc_for_regression"
-] = extra_trees_preproc_for_regression
+feature_selections["extra_trees_preproc_for_classification"] = (
+    extra_trees_preproc_for_classification
+)
+feature_selections["extra_trees_preproc_for_regression"] = (
+    extra_trees_preproc_for_regression
+)
 feature_selections["liblinear_svc_preprocessor"] = liblinear_svc_preprocessor
 # feature_selections["polynomial"] = polynomial
-feature_selections[
-    "select_percentile_classification"
-] = select_percentile_classification
+feature_selections["select_percentile_classification"] = (
+    select_percentile_classification
+)
 feature_selections["select_percentile_regression"] = select_percentile_regression
 feature_selections["select_rates_classification"] = select_rates_classification
 feature_selections["select_rates_regression"] = select_rates_regression

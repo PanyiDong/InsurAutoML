@@ -40,21 +40,26 @@ SOFTWARE.
 
 from __future__ import annotations
 from typing import Any, Union, List, Callable, Dict, Tuple, Optional, cast
+import hashlib
+import json
+import html
 import os
 import warnings
+from contextlib import ExitStack
 import importlib.util
 import shutil
 import copy
 import datetime
 import logging
 import pandas as pd
+from pandas.core.util.hashing import hash_pandas_object
 import numpy as np
 from ray import tune
 from sklearn.model_selection import KFold
 
 from ..base import set_seed, no_processing
-from ..constant import UNI_CLASS, MAX_TIME, LOGGINGLEVEL, MAX_ERROR_TRIALOUT
-from ..utils.base import type_of_script, format_hyper_dict
+from ..constant import UNI_CLASS, MAX_TIME, MAX_ERROR_TRIALOUT
+from ..utils.base import format_hyper_dict, type_of_script
 from ..utils.data import str2list, str2dict, train_test_split
 from ..utils.file import (
     save_methods,
@@ -62,6 +67,7 @@ from ..utils.file import (
 )
 from ..utils.metadata import MetaData
 from ..utils.optimize import (
+    close_logger,
     setup_logger,
     get_algo,
     set_algo_seed,
@@ -71,9 +77,13 @@ from ..utils.optimize import (
     TimePlateauStopper,
     TrialDirnameCreator,
     legacy_progress_output,
+    quiet_ray_output,
     ray_status,
     check_status,
 )
+from ..dashboard import EVENTS_DIR, DashboardCallback, EventRecorder
+from ..dashboard.server import start_dashboard
+from ..dashboard.space import space_schema
 from .utils import TabularObjective
 from .ensemble import (
     Pipeline,
@@ -96,7 +106,6 @@ from .ensemble import (
 # warnings.filterwarnings("ignore", message="Criterion 'mse' was deprecated in v1.0")
 # warnings.filterwarnings("ignore", message="Criterion 'mae' was deprecated in v1.0")
 # warnings.filterwarnings("ignore", message="'normalize' was deprecated in version 1.0")
-warnings.filterwarnings("ignore", category=UserWarning)
 
 # check whether gpu device available
 
@@ -130,7 +139,7 @@ class AutoTabularBase:
 
     timeout: Total time limit for the job in seconds, default = 360
 
-    max_evals: Maximum number of function evaluations allowed, default = 32
+    max_evals: Maximum number of function evaluations allowed, default = 64
 
     timeout_per_trial: Time limit for each trial in seconds, default = None
     default by (timeout / max_evals * 5)
@@ -227,13 +236,17 @@ class AutoTabularBase:
     list of supported callbacks, support ("Logger", "TBX", "JSON", "CSV", "MLflow", "Wandb")
 
     progress_reporter: progress reporter, default = None
-    automatically decide what progressbar to use
-    support ("CLIReporter", "JupyterNotebookReporter")
+    support ("Dashboard", "CLIReporter", "JupyterNotebookReporter")
+    "Dashboard" (default, also used for None): the trials are recorded for the web
+    dashboard (<temp_directory>/<model_name>/dashboard) and the Ray Tune console
+    output is suppressed;
+    "CLIReporter"/"JupyterNotebookReporter": Ray Tune console/notebook output
 
     full_status: whether to print full status, default = False
 
     verbose: display for output, default = 1
-    support (0, 1, 2, 3)
+    support (0, 1, 2, 3), Ray Tune output is suppressed with the "Dashboard"
+    progress reporter
 
     cpu_threads: number of cpu threads to use, default = None
     if None, get all available cpu threads
@@ -271,15 +284,15 @@ class AutoTabularBase:
         scaling: Union[str, List[str]] = "auto",
         feature_selection: Union[str, List[str]] = "auto",
         models: Union[str, List[str]] = "auto",
-        exclude: Dict = {},
+        exclude: Optional[Dict] = None,
         validation: Union[bool, str] = True,
         valid_size: float = 0.2,
         objective: Union[str, Callable] = "accuracy",
         search_algo: str = "RandomSearch",
-        search_algo_settings: Dict = {},
+        search_algo_settings: Optional[Dict] = None,
         search_scheduler: str = "FIFOScheduler",
-        search_scheduler_settings: Dict = {},
-        logger: List[str] = ["Logger"],
+        search_scheduler_settings: Optional[Dict] = None,
+        logger: Optional[List[str]] = None,
         progress_reporter: Optional[str] = None,
         full_status: bool = False,
         verbose: int = 1,
@@ -288,6 +301,15 @@ class AutoTabularBase:
         reset_index: bool = True,
         seed: Optional[int] = None,
     ) -> None:
+        # mutable defaults: a new object per call (own copies: updated in fit)
+        exclude = {} if exclude is None else dict(exclude)
+        search_algo_settings = (
+            {} if search_algo_settings is None else dict(search_algo_settings)
+        )
+        search_scheduler_settings = (
+            {} if search_scheduler_settings is None else dict(search_scheduler_settings)
+        )
+        logger = ["Logger"] if logger is None else logger
         self.task_mode = task_mode
         self.n_estimators = n_estimators
         self.ensemble_strategy = ensemble_strategy
@@ -351,7 +373,7 @@ class AutoTabularBase:
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_encoders
-        except:
+        except ImportError:
             add_encoders = {}
 
         # include original encoders
@@ -367,11 +389,10 @@ class AutoTabularBase:
             encoder = {}  # if specified, check if encoders in default encoders
             for _encoder in self.encoder:
                 if _encoder not in [*_all_encoders]:
-                    self._logger.error(
+                    raise ValueError(
                         "Only supported encoders are {}, get {}.".format(
-                            [_all_encoders], _encoder
+                            [*_all_encoders], _encoder
                         ),
-                        ValueError,
                     )
                 encoder[_encoder] = _all_encoders[_encoder]
 
@@ -387,7 +408,7 @@ class AutoTabularBase:
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_imputers
-        except:
+        except ImportError:
             add_imputers = {}
 
         # include original imputers
@@ -418,7 +439,7 @@ class AutoTabularBase:
                 imputer = {}  # if specified, check if imputers in default imputers
                 for _imputer in self.imputer:
                     if _imputer not in [*_all_imputers]:
-                        self._logger.error(
+                        raise ValueError(
                             "Only supported imputers are {}, get {}.".format(
                                 [*_all_imputers], _imputer
                             )
@@ -437,7 +458,7 @@ class AutoTabularBase:
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_balancings
-        except:
+        except ImportError:
             add_balancings = {}
 
         # include original balancings
@@ -453,7 +474,7 @@ class AutoTabularBase:
             balancing = {}  # if specified, check if balancings in default balancings
             for _balancing in self.balancing:
                 if _balancing not in [*_all_balancings]:
-                    self._logger.error(
+                    raise ValueError(
                         "Only supported balancings are {}, get {}.".format(
                             [*_all_balancings], _balancing
                         )
@@ -472,7 +493,7 @@ class AutoTabularBase:
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_scalings
-        except:
+        except ImportError:
             add_scalings = {}
 
         # include original scalings
@@ -488,7 +509,7 @@ class AutoTabularBase:
             scaling = {}  # if specified, check if scalings in default scalings
             for _scaling in self.scaling:
                 if _scaling not in [*_all_scalings]:
-                    self._logger.error(
+                    raise ValueError(
                         "Only supported scalings are {}, get {}.".format(
                             [*_all_scalings], _scaling
                         )
@@ -507,7 +528,7 @@ class AutoTabularBase:
         # if additional exists, import, otherwise set to default
         try:
             from additional import add_feature_selections
-        except:
+        except ImportError:
             add_feature_selections = {}
 
         # include original feature selections
@@ -543,7 +564,7 @@ class AutoTabularBase:
             )  # if specified, check if balancings in default balancings
             for _feature_selection in self.feature_selection:
                 if _feature_selection not in [*_all_feature_selection]:
-                    self._logger.error(
+                    raise ValueError(
                         "Only supported feature selections are {}, get {}.".format(
                             [*_all_feature_selection], _feature_selection
                         )
@@ -568,7 +589,7 @@ class AutoTabularBase:
             # if additional exists, import, otherwise set to default
             try:
                 from additional import add_classifiers
-            except:
+            except ImportError:
                 add_classifiers = {}
 
             # include original classifiers
@@ -581,7 +602,7 @@ class AutoTabularBase:
             # if additional exists, import, otherwise set to default
             try:
                 from additional import add_regressors
-            except:
+            except ImportError:
                 add_regressors = {}
 
             # include original regressors
@@ -621,7 +642,7 @@ class AutoTabularBase:
             models = {}  # if specified, check if models in default models
             for _model in self.models:
                 if _model not in [*_all_models]:
-                    self._logger.error(
+                    raise ValueError(
                         "Only supported models are {}, get {}.".format(
                             [*_all_models], _model
                         )
@@ -657,7 +678,7 @@ class AutoTabularBase:
                 add_classifier_hyperparameter,
                 add_regressor_hyperparameter,
             )
-        except:
+        except ImportError:
             add_encoder_hyperparameter = {}
             add_imputer_hyperparameter = {}
             add_scaling_hyperparameter = {}
@@ -852,8 +873,8 @@ class AutoTabularBase:
         }
 
     def _get_search_alg(
-        self, algo: Callable, hyperparameter_space: Dict
-    ) -> Tuple[Callable, Optional[Dict]]:
+        self, algo: Any, hyperparameter_space: Dict
+    ) -> Tuple[Any, Optional[Dict]]:
         """
         Search algorithm and Tuner param_space for the hyperparameter space
         (the space is embedded in the searcher for Optuna/Nevergrad).
@@ -916,9 +937,70 @@ class AutoTabularBase:
         """
         experiment_path = os.path.join(self.sub_directory, name)
 
+        # record the round for the dashboard
+        dashboard_round = self._dashboard_round_start(name, num_samples)
+        callbacks = list(callbacks) if callbacks is not None else []
+        if dashboard_round is not None:
+            # a round index is only given with a dashboard recorder
+            assert self._dashboard is not None
+            callbacks.append(DashboardCallback(self._dashboard, dashboard_round))
+
+        # the dashboard replaces the Ray Tune console output
+        # (from the creation of the search algorithm to the end of the tuning)
+        with ExitStack() as output_context:
+            if self._use_dashboard():
+                output_context.enter_context(quiet_ray_output())
+            else:
+                output_context.enter_context(
+                    legacy_progress_output(progress_reporter is not None)
+                )
+
+            try:
+                result_grid = self._fit_tuner(
+                    trainer,
+                    hyperparameter_space,
+                    name,
+                    num_samples,
+                    algo,
+                    scheduler,
+                    callbacks,
+                    stopper,
+                    progress_reporter,
+                    trial_dirname_creator,
+                    experiment_path,
+                )
+            finally:
+                if dashboard_round is not None:
+                    self._dashboard_emit("round_end", round=dashboard_round)
+
+        # record number of trials named
+        if isinstance(trial_dirname_creator, TrialDirnameCreator):
+            self._iter = trial_dirname_creator.count
+
+        return self._get_tune_results(result_grid)
+
+    def _fit_tuner(
+        self,
+        trainer: Callable,
+        hyperparameter_space: Dict,
+        name: str,
+        num_samples: int,
+        algo: Callable,
+        scheduler: Callable,
+        callbacks: List,
+        stopper: tune.Stopper,
+        progress_reporter: Optional[Any],
+        trial_dirname_creator: Optional[Callable],
+        experiment_path: str,
+    ) -> tune.ResultGrid:
+        """Create (or restore) the Ray Tune experiment and run it."""
         # resume from the last experiment state if exists
         # (replaces tune.run(resume="AUTO"))
-        if self.resume and tune.Tuner.can_restore(experiment_path):
+        if (
+            self.resume
+            and getattr(self, "_restore", True)
+            and tune.Tuner.can_restore(experiment_path)
+        ):
             self._logger.info(
                 "[INFO] {}  Experiment: {}. Status: Restoring tuning from {}.".format(
                     datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -953,9 +1035,10 @@ class AutoTabularBase:
                     stop=stopper,  # use stopper
                     # fresh list per run: Tune appends its default logger callbacks
                     # (holding open result files) to the list it is given
-                    callbacks=list(callbacks) if callbacks is not None else None,
+                    callbacks=callbacks or None,
                     progress_reporter=progress_reporter,
-                    verbose=self.verbose,
+                    # the dashboard replaces the Ray Tune console output
+                    verbose=0 if self._use_dashboard() else self.verbose,
                     log_to_file=("stdout.log", "stderr.log"),
                     checkpoint_config=tune.CheckpointConfig(
                         checkpoint_frequency=8,
@@ -969,14 +1052,372 @@ class AutoTabularBase:
                 ),
             )
 
-        with legacy_progress_output(progress_reporter is not None):
-            result_grid = tuner.fit()
+        return tuner.fit()
 
-        # record number of trials named
-        if isinstance(trial_dirname_creator, TrialDirnameCreator):
-            self._iter = trial_dirname_creator.count
+    # ---------------------------------------------------------------- search
 
-        return self._get_tune_results(result_grid)
+    def _tune_round(
+        self,
+        objective: Callable,
+        objective_kwargs: Dict[str, Any],
+        data_split: Any,
+        hyperparameter_space: Dict,
+        name: str,
+        num_samples: int,
+        sub_directory: str,
+        tune_kwargs: Dict[str, Any],
+    ) -> pd.DataFrame:
+        """One Ray Tune experiment (search round) of the objective on data_split."""
+        trainer = tune.with_parameters(
+            objective,
+            data_split=data_split,
+            # number of trials so far (trial directory names), changes by round
+            _iter=self._iter,
+            **objective_kwargs,
+        )
+        # subtrial directory
+        self.sub_directory = os.path.abspath(sub_directory)
+
+        # (Optuna embeds the search space in the search algorithm, see _run_tune)
+        fit_results = self._run_tune(
+            trainer,
+            hyperparameter_space,
+            name=name,
+            num_samples=num_samples,
+            progress_reporter=get_progress_reporter(
+                self.progress_reporter,
+                self.max_evals,
+                self.max_error,
+            ),
+            **tune_kwargs,
+        )
+
+        self._logger.info(
+            "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
+                datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                self.model_name,
+            )
+        )
+
+        return fit_results
+
+    @staticmethod
+    def _feature_subset(data_split: Any, features: Any) -> Any:
+        """data_split (folds of (train, test) sets) restricted to the features."""
+        return [
+            [
+                (X_train.loc[:, features], y_train),
+                (X_test.loc[:, features], y_test),
+            ]
+            for (X_train, y_train), (X_test, y_test) in data_split
+        ]
+
+    @staticmethod
+    def _boosting_residuals(data_split: Any, estimator: Any) -> Any:
+        """Responses of data_split replaced by the residuals of the estimator."""
+
+        def residual(X: pd.DataFrame, y: pd.DataFrame) -> pd.DataFrame:
+            return y - pd.DataFrame(
+                np.asarray(estimator.predict(X)).reshape(len(y), -1),
+                index=y.index,
+                columns=y.columns,
+            )
+
+        return [
+            [
+                (X_train, residual(X_train, y_train)),
+                (X_test, residual(X_test, y_test)),
+            ]
+            for (X_train, y_train), (X_test, y_test) in data_split
+        ]
+
+    def _round_trials(self, round_index: int) -> int:
+        """Trials of an ensemble round (max_evals split over the rounds)."""
+        return (
+            (self.max_evals // self.n_estimators + 1)
+            if round_index < self.max_evals % self.n_estimators
+            else (self.max_evals // self.n_estimators)
+        )
+
+    def _search(
+        self,
+        objective: Callable,
+        objective_kwargs: Dict[str, Any],
+        data_split: Any,
+        hyperparameter_space: Dict,
+        tune_kwargs: Dict[str, Any],
+        X: pd.DataFrame,
+        y: pd.DataFrame,
+    ) -> None:
+        """
+        Search the pipelines and create the ensemble (self.ensemble):
+
+        - n_estimators = 1: best pipeline of one search
+        - stacking: best n_estimators pipelines of one search
+        - bagging: one search per random feature subset, best pipeline of each
+        - boosting: one search per round on the residuals of the previous rounds
+
+        Ray is started once for all the rounds.
+        """
+        if self.n_estimators != 1 and self.ensemble_strategy not in (
+            "stacking",
+            "bagging",
+            "boosting",
+        ):
+            raise ValueError(
+                "ensemble_strategy must be one of stacking, bagging or boosting, "
+                "get {}.".format(self.ensemble_strategy)
+            )
+
+        rayStatus = ray_status(
+            cpu_threads=self.cpu_threads,
+            gpu_count=self.gpu_count,
+            quiet=self._use_dashboard(),
+        )
+        rayStatus.ray_init()
+        try:
+            if self.n_estimators == 1 or self.ensemble_strategy == "stacking":
+                if self.n_estimators == 1:
+                    self._logger.warning(
+                        "Set n_estimators to 1, no ensemble will be used."
+                    )
+                fit_results = self._tune_round(
+                    objective,
+                    objective_kwargs,
+                    data_split,
+                    hyperparameter_space,
+                    name=self.model_name,
+                    num_samples=self.max_evals,
+                    sub_directory=self.temp_directory,
+                    tune_kwargs=tune_kwargs,
+                )
+                # check status of the trial analysis
+                self.check_analysis(fit_results)
+
+                fitted = (fit_results.training_status == "FITTED").sum()
+                if self.n_estimators > 1 and fitted < self.n_estimators:
+                    self._logger.warning(
+                        "[WARNING] {}  Experiment: {}. Ask for total {} estimators, but no enough valid trials exists. Use all {} pipelines instead.".format(
+                            datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                            self.model_name,
+                            self.n_estimators,
+                            fitted,
+                        )
+                    )
+                # top configs among the fitted trials only: timed-out/failed
+                # trials have no saved pipeline, and can tie with fitted trials of
+                # infinite loss
+                best = self._best_results(fit_results, self.n_estimators)
+                if self.n_estimators == 1:
+                    best = best.iloc[0]
+                # select optimal settings and create the (ensemble of) pipeline(s)
+                self._fit_ensemble(best["path"], best["config"])
+                return
+
+            bagging = self.ensemble_strategy == "bagging"
+            feature_list: List[np.ndarray] = []  # (only used by bagging)
+            if bagging:
+                # a random feature subset per round
+                feature_list = [
+                    np.random.choice(
+                        X.columns,
+                        size=2 * len(X.columns) // self.n_estimators,
+                        replace=False,
+                    )
+                    for _ in range(self.n_estimators)
+                ]
+            round_split = data_split
+            for _n in range(self.n_estimators):
+                if bagging:
+                    round_split = self._feature_subset(data_split, feature_list[_n])
+                fit_results = self._tune_round(
+                    objective,
+                    objective_kwargs,
+                    round_split,
+                    hyperparameter_space,
+                    name="{}_{}_{}".format(
+                        self.model_name, self.ensemble_strategy, _n + 1
+                    ),
+                    num_samples=self._round_trials(_n),
+                    sub_directory=os.path.join(self.temp_directory, self.model_name),
+                    tune_kwargs=tune_kwargs,
+                )
+
+                # check status of the trial analysis
+                if self._stop_ensemble_early(fit_results, _n):
+                    break
+                self.check_analysis(fit_results)
+                # get the best config settings
+                best_result = self._best_results(fit_results, 1).iloc[0]
+
+                # select optimal settings and fit optimal pipeline
+                if bagging:
+                    self._fit_ensemble(
+                        best_result["path"],
+                        best_result["config"],
+                        iter=_n,
+                        features=feature_list[_n],
+                    )
+                    continue
+                self._fit_ensemble(best_result["path"], best_result["config"], iter=_n)
+
+                # boosting: the next round fits the residuals of the latest pipeline
+                if _n < self.n_estimators - 1:
+                    # make sure the ensemble is fitted
+                    self.ensemble.fit(X, y)
+                    round_split = self._boosting_residuals(
+                        round_split, self.ensemble.estimators[-1][1]
+                    )
+        finally:
+            rayStatus.ray_shutdown()
+
+    # ------------------------------------------------------------- dashboard
+
+    def _use_dashboard(self) -> bool:
+        return self.progress_reporter == "Dashboard"
+
+    def _dashboard_rounds(self) -> int:
+        # number of Ray Tune experiments of the fit
+        if self.n_estimators > 1 and self.ensemble_strategy in ["bagging", "boosting"]:
+            return int(self.n_estimators)
+        return 1
+
+    def _dashboard_emit(self, event_type: str, **fields: Any) -> None:
+        recorder = getattr(self, "_dashboard", None)
+        if recorder is None:
+            return
+        try:
+            recorder.emit(event_type, **fields)
+        except Exception as err:  # never fail the fit because of the dashboard
+            self._logger.warning(
+                "Dashboard: unable to record {}: {}".format(event_type, err)
+            )
+
+    def _dashboard_space(
+        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+    ) -> Optional[Dict]:
+        """
+        Search space of the dashboard map, described from the space in Ray Tune
+        format (whatever the search algorithm).
+        """
+        search_algo = self.search_algo
+        try:
+            self.search_algo = "RandomSearch"
+            space = self.get_hyperparameter_space(X, y)[-1]
+            return space_schema(space)
+        except Exception as err:  # the map is optional
+            self._logger.warning(
+                "Dashboard: unable to describe the search space: {}".format(err)
+            )
+            return None
+        finally:
+            self.search_algo = search_algo
+
+    def _dashboard_start(self) -> None:
+        """Start the event log of the dashboard (first tuning round of the fit)."""
+        directory = os.path.join(self.temp_directory, self.model_name, EVENTS_DIR)
+        try:
+            self._dashboard = EventRecorder(directory)
+        except OSError as err:
+            self._logger.warning(
+                "Dashboard: unable to create {}: {}".format(directory, err)
+            )
+            self._dashboard = None
+            return
+        self._dashboard_rounds_started = 0
+
+        self._dashboard_emit(
+            "run_start",
+            model_name=self.model_name,
+            task_mode=getattr(self, "task_mode", None),
+            objective=getattr(self, "objective", None),
+            search_algo=getattr(self, "search_algo", None),
+            search_scheduler=getattr(self, "search_scheduler", None),
+            timeout=getattr(self, "timeout", None),
+            max_evals=getattr(self, "max_evals", None),
+            timeout_per_trial=getattr(self, "timeout_per_trial", None),
+            ensemble_strategy=getattr(self, "ensemble_strategy", None),
+            n_estimators=getattr(self, "n_estimators", None),
+            rounds=self._dashboard_rounds(),
+            cpu_threads=getattr(self, "cpu_threads", None),
+            gpu_count=getattr(self, "gpu_count", None),
+            seed=getattr(self, "seed", None),
+        )
+        schema = getattr(self, "_dashboard_schema", None)
+        if schema is not None:
+            self._dashboard_emit("space", schema=schema)
+
+        # web dashboard of the process, switched to this run
+        self.dashboard_url = start_dashboard(self._dashboard.path)
+        if self.dashboard_url is not None:
+            self._dashboard_announce(
+                "Track the optimization of {} at".format(self.model_name),
+                self.dashboard_url,
+            )
+        else:
+            self._dashboard_announce(
+                "Optimization progress of {} is recorded in {} "
+                "(view with: python -m InsurAutoML.dashboard {})".format(
+                    self.model_name,
+                    self._dashboard.path,
+                    os.path.join(self.temp_directory, self.model_name),
+                )
+            )
+
+    @staticmethod
+    def _dashboard_announce(text: str, url: Optional[str] = None) -> None:
+        """
+        Show a message of the dashboard: a clickable link in notebooks, printed
+        otherwise.
+        """
+        if url is not None and type_of_script() == "jupyter":
+            try:
+                from IPython.display import HTML, display
+
+                display(
+                    HTML(
+                        '<b>[Dashboard]</b> {} <a href="{url}" target="_blank">'
+                        "{url}</a>".format(html.escape(text), url=html.escape(url))
+                    )
+                )
+                return
+            except ImportError:  # pragma: no cover - notebooks have IPython
+                pass
+        print(
+            "[Dashboard] {}".format(text) + (" {}".format(url) if url else ""),
+            flush=True,
+        )
+
+    def _dashboard_round_start(self, name: str, num_samples: int) -> Optional[int]:
+        """Record the start of a tuning round, returns its index (None: no dashboard)."""
+        if not self._use_dashboard():
+            return None
+        if getattr(self, "_dashboard", None) is None:
+            self._dashboard_start()
+            if self._dashboard is None:
+                return None
+
+        index = self._dashboard_rounds_started
+        self._dashboard_rounds_started += 1
+        self._dashboard_emit(
+            "round_start", round=index, name=name, num_samples=num_samples
+        )
+
+        return index
+
+    def _dashboard_finish(self) -> None:
+        """Record the end of the fit."""
+        if getattr(self, "_dashboard", None) is None:
+            return
+        self._dashboard_emit("run_end")
+        # the address again: still available after the fit
+        url = getattr(self, "dashboard_url", None)
+        if url is not None:
+            self._dashboard_announce(
+                "Optimization of {} finished, results available (until Python "
+                "exits) at".format(self.model_name),
+                url,
+            )
 
     @staticmethod
     def _get_tune_results(result_grid: tune.ResultGrid) -> pd.DataFrame:
@@ -1040,7 +1481,7 @@ class AutoTabularBase:
     def _best_results(fit_results: pd.DataFrame, n: int = 1) -> pd.DataFrame:
         # top n fitted trials ordered by loss
         return (
-            fit_results[fit_results.training_status == "FITTED"]
+            cast(pd.DataFrame, fit_results[fit_results.training_status == "FITTED"])
             .sort_values(by=["loss"], ascending=True)
             .head(n)
         )
@@ -1177,7 +1618,7 @@ class AutoTabularBase:
         # if only one optimal input, need to convert to iterable
         if isinstance(trial_path, str):
             trial_path = [trial_path]
-            config = [config]
+            config = [cast(Dict, config)]
 
         # loop through all configs and trial directories, get model ensemble
         # trial directory is given by tune results (Result.path)
@@ -1210,7 +1651,144 @@ class AutoTabularBase:
                 strategy=self.ensemble_strategy,
             )
 
+    # settings defining the searched pipelines: a stored model fitted with other
+    # values is not reused (the time/evaluation budgets are not part of it)
+    FINGERPRINT_SETTINGS = (
+        "task_mode",
+        "objective",
+        "ensemble_strategy",
+        "n_estimators",
+        "validation",
+        "valid_size",
+        "encoder",
+        "imputer",
+        "balancing",
+        "scaling",
+        "feature_selection",
+        "models",
+        "exclude",
+        "search_algo",
+    )
+
+    @staticmethod
+    def _data_hash(data: Any) -> Optional[str]:
+        """Hash of a dataframe (values, column names and dtypes)."""
+        if data is None:
+            return None
+        data = pd.DataFrame(data)
+        try:
+            hashed = hash_pandas_object(data, index=False)
+        except TypeError:
+            # cells that can not be hashed (e.g. lists): hash their text
+            hashed = hash_pandas_object(data.astype(str), index=False)
+        digest = hashlib.sha1()
+        digest.update(hashed.to_numpy().tobytes())
+        digest.update(repr([(str(c), str(t)) for c, t in data.dtypes.items()]).encode())
+        return digest.hexdigest()
+
+    def _fit_fingerprint(self, *data: Any) -> Dict[str, Any]:
+        """Data and settings of a fit (stored with the model)."""
+        settings = {}
+        for name in self.FINGERPRINT_SETTINGS:
+            value = getattr(self, name, None)
+            if callable(value) and not isinstance(value, type):
+                qualname = getattr(value, "__qualname__", None)
+                if qualname and "<" not in qualname:
+                    # module level function: identified by its full name
+                    value = "{}.{}".format(getattr(value, "__module__", ""), qualname)
+                else:
+                    # lambdas, local functions, callable objects: no stable name, a
+                    # stored model is never reused
+                    value = "unidentified callable {}".format(id(value))
+            settings[name] = value if isinstance(value, str) else repr(value)
+        return {"data": [self._data_hash(item) for item in data], "settings": settings}
+
+    def _load_stored_model(self, fingerprint: Dict[str, Any]) -> bool:
+        """
+        Load the stored model (file model_name) if it was fitted on the same data
+        with the same settings, returns whether it was loaded.
+        """
+        if not os.path.isfile(self.model_name):
+            return False
+        stored = load_methods(self.model_name)
+        # models stored by previous versions have no fingerprint: loaded as before
+        if len(stored) > 1 and stored[1] != fingerprint:
+            message = (
+                "Stored model {} was fitted on other data or settings, "
+                "fitting again (it will be replaced).".format(self.model_name)
+            )
+            self._logger.warning(message)
+            warnings.warn(message)
+            # the experiments of the stored model are not resumed either
+            self._restore = False
+            return False
+        self._logger.info(
+            "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
+                datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
+                self.model_name,
+            )
+        )
+        self.ensemble = stored[0]
+        return True
+
+    def _check_resume(self, fingerprint: Dict[str, Any]) -> None:
+        """
+        Resume (restore the Ray Tune experiments of) the run folder only if they
+        were run on the same data with the same settings, and record the
+        fingerprint of this fit in the run folder.
+        """
+        path = os.path.join(self.temp_directory, self.model_name, "fingerprint.json")
+        self._restore = True
+        if os.path.isfile(path):
+            try:
+                with open(path, "r", encoding="utf-8") as inp_f:
+                    previous = json.load(inp_f)
+            except (OSError, ValueError):
+                previous = None
+            if previous != fingerprint:
+                self._restore = False
+                self._logger.info(
+                    "[INFO] Experiment: {}. The experiments in {} were run on other "
+                    "data or settings, they are not resumed.".format(
+                        self.model_name, os.path.dirname(path)
+                    )
+                )
+        try:
+            with open(path, "w", encoding="utf-8") as out_f:
+                json.dump(fingerprint, out_f)
+        except OSError:
+            pass
+
+    def _delete_temp(self) -> None:
+        """
+        Delete the temporary files of this run (<temp_directory>/<model_name>),
+        and the temp directory if it is then empty (other models may share it).
+        """
+        shutil.rmtree(
+            os.path.join(self.temp_directory, self.model_name), ignore_errors=True
+        )
+        try:
+            os.rmdir(self.temp_directory)
+        except OSError:
+            # not empty (other runs) or already removed
+            pass
+
     def _init_fit(self) -> None:
+        # release the log file of a previous fit (its folder may be deleted below)
+        close_logger(getattr(self, "_logger", None))
+
+        # state of a previous fit of this object (the ensemble is built again)
+        for name in ("ensemble_list", "feature_list", "metadata"):
+            self.__dict__.pop(name, None)
+
+        # the fitted model is stored in the file model_name
+        if os.path.isdir(self.model_name):
+            raise ValueError(
+                "model_name {} is an existing directory (e.g. temp_directory is the "
+                "working directory), the fitted model is stored in a file of this "
+                "name: use another model_name.".format(self.model_name)
+            )
+
         # initialize temp directory
         # check if temp directory exists, if exists and not plan to resume, empty it
         if (
@@ -1223,24 +1801,20 @@ class AutoTabularBase:
         if not os.path.isdir(os.path.join(self.temp_directory, self.model_name)):
             os.makedirs(os.path.join(self.temp_directory, self.model_name))
 
-        # setup up logger
-        if not hasattr(self, "self._logger"):
-            self._logger = setup_logger(
-                __name__,
-                os.path.join(
-                    os.getcwd(), self.temp_directory, self.model_name, "logging.conf"
-                ),
-                level=logging.INFO,
-            )
+        # set up the logger of this run (one logger per log file: runs of other
+        # models do not write into it)
+        log_file = os.path.abspath(
+            os.path.join(self.temp_directory, self.model_name, "logging.conf")
+        )
+        self._logger = setup_logger(
+            "{}.{}".format(__name__, log_file), log_file, level=logging.INFO
+        )
 
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Start preparing AutoTabular...".format(
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
             )
         )
-
-        if self.ignore_warning:  # ignore all warnings to generate clearer outputs
-            warnings.filterwarnings("ignore")
 
         # get device info
         self.cpu_threads = (
@@ -1259,20 +1833,20 @@ class AutoTabularBase:
                     device_count
                 )
             )
-        # raise error if gpu not available but used
+        # gpu requested but not available: the job runs on CPU
         if device_count == 0 and self.use_gpu:
-            self._logger.error(
-                "You have no GPU available, but you have set use_gpu to True. \
-                Please check your GPU availability."
+            message = (
+                "use_gpu is True, but no GPU is available: running on CPU only. "
+                "Please check your GPU availability."
             )
+            self._logger.warning(message)
+            warnings.warn(message)
 
-        # make sure n_estimators is a integer smaller than max_evals
+        # make sure n_estimators is a integer, not larger than max_evals
         # NOTE: Oct. 11, 2022
         # if do not limit max_evals (=-1), then set n_estimators to pre-defined
         # one
         if self.max_evals > 0:
-            self.n_estimators = int(self.n_estimators)
-        else:
             # raise warnings if n_estimators set larger than max_evals
             if self.max_evals < self.n_estimators:
                 self._logger.warning(
@@ -1281,6 +1855,19 @@ class AutoTabularBase:
                     )
                 )
             self.n_estimators = int(min(self.n_estimators, self.max_evals))
+        else:
+            self.n_estimators = int(self.n_estimators)
+            # the trials are split over the rounds of bagging/boosting
+            if self.n_estimators > 1 and self.ensemble_strategy in [
+                "bagging",
+                "boosting",
+            ]:
+                raise ValueError(
+                    "{} splits max_evals over its {} rounds, set max_evals > 0 "
+                    "(get {}).".format(
+                        self.ensemble_strategy, self.n_estimators, self.max_evals
+                    )
+                )
 
         # at least one constraint of time/evaluations should be provided
         if self.timeout == -1 and self.max_evals == -1:
@@ -1301,31 +1888,35 @@ class AutoTabularBase:
                 )
             self.timeout = min(self.timeout, MAX_TIME)
 
-        # set up timeout per trial
-        self.timeout_per_trial = (
-            max(1, int(self.timeout / self.max_evals * 5))
-            if self.timeout_per_trial is None
-            else self.timeout_per_trial
-        )
+        # set up timeout per trial (no trial limit: the time budget)
+        if self.timeout_per_trial is None:
+            self.timeout_per_trial = (
+                max(1, int(self.timeout / self.max_evals * 5))
+                if self.max_evals > 0
+                else int(self.timeout)
+            )
 
-        # get progress report from environment
-        # if specified, use specified progress report
+        # progress report: the web dashboard by default, Ray Tune console/notebook
+        # output if specified
         self.progress_reporter = (
-            (
-                "CLIReporter"
-                if type_of_script() == "terminal"
-                else "JupyterNotebookReporter"
-            )
-            if self.progress_reporter is None
-            else self.progress_reporter
+            "Dashboard" if self.progress_reporter is None else self.progress_reporter
         )
 
-        if self.progress_reporter not in ["CLIReporter", "JupyterNotebookReporter"]:
-            self._logger.error(
-                "Progress reporter must be either CLIReporter or JupyterNotebookReporter, get {}.".format(
-                    self.progress_reporter
-                )
+        if self.progress_reporter not in [
+            "Dashboard",
+            "CLIReporter",
+            "JupyterNotebookReporter",
+        ]:
+            raise ValueError(
+                "Progress reporter must be one of Dashboard, CLIReporter or "
+                "JupyterNotebookReporter, get {}.".format(self.progress_reporter)
             )
+
+        # event recorder of the dashboard, created with the first tuning round
+        self._dashboard: Optional[EventRecorder] = None
+        self._dashboard_schema: Optional[Dict] = None
+        # URL of the web dashboard (None: not started)
+        self.dashboard_url: Optional[str] = None
 
         # record K fold if validation == "KFold"
         if self.validation == "KFold":
@@ -1361,7 +1952,27 @@ class AutoTabularBase:
     def fit(
         self,
         X: pd.DataFrame,
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]],
+        X_valid: Optional[pd.DataFrame] = None,
+        y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
+    ) -> AutoTabularBase:
+        """
+        Search and fit the optimal pipeline (ensemble).
+
+        With ignore_warning, the warnings of other packages are ignored during the
+        fit only (the warning filters of the session are restored afterwards); the
+        warnings of InsurAutoML itself are still shown.
+        """
+        with warnings.catch_warnings():
+            if self.ignore_warning:
+                warnings.simplefilter("ignore")
+                warnings.filterwarnings("default", module=r"InsurAutoML(\.|$)")
+            return self._fit(X, y, X_valid, y_valid)
+
+    def _fit(
+        self,
+        X: pd.DataFrame,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]],
         X_valid: Optional[pd.DataFrame] = None,
         y_valid: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> AutoTabularBase:
@@ -1378,10 +1989,10 @@ class AutoTabularBase:
                         self.model_name,
                     )
                 )
-            except BaseException:
-                self._logger.error(
+            except Exception as err:
+                raise TypeError(
                     "Cannot convert X to dataframe, get {}".format(type(X))
-                )
+                ) from err
         if not isinstance(y, pd.DataFrame):
             try:
                 y = pd.DataFrame(y)
@@ -1391,10 +2002,10 @@ class AutoTabularBase:
                         self.model_name,
                     )
                 )
-            except BaseException:
-                self._logger.error(
+            except Exception as err:
+                raise TypeError(
                     "Cannot convert y to dataframe, get {}".format(type(y))
-                )
+                ) from err
         if X_valid is not None and not isinstance(X_valid, pd.DataFrame):
             try:
                 X_valid = pd.DataFrame(X_valid)
@@ -1404,10 +2015,10 @@ class AutoTabularBase:
                         self.model_name,
                     )
                 )
-            except BaseException:
-                self._logger.error(
+            except Exception as err:
+                raise TypeError(
                     "Cannot convert X_valid to dataframe, get {}".format(type(X_valid))
-                )
+                ) from err
         if y_valid is not None and not isinstance(y_valid, pd.DataFrame):
             try:
                 y_valid = pd.DataFrame(y_valid)
@@ -1417,10 +2028,10 @@ class AutoTabularBase:
                         self.model_name,
                     )
                 )
-            except BaseException:
-                self._logger.error(
+            except Exception as err:
+                raise TypeError(
                     "Cannot convert y_valid to dataframe, get {}".format(type(y_valid))
-                )
+                ) from err
 
         # X and y are converted to dataframes above
         X = cast(pd.DataFrame, X)
@@ -1456,9 +2067,9 @@ class AutoTabularBase:
             )
         # TODO: when NLP and Image supported, redirect to corresponding model
         if ("Object", "Text") in self.metadata.keys():
-            self._logger.error("Text data type is not supported yet.")
+            self._logger.warning("Text data type is not supported yet.")
         if ("Path", "") in self.metadata.keys():
-            self._logger.error("Image data type is not supported yet.")
+            self._logger.warning("Image data type is not supported yet.")
 
         (
             encoder,
@@ -1470,22 +2081,20 @@ class AutoTabularBase:
             hyperparameter_space,
         ) = self.get_hyperparameter_space(_X, _y)
 
+        # search space of the dashboard map
+        if self._use_dashboard():
+            self._dashboard_schema = self._dashboard_space(_X, _y)
+
         self._logger.info(
             "[INFO] {} Experiment: {}. Status: Initialized AutoTabular Hyperparameter space.".format(
                 datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"), self.model_name
             )
         )
 
-        # if the model is already trained, read the setting
-        if os.path.exists(self.model_name):
-            self._logger.info(
-                "[INFO] {} Experiment: {}. Status: Stored model found, load previous model.".format(
-                    datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d"),
-                    self.model_name,
-                )
-            )
-            [self.ensemble] = load_methods(self.model_name)
-
+        # if the model is already trained (same data and settings), read it
+        self._fingerprint = self._fit_fingerprint(_X, _y, X_valid, y_valid)
+        self._check_resume(self._fingerprint)
+        if self._load_stored_model(self._fingerprint):
             self._fitted = True  # successfully fitted the model
 
             return self
@@ -1517,13 +2126,6 @@ class AutoTabularBase:
 
         # get callback logger
         logger = get_logger(self.logger)
-
-        # get progress reporter
-        progress_reporter = get_progress_reporter(
-            self.progress_reporter,
-            self.max_evals,
-            self.max_error,
-        )
 
         # initialize stopper
         stopper = TimePlateauStopper(
@@ -1583,404 +2185,36 @@ class AutoTabularBase:
                 for (X_train, y_train), (X_test, y_test) in data_split
             ]
 
-        # set ray status
-        rayStatus = ray_status(
-            cpu_threads=self.cpu_threads,
-            gpu_count=self.gpu_count,
+        # search (one or several rounds, by ensemble strategy) and ensemble
+        self._search(
+            TabularObjective,
+            dict(
+                encoder=encoder,
+                imputer=imputer,
+                balancing=balancing,
+                scaling=scaling,
+                feature_selection=feature_selection,
+                models=models,
+                model_name=self.model_name,
+                task_mode=self.task_mode,
+                objective=self.objective,
+                full_status=self.full_status,
+                reset_index=self.reset_index,
+                timeout=self.timeout_per_trial,
+                seed=self.seed,
+            ),
+            data_split,
+            hyperparameter_space,
+            dict(
+                algo=algo,
+                scheduler=scheduler,
+                callbacks=logger,
+                stopper=stopper,
+                trial_dirname_creator=trial_str_creator,
+            ),
+            _X,
+            _y,
         )
-
-        # ensemble settings
-        if self.n_estimators == 1:
-            self._logger.warning("Set n_estimators to 1, no ensemble will be used.")
-
-            # get progress reporter
-            progress_reporter = get_progress_reporter(
-                self.progress_reporter,
-                self.max_evals,
-                self.max_error,
-            )
-
-            # set trainable
-            trainer = tune.with_parameters(
-                TabularObjective,
-                data_split=data_split,
-                encoder=encoder,
-                imputer=imputer,
-                balancing=balancing,
-                scaling=scaling,
-                feature_selection=feature_selection,
-                models=models,
-                model_name=self.model_name,
-                task_mode=self.task_mode,
-                objective=self.objective,
-                full_status=self.full_status,
-                reset_index=self.reset_index,
-                timeout=self.timeout_per_trial,
-                _iter=self._iter,
-                seed=self.seed,
-            )
-
-            # initialize ray
-            rayStatus.ray_init()
-
-            # subtrial directory
-            self.sub_directory = os.path.abspath(self.temp_directory)
-
-            # optimization process
-            # partially activated objective function
-            # (Optuna embeds the search space in the search algorithm, see _run_tune)
-            fit_results = self._run_tune(
-                trainer,
-                hyperparameter_space,
-                name=self.model_name,
-                num_samples=self.max_evals,
-                algo=algo,
-                scheduler=scheduler,
-                callbacks=logger,
-                stopper=stopper,
-                progress_reporter=progress_reporter,
-                trial_dirname_creator=trial_str_creator,
-            )
-
-            # shut down ray
-            rayStatus.ray_shutdown()
-
-            self._logger.info(
-                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
-
-            # check status of the trial analysis
-            self.check_analysis(fit_results)
-            # get the best config settings
-            best_result = self._best_results(fit_results, 1).iloc[0]
-
-            # select optimal settings and fit optimal pipeline
-            self._fit_ensemble(best_result["path"], best_result["config"])
-        # Stacking ensemble
-        elif self.ensemble_strategy == "stacking":
-            # get progress reporter
-            progress_reporter = get_progress_reporter(
-                self.progress_reporter,
-                self.max_evals,
-                self.max_error,
-            )
-
-            # set trainable
-            trainer = tune.with_parameters(
-                TabularObjective,
-                data_split=data_split,
-                encoder=encoder,
-                imputer=imputer,
-                balancing=balancing,
-                scaling=scaling,
-                feature_selection=feature_selection,
-                models=models,
-                model_name=self.model_name,
-                task_mode=self.task_mode,
-                objective=self.objective,
-                full_status=self.full_status,
-                reset_index=self.reset_index,
-                timeout=self.timeout_per_trial,
-                _iter=self._iter,
-                seed=self.seed,
-            )
-
-            # initialize ray
-            rayStatus.ray_init()
-
-            # subtrial directory
-            self.sub_directory = os.path.abspath(self.temp_directory)
-
-            # optimization process
-            # partially activated objective function
-            # (Optuna embeds the search space in the search algorithm, see _run_tune)
-            fit_results = self._run_tune(
-                trainer,
-                hyperparameter_space,
-                name=self.model_name,
-                num_samples=self.max_evals,
-                algo=algo,
-                scheduler=scheduler,
-                callbacks=logger,
-                stopper=stopper,
-                progress_reporter=progress_reporter,
-                trial_dirname_creator=trial_str_creator,
-            )
-
-            # shut down ray
-            rayStatus.ray_shutdown()
-
-            self._logger.info(
-                "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                    datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                    self.model_name,
-                )
-            )
-
-            # check status of the trial analysis
-            self.check_analysis(fit_results)
-            # get all configs and trial directories
-            analysis_df = fit_results
-            # if not enough valid trials, raise warning
-            if (analysis_df.training_status == "FITTED").sum() < self.n_estimators:
-                self._logger.warning(
-                    "[WARNING] {}  Experiment: {}. Ask for total {} estimators, but no enough valid trials exists. Use all {} pipelines instead.".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                        self.n_estimators,
-                        (analysis_df.training_status == "FITTED").sum(),
-                    )
-                )
-
-            # top configs among the fitted trials only: timed-out/failed trials have
-            # no saved pipeline, and can tie with fitted trials of infinite loss
-            analysis_df = self._best_results(analysis_df, self.n_estimators)
-
-            # select optimal settings and create the ensemble of pipeline
-            self._fit_ensemble(analysis_df["path"], analysis_df["config"])
-        # Bagging ensemble
-        elif self.ensemble_strategy == "bagging":
-            # create a list of feature subsets
-            feature_list = [
-                np.random.choice(
-                    _X.columns,
-                    size=2 * len(_X.columns) // self.n_estimators,
-                    replace=False,
-                )
-                for _ in range(self.n_estimators)
-            ]
-
-            # loop through feature_list
-            for _n, feature_subset in enumerate(feature_list):
-                # get n_trials for the subsets
-                sub_n_trials = (
-                    (self.max_evals // self.n_estimators + 1)
-                    if _n < self.max_evals % self.n_estimators
-                    else (self.max_evals // self.n_estimators)
-                )
-
-                # assign feature subset to data_split
-                _data_split = [
-                    [
-                        (X_train.loc[:, feature_subset], y_train),
-                        (X_test.loc[:, feature_subset], y_test),
-                    ]
-                    for (X_train, y_train), (X_test, y_test) in data_split
-                ]
-
-                # get progress reporter
-                progress_reporter = get_progress_reporter(
-                    self.progress_reporter,
-                    self.max_evals,
-                    self.max_error,
-                )
-
-                # set trainable
-                trainer = tune.with_parameters(
-                    TabularObjective,
-                    data_split=_data_split,
-                    encoder=encoder,
-                    imputer=imputer,
-                    balancing=balancing,
-                    scaling=scaling,
-                    feature_selection=feature_selection,
-                    models=models,
-                    model_name=self.model_name,
-                    task_mode=self.task_mode,
-                    objective=self.objective,
-                    full_status=self.full_status,
-                    reset_index=self.reset_index,
-                    timeout=self.timeout_per_trial,
-                    _iter=self._iter,
-                    seed=self.seed,
-                )
-
-                # initialize ray
-                rayStatus.ray_init()
-
-                # subtrial directory
-                self.sub_directory = os.path.abspath(
-                    os.path.join(self.temp_directory, self.model_name)
-                )
-
-                # optimization process
-                # partially activated objective function
-                # (Optuna embeds the search space in the search algorithm, see _run_tune)
-                fit_results = self._run_tune(
-                    trainer,
-                    hyperparameter_space,
-                    name="{}_{}_{}".format(
-                        self.model_name, self.ensemble_strategy, _n + 1
-                    ),
-                    num_samples=sub_n_trials,
-                    algo=algo,
-                    scheduler=scheduler,
-                    callbacks=logger,
-                    stopper=stopper,
-                    progress_reporter=progress_reporter,
-                    trial_dirname_creator=trial_str_creator,
-                )
-
-                # shut down ray
-                rayStatus.ray_shutdown()
-
-                self._logger.info(
-                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                    )
-                )
-
-                # check status of the trial analysis
-                if self._stop_ensemble_early(fit_results, _n):
-                    break
-                self.check_analysis(fit_results)
-                # get the best config settings
-                best_result = self._best_results(fit_results, 1).iloc[0]
-
-                # select optimal settings and fit optimal pipeline
-                self._fit_ensemble(
-                    best_result["path"],
-                    best_result["config"],
-                    iter=_n,
-                    features=feature_subset,
-                )
-
-        # Boosting ensemble
-        elif self.ensemble_strategy == "boosting":
-            _y_pred = None
-            # loop through n_estimators
-            for _n in range(self.n_estimators):
-                sub_n_trials = (
-                    (self.max_evals // self.n_estimators + 1)
-                    if _n < self.max_evals % self.n_estimators
-                    else (self.max_evals // self.n_estimators)
-                )
-
-                if _y_pred is not None:
-                    # if fitted before, use pred for residuals
-                    # else, use original data
-                    data_split = [
-                        [
-                            (
-                                X_train,
-                                y_train
-                                - pd.DataFrame(
-                                    _y_train_pred,
-                                    index=y_train.index,
-                                    columns=y_train.columns,
-                                ),
-                            ),
-                            (
-                                X_test,
-                                y_test
-                                - pd.DataFrame(
-                                    _y_test_pred,
-                                    index=y_test.index,
-                                    columns=y_test.columns,
-                                ),
-                            ),
-                        ]
-                        for ((X_train, y_train), (X_test, y_test)), (
-                            _y_train_pred,
-                            _y_test_pred,
-                        ) in zip(data_split, _y_pred)
-                    ]
-
-                # get progress reporter
-                progress_reporter = get_progress_reporter(
-                    self.progress_reporter,
-                    self.max_evals,
-                    self.max_error,
-                )
-
-                # set trainable
-                trainer = tune.with_parameters(
-                    TabularObjective,
-                    data_split=data_split,
-                    encoder=encoder,
-                    imputer=imputer,
-                    balancing=balancing,
-                    scaling=scaling,
-                    feature_selection=feature_selection,
-                    models=models,
-                    model_name=self.model_name,
-                    task_mode=self.task_mode,
-                    objective=self.objective,
-                    full_status=self.full_status,
-                    reset_index=self.reset_index,
-                    timeout=self.timeout_per_trial,
-                    _iter=self._iter,
-                    seed=self.seed,
-                )
-
-                # initialize ray
-                rayStatus.ray_init()
-
-                # subtrial directory
-                self.sub_directory = os.path.abspath(
-                    os.path.join(self.temp_directory, self.model_name)
-                )
-
-                # optimization process
-                # partially activated objective function
-                # (Optuna embeds the search space in the search algorithm, see _run_tune)
-                fit_results = self._run_tune(
-                    trainer,
-                    hyperparameter_space,
-                    name="{}_{}_{}".format(
-                        self.model_name, self.ensemble_strategy, _n + 1
-                    ),
-                    num_samples=sub_n_trials,
-                    algo=algo,
-                    scheduler=scheduler,
-                    callbacks=logger,
-                    stopper=stopper,
-                    progress_reporter=progress_reporter,
-                    trial_dirname_creator=trial_str_creator,
-                )
-
-                # shut down ray
-                rayStatus.ray_shutdown()
-
-                self._logger.info(
-                    "[INFO] {}  Experiment: {}. Status: AutoTabular training finished. Start postprocessing...".format(
-                        datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                        self.model_name,
-                    )
-                )
-
-                # check status of the trial analysis
-                if self._stop_ensemble_early(fit_results, _n):
-                    break
-                self.check_analysis(fit_results)
-                # get the best config settings
-                best_result = self._best_results(fit_results, 1).iloc[0]
-
-                # select optimal settings and fit optimal pipeline
-                self._fit_ensemble(
-                    best_result["path"],
-                    best_result["config"],
-                    iter=_n,
-                )
-
-                # make sure the ensemble is fitted
-                # usually, most of the methods are already fitted
-                self.ensemble.fit(_X, _y)
-
-                # get predictions on the residuals
-                # only use the last/latest pipeline
-                _best_estimator = self.ensemble.estimators[-1][1]
-                _y_pred = [
-                    [
-                        _best_estimator.predict(X_train),
-                        _best_estimator.predict(X_test),
-                    ]
-                    for (X_train, y_train), (X_test, y_test) in data_split
-                ]
 
         # make sure the ensemble is fitted
         # usually, every method is already fitted
@@ -1989,11 +2223,15 @@ class AutoTabularBase:
 
         # if need to save the ensemble
         if self.save:
-            save_methods(self.model_name, [self.ensemble])
+            save_methods(self.model_name, [self.ensemble, self._fingerprint])
+
+        # end of the run for the dashboard
+        self._dashboard_finish()
 
         # whether to retain temp files
+        # (only the folder of this run: other models share the temp directory)
         if self.delete_temp_after_terminate:
-            shutil.rmtree(self.temp_directory)
+            self._delete_temp()
 
         self._logger.info(
             "[INFO] {}  Experiment: {}. Status: AutoTabular fitting finished.".format(

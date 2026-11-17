@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, List
+from typing import List, Optional, Tuple, Union, cast
 import numpy as np
 import pandas as pd
 from lightgbm import LGBMClassifier, LGBMRegressor
@@ -60,7 +60,6 @@ from .base import BaseModel
 
 
 class LightGBM_Base:
-
     """
     LightGBM Classification/Regression Wrapper
 
@@ -107,7 +106,7 @@ class LightGBM_Base:
         early_stopping_round: int = 0,
         max_bin: int = 255,
         feature_fraction: float = 1.0,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.task_type = task_type
         self.objective = objective
@@ -131,11 +130,11 @@ class LightGBM_Base:
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
-        eval_set: List,
+        eval_set: Union[List, Tuple],
     ) -> LightGBM_Base:
         # get binary classification and multiclass classification
         if self.task_type == "classification":
-            if len(pd.unique(y)) == 2:
+            if len(pd.unique(cast(np.ndarray, y))) == 2:
                 self.task_type = "binary"
             else:
                 self.task_type = "multiclass"
@@ -190,6 +189,7 @@ class LightGBM_Base:
             )
 
         # model
+        self.model: Union[LGBMClassifier, LGBMRegressor]
         if self.task_type in ["binary", "multiclass"]:
             self.model = LGBMClassifier(
                 objective=self.objective,
@@ -224,9 +224,12 @@ class LightGBM_Base:
                 verbosity=0,
                 n_jobs=1,
             )
+        else:
+            raise ValueError("Not recognized task type: {}.".format(self.task_type))
 
         try:
-            self.model.fit(X, y, eval_set=eval_set)
+            # lightgbm also accepts a single (X, y) tuple as eval_set
+            self.model.fit(X, y, eval_set=cast(List, eval_set))
         except Exception as e:
             raise e
 
@@ -237,16 +240,15 @@ class LightGBM_Base:
     def predict(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return self.model.predict(X)
+        return cast(np.ndarray, self.model.predict(X))
 
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return self.model.predict_proba(X)
+        return cast(np.ndarray, cast(LGBMClassifier, self.model).predict_proba(X))
 
 
 class LightGBM_Classifier(LightGBM_Base, BaseModel):
-
     """
     LightGBM Classification Wrapper
 
@@ -290,7 +292,7 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
         early_stopping_round: int = 0,
         max_bin: int = 255,
         feature_fraction: float = 1.0,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.objective = objective
         self.boosting = boosting
@@ -330,8 +332,11 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        eval_set: Optional[Union[List, Tuple]] = None,
     ) -> LightGBM_Classifier:
-        super(LightGBM_Classifier, self).fit(X, y, eval_set=(X, y))
+        super(LightGBM_Classifier, self).fit(
+            X, y, eval_set=(X, y) if eval_set is None else eval_set
+        )
 
         self._fitted = True
 
@@ -349,7 +354,6 @@ class LightGBM_Classifier(LightGBM_Base, BaseModel):
 
 
 class LightGBM_Regressor(LightGBM_Base, BaseModel):
-
     """
     LightGBM Regression Wrapper
 
@@ -393,7 +397,7 @@ class LightGBM_Regressor(LightGBM_Base, BaseModel):
         early_stopping_round: int = 0,
         max_bin: int = 255,
         feature_fraction: float = 1.0,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.objective = objective
         self.boosting = boosting
@@ -433,8 +437,11 @@ class LightGBM_Regressor(LightGBM_Base, BaseModel):
         self,
         X: Union[pd.DataFrame, np.ndarray],
         y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        eval_set: Optional[Union[List, Tuple]] = None,
     ) -> LightGBM_Regressor:
-        super(LightGBM_Regressor, self).fit(X, y, eval_set=(X, y))
+        super(LightGBM_Regressor, self).fit(
+            X, y, eval_set=(X, y) if eval_set is None else eval_set
+        )
 
         self._fitted = True
 

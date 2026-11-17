@@ -86,7 +86,7 @@ from .sklearn_regressors import (
     # HistGradientBoostingRegressor,
     GradientBoostingRegressor,
 )
-import importlib
+import importlib.util
 
 classifiers = {
     # self-defined models

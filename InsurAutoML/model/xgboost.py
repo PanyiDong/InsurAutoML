@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union
+from typing import Union, cast
 import numpy as np
 import pandas as pd
 import xgboost as xgb
@@ -53,7 +53,6 @@ from .base import BaseModel
 
 
 class XGBoost_Base:
-
     """
     XGBoost Base model
 
@@ -100,8 +99,11 @@ class XGBoost_Base:
         self._fitted = False
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> XGBoost_Base:
+        self.model: Union[XGBClassifier, XGBRegressor]
         if self.task_type == "classification":
             self.model = XGBClassifier(
                 eta=self.eta,
@@ -122,6 +124,8 @@ class XGBoost_Base:
                 reg_lambda=self.reg_lambda,
                 reg_alpha=self.reg_alpha,
             )
+        else:
+            raise ValueError("Not recognized task type: {}.".format(self.task_type))
 
         self.model.fit(X, y)
 
@@ -137,11 +141,10 @@ class XGBoost_Base:
     def predict_proba(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return self.model.predict_proba(X)
+        return cast(XGBClassifier, self.model).predict_proba(X)
 
 
 class XGBoost_Classifier(XGBoost_Base, BaseModel):
-
     """
     XGBoost Classification model
 
@@ -195,7 +198,9 @@ class XGBoost_Classifier(XGBoost_Base, BaseModel):
         )
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> XGBoost_Classifier:
         super(XGBoost_Classifier, self).fit(X, y)
 
@@ -215,7 +220,6 @@ class XGBoost_Classifier(XGBoost_Base, BaseModel):
 
 
 class XGBoost_Regressor(XGBoost_Base, BaseModel):
-
     """
     XGBoost Regression model
 
@@ -269,7 +273,9 @@ class XGBoost_Regressor(XGBoost_Base, BaseModel):
         )
 
     def fit(
-        self, X: pd.DataFrame, y: Union[pd.DataFrame, pd.Series, np.ndarray]
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
     ) -> XGBoost_Regressor:
         super(XGBoost_Regressor, self).fit(X, y)
 

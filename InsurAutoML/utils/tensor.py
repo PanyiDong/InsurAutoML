@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from typing import Union, Dict, Tuple, List
+from typing import Union, Dict, Tuple, List, Optional
 import os
 import torch
 from torch.utils.data import Dataset
@@ -54,7 +54,6 @@ def repackage_hidden(h):
 
 
 class CustomTensorDataset(Dataset):
-
     """
     Custom Tensor Dataset
     """
@@ -79,13 +78,14 @@ class CustomTensorDataset(Dataset):
     def __len__(self) -> int:
         return len(self.inputs)
 
-    def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
+    def __getitem__(self, idx: int) -> Optional[Union[Dict, Tuple, List]]:
         if self.format == "dict":
             return {"input": self.inputs[idx], "label": self.labels[idx]}
         elif self.format == "tuple":
             return (self.inputs[idx], self.labels[idx])
         elif self.format == "list":
             return [self.inputs[idx], self.labels[idx]]
+        return None
 
     @property
     def inputSize(self) -> int:
@@ -139,7 +139,6 @@ class CustomTensorDataset(Dataset):
 
 
 class ListTensorDataset(Dataset):
-
     """Custom Tensor Dataset that can be used for serialization for List of tensor Dataset."""
 
     def __init__(
@@ -178,7 +177,7 @@ class ListTensorDataset(Dataset):
     def __len__(self) -> int:
         return len(torch.load(self.input[0]))
 
-    def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
+    def __getitem__(self, idx: int) -> Optional[Union[Dict, Tuple, List]]:
         input, label = [torch.load(_input)[idx] for _input in self.input], torch.load(
             self.labels
         )[idx]
@@ -189,10 +188,10 @@ class ListTensorDataset(Dataset):
             return (input, label)
         elif self.format == "list":
             return [input, label]
+        return None
 
 
 class DictTensorDataset(Dataset):
-
     """Custom Tensor Dataset that can be used for serialization for dict of tensor Dataset."""
 
     def __init__(
@@ -231,7 +230,7 @@ class DictTensorDataset(Dataset):
     def __len__(self) -> int:
         return len(torch.load(self.input[0]))
 
-    def __getitem__(self, idx: int) -> Union[Dict, Tuple, List]:
+    def __getitem__(self, idx: int) -> Optional[Union[Dict, Tuple, List]]:
         input, label = [torch.load(_input)[idx] for _input in self.input], torch.load(
             self.labels
         )[idx]
@@ -242,10 +241,10 @@ class DictTensorDataset(Dataset):
             return (input, label)
         elif self.format == "list":
             return [input, label]
+        return None
 
 
 class SerialTensorDataset(ListTensorDataset, DictTensorDataset):
-
     """Custom Tensor Dataset that can be used for serialization."""
 
     def __init__(

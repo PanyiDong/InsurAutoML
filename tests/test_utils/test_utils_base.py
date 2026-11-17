@@ -199,14 +199,14 @@ def test_has_method():
     mol = LogisticRegression()
 
     assert has_method(mol, "fit"), "The has_method function is not correct."
-    assert has_method(mol, "__fit") == False, "The has_method function is not correct."
+    assert not has_method(mol, "__fit"), "The has_method function is not correct."
 
 
 def test_is_none():
     from InsurAutoML.utils.base import is_none
 
     assert is_none(None), "The is_none function is not correct."
-    assert is_none("not none") == False, "The is_none function is not correct."
+    assert not is_none("not none"), "The is_none function is not correct."
 
 
 def test_format_hyper_dict():

@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union
+from typing import TYPE_CHECKING, Any, Optional, Union, cast
 import warnings
 import numpy as np
 import pandas as pd
@@ -50,10 +50,10 @@ from .base import BaseModel
 
 # check if pytorch exists
 # if exists, import pytorch
-import importlib
+import importlib.util
 
 pytorch_spec = importlib.util.find_spec("torch")
-if pytorch_spec is not None:
+if TYPE_CHECKING or pytorch_spec is not None:
     import torch
     from torch import nn
     from torch import optim
@@ -121,27 +121,27 @@ class MLP_Model(nn.Module):
                 "Activation function not supported, please choose from [ReLU, Tanh, Sigmoid]"
             )
 
-        self.forward_model = []  # sequential model
+        forward_model: list = []  # sequential model
 
         # at first layer, from input layer to first hidden layer
         # add activation function
-        self.forward_model.append(nn.Linear(self.input_size, self.hidden_size))
-        self.forward_model.append(self.activation)
+        forward_model.append(nn.Linear(self.input_size, self.hidden_size))
+        forward_model.append(self.activation)
 
         # in the middle layer, from previous hidden layer to next hidden layer
         for _ in range(self.hidden_layer):
-            self.forward_model.append(nn.Linear(self.hidden_size, self.hidden_size))
-            self.forward_model.append(self.activation)
+            forward_model.append(nn.Linear(self.hidden_size, self.hidden_size))
+            forward_model.append(self.activation)
 
         # at last layer, from last hidden layer to output layer
         # no activation function
-        self.forward_model.append(nn.Linear(self.hidden_size, self.output_size))
+        forward_model.append(nn.Linear(self.hidden_size, self.output_size))
 
         # if softmax is True, add softmax function
         if self.softmax:
-            self.forward_model.append(nn.Softmax())
+            forward_model.append(nn.Softmax())
 
-        self.forward_model = nn.Sequential(*self.forward_model)
+        self.forward_model = nn.Sequential(*forward_model)
 
     def forward(self, X: torch.Tensor) -> torch.Tensor:
         return self.forward_model(X)
@@ -191,13 +191,13 @@ class MLP_Base:
         output_size: int,
         softmax: bool = False,
         activation: str = "ReLU",
-        learning_rate: float = None,
+        learning_rate: Optional[float] = None,
         optimizer: str = "Adam",
         criteria: str = "MSE",
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.input_size = input_size
         self.hidden_layer = hidden_layer
@@ -217,8 +217,8 @@ class MLP_Base:
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: torch.Tensor,
+        y: torch.Tensor,
     ) -> MLP_Base:
         # set seed
         # torch.manual_seed(self.seed)
@@ -249,6 +249,8 @@ class MLP_Base:
         elif self.optimizer == "SGD":
             lr = 0.1 if self.learning_rate is None else self.learning_rate
             optimizer = optim.SGD(self.model.parameters(), lr=lr)
+        else:
+            raise ValueError("Not recognized optimizer: {}.".format(self.optimizer))
 
         # specify loss function
         if self.criteria == "MSE":
@@ -294,9 +296,12 @@ class MLP_Base:
         test_loader = DataLoader(test_tensor, batch_size=len(test_tensor))
 
         # predict
+        results: Optional[torch.Tensor] = None
         for batch_idx, [data] in enumerate(test_loader):
             with torch.no_grad():
                 results = self.model(data.to(self.device))
+        if results is None:
+            raise ValueError("No data to predict.")
 
         return results.cpu().numpy()  # make prediction to numpy array
 
@@ -338,13 +343,13 @@ class MLP_Classifier(MLP_Base, BaseModel):
         hidden_size: int,
         softmax: bool = True,
         activation: str = "ReLU",
-        learning_rate: float = None,
+        learning_rate: Optional[float] = None,
         optimizer: str = "Adam",
         criteria: str = "CrossEntropy",
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -362,11 +367,13 @@ class MLP_Classifier(MLP_Base, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: Union[pd.DataFrame, np.ndarray, torch.Tensor],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray, torch.Tensor],
     ) -> MLP_Classifier:
         self.input_size = X.shape[1]  # number of features as input size
-        self.output_size = len(pd.unique(y))  # unique classes as output size
+        self.output_size = len(
+            pd.unique(cast(np.ndarray, y))
+        )  # unique classes as output size
 
         # make sure losses are classification type
         if self.criteria not in ["CrossEntropy", "NegativeLogLikelihood"]:
@@ -389,22 +396,27 @@ class MLP_Classifier(MLP_Base, BaseModel):
         )
 
         # convert to tensors
-        X = torch.as_tensor(
+        X_tensor = torch.as_tensor(
             X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
             dtype=torch.float,
         )
-        y = torch.as_tensor(
+        y_tensor = torch.as_tensor(
             y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
             dtype=torch.long,
         )
 
         self._fitted = True
 
-        return super(MLP_Classifier, self).fit(X, y)
+        super(MLP_Classifier, self).fit(X_tensor, y_tensor)
+
+        return self
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # need to wrap predict function to convert output format
-        return assign_classes(super(MLP_Classifier, self).predict(X))
+        return cast(
+            np.ndarray,
+            assign_classes(cast(Any, super(MLP_Classifier, self).predict(X))),
+        )
 
     def predict_proba(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         # not need to use argmax to select the one class
@@ -449,13 +461,13 @@ class MLP_Regressor(MLP_Base, BaseModel):
         hidden_size: int,
         softmax: bool = False,
         activation: str = "ReLU",
-        learning_rate: float = None,
+        learning_rate: Optional[float] = None,
         optimizer: str = "Adam",
         criteria: str = "MSE",
         batch_size: int = 32,
         num_epochs: int = 20,
         is_cuda: bool = True,
-        seed: int = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.hidden_layer = hidden_layer
         self.hidden_size = hidden_size
@@ -473,8 +485,8 @@ class MLP_Regressor(MLP_Base, BaseModel):
 
     def fit(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, pd.Series, np.ndarray],
+        X: Union[pd.DataFrame, np.ndarray, torch.Tensor],
+        y: Union[pd.DataFrame, pd.Series, np.ndarray, torch.Tensor],
     ) -> MLP_Regressor:
         self.input_size = X.shape[1]  # number of features as input size
         self.output_size = 1  # output size is 1 (regression purpose)
@@ -500,18 +512,20 @@ class MLP_Regressor(MLP_Base, BaseModel):
         )
 
         # convert to tensors
-        X = torch.as_tensor(
+        X_tensor = torch.as_tensor(
             X.values if isinstance(X, (pd.DataFrame, pd.Series)) else X,
             dtype=torch.float,
         )
-        y = torch.as_tensor(
+        y_tensor = torch.as_tensor(
             y.values if isinstance(y, (pd.DataFrame, pd.Series)) else y,
             dtype=torch.float,
         )
 
         self._fitted = True
 
-        return super(MLP_Regressor, self).fit(X, y)
+        super(MLP_Regressor, self).fit(X_tensor, y_tensor)
+
+        return self
 
     def predict(self, X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
         return super(MLP_Regressor, self).predict(X)

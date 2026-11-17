@@ -38,6 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+import pytest
 import unittest
 import numpy as np
 import pandas as pd
@@ -95,7 +96,7 @@ def test_NoScaing():
 
     data = method.inverse_transform(fitted_data)
 
-    assert method._fitted == False, "The NoScaling method is not correctly inversed."
+    assert not method._fitted, "The NoScaling method is not correctly inversed."
 
 
 # test decrepted methods
@@ -146,3 +147,30 @@ def test_feature_truncation():
     assert (
         (capped_data_2 <= transformer.quantile_list).all().all()
     ), "The feature truncation is not correctly done."
+
+
+@pytest.mark.parametrize(
+    "name", ["MinMaxScale", "Standardize", "Normalize", "RobustScale"]
+)
+def test_scaling_numpy_input(name):
+    # numpy arrays are accepted (copied as dataframes), not only dataframes
+    import numpy as np
+    from InsurAutoML.scaling import scalings
+
+    X = np.random.default_rng(0).normal(size=(30, 3))
+    y = np.arange(30) % 2
+    scaling = scalings[name]()
+    scaling.fit(X, y)
+    assert scaling.transform(X).shape == (30, 3)
+
+
+def test_simple_imputer_numpy_input():
+    import numpy as np
+    from InsurAutoML.imputation import imputers
+
+    X = np.random.default_rng(0).normal(size=(20, 3))
+    X[0, 0] = np.nan
+    filled = imputers["SimpleImputer"]().fill(X)
+    assert not filled.isnull().values.any()
+    # the input is not modified
+    assert np.isnan(X[0, 0])

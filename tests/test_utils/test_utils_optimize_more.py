@@ -1,15 +1,41 @@
 """
-File: test_utils_optimize_more.py
+File Name: test_utils_optimize_more.py
 Author: Panyi Dong
 GitHub: https://github.com/PanyiDong/
-Mathematics Department, University of Illinois at Urbana-Champaign (UIUC)
+Actuarial and Risk Management Sciences, University of Illinois at Urbana-Champaign (UIUC)
 
 Project: InsurAutoML
+Latest Version: 0.2.9
 Relative Path: /tests/test_utils/test_utils_optimize_more.py
+File Created: Monday, 16th November 2026 7:12:56 pm
+Author: Panyi Dong (panyid2@illinois.edu)
 
-Stoppers, the trial directory name creator, the progress output switch and the
-argument validation of the search algorithm/scheduler/logger/estimator/metric
-factories in InsurAutoML.utils.optimize.
+-----
+Last Modified: Monday, 16th November 2026 11:32:34 pm
+Modified By: Panyi Dong (panyid2@illinois.edu)
+
+-----
+MIT License
+
+Copyright (c) 2026, Panyi Dong
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
 """
 
 import copy
@@ -228,6 +254,18 @@ def test_get_estimator():
 
     with pytest.raises(ValueError):
         get_estimator(NoPredict)
+
+    # an instance: an unfitted copy (the given estimator is not modified)
+    given = LinearRegression(fit_intercept=False)
+    estimator = get_estimator(given)
+    assert isinstance(estimator, LinearRegression) and estimator is not given
+    assert estimator.fit_intercept is False
+
+    # unknown names and objects without fit/predict
+    with pytest.raises(ValueError, match="Unrecognized estimator"):
+        get_estimator("NoSuchModel")
+    with pytest.raises(ValueError, match="fit/predict"):
+        get_estimator(object())
 
 
 def test_get_metrics():

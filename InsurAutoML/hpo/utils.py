@@ -240,6 +240,16 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         # select encoder and set hyperparameters
         # make sure only those keys are used
 
+        # the method dictionaries are given in setup with the data
+        assert (
+            self.encoder is not None
+            and self.imputer is not None
+            and self.balancing is not None
+            and self.scaling is not None
+            and self.feature_selection is not None
+            and self.models is not None
+        ), "The method dictionaries are not set, call setup with them first."
+
         for key in list(params.keys()):
             if key not in [
                 "encoder",
@@ -358,12 +368,11 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         _X_test_obj: Optional[pd.DataFrame] = None,
         _y_test_obj: Optional[pd.DataFrame] = None,
         refit: bool = False,
-    ) -> Union[
-        Tuple[Union[np.ndarray, pd.DataFrame], Union[np.ndarray, pd.DataFrame]], None
-    ]:
+    ) -> Tuple[Union[np.ndarray, pd.DataFrame], Union[np.ndarray, pd.DataFrame]]:
         # encoding
         start_time = time.time()
-        self.enc.fit(pd.concat([_X_train_obj, _X_test_obj]))
+        # (no test set when refit: concat drops None)
+        self.enc.fit(pd.concat(cast(List[pd.DataFrame], [_X_train_obj, _X_test_obj])))
         _X_train_obj = self.enc.refit(_X_train_obj)
         if not refit:
             _X_test_obj = self.enc.refit(_X_test_obj)
@@ -397,6 +406,7 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         if self.task_mode == "classification":
             _y_train_obj = _y_train_obj.astype(int)
             if not refit:
+                assert _y_test_obj is not None, "No test response given."
                 _y_test_obj = _y_test_obj.astype(int)
 
         # scaling
@@ -462,6 +472,9 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         self._logger.info("[INFO] Model fitting finished.")
 
         if not refit:
+            assert (
+                _X_test_obj is not None and _y_test_obj is not None
+            ), "No test set given."
             return (_X_test_obj, _y_test_obj)
         else:
             return (_X_train_obj, _y_train_obj)
@@ -496,7 +509,7 @@ class TabularObjective(TrialArtifactMixin, tune.Trainable):
         self,
     ) -> Dict[str, Any]:
         # set random seed
-        set_seed(self.seed)
+        set_seed(cast(int, self.seed))  # the seed is set by the hpo
 
         self._logger.info("[INFO] Objective starting...")
 

@@ -48,6 +48,8 @@ pyproject.toml. This file handles the dynamic parts:
 - the optional C++ extension of the InformedAutoML version, built with
   INFORMEDAUTOML=1 pip install "InsurAutoML[informed]"
 - requirements.txt, requirements_nn.txt and package.json, generated from pyproject.toml
+  on request only (a build does not modify files of the repository):
+      python setup.py sync
 """
 
 from pathlib import Path
@@ -123,9 +125,11 @@ VERSION_FILE = ROOT / "InsurAutoML" / "VERSION"
 
 # assert version file
 assert (ROOT / "InsurAutoML" / "version.py").is_file()
-if _git_version():
-    # write version to VERSION file (read by pyproject.toml)
-    VERSION_FILE.write_text("%s\n" % _git_version(), encoding="utf-8")
+_tag_version = _git_version()
+if _tag_version and VERSION_FILE.read_text(encoding="utf-8").strip() != _tag_version:
+    # write version to VERSION file (read by pyproject.toml), only when the tag
+    # changed (a build does not rewrite an up-to-date file)
+    VERSION_FILE.write_text("%s\n" % _tag_version, encoding="utf-8")
 InsurAutoML_version = VERSION_FILE.read_text(encoding="utf-8").strip()
 
 # check R installation
@@ -374,6 +378,11 @@ def main():
 
 
 if __name__ == "__main__":
-    get_requirements()
-    main()
-    get_package()
+    if sys.argv[1:] == ["sync"]:
+        # regenerate requirements.txt, requirements_nn.txt and package.json from
+        # pyproject.toml (explicitly, not on every build)
+        get_requirements()
+        get_package()
+        log.info("requirements.txt, requirements_nn.txt and package.json updated.")
+    else:
+        main()

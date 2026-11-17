@@ -38,7 +38,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import importlib
+import importlib.util
 from .base import SimpleImputer, MeanModeImputer, DummyImputer, JointImputer
 from .multiple import ExpectationMaximization, KNNImputer, MissForestImputer, MICE
 

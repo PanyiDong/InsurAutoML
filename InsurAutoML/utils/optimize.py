@@ -38,9 +38,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-import importlib
+import importlib.util
 import os
 from ray.tune import Stopper
+from ray.tune.progress_reporter import ProgressReporter
 from ray import tune
 import ray
 import pandas as pd
@@ -51,7 +52,7 @@ import time
 import copy
 from inspect import isclass
 import warnings
-from typing import Dict, Callable, Union, List, Any, Optional
+from typing import Dict, Callable, Union, List, Any, Optional, cast
 import logging
 import signal
 from contextlib import contextmanager
@@ -69,18 +70,39 @@ logger = logging.getLogger(__name__)
 
 
 def setup_logger(name, log_file, level=logging.INFO):
-    """To setup as many loggers as you want"""
-
-    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
-
-    handler = logging.FileHandler(log_file, mode="a")
-    handler.setFormatter(formatter)
+    """
+    Logger writing to log_file. Calling it again (e.g. a new fit) does not add
+    another handler: the log lines are written once, and only to the current file.
+    """
 
     logger = logging.getLogger(name)
     logger.setLevel(level)
+
+    log_file = os.path.abspath(log_file)
+    for handler in list(logger.handlers):
+        if isinstance(handler, logging.FileHandler):
+            # same file, still there (a new run deletes its previous folder)
+            if handler.baseFilename == log_file and os.path.exists(log_file):
+                return logger
+            # previous (or deleted) file: closed (released on Windows)
+            logger.removeHandler(handler)
+            handler.close()
+
+    handler = logging.FileHandler(log_file, mode="a")
+    handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(message)s"))
     logger.addHandler(handler)
 
     return logger
+
+
+def close_logger(logger: Optional[logging.Logger]) -> None:
+    """Close the file handlers of a logger (releases the log files)."""
+    if logger is None:
+        return
+    for handler in list(logger.handlers):
+        if isinstance(handler, logging.FileHandler):
+            logger.removeHandler(handler)
+            handler.close()
 
 
 @contextmanager
@@ -268,6 +290,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "encoder_" in _key:
                     _encoder_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No encoder_ key found in hyperparameters {}.".format(item)
+                )
             if item[_encoder_key] == _encoder:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -298,6 +324,10 @@ def _hyeropt_get_hyperparameter_space(
                     if "imputer_" in _key:
                         _imputer_key = _key
                         break
+                else:
+                    raise ValueError(
+                        "No imputer_ key found in hyperparameters {}.".format(item)
+                    )
                 if item[_imputer_key] == _imputer:
                     # create a copy of hyperparameters, avoid changes on
                     # original
@@ -326,6 +356,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "balancing_" in _key:
                     _balancing_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No balancing_ key found in hyperparameters {}.".format(item)
+                )
             if item[_balancing_key] == _balancing:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -351,6 +385,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "scaling_" in _key:
                     _scaling_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No scaling_ key found in hyperparameters {}.".format(item)
+                )
             if item[_scaling_key] == _scaling:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -380,6 +418,12 @@ def _hyeropt_get_hyperparameter_space(
                 if "feature_selection_" in _key:
                     _feature_selection_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No feature_selection_ key found in hyperparameters {}.".format(
+                        item
+                    )
+                )
             if item[_feature_selection_key] == _feature_selection:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -408,6 +452,10 @@ def _hyeropt_get_hyperparameter_space(
                 if "model_" in _key:
                     _model_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No model_ key found in hyperparameters {}.".format(item)
+                )
             if item[_model_key] == _model:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -705,9 +753,15 @@ def _converted_get_hyperparameter_space(
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from flaml import BlendSearch
+        from flaml.tune.searcher.blendsearch import BlendSearch
 
         searcher = BlendSearch
+    else:
+        raise ValueError(
+            'search_algo must be "Nevergrad" or "BlendSearch", get {}.'.format(
+                search_algo
+            )
+        )
 
     # encoding space
     # get all method names in hyperparameter space
@@ -755,10 +809,14 @@ def _converted_get_hyperparameter_space(
     all_balancings = [item["balancing"] for item in balancings_hyperparameters]
     _balancing_hyperparameter = []
     for _balancing in [*balancing]:
-        balancings_hyperparameters[all_balancings.index(_balancing)][
-            "balancing"
-        ] = tune.choice(
-            [balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"]]
+        balancings_hyperparameters[all_balancings.index(_balancing)]["balancing"] = (
+            tune.choice(
+                [
+                    balancings_hyperparameters[all_balancings.index(_balancing)][
+                        "balancing"
+                    ]
+                ]
+            )
         )
         _balancing_hyperparameter.append(
             searcher.convert_search_space(
@@ -1016,7 +1074,7 @@ def _get_hyperparameter_space(
     models: Dict,
     task_mode: str,
     search_aglo: str,
-) -> Union[Dict, Callable]:
+) -> Optional[Union[Dict, Callable]]:
     if search_aglo in ["RandomSearch", "GridSearch", "CFO"]:
         # BlendSearch can start from iter #2
         return _base_get_hyperparameter_space(
@@ -1089,6 +1147,8 @@ def _get_hyperparameter_space(
                 task_mode,
                 search_algo=search_aglo,
             )
+    # other algorithms (e.g. BlendSearch): no search space given
+    return None
     # elif search_aglo in ["Scikit-Optimize"] :
     #     return _skopt_get_hyperparameter_space(
     #         X,
@@ -1220,6 +1280,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "encoder_" in _key:
                     _encoder_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No encoder_ key found in hyperparameters {}.".format(item)
+                )
             if item[_encoder_key] == _encoder:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1249,6 +1313,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "complete_prep_" in _key:
                     _complete_prep_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No complete_prep_ key found in hyperparameters {}.".format(item)
+                )
             if item[_complete_prep_key] == _complete_prep:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1276,6 +1344,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "missing_prep_" in _key:
                     _missing_prep_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No missing_prep_ key found in hyperparameters {}.".format(item)
+                )
             if item[_missing_prep_key] == _missing_prep:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1302,6 +1374,10 @@ def _hyperopt_get_informed_hyperparameter_space(
                 if "model_" in _key:
                     _model_key = _key
                     break
+            else:
+                raise ValueError(
+                    "No model_ key found in hyperparameters {}.".format(item)
+                )
             if item[_model_key] == _model:
                 # create a copy of hyperparameters, avoid changes on original
                 _item = copy.deepcopy(item)
@@ -1517,9 +1593,15 @@ def _converted_get_informed_hyperparameter_space(
 
         searcher = NevergradSearch
     elif search_algo == "BlendSearch":
-        from flaml import BlendSearch
+        from flaml.tune.searcher.blendsearch import BlendSearch
 
         searcher = BlendSearch
+    else:
+        raise ValueError(
+            'search_algo must be "Nevergrad" or "BlendSearch", get {}.'.format(
+                search_algo
+            )
+        )
 
     # encoding space
     # get all method names in hyperparameter space
@@ -1639,7 +1721,7 @@ def _get_informed_hyperparameter_space(
     models: Dict,
     task_mode: str,
     search_aglo: str,
-) -> Union[Dict, Callable]:
+) -> Optional[Union[Dict, Callable]]:
     if search_aglo in ["RandomSearch", "GridSearch", "CFO"]:
         # BlendSearch can start from iter #2
         return _base_get_informed_hyperparameter_space(
@@ -1696,6 +1778,8 @@ def _get_informed_hyperparameter_space(
                 task_mode,
                 search_algo=search_aglo,
             )
+    # other algorithms (e.g. BlendSearch): no search space given
+    return None
 
 
 # get the hyperparameter optimization algorithm based on string input
@@ -1781,7 +1865,7 @@ def get_algo(search_algo: str) -> Callable:
         # Cost-Frugal Optimization
         # NOTE: ray>=2.x removed the ray.tune.search.flaml wrapper, the searchers
         # are imported from flaml directly (they implement the ray Searcher API)
-        from flaml import CFO
+        from flaml.tune.searcher.blendsearch import CFO
 
         algo = CFO
     # elif search_algo == "DragonflySearch":
@@ -1919,7 +2003,7 @@ def get_algo(search_algo: str) -> Callable:
     return algo
 
 
-def set_algo_seed(algo: str, seed: int = None):
+def set_algo_seed(algo: str, seed: Optional[int] = None):
     MAPPING = {
         "RandomSearch": "random_state",
         "GridSearch": "random_state",
@@ -1963,10 +2047,8 @@ def get_scheduler(search_scheduler: str) -> Callable:
         # check whether GPy2 is installed
         Gpy_spec = importlib.util.find_spec("GPy")
         if Gpy_spec is None:
-            raise ImportError(
-                "GPy2 not installed. Please install it first to use PB2. \
-                Command to install: pip install GPy"
-            )
+            raise ImportError("GPy2 not installed. Please install it first to use PB2. \
+                Command to install: pip install GPy")
 
         from ray.tune.schedulers.pb2 import PB2
 
@@ -2040,12 +2122,60 @@ def legacy_progress_output(enable: bool = True):
             os.environ["RAY_AIR_NEW_OUTPUT"] = _prev
 
 
+# loggers writing the Tune console output (status, warnings, trial errors), and
+# the search algorithms run by Tune
+RAY_TUNE_LOGGERS = ("ray.tune", "ray.train", "ray.air", "optuna")
+
+
+@contextmanager
+def quiet_ray_output(enable: bool = True):
+    """
+    Suppress the Ray Tune console output (used with the dashboard, which shows
+    the progress and the trial errors instead).
+
+    The legacy output engine prints nothing with verbose=0 (the new engine still
+    prints the experiment summary), and the Tune loggers are silenced.
+    """
+    if not enable:
+        yield
+        return
+
+    _levels = {name: logging.getLogger(name).level for name in RAY_TUNE_LOGGERS}
+    for name in RAY_TUNE_LOGGERS:
+        logging.getLogger(name).setLevel(logging.CRITICAL)
+    try:
+        with legacy_progress_output(True):
+            yield
+    finally:
+        for name, level in _levels.items():
+            logging.getLogger(name).setLevel(level)
+
+
+class SilentReporter(ProgressReporter):
+    """
+    Progress reporter without output (the dashboard shows the progress).
+
+    Passed explicitly: without a reporter, Ray Tune uses its default one, which in
+    notebooks clears the cell output (and the address of the dashboard).
+    """
+
+    def should_report(self, trials: List[Any], done: bool = False) -> bool:
+        return False
+
+    def report(self, trials: List[Any], done: bool, *sys_info: str) -> None:
+        pass
+
+
 # get progress reporter based on string input
 def get_progress_reporter(
-    progress_reporter: str,
+    progress_reporter: Optional[str],
     max_evals: int,
     max_error: int,
-) -> Callable:
+) -> Optional[ProgressReporter]:
+    # the web dashboard (default) replaces the Ray Tune console output
+    if progress_reporter in (None, "Dashboard"):
+        return SilentReporter()
+
     # max_error is the number of failures allowed, which can be 0
     # 0 rows would make the error table of the reporter fail, use no limit (None)
     max_error_rows = max_error if max_error and max_error > 0 else None
@@ -2062,10 +2192,11 @@ def get_progress_reporter(
             )
             progress_reporter = "CLIReporter"
 
-    if progress_reporter == "CLIReporter":
-        from ray.tune.progress_reporter import CLIReporter
+    from ray.tune.progress_reporter import CLIReporter, JupyterNotebookReporter
 
-        progress_reporter = CLIReporter(
+    if progress_reporter == "CLIReporter":
+
+        reporter: Union[CLIReporter, JupyterNotebookReporter] = CLIReporter(
             # metric_columns=[
             #     "fitted_model",
             #     "training_status",
@@ -2075,15 +2206,13 @@ def get_progress_reporter(
             # ],
             parameter_columns=["task_type"],
             max_progress_rows=max_evals,
-            max_error_rows=max_error_rows,
+            max_error_rows=max_error_rows,  # type: ignore[arg-type]  # ray accepts None (no limit)
             # ray>=2 legacy reporter fails to sort trials terminated without
             # a loss (e.g. stopped by timeout), keep the trials unsorted
             sort_by_metric=False,
         )
     elif progress_reporter == "JupyterNotebookReporter":
-        from ray.tune.progress_reporter import JupyterNotebookReporter
-
-        progress_reporter = JupyterNotebookReporter(
+        reporter = JupyterNotebookReporter(
             overwrite=True,
             # metric_columns=[
             #     "fitted_model",
@@ -2094,18 +2223,20 @@ def get_progress_reporter(
             # ],
             parameter_columns=["task_type"],
             max_progress_rows=max_evals,
-            max_error_rows=max_error_rows,
+            max_error_rows=max_error_rows,  # type: ignore[arg-type]  # ray accepts None (no limit)
             # ray>=2 legacy reporter fails to sort trials terminated without
             # a loss (e.g. stopped by timeout), keep the trials unsorted
             sort_by_metric=False,
         )
+    else:
+        raise ValueError("Unrecognized progress reporter {}.".format(progress_reporter))
 
     # add metrics for visualization
-    progress_reporter.add_metric_column("fitted_model")
-    progress_reporter.add_metric_column("training_status")
-    progress_reporter.add_metric_column("loss")
+    reporter.add_metric_column("fitted_model")
+    reporter.add_metric_column("training_status")
+    reporter.add_metric_column("loss")
 
-    return progress_reporter
+    return reporter
 
 
 def get_logger(logger: List) -> List[Callable]:
@@ -2184,7 +2315,7 @@ class TimePlateauStopper(Stopper):
         std_ratio: float = 0.01,
         num_results: int = 4,
         grace_period: int = 4,
-        metric_threshold: float = None,
+        metric_threshold: Optional[float] = None,
         mode: str = "min",
     ) -> None:
         self._stored_start = None
@@ -2265,7 +2396,9 @@ class TimePlateauStopper(Stopper):
         # If mean is lower than previous mean, stop early.
         improvement_check = current_mean <= previous_mean
         # if current_mean is 0, stop early
-        return (plateau_check and improvement_check) if current_mean else True
+        return cast(
+            bool, (plateau_check and improvement_check) if current_mean else True
+        )
 
     def stop_all(self) -> bool:
         if self._stored_start:
@@ -2297,7 +2430,7 @@ class InformedStopper(Stopper):
         std_ratio: float = 0.01,
         num_results: int = 4,
         grace_period: int = 4,
-        metric_threshold: float = None,
+        metric_threshold: Optional[float] = None,
         mode: str = "min",
     ) -> None:
         self._stored_start = None
@@ -2354,7 +2487,7 @@ class InformedStopper(Stopper):
 
 
 # get estimator based on string or class
-def get_estimator(estimator_str: str) -> Callable:
+def get_estimator(estimator_str: str) -> Any:
     if estimator_str == "Lasso":
         from sklearn.linear_model import Lasso
 
@@ -2383,17 +2516,21 @@ def get_estimator(estimator_str: str) -> Callable:
         from sklearn.ensemble import RandomForestClassifier
 
         return RandomForestClassifier()
-    elif isclass(type(estimator_str)):
-        # if estimator is recognized as a class
-        # make sure it has fit/predict methods
-        if not has_method(estimator_str, "fit") or not has_method(
-            estimator_str, "predict"
-        ):
-            raise ValueError("Estimator must have fit/predict methods!")
+    elif isinstance(estimator_str, str):
+        raise ValueError("Unrecognized estimator {}!".format(estimator_str))
 
+    # an estimator class or instance: make sure it has fit/predict methods
+    if not has_method(estimator_str, "fit") or not has_method(estimator_str, "predict"):
+        raise ValueError("Estimator must have fit/predict methods!")
+    if isclass(estimator_str):
         return estimator_str()
-    else:
-        raise AttributeError("Unrecognized estimator!")
+    # an instance: a new unfitted copy (the given one is not modified)
+    try:
+        from sklearn.base import clone
+
+        return clone(estimator_str)
+    except TypeError:
+        return copy.deepcopy(estimator_str)
 
 
 # get metrics based on string or class
@@ -2495,9 +2632,13 @@ class ray_status:
         self,
         cpu_threads: Optional[int],
         gpu_count: int,
+        quiet: bool = False,
     ) -> None:
         self.cpu_threads = cpu_threads
         self.gpu_count = gpu_count
+        # quiet: no Ray startup messages and no output of the workers on the
+        # console (still in the Ray session logs)
+        self.quiet = quiet
 
     def ray_init(self) -> None:
         # initialize ray
@@ -2507,6 +2648,11 @@ class ray_status:
                 # local_mode=True,
                 num_cpus=self.cpu_threads,
                 num_gpus=self.gpu_count,
+                **(
+                    {"log_to_driver": False, "logging_level": logging.ERROR}
+                    if self.quiet
+                    else {}
+                ),
             )
         # check if ray is initialized
         assert ray.is_initialized(), "Ray is not initialized."
@@ -2515,7 +2661,7 @@ class ray_status:
         # shut down ray
         ray.shutdown()
         # check if ray is shutdown
-        assert ray.is_initialized() == False, "Ray is not shutdown."
+        assert not ray.is_initialized(), "Ray is not shutdown."
 
 
 # check if an object has a method

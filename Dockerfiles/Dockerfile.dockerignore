@@ -1,0 +1,37 @@
+# Files left out of the Docker build context (the repository root) of
+# Dockerfiles/Dockerfile: BuildKit reads <Dockerfile name>.dockerignore next to the
+# Dockerfile. The legacy builder ignores this file (it only reads a .dockerignore at
+# the root of the context): the Dockerfile copies only the files it needs, so the
+# image is the same, only the uploaded build context is larger.
+
+# version control, editors, CI
+.git
+.github
+.vscode
+.idea
+
+# outputs, caches and builds
+tmp
+build
+dist
+**/*.egg-info
+**/__pycache__
+**/*.py[cod]
+**/*.so
+.pytest_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov
+catboost_info
+
+# not needed in the image
+Dockerfiles
+data
+doc
+docs
+archive
+experiments
+tests
+**/.env
+**/secrets*.yaml

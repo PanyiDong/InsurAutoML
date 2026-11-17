@@ -197,9 +197,10 @@ parser.add_argument(
 )
 parser.add_argument(
     "--progress_reporter",
-    default="CLIReporter",
+    default="Dashboard",
     type=str,
-    help="progress reporting manager",
+    help="progress reporting manager: Dashboard (local web dashboard), "
+    "CLIReporter or JupyterNotebookReporter (Ray Tune output)",
 )
 parser.add_argument(
     "--full_status",
@@ -253,7 +254,7 @@ if __name__ == "__main__":
             datetime.datetime.now().strftime("%H:%M:%S %Y-%m-%d")
         )
     )
-    # if test_data provided, use train/test data seperately
+    # if test_data provided, use train/test data separately
     if test != "":
         database = load_data().load(args.data_folder, [train, test])
 

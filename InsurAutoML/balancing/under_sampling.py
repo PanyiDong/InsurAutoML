@@ -40,9 +40,10 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, Tuple, Callable
+from typing import Any, Callable, List, Optional, Union, Tuple, cast
 import numpy as np
 import pandas as pd
+from ..utils.base import copy_frame
 import warnings
 import sklearn
 import sklearn.utils
@@ -63,7 +64,6 @@ balancing machine learning training data. ACM SIGKDD explorations newsletter, 6(
 
 
 class SimpleRandomUnderSampling(BaseBalancing):
-
     """
     Simple Random Under-Sampling
     Randomly eliminate samples from majority class
@@ -84,8 +84,8 @@ class SimpleRandomUnderSampling(BaseBalancing):
         self,
         imbalance_threshold: float = 0.9,
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
@@ -96,25 +96,26 @@ class SimpleRandomUnderSampling(BaseBalancing):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -127,7 +128,9 @@ class SimpleRandomUnderSampling(BaseBalancing):
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
@@ -138,8 +141,8 @@ class SimpleRandomUnderSampling(BaseBalancing):
         pd.DataFrame
     ):  # using random over-sampling to balance the first imbalanced feature
         n, features = len(X), list(X.columns)
-        _imbalanced_feature, _majority = is_imbalance(
-            X, self.imbalance_threshold, value=True
+        _imbalanced_feature, _majority = cast(
+            Tuple[str, Any], is_imbalance(X, self.imbalance_threshold, value=True)
         )
         _majority_class = X.loc[X[_imbalanced_feature] == _majority]
 
@@ -154,13 +157,14 @@ class SimpleRandomUnderSampling(BaseBalancing):
         )
         X = X.drop(sample.index)
         # shuffle the data
-        X = sklearn.utils.shuffle(X.reset_index(drop=True)).reset_index(drop=True)
+        X = cast(
+            pd.DataFrame, sklearn.utils.shuffle(X.reset_index(drop=True))
+        ).reset_index(drop=True)
 
         return X
 
 
 class TomekLink(BaseBalancing):
-
     """
     Use Tomek Links to remove noisy or border significant majority class sample
     Tomek links define as nearest neighbors with different classification
@@ -185,8 +189,8 @@ class TomekLink(BaseBalancing):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -198,25 +202,26 @@ class TomekLink(BaseBalancing):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -240,19 +245,23 @@ class TomekLink(BaseBalancing):
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        _imbalanced_feature, _majority = is_imbalance(
-            X, self.imbalance_threshold, value=True
+        _imbalanced_feature, _majority = cast(
+            Tuple[str, Any], is_imbalance(X, self.imbalance_threshold, value=True)
         )
         _seed = self.seed
         _iter = 0
 
         while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
+            is_imbalance(
+                cast(pd.DataFrame, X[[_imbalanced_feature]]), self.imbalance_threshold
+            )
             and _iter <= self.max_iter
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
@@ -279,7 +288,6 @@ class TomekLink(BaseBalancing):
 
 
 class EditedNearestNeighbor(BaseBalancing):
-
     """
     Edited Nearest Neighbor (ENN)
     Under-sampling method, drop samples where majority of k nearest neighbors belong to different class
@@ -306,8 +314,8 @@ class EditedNearestNeighbor(BaseBalancing):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
         k: int = 3,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
@@ -321,25 +329,26 @@ class EditedNearestNeighbor(BaseBalancing):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
 
         if (self.k % 2) == 0:
             warnings.warn(
@@ -373,19 +382,23 @@ class EditedNearestNeighbor(BaseBalancing):
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        _imbalanced_feature, _majority = is_imbalance(
-            X, self.imbalance_threshold, value=True
+        _imbalanced_feature, _majority = cast(
+            Tuple[str, Any], is_imbalance(X, self.imbalance_threshold, value=True)
         )
         _seed = self.seed
         _iter = 0
 
         while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
+            is_imbalance(
+                cast(pd.DataFrame, X[[_imbalanced_feature]]), self.imbalance_threshold
+            )
             and _iter <= self.max_iter
         ):
             _majority_class = X.loc[X[_imbalanced_feature] == _majority]
@@ -428,7 +441,6 @@ class EditedNearestNeighbor(BaseBalancing):
 
 
 class CondensedNearestNeighbor(BaseBalancing):
-
     """
     Condensed Nearest Neighbor Rule (CNN)
     get subset of E that can predict the same as E using 1-NN
@@ -451,8 +463,8 @@ class CondensedNearestNeighbor(BaseBalancing):
         self,
         imbalance_threshold: float = 0.9,
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.all = all
@@ -463,25 +475,26 @@ class CondensedNearestNeighbor(BaseBalancing):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -508,12 +521,14 @@ class CondensedNearestNeighbor(BaseBalancing):
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
     @staticmethod
-    def _get_initial_neigh(X: pd.DataFrame) -> Callable:
+    def _get_initial_neigh(X: Union[pd.DataFrame, pd.Series]) -> Callable:
         _type = type_of_task(X)
         if _type in ["binary", "multiclass"]:
             from sklearn.neighbors import KNeighborsClassifier
@@ -531,8 +546,8 @@ class CondensedNearestNeighbor(BaseBalancing):
             )
 
     def _fit_transform(self, X: pd.DataFrame) -> pd.DataFrame:
-        _imbalanced_feature, _majority = is_imbalance(
-            X, self.imbalance_threshold, value=True
+        _imbalanced_feature, _majority = cast(
+            Tuple[str, Any], is_imbalance(X, self.imbalance_threshold, value=True)
         )
         ini_neigh = self._get_initial_neigh(X[_imbalanced_feature])
         # unique index, rows are tracked by index labels below
@@ -543,7 +558,9 @@ class CondensedNearestNeighbor(BaseBalancing):
         _iter = 0
 
         while (
-            is_imbalance(X[[_imbalanced_feature]], self.imbalance_threshold)
+            is_imbalance(
+                cast(pd.DataFrame, X[[_imbalanced_feature]]), self.imbalance_threshold
+            )
             and _iter <= self.max_iter
         ):
             _minority_class = X.loc[X[_imbalanced_feature] != _majority]
@@ -578,7 +595,6 @@ class CondensedNearestNeighbor(BaseBalancing):
 
 
 class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
-
     """
     One Sided Selection (OSS)
     employs Tomek Link to remove noisy and border majority class samples, then use CNN to remove majority
@@ -604,8 +620,8 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -616,25 +632,26 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -647,7 +664,7 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
-            _data = super().fit_transform(_data)
+            _data = cast(pd.DataFrame, super().fit_transform(_data))
 
             super(TomekLink, self).__init__(
                 imbalance_threshold=_threshold,
@@ -655,19 +672,20 @@ class OneSidedSelection(TomekLink, CondensedNearestNeighbor):
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
-            _data = super(TomekLink, self).fit_transform(_data)
+            _data = cast(pd.DataFrame, super(TomekLink, self).fit_transform(_data))
             self.imbalance_threshold = _threshold
 
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data
 
 
 class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
-
     """
     CNN_Tomek Link
     employs CNN first and Tomek Link to reduce the calculation for Tomek Link (large calculation for distance
@@ -693,8 +711,8 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         imbalance_threshold: float = 0.9,
         norm: str = "l2",
         all: bool = True,
-        max_iter: int = None,
-        seed: int = None,
+        max_iter: Optional[int] = None,
+        seed: Optional[int] = None,
     ) -> None:
         self.imbalance_threshold = imbalance_threshold
         self.norm = norm
@@ -705,25 +723,26 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
         self._fitted = False  # whether the model has been fitted
 
     def fit_transform(
-        self, X: pd.DataFrame, y: pd.DataFrame = None
+        self, X: pd.DataFrame, y: Optional[pd.DataFrame] = None
     ) -> Union[pd.DataFrame, Tuple[pd.DataFrame, pd.DataFrame]]:
         try:  # if missing y, will be None value; or will be dataframe, use df.empty for judge
-            _empty = y.empty
+            _empty = cast(pd.DataFrame, y).empty
         except AttributeError:
             _empty = y is None
 
         if (
             not _empty
         ):  # if no y input, only convert X; or, combine X and y to consider balancing
+            assert y is not None  # a None y has no .empty, so _empty is True
             features = list(X.columns)
-            response = list(y.columns)
+            response: Optional[List[str]] = list(y.columns)
             data = pd.concat([X, y], axis=1)
         else:
             features = list(X.columns)
             response = None
             data = X
 
-        _data = data.copy(deep=True)
+        _data = cast(pd.DataFrame, copy_frame(data, deep=True))
         if not is_imbalance(_data, self.imbalance_threshold):
             warnings.warn("The dataset is balanced, no change.")
         else:
@@ -735,7 +754,7 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
-            _data = super().fit_transform(_data)
+            _data = cast(pd.DataFrame, super().fit_transform(_data))
 
             super(CondensedNearestNeighbor, self).__init__(
                 imbalance_threshold=_threshold,
@@ -744,12 +763,16 @@ class CNN_TomekLink(CondensedNearestNeighbor, TomekLink):
                 max_iter=self.max_iter,
                 seed=self.seed,
             )
-            _data = super(CondensedNearestNeighbor, self).fit_transform(_data)
+            _data = cast(
+                pd.DataFrame, super(CondensedNearestNeighbor, self).fit_transform(_data)
+            )
             self.imbalance_threshold = _threshold
 
         self._fitted = True
 
         if not _empty:
-            return _data[features], _data[response]
+            return cast(pd.DataFrame, _data[features]), cast(
+                pd.DataFrame, _data[cast(List[str], response)]
+            )
         else:
             return _data

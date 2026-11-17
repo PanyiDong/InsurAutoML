@@ -40,7 +40,7 @@ SOFTWARE.
 
 from __future__ import annotations
 
-from typing import Union, List
+from typing import Any, Optional, Union, List, cast
 from functools import partial
 from itertools import combinations
 from concurrent.futures import ProcessPoolExecutor
@@ -73,8 +73,12 @@ class FeatureFilter(BaseFeatureSelection):
     will be set to n_features
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
+
+    seed: int, default = 42
+    seed of the random tie breaking of the 'CCC' criteria (the same seed selects
+    the same features), None for a random tie breaking
     """
 
     criteria_mapping = {
@@ -86,12 +90,14 @@ class FeatureFilter(BaseFeatureSelection):
     def __init__(
         self,
         criteria: str = "Pearson",
-        n_components: int = None,
-        n_prop: float = None,
+        n_components: Optional[int] = None,
+        n_prop: Optional[float] = None,
+        seed: Optional[int] = 42,
     ) -> None:
         self.criteria = criteria
         self.n_components = n_components
         self.n_prop = n_prop
+        self.seed = seed
 
         super().__init__()
         self._fitted = False
@@ -120,6 +126,7 @@ class FeatureFilter(BaseFeatureSelection):
 
         if _empty:
             raise ValueError("Must have response!")
+        assert y is not None  # a None response is caught above
 
         # check X and y have same lengths
         if len(X) != len(y):
@@ -134,6 +141,7 @@ class FeatureFilter(BaseFeatureSelection):
         # make sure selected features is at least 1
         elif self.n_prop is not None:
             self.n_components = max(1, int(self.n_prop * X.shape[1]))
+        assert self.n_components is not None  # one of the branches above is taken
 
         # apply criteria on each column
         if self.criteria == "Pearson":
@@ -141,7 +149,11 @@ class FeatureFilter(BaseFeatureSelection):
         elif self.criteria == "MI":
             self._score = MI(X, y)
         elif self.criteria == "CCC":
-            self._score = [CCC(X.loc[:, feature], y) for feature in self.features]
+            # one generator for all features: reproducible with a seed
+            rng = np.random.default_rng(self.seed)
+            self._score = [
+                CCC(X.loc[:, feature], y, seed=rng) for feature in self.features
+            ]
         else:
             raise ValueError(f"Unsupported criteria: {self.criteria}")
 
@@ -178,14 +190,14 @@ class mRMR(BaseFeatureSelection):
     number of components to select, if None, no limit
 
     n_prop: float, default = None
-    proprotion of features to select, if None, no limit
+    proportion of features to select, if None, no limit
     n_components have higher priority than n_prop
     """
 
     def __init__(
         self,
-        n_components: int = None,
-        n_prop: float = None,
+        n_components: Optional[int] = None,
+        n_prop: Optional[float] = None,
     ) -> None:
         self.n_components = n_components
         self.n_prop = n_prop
@@ -195,11 +207,11 @@ class mRMR(BaseFeatureSelection):
 
     def select_feature(
         self,
-        X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray],
+        X: pd.DataFrame,
+        y: Union[pd.DataFrame, pd.Series, np.ndarray],
         selected_features: List,
         unselected_features: List,
-    ) -> str:
+    ) -> int:
         # select one feature as step, get all possible combinations
         test_item = list(combinations(unselected_features, 1))
 
@@ -226,19 +238,20 @@ class mRMR(BaseFeatureSelection):
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> mRMR:
+        if y is None:
+            raise ValueError("mRMR needs the response y.")
         # get feature names
         self._check_feature_names(X)
         # check if inputs are dataframes
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X)
-        if not isinstance(y, pd.DataFrame):
-            y = pd.DataFrame(y)
+        response = y if isinstance(y, pd.DataFrame) else pd.DataFrame(y)
         # response name must not collide with feature names (e.g. both 0 for
         # ndarray inputs), otherwise MI can not group on the joint columns
-        if y.columns[0] in X.columns:
-            y = y.rename(columns={y.columns[0]: "__response__"})
+        if response.columns[0] in X.columns:
+            response = response.rename(columns={response.columns[0]: "__response__"})
 
         # check whether n_components/n_prop is valid
         if self.n_components is None and self.n_prop is None:
@@ -248,6 +261,7 @@ class mRMR(BaseFeatureSelection):
         # make sure selected features is at least 1
         elif self.n_prop is not None:
             self.n_components = max(1, int(self.n_prop * X.shape[1]))
+        assert self.n_components is not None  # one of the branches above is taken
 
         # initialize selected/unselected features
         selected_features = []
@@ -256,7 +270,7 @@ class mRMR(BaseFeatureSelection):
         for _ in range(self.n_components):
             # get the current optimal loss and feature
             new_feature = self.select_feature(
-                X, y, selected_features, unselected_features
+                X, response, selected_features, unselected_features
             )
             selected_features.append(new_feature)
             unselected_features.remove(new_feature)
@@ -271,7 +285,7 @@ class mRMR(BaseFeatureSelection):
     def transform(
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
-        return X.iloc[:, self.select_features]
+        return cast(pd.DataFrame, X).iloc[:, self.select_features]
 
 
 class CCCFilter(BaseFeatureSelection):
@@ -300,32 +314,41 @@ class CCCFilter(BaseFeatureSelection):
         super().__init__()
         self._fitted = False
 
-    def fit(self, X: pd.DataFrame, y: pd.Series) -> CCCFilter:
+    def fit(
+        self,
+        X: Union[pd.DataFrame, np.ndarray],
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
+    ) -> CCCFilter:
+        # X must be a dataframe and y a response (CCC fails on a None response)
+        X = cast(pd.DataFrame, X)
         # Compute CCC for each feature
+        # (one generator for all features: reproducible with the seed, and the ties
+        # of the features are not broken by the same permutation)
+        rng = np.random.default_rng(self.seed)
         scores = {}
         for col in X.columns:
             try:
-                scores[col] = CCC(X[col], y, seed=self.seed)
+                scores[col] = CCC(X[col], cast(pd.Series, y), seed=rng)
             except Exception:
                 # if something fails (e.g., constant column)
                 scores[col] = 0.0
 
-        self.ccc_scores_ = pd.Series(scores).sort_values(ascending=False)
+        self.ccc_scores_: pd.Series = pd.Series(scores).sort_values(ascending=False)
 
         # threshold selection
-        self.selected_features_ = self.ccc_scores_[
-            self.ccc_scores_ >= self.threshold
-        ].index.tolist()
+        self.selected_features_ = cast(
+            pd.Series, self.ccc_scores_[self.ccc_scores_ >= self.threshold]
+        ).index.tolist()
 
         self._fitted = True
 
         return self
 
-    def transform(self, df: pd.DataFrame) -> pd.DataFrame:
+    def transform(self, X: Union[pd.DataFrame, np.ndarray]) -> pd.DataFrame:
         if not self._fitted:
             raise ValueError("CCCFilter must be fitted before transform().")
 
-        return df[self.selected_features_]
+        return cast(pd.DataFrame, cast(pd.DataFrame, X)[self.selected_features_])
 
 
 class FOCI(BaseFeatureSelection):
@@ -336,24 +359,30 @@ class FOCI(BaseFeatureSelection):
     [1] https://rdrr.io/cran/FOCI/src/R/foci.R
     [2] Azadkia, M., & Chatterjee, S. (2021). A simple measure of conditional dependence.
     The Annals of Statistics, 49(6), 3070-3102.
+
+    seed: seed of the random tie breaking of ACCC, default = 42; each step and
+    feature gets its own seed derived from it (reproducible, computed in parallel
+    processes), None for a random tie breaking
     """
 
     def __init__(
         self,
-        num_features: int = None,
-        standardize: str = None,
+        num_features: Optional[int] = None,
+        standardize: Optional[str] = None,
         conditional: bool = False,
+        seed: Optional[int] = 42,
     ):
         super().__init__()
         self.num_features = num_features
         self.standardize = standardize
         self.conditional = conditional
+        self.seed = seed
         self._fitted = False
 
     def fit(
         self,
         X: Union[pd.DataFrame, np.ndarray],
-        y: Union[pd.DataFrame, np.ndarray] = None,
+        y: Optional[Union[pd.DataFrame, pd.Series, np.ndarray]] = None,
     ) -> FOCI:
         # get feature names
         self._check_feature_names(X)
@@ -391,20 +420,54 @@ class FOCI(BaseFeatureSelection):
         return self
 
     @staticmethod
-    def compute_accc(feature, X, y, selected_features):
-        if len(selected_features) == 0:
-            return ACCC(X[[feature]], y, mode="Q")
-        else:
-            return ACCC(X[selected_features + [feature]], y, mode="Q")
+    def _feature_seed(
+        seed, step, feature, features
+    ) -> Optional[np.random.SeedSequence]:
+        """Seed of the tie breaking of a feature at a step (None: random)."""
+        if seed is None:
+            return None
+        return np.random.SeedSequence([seed, step, features.index(feature)])
 
     @staticmethod
-    def compute_conditional_accc(feature, X, y, selected_features):
+    def compute_accc(
+        feature,
+        X,
+        y,
+        selected_features,
+        seed: Optional[int] = 42,
+        step=0,
+        features=None,
+    ):
+        # ACCC hands the seed to np.random.default_rng, which takes a SeedSequence
+        _seed = cast(
+            Any, FOCI._feature_seed(seed, step, feature, features or list(X.columns))
+        )
         if len(selected_features) == 0:
-            return ACCC(X[[feature]], y, mode="Q")
+            return ACCC(X[[feature]], y, mode="Q", seed=_seed)
         else:
-            return ACCC(X[[feature]], y, X[selected_features], mode="Q")
+            return ACCC(X[selected_features + [feature]], y, mode="Q", seed=_seed)
 
-    def _fit(self, X, y) -> FOCI:
+    @staticmethod
+    def compute_conditional_accc(
+        feature,
+        X,
+        y,
+        selected_features,
+        seed: Optional[int] = 42,
+        step=0,
+        features=None,
+    ):
+        # ACCC hands the seed to np.random.default_rng, which takes a SeedSequence
+        _seed = cast(
+            Any, FOCI._feature_seed(seed, step, feature, features or list(X.columns))
+        )
+        if len(selected_features) == 0:
+            return ACCC(X[[feature]], y, mode="Q", seed=_seed)
+        else:
+            return ACCC(X[[feature]], y, X[selected_features], mode="Q", seed=_seed)
+
+    def _fit(self, X, y) -> None:
+        assert self.num_features is not None  # set in fit()
         # initialize the selected/unselected features
         Q = []
         selected_features = []
@@ -414,19 +477,21 @@ class FOCI(BaseFeatureSelection):
 
         # parallel computation of ACCC
         # if conditional, use conditional accc (given selected features)
-        if self.conditional:
+        compute = (
+            self.compute_conditional_accc if self.conditional else self.compute_accc
+        )
+
+        tmp_feature = None  # set in the first loop step (num_features > 0)
+        for idx in range(self.num_features):
             func = partial(
-                self.compute_conditional_accc,
+                compute,
                 X=X,
                 y=y,
                 selected_features=selected_features,
+                seed=self.seed,
+                step=idx,
+                features=self.features,
             )
-        else:
-            func = partial(
-                self.compute_accc, X=X, y=y, selected_features=selected_features
-            )
-
-        for idx in range(self.num_features):
             with ProcessPoolExecutor() as executor:
                 tmp_ACCC_list = list(executor.map(func, unselected_features))
 
@@ -464,7 +529,7 @@ class FOCI(BaseFeatureSelection):
         self, X: Union[pd.DataFrame, np.ndarray]
     ) -> Union[pd.DataFrame, np.ndarray]:
         # standardize the data if needed
-        X = self.scaler.transform(X)
+        X = cast(Union[pd.DataFrame, np.ndarray], self.scaler.transform(X))
         if not isinstance(X, pd.DataFrame):
             X = pd.DataFrame(X, columns=self.features)
         return X.loc[:, self.select_features]

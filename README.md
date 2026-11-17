@@ -12,17 +12,15 @@ The project aims to create a AutoML package with special focus on insurance data
 
 ## Prerequisites
 
-System Requirements:
+- **Operating system**: Linux (tested on Ubuntu) or Windows (Ray Beta compatibility). The [InformedAutoML](#installation-of-informedautoml) is Linux only (compiled C++ extension).
 
-- Linux (write and test on Ubuntu 20.04/22.04) and Windows (Windows-server should be compatible, but not tested due to dependency on `ray`)
+- **Python** 3.10 or newer (tested on 3.12), with `pip` for the installation (`git` to build from source).
 
-- As all trials are running parallelized, more threads (correspondingly, more memory) will increase the training efficiency
+- **Hardware**: the trials run in parallel (Ray Tune), so more CPU threads (and the matching memory) shorten the optimization. A CUDA GPU is recommended for the neural network models (`InsurAutoML[nn]`); on CPU only, they are slow.
 
-- `pip` is required for installation (`git` for building from source)
-  
-- Python version: should support version >= 3.7 (write and test on `3.8` - `3.10`)
-  
-- If neural network is required, GPU supported device will increase the training efficiency
+- **InformedAutoML**: a C++ compiler with OpenMP and the [`nanoflann`](https://github.com/jlblancoc/nanoflann) headers, see [Installation of InformedAutoML](#installation-of-informedautoml).
+
+- **Web browser**: the [optimization dashboard](https://github.com/PanyiDong/InsurAutoML/blob/master/doc/user_guide.md#optimization-dashboard) (default progress display) opens in a browser on the machine running the optimization (or through an SSH tunnel).
 
 ## Installation
 
@@ -74,8 +72,6 @@ pip install -r requirements.txt
 `requirements.txt` contains the dependencies of the InformedAutoML version; it does not build the C++ extension of the informed pipelines, see [Installation of InformedAutoML](#installation-of-informedautoml) for that.
 
 For neural network related support (recommended for `CUDA` supported devices), please use `pip install -r requirements_nn.txt`. The pipeline works without any neural network support with the loss of neural network support. If no CUDA device available, please use a non-`torch` environment as those neural network methods can take forever to finish.
-
-> NOTE: 1. The installation of `rpy2` is not straightforward, so it may not actually useable, but it's in-built here in `requirements.txt`. If user install through `setup.py`, it will not be included if R is not installed (through the environment variable `R_HOME`).
 
 ## Usage
 
@@ -137,123 +133,7 @@ INFORMEDAUTOML=1 pip install -e ".[informed]"
 
 Neural network support can be combined as `"InsurAutoML[informed,nn]"`.
 
-### 2. Command Line Interface
-
-#### Put train/test data in the folder
-
-After putting data to the folder, few of arguments need to be recognized.
-
-__Must have arguments__ :
-
-`train_data` and `response` are two must-have arguments corresponds to training data name (no file extension needed), and response variable name.
-
-Your can specify the data folder (or by default at current folder), test_data name (or evaluation set will be split from train_data), evaluation metrics and all model parameters by arguments.
-
-__Optional arguments__ :
-
-`data_folder`: refers to the folder where the data is stored, default set to current folder.
-
-`test_data`: refers to the test_data file name (no file extension needed), default is to split from `train_data`.
-
-`test_eval`: refers to evaluation metric, default is set to accuracy for classification and MSE for regression tasks.
-
-`n_estimators`: refers to number of pipelines used to form the final ensemble, default set to 5.
-
-`timeout`: refers to the time budget in seconds for experiments, default set to 360.
-
-`max_evals`: refers to number of trials for experiments, default set to 64.
-
-Use `python main.py -h` for full list of supported arguments and explanation.
-
-#### Run experiments
-
-Example below runs a classification task on `heart.csv` file in `example/example_data` folder
-
-In the command terminal:
-
-```console
-python main.py --data_folder example/example_data --train_data heart --response HeartDisease
-```
-
-And an example run regression task on `insurance.csv` file in `example/example_data` folder
-
-```console
-python main.py --data_folder example/example_data --train_data insurance --response expenses
-```
-
-In the end, will see the test evaluation results, recordings of the training procedures and optimal model ensemble file.
-
-## Summary
-
-> Required Packages: numpy, pandas, scipy, matplotlib, ray, ray[tune], ray[rllib], tqdm, mlflow, tensorboardX, hyperopt, auto-sklearn $^{1}$, scikit-learn, lightgbm, xgboost, pygam, rpy2 $^{2}$, tensorflow $^{3}$, pytorch $^{4}$
->
-> <sub><sup>1.</sup></sub> auto-sklearn is a AutoML package, which provides some models for the pipeline. But it's only compatible with Linux system. So if you are using windows, this package should not be installed.
->
-> <sub><sup>2.</sup></sub> rpy2 is only used for reading .rda/.rdata datasets. If rpy2 is not installed, it will not cause import problems (using importlib to check), but you will not be able to read R datasets
->
-> <sub><sup>3.</sup></sub> tensorflow is now only used for imputation with GAIN network. If tensorflow not installed, it will not caused import problems, but the GAIN imputation method will be disabled in default hyperparameter space.
->
-> <sub><sup>4.</sup></sub> pytorch is required for neural network support.
-
-Current Progress:
-
-> 1. base: load data with some common file format (.csv, .data, .rda, etc.) given path into a database dict, and some common utilities
->
-> 2. encoding: encoding for categorical/string type to numerical, and can perform dummy coding; category shift
->
-> 3. impute for missing values: some of the available methods: Simple Imputer, Miss Forest Imputer, MICE, GAIN, etc.
->
-> 4. common scaling methods: Standardize, MinMax Scaling, Winsorization, etc.
->
-> 5. deal with imbalance data: use over-/under-sampling methods to balance the dataset, some of the available methods: Tome kLink, One Sided Selection (OSS), Smote, etc.
->
-> 6. feature selection: PCA, AFFS, etc. And some models from sklearn will be applied.
->
-> 7. apply `ray.tune` (with plentiful search algorithms and search schedulers) to create a pipeline of AutoML workflow. Consider the methods as a hyperparameter, and create a hyperparameter space, where we can find the optimal ML workflow. Only supervised classification/regression models supported.
-
-The pipeline of AutoML:
-
-> 1. Data Encoding: encode some string type and datetime types to numerical type so it can be more easily handled.
->
-> 2. Imputation: impute the missing values in the dataset using supervised/unsupervised learning in case the following processes can not handle NaN values. Will be no_processing if no missing values
->
-> 3. Balancing: balance the datasets using under-/over-sampling methods to emphasize the importance of extreme minority class. Will not change the datasets if the datasets are already balanced.
->
-> 4. Scaling: scale the datasets to increase the efficiency of convergence, or allows better performance. Can be selected as no_processing.
->
-> 5. Feature Selection: remove redundant or insignificant features to improve the performance of the model. Can be selected as no_processing.
->
-> 6. Regression/Classification: perform regression/classification models to fit the datasets.
-
-With the new update, customized/personalized preprocessing methods and models are supported by using the `additional.py` file as additional input. In the file, there's also a template of how to write the methods and corresponding hyperparameter space.
-
-Save and load the models: To save reproduction time, when the optimal model/hyperparameter settings are configured, all settings will be stored as a `model` file (`pickle` file, file name may vary by experiments, controlled by argument `model_name` in Python interface, or `train_data` + "_model" in command line interface). Next time when AutoML pipeline starts training, it will detect whether the `model` file exists and directly use the optimal pipeline, which can save the training time (for optimization). Fitted models, preprocessed train/test datasets, hyperparameter settings for each trials will also by stored in `tmp` folders for inspection. (Both `model` and `tmp` are changeable arguments if you prefer other names.)
-
-### Configuration
-
-Configuration allowed for `AutoTabular` (`AutoTabularClassifier`, `AutoTabularRegressor`) (only some common arguments here):
-
-> 1. timeout: maximum allowed time for the tuning job.
->
-> 2. max_evals: maximum allowed trials for the tuning job. (each trial is trained multiple times, whose training iterations are controlled by limitation time, `timeout` and performance improvements.)
->
-> 3. allow_error_prop: maximum allowed failure errors proportion (number of allowed error = proportion * max_evals)
->
-> 4. model_name: saved model names, will be used to recognized for later runs
->
-> 5. encoder, imputer, balancing, scaling, feature_selection, models: `auto` (use default methods) or limit as a list of allowed methods.
->
-> 6. objective: metrics use to evaluate trials' performance
->
-> 7. search_algo: search algorithm, `GridSearch`, `RandomSearch`, `HyperOpt`, `Optuna`, `CFO` and `Nevergrad` are now supported. Default is set to `HyperOpt`. The use of `CFO` and `Nevergrad` requires additional packages, see the error message for installation guide when using. This will be all algorithms that will be supported in short time.
->
-> 8. cpu_threads, use_gpu: computational resources used for the job, will use all available by default
-
-Other files in the repository:
-
-1. `report.pdf` and presentation slides provides an introduction to the basic idea of AutoML pipeline and demonstrates test performance on some real-life datasets, and `data` provides test datasets in the report.
-
-2. `Dockerfiles` provides a Docker environment preparation files, you can easily build a virtual environment and test your datasets on the AutoML pipeline. The dockerfiles will install necessary packages and clone this repository to workspace.
+More details (Command Line Interface, Optimization dashboard, API Summary) are in the [User Guide](https://github.com/PanyiDong/InsurAutoML/blob/master/doc/user_guide.md).
 
 ## Citation
 
